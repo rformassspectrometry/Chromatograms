@@ -1,0 +1,28 @@
+Package: Chromatogram
+Title: Chromatogram Infrastructure for Mass Spectrometry Data
+Version: 0.0.1
+Description: The Chromatogram packages defines a efficient infrastructure
+   for storing and handling for mass spectrometry chromatographic data.
+Authors@R: c(person(given = "Laurent", family = "Gatto",
+		    comment = c(ORCID = "0000-0002-1520-2268"),
+		    email = "laurent.gatto@uclouvain.be",
+		    role = c("aut","cre")),
+	     person(given = "Johannes", family = "Rainer",
+		    email = "Johannes.Rainer@eurac.edu",
+		    role = c("aut", "cre"),
+		    comment = c(ORCID = "0000-0002-6977-7147")),
+	     person(given = "Sebastian", family = "Gibb",
+		    email = "mail@sebastiangibb.de",
+		    role = c("aut", "cre"),
+		    comment = c(ORCID = "0000-0001-7406-4443")))
+Author: Laurent Gatto, Johannes Rainer and Sebastian Gibb.
+Maintainer: Laurent Gatto <laurent.gatto@uclouvain.be> and Johannes Rainer <Johannes.Rainer@eurac.edu>
+Suggests:
+    knitr (>= 1.1.0),
+License: Artistic-2.0
+LazyData: yes
+VignetteBuilder: knitr
+BugReports: https://github.com/RforMassSpectrometry/Chromatogram/issues
+URL: https://github.com/RforMassSpectrometry/Chromatogram
+biocViews: Infrastructure, Proteomics, MassSpectrometry, Metabolomics
+RoxygenNote: 6.1.1
