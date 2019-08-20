@@ -5,16 +5,56 @@
 \alias{hidden_aliases}
 \alias{backendInitialize}
 \alias{backendMerge}
+\alias{chromData}
+\alias{chromData<-}
+\alias{chromNames}
+\alias{chromNames<-}
+\alias{chromVariables}
 \alias{dataOrigin}
 \alias{dataOrigin<-}
 \alias{dataStorage}
 \alias{dataStorage<-}
+\alias{filterDataOrigin}
+\alias{filterDataStorage}
+\alias{filterMsLevel}
+\alias{filterMz}
+\alias{filterPolarity}
+\alias{filterPrecursorMz}
+\alias{filterProductMz}
+\alias{filterRt}
 \alias{isReadOnly}
+\alias{mzMax}
+\alias{mzMax<-}
+\alias{mzMin}
+\alias{mzMin<-}
+\alias{pairs}
+\alias{pairs<-}
+\alias{precursorMzMin}
+\alias{precursorMzMin<-}
+\alias{precursorMzMax}
+\alias{precursorMzMax<-}
+\alias{productMz}
+\alias{productMz<-}
+\alias{productMzMax}
+\alias{productMzMax<-}
+\alias{productMzMin}
+\alias{productMzMin<-}
+\alias{selectChromVariables}
 \title{Internal page for hidden aliases}
 \usage{
 backendInitialize(object, ...)
 
 backendMerge(object, ...)
+
+chromData(object, ...)
+
+chromData(object) <- value
+
+chromNames(object, ...)
+
+chromNames(object) <- value
+
+chromVariables(object, ...)
 
 dataOrigin(object, ...)
 
@@ -24,7 +64,57 @@ dataStorage(object, ...)
 
 dataStorage(object) <- value
 
+filterDataOrigin(object, ...)
+
+filterDataStorage(object, ...)
+
+filterMsLevel(object, ...)
+
+filterMz(object, ...)
+
+filterPolarity(object, ...)
+
+filterPrecursorMz(object, ...)
+
+filterProductMz(object, ...)
+
+filterRt(object, ...)
+
 isReadOnly(object, ...)
+
+mzMax(object, ...)
+
+mzMax(object) <- value
+
+mzMin(object, ...)
+
+mzMin(object) <- value
+
+pairs(object, ...)
+
+pairs(object) <- value
+
+precursorMzMin(object, ...)
+
+precursorMzMin(object) <- value
+
+precursorMzMax(object, ...)
+
+precursorMzMax(object) <- value
+
+productMz(object, ...)
+
+productMz(object) <- value
+
+productMzMax(object, ...)
+
+productMzMax(object) <- value
+
+productMzMin(object, ...)
+
+productMzMin(object) <- value
+
+selectChromVariables(object, ...)
 }
 \description{
 For S4 methods that require a documentation entry but only clutter the index.

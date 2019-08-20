@@ -3,13 +3,25 @@
 \docType{methods}
 \name{ChromBackend}
 \alias{ChromBackend}
+\alias{ChromBackend-class}
 \alias{backendInitialize,ChromBackend-method}
 \alias{backendMerge,list-method}
 \alias{backendMerge,ChromBackend-method}
+\alias{chromData,ChromBackend-method}
+\alias{chromData<-,ChromBackend-method}
+\alias{chromNames,ChromBackend-method}
+\alias{chromNames<-,ChromBackend-method}
+\alias{chromVariables,ChromBackend-method}
 \alias{dataOrigin,ChromBackend-method}
 \alias{dataOrigin<-,ChromBackend-method}
 \alias{dataStorage,ChromBackend-method}
 \alias{dataStorage<-,ChromBackend-method}
+\alias{filterDataOrigin,ChromBackend-method}
+\alias{filterDataStorage,ChromBackend-method}
+\alias{filterMsLevel,ChromBackend-method}
+\alias{filterMz,ChromBackend-method}
+\alias{filterPrecursorMz,ChromBackend-method}
+\alias{filterProductMz,ChromBackend-method}
 \alias{intensity,ChromBackend-method}
 \alias{intensity<-,ChromBackend-method}
 \alias{isEmpty,ChromBackend-method}
@@ -17,6 +29,30 @@
 \alias{length,ChromBackend-method}
 \alias{msLevel,ChromBackend-method}
 \alias{msLevel<-,ChromBackend-method}
+\alias{mzMax,ChromBackend-method}
+\alias{mzMax<-,ChromBackend-method}
+\alias{mzMin,ChromBackend-method}
+\alias{mzMin<-,ChromBackend-method}
+\alias{pairs,ChromBackend-method}
+\alias{pairs<-,ChromBackend-method}
+\alias{precursorMz,ChromBackend-method}
+\alias{precursorMz<-,ChromBackend-method}
+\alias{precursorMzMin,ChromBackend-method}
+\alias{precursorMzMin<-,ChromBackend-method}
+\alias{precursorMzMax,ChromBackend-method}
+\alias{precursorMzMax<-,ChromBackend-method}
+\alias{productMz,ChromBackend-method}
+\alias{productMz<-,ChromBackend-method}
+\alias{productMzMin,ChromBackend-method}
+\alias{productMzMin<-,ChromBackend-method}
+\alias{productMzMax,ChromBackend-method}
+\alias{productMzMax<-,ChromBackend-method}
+\alias{rtime,ChromBackend-method}
+\alias{rtime<-,ChromBackend-method}
+\alias{selectChromVariables,ChromBackend-method}
+\alias{[,ChromBackend-method}
+\alias{$,ChromBackend-method}
+\alias{$<-,ChromBackend-method}
 \title{Chromatographic data backends}
 \usage{
 \S4method{backendInitialize}{ChromBackend}(object, ...)
@@ -25,6 +61,17 @@
 
 \S4method{backendMerge}{ChromBackend}(object, ...)
 
+\S4method{chromData}{ChromBackend}(object,
+  columns = chromVariables(object))
+
+\S4method{chromData}{ChromBackend}(object) <- value
+
+\S4method{chromNames}{ChromBackend}(object)
+
+\S4method{chromNames}{ChromBackend}(object) <- value
+
+\S4method{chromVariables}{ChromBackend}(object)
+
 \S4method{dataOrigin}{ChromBackend}(object)
 
 \S4method{dataOrigin}{ChromBackend}(object) <- value
@@ -32,6 +79,18 @@
 \S4method{dataStorage}{ChromBackend}(object)
 
 \S4method{dataStorage}{ChromBackend}(object) <- value
+
+\S4method{filterDataOrigin}{ChromBackend}(object, dataOrigin, ...)
+
+\S4method{filterDataStorage}{ChromBackend}(object, dataStorage, ...)
+
+\S4method{filterMsLevel}{ChromBackend}(object, msLevel)
+
+\S4method{filterMz}{ChromBackend}(object, mz, msLevel, ...)
+
+\S4method{filterPrecursorMz}{ChromBackend}(object, mz, ppm)
+
+\S4method{filterProductMz}{ChromBackend}(object, mz, ppm, ...)
 
 \S4method{intensity}{ChromBackend}(object)
 
@@ -46,11 +105,256 @@
 \S4method{msLevel}{ChromBackend}(object)
 
 \S4method{msLevel}{ChromBackend}(object) <- value
+
+\S4method{mzMax}{ChromBackend}(object)
+
+\S4method{mzMax}{ChromBackend}(object) <- value
+
+\S4method{mzMin}{ChromBackend}(object)
+
+\S4method{mzMin}{ChromBackend}(object) <- value
+
+\S4method{pairs}{ChromBackend}(object)
+
+\S4method{pairs}{ChromBackend}(object) <- value
+
+\S4method{precursorMz}{ChromBackend}(object)
+
+\S4method{precursorMz}{ChromBackend}(object) <- value
+
+\S4method{precursorMzMin}{ChromBackend}(object)
+
+\S4method{precursorMzMin}{ChromBackend}(object) <- value
+
+\S4method{precursorMzMax}{ChromBackend}(object)
+
+\S4method{precursorMzMax}{ChromBackend}(object) <- value
+
+\S4method{productMz}{ChromBackend}(object)
+
+\S4method{productMz}{ChromBackend}(object) <- value
+
+\S4method{productMzMin}{ChromBackend}(object)
+
+\S4method{productMzMin}{ChromBackend}(object) <- value
+
+\S4method{productMzMax}{ChromBackend}(object)
+
+\S4method{productMzMax}{ChromBackend}(object) <- value
+
+\S4method{rtime}{ChromBackend}(object)
+
+\S4method{rtime}{ChromBackend}(object) <- value
+
+\S4method{selectChromVariables}{ChromBackend}(object,
+  chromVariables = chromVariables(object))
+
+\S4method{[}{ChromBackend}(x, i, j, ..., drop = FALSE)
+
+\S4method{$}{ChromBackend}(x, name)
+
+\S4method{$}{ChromBackend}(x, name) <- value
+}
+\arguments{
+\item{object}{Object extending \code{ChromBackend}.}
+
+\item{...}{Additional arguments.}
+
+\item{columns}{For \code{chromData} accessor: optional \code{character} with column
+names (chromatogram variables) that should be included in the
+returned \code{DataFrame}. By default, all columns are returned.}
+
+\item{value}{replacement value for \code{<-} methods. See individual
+method description or expected data type.}
+
+\item{dataOrigin}{For \code{filterDataOrigin}: \code{character} to define which
+chromatograms to keep.}
+
+\item{dataStorage}{For \code{filterDataStorage}: \code{character} to define which
+chromatograms to keep.}
+
+\item{msLevel}{\code{integer} defining the MS level of the chromatograms to which
+the function should be applied. For \code{filterMsLevel}: the MS level to
+which \code{object} should be subsetted.}
+
+\item{mz}{For \code{filterMz}: \code{numeric(2)} defining the lower and upper m/z of
+the range to subset \code{object}. Chromatograms with \code{mzMin} or \code{mzMax} within
+\code{mz} are retained.
+For \code{filterPrecursorMz} and \code{filterProductMz}: \code{numeric(1)}
+with the m/z value to filter the object.}
+
+\item{ppm}{For \code{filterPrecursorMz} and \code{filterProductMz}: \code{numeric(1)}
+defining the accepted difference between the provided m/z and the
+chromatogrm's (precursor or product) m/z in parts per million.}
+
+\item{x}{Object extending \code{ChromBackend}.}
+
+\item{chromVariables}{For \code{selectChromVariables}: \code{character} with the
+names of the chromatogram variables to which the backend should be
+subsetted.}
+
+\item{i}{For \code{[}: \code{integer}, \code{logical} or \code{character} to subset the object.}
+
+\item{j}{For \code{[}: not supported.}
+
+\item{drop}{For \code{[}: not considered.}
+
+\item{name}{For \code{$} and \code{$<-}: the name of the chromatogram variable to
+return or set.}
 }
 \description{
 \code{ChromBackend} is a virtual class that defines what different backends need
 to provide to be used by the \code{Chromatograms} package and classes.
+
+The backend should provide access to the chromatographic data which mainly
+consists of (paired) intensity and retention time values. Additional
+chromatographic metadata such as MS level and precursor and product m/z
+should also be provided.
+
+The core chromatogram variables are:
+\itemize{
+\item \code{dataOrigin}: optional \code{character} with the origin of a chromatogram.
+\item \code{dataStorage}: \code{character} defining where the data is (currently) stored.
+\item \code{intensity}: \code{NumericList} with the intensity values of each chromatogram.
+\item \code{msLevel}: \code{integer} defining the MS level of the data.
+\item \code{mzMin}: optional \code{numeric} with the minimal m/z value in case the data
+was extracted from a \code{Spectra} object.
+\item \code{mzMax}: optional \code{numeric} with the maximal m/z value.
+\item \code{precursorMz}: for SRM data, \code{numeric} with the target m/z of the
+precursor (parent).
+\item \code{precursorMzMin}: for SRM data, optional \code{numeric} with the lower m/z of
+the precursor's isolation window.
+\item \code{precursorMzMax}: for SRM data, optional \code{numeric} with the upper m/z of
+the precursor's isolation window.
+\item \code{productMz} for SRM data, \code{numeric} with the target m/z of the
+product ion.
+\item \code{productMzMin}: for SRM data, optional \code{numeric} with the lower m/z of
+the product's isolation window.
+\item \code{productMzMax}: for SRM data, optional \code{numeric} with the upper m/z of
+the product's isolation window.
+\item \code{rtime}: \code{NumericList} with the retention times of each chromatogram.
 }
+}
+\section{Backend functions}{
+
+
+New backend classes \strong{must} extend the base \code{ChromBackend} class and
+\strong{have} to implement the following methods:
+\itemize{
+\item \code{[}: subset the backend. Only subsetting by element (\emph{row}/\code{i}) is
+allowed
+\item \code{$}, \code{$<-}: access or set/add a single chromatogram variable (column) in
+the backend.
+\item \code{backendInitialize}: initialises the backend. This method is
+supposed to be called rights after creating an instance of the
+backend class and should prepare the backend. This method has to ensure
+to set the spectra variable \code{dataStorage} correctly.
+\item \code{backendMerge}: merges (combines) \code{ChromBackend} objects into a single
+instance. All objects to be merged have to be of the same type.
+\item \code{chromData}, \code{chromData<-}: gets or sets general chromatogram
+metadata (annotation, also called header).  \code{chromData} returns
+a \code{DataFrame}, \code{chromData<-} expects a \code{DataFrame} with the same number
+of rows as there are chromatograms in \code{object}.
+\item \code{chromNames}, \code{chromNames<-}: gets or sets the names for the chromatograms.
+\item \code{chromVariables}: returns a \code{character} vector with the available
+chromatogram variables available in \code{object}.
+\item \code{dataOrigin}: gets a \code{character} of length equal to the number of
+chromatograms in \code{object} with the \emph{data origin} of each. This could e.g.
+be the mzML file from which the data was read.
+\item \code{dataStorage}: gets a \code{character} of length equal to the number of
+chromatograms in \code{object} with the data storage of each. Note that a
+\code{dataStorage} of \code{NA_character_} is not supported.
+\item \code{filterDataOrigin}: filters the object retaining chromatograms matching the
+provided \code{dataOrigin}. Parameter \code{dataOrigin} has to be of type
+\code{character} and needs to match exactly the data origin value of the
+chromatograms to subset.
+\code{filterDataOrigin} should return the data ordered by the provided
+\code{dataOrigin} parameter, i.e. if \code{dataOrigin = c("2", "1")} was provided,
+the chromatograms in the resulting object should be ordered accordingly
+(first chromatogram from data origin \code{"2"} and then from \code{"1"}).
+\item \code{filterDataStorage}: filters the object retaining chromatograms matching
+the provided \code{dataStorage}. Parameter \code{dataStorage} has to be of type
+\code{character} and needs to match exactly the data storage value of the
+chromatograms to subset.
+\code{filterDataStorage} should return the data ordered by the provided
+\code{dataStorage} parameter, i.e. if \code{dataStorage = c("2", "1")} was provided,
+the chromatograms in the resulting object should be ordered accordingly
+(first chromatogram from data storage \code{"2"} and then from \code{"1"}).
+\item \code{filterMsLevel}: retains chromatograms of MS level \code{msLevel}.
+\item \code{filterMz}: retains chromatograms with \code{mzMin} or \code{mzMax} within the
+provided m/z range.
+\item \code{filterPrecursorMz}: retains chromatograms with a precursor m/z matching
+the provided \code{mz} accepting also a small difference in m/z which can be
+defined by parameter \code{ppm} (parts per million). With the default
+(\code{ppm = 0}) only chromatograms with m/z identical to \code{mz} are retained.
+\item \code{filterProductMz}: retains chromatograms with a product m/z matching the
+provided \code{mz} accepting also a small difference in m/z which can be
+defined by parameter \code{ppm} (parts per million). With the default
+(\code{ppm = 0}) only chromatograms with product m/z identical to \code{mz} are
+retained.
+\item \code{intensity}: gets the intensity values from the chromatograms. Returns
+a \code{\link[=NumericList]{NumericList()}} of \code{numeric} vectors (intensity values for each
+chromatogram). The length of the list is equal to the number of
+chromatograms in \code{object}.
+\item \code{intensity<-}: replaces the intensity values. \code{value} has to be a \code{list}
+(or \code{\link[=NumericList]{NumericList()}}) of length equal to the number of chromatograms and the
+number of values within each list element identical to the number of
+data pairs in each chromatogram. Note that just writeable backends
+support this method.
+\item \code{isEmpty}: returns a \code{logical} of length equal to the number of
+chromatograms with \code{TRUE} for chromatograms without any data pairs.
+\item \code{isReadOnly}: returns a \code{logical(1)} whether the backend is \emph{read
+only} or does allow also to write/update data.
+\item \code{length}: returns the number of chromatograms in the object.
+\item \code{msLevel}: gets the chromatogram's MS level. Returns an \code{integer}
+vector (of length equal to the number of chromatograms) with the MS
+level for each chromatogram (or \code{NA_integer_} if not available).
+\item \code{mzMax},\code{mzMax<-}: gets or sets the upper m/z of the mass-to-charge range
+from which the chromatogram contains signal (e.g. if the chromatogram
+was extracted from MS data in spectra format and a m/z range was provided).
+\code{mzMax} returns a \code{numeric} of length equal to the number of chromatograms
+in \code{object}, \code{mzMax} expects a \code{numeric} of length equal to the number
+of chromatograms in \code{object}.
+\item \code{mzMin},\code{mzMin<-}: gets or sets the lower m/z of the mass-to-charge range
+from which the chromatogram contains signal (e.g. if the chromatogram
+was extracted from MS data in spectra format and a m/z range was provided).
+\code{mzMin} returns a \code{numeric} of length equal to the number of chromatograms
+in \code{object}, \code{mzMin} expects a \code{numeric} of length equal to the number
+of chromatograms in \code{object}.
+\item \code{pairs}: returns a \code{list} of matrices with the data pairs from each
+chromatogram. The length of the \code{list} is equal to the number of
+chromatograms in \code{object}. Each element is a two-column \code{numeric} \code{matrix}
+with the retention time (first column) and intensity values (second column)
+of one chromatogram. For an empty chromatogram a \code{matrix} with 0 rows and
+two columns (named \code{"rtime"} and \code{"intensity"}) has to be returned.
+\item \code{pairs<-}: replaces the chromatogram data of the backend. This function
+expects a \code{list} of two-column matrices in the format returned by \code{pairs}.
+The length of \code{value} has to be identical to the number of chromatograms
+in \code{object}. Note that just writeable backends support this method.
+\item \code{precursorMz},\code{precursorMz<-}: gets or sets the (target) m/z of the
+precursor (for SRM data). \code{precursorMz} returns a \code{numeric} of length
+equal to the number of chromatograms in \code{object}. \code{precursorMz<-} expects
+a \code{numeric} of length equal to the number of chromatograms.
+\item \code{productMz},\code{productMz<-}: gets or sets the (target) m/z of the
+product (for SRM data). \code{productMz} returns a \code{numeric} of length
+equal to the number of chromatograms in \code{object}. \code{productMz<-} expects
+a \code{numeric} of length equal to the number of chromatograms.
+\item \code{precursorMzMin},\code{precursorMzMax},\code{productMzMin}, \code{productMzMax}: get
+the lower and upper margin for the precursor or product isolation windows.
+\item \code{rtime}: gets the retention times from the chromatograms. returns a
+\code{\link[=NumericList]{NumericList()}} of \code{numeric} vectors (retention times for each
+chromatogram). The length of the returned list is equal to the number of
+chromatograms in \code{object}.
+\item \code{rtime<-}: replaces the retention times. \code{value} has to be a \code{list} (or
+\code{\link[=NumericList]{NumericList()}}) of length equal to the number of chromatograms and the
+number of values within each list element identical to the number of
+data pairs in each chromatogram. Note that just writeable backends support
+this method.
+\item \code{selectChromVariables}: reduce \code{object} retaining only specified
+chromatogram variables.
+}
+}
+
 \author{
 Johannes Rainer, Sebastian Gibb, Laurent Gatto
 }
