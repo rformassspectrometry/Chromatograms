@@ -10,18 +10,6 @@
 \alias{chromNames}
 \alias{chromNames<-}
 \alias{chromVariables}
-\alias{dataOrigin}
-\alias{dataOrigin<-}
-\alias{dataStorage}
-\alias{dataStorage<-}
-\alias{filterDataOrigin}
-\alias{filterDataStorage}
-\alias{filterMsLevel}
-\alias{filterMz}
-\alias{filterPolarity}
-\alias{filterPrecursorMz}
-\alias{filterProductMz}
-\alias{filterRt}
 \alias{isReadOnly}
 \alias{mzMax}
 \alias{mzMax<-}
@@ -33,8 +21,6 @@
 \alias{precursorMzMin<-}
 \alias{precursorMzMax}
 \alias{precursorMzMax<-}
-\alias{productMz}
-\alias{productMz<-}
 \alias{productMzMax}
 \alias{productMzMax<-}
 \alias{productMzMin}
@@ -55,30 +41,6 @@ chromNames(object, ...)
 chromNames(object) <- value
 
 chromVariables(object, ...)
-
-dataOrigin(object, ...)
-
-dataOrigin(object) <- value
-
-dataStorage(object, ...)
-
-dataStorage(object) <- value
-
-filterDataOrigin(object, ...)
-
-filterDataStorage(object, ...)
-
-filterMsLevel(object, ...)
-
-filterMz(object, ...)
-
-filterPolarity(object, ...)
-
-filterPrecursorMz(object, ...)
-
-filterProductMz(object, ...)
-
-filterRt(object, ...)
 
 isReadOnly(object, ...)
 
@@ -101,10 +63,6 @@ precursorMzMin(object) <- value
 precursorMzMax(object, ...)
 
 precursorMzMax(object) <- value
-
-productMz(object, ...)
-
-productMz(object) <- value
 
 productMzMax(object, ...)
 

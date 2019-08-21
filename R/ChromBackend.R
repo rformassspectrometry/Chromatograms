@@ -20,6 +20,8 @@ NULL
 #' - `dataStorage`: `character` defining where the data is (currently) stored.
 #' - `intensity`: `NumericList` with the intensity values of each chromatogram.
 #' - `msLevel`: `integer` defining the MS level of the data.
+#' - `mz`: optional `numeric` with the (target) m/z value for the
+#'   chromatographic data.
 #' - `mzMin`: optional `numeric` with the minimal m/z value in case the data
 #'   was extracted from a `Spectra` object.
 #' - `mzMax`: optional `numeric` with the maximal m/z value.
@@ -49,11 +51,11 @@ NULL
 #' @param dataStorage For `filterDataStorage`: `character` to define which
 #'     chromatograms to keep.
 #'
-#' @param drop For `[`: not considered.
+#' @param drop For `[`: ignored.
 #'
 #' @param i For `[`: `integer`, `logical` or `character` to subset the object.
 #'
-#' @param j For `[`: not supported.
+#' @param j For `[`: ignored.
 #'
 #' @param msLevel `integer` defining the MS level of the chromatograms to which
 #'     the function should be applied. For `filterMsLevel`: the MS level to
@@ -178,6 +180,10 @@ NULL
 #' - `msLevel`: gets the chromatogram's MS level. Returns an `integer`
 #'   vector (of length equal to the number of chromatograms) with the MS
 #'   level for each chromatogram (or `NA_integer_` if not available).
+#'
+#' - `mz`,`mz<-`: gets or sets the m/z value of the chromatograms. `mz` returns
+#'   a `numeric` of length equal to the number of chromatograms in `object`,
+#'   `mz<-` expects a `numeric` of length `length(object)`.
 #'
 #' - `mzMax`,`mzMax<-`: gets or sets the upper m/z of the mass-to-charge range
 #'   from which the chromatogram contains signal (e.g. if the chromatogram
@@ -309,12 +315,16 @@ setMethod("chromVariables", "ChromBackend", function(object) {
 
 #' @exportMethod dataOrigin
 #'
+#' @importMethodsFrom ProtGenerics dataOrigin
+#'
 #' @rdname ChromBackend
 setMethod("dataOrigin", "ChromBackend", function(object) {
     stop("Not implemented for ", class(object), ".")
 })
 
 #' @exportMethod dataOrigin<-
+#'
+#' @importMethodsFrom ProtGenerics dataOrigin<-
 #'
 #' @rdname ChromBackend
 setReplaceMethod("dataOrigin", "ChromBackend", function(object, value) {
@@ -323,12 +333,16 @@ setReplaceMethod("dataOrigin", "ChromBackend", function(object, value) {
 
 #' @exportMethod dataStorage
 #'
+#' @importMethodsFrom ProtGenerics dataStorage
+#'
 #' @rdname ChromBackend
 setMethod("dataStorage", "ChromBackend", function(object) {
     stop("Method 'dataStorage' is not implemented for ", class(object), ".")
 })
 
 #' @exportMethod dataStorage<-
+#'
+#' @importMethodsFrom ProtGenerics dataStorage<-
 #'
 #' @rdname ChromBackend
 setReplaceMethod("dataStorage", "ChromBackend", function(object, value) {
@@ -337,12 +351,16 @@ setReplaceMethod("dataStorage", "ChromBackend", function(object, value) {
 
 #' @exportMethod filterDataOrigin
 #'
+#' @importMethodsFrom ProtGenerics filterDataOrigin
+#'
 #' @rdname ChromBackend
 setMethod("filterDataOrigin", "ChromBackend", function(object, dataOrigin, ...) {
     stop("Not implemented for ", class(object), ".")
 })
 
 #' @exportMethod filterDataStorage
+#'
+#' @importMethodsFrom ProtGenerics filterDataStorage
 #'
 #' @rdname ChromBackend
 setMethod("filterDataStorage", "ChromBackend",
@@ -352,12 +370,16 @@ setMethod("filterDataStorage", "ChromBackend",
 
 #' @exportMethod filterMsLevel
 #'
+#' @importMethodsFrom ProtGenerics filterMsLevel
+#'
 #' @rdname ChromBackend
 setMethod("filterMsLevel", "ChromBackend", function(object, msLevel) {
     stop("Not implemented for ", class(object), ".")
 })
 
 #' @exportMethod filterMz
+#'
+#' @importMethodsFrom ProtGenerics filterMz
 #'
 #' @rdname ChromBackend
 setMethod("filterMz", "ChromBackend", function(object, mz, msLevel, ...) {
@@ -366,12 +388,16 @@ setMethod("filterMz", "ChromBackend", function(object, mz, msLevel, ...) {
 
 #' @exportMethod filterPrecursorMz
 #'
+#' @importMethodsFrom ProtGenerics filterPrecursorMz
+#'
 #' @rdname ChromBackend
 setMethod("filterPrecursorMz", "ChromBackend", function(object, mz, ppm) {
     stop("Not implemented for ", class(object), ".")
 })
 
 #' @exportMethod filterProductMz
+#'
+#' @importMethodsFrom ProtGenerics filterProductMz
 #'
 #' @rdname ChromBackend
 setMethod("filterProductMz", "ChromBackend", function(object, mz, ppm, ...) {
@@ -434,6 +460,24 @@ setMethod("msLevel", "ChromBackend", function(object) {
 #'
 #' @rdname ChromBackend
 setReplaceMethod("msLevel", "ChromBackend", function(object, value) {
+    stop("Not implemented for ", class(object), ".")
+})
+
+#' @exportMethod mz
+#'
+#' @importMethodsFrom ProtGenerics mz
+#'
+#' @rdname ChromBackend
+setMethod("mz", "ChromBackend", function(object) {
+    stop("Not implemented for ", class(object), ".")
+})
+
+#' @exportMethod mz<-
+#'
+#' @importMethodsFrom ProtGenerics mz<-
+#'
+#' @rdname ChromBackend
+setReplaceMethod("mz", "ChromBackend", function(object, value) {
     stop("Not implemented for ", class(object), ".")
 })
 
@@ -527,12 +571,16 @@ setReplaceMethod("precursorMzMax", "ChromBackend", function(object, value) {
 
 #' @exportMethod productMz
 #'
+#' @importMethodsFrom ProtGenerics productMz
+#'
 #' @rdname ChromBackend
 setMethod("productMz", "ChromBackend", function(object) {
     stop("Not implemented for ", class(object), ".")
 })
 
 #' @exportMethod productMz<-
+#'
+#' @importMethodsFrom ProtGenerics productMz<-
 #'
 #' @rdname ChromBackend
 setReplaceMethod("productMz", "ChromBackend", function(object, value) {

@@ -18,7 +18,7 @@ Authors@R: c(person(given = "Laurent", family = "Gatto",
 Author: Laurent Gatto, Johannes Rainer and Sebastian Gibb.
 Maintainer: Laurent Gatto <laurent.gatto@uclouvain.be> and Johannes Rainer <Johannes.Rainer@eurac.edu>
 Depends:
-    ProtGenerics (>= 1.17.2)
+    ProtGenerics (>= 1.17.4)
 Imports:
     methods,
     S4Vectors,

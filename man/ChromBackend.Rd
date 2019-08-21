@@ -29,6 +29,8 @@
 \alias{length,ChromBackend-method}
 \alias{msLevel,ChromBackend-method}
 \alias{msLevel<-,ChromBackend-method}
+\alias{mz,ChromBackend-method}
+\alias{mz<-,ChromBackend-method}
 \alias{mzMax,ChromBackend-method}
 \alias{mzMax<-,ChromBackend-method}
 \alias{mzMin,ChromBackend-method}
@@ -105,6 +107,10 @@
 \S4method{msLevel}{ChromBackend}(object)
 
 \S4method{msLevel}{ChromBackend}(object) <- value
+
+\S4method{mz}{ChromBackend}(object)
+
+\S4method{mz}{ChromBackend}(object) <- value
 
 \S4method{mzMax}{ChromBackend}(object)
 
@@ -195,9 +201,9 @@ subsetted.}
 
 \item{i}{For \code{[}: \code{integer}, \code{logical} or \code{character} to subset the object.}
 
-\item{j}{For \code{[}: not supported.}
+\item{j}{For \code{[}: ignored.}
 
-\item{drop}{For \code{[}: not considered.}
+\item{drop}{For \code{[}: ignored.}
 
 \item{name}{For \code{$} and \code{$<-}: the name of the chromatogram variable to
 return or set.}
@@ -217,6 +223,8 @@ The core chromatogram variables are:
 \item \code{dataStorage}: \code{character} defining where the data is (currently) stored.
 \item \code{intensity}: \code{NumericList} with the intensity values of each chromatogram.
 \item \code{msLevel}: \code{integer} defining the MS level of the data.
+\item \code{mz}: optional \code{numeric} with the (target) m/z value for the
+chromatographic data.
 \item \code{mzMin}: optional \code{numeric} with the minimal m/z value in case the data
 was extracted from a \code{Spectra} object.
 \item \code{mzMax}: optional \code{numeric} with the maximal m/z value.
@@ -246,7 +254,7 @@ allowed
 \item \code{$}, \code{$<-}: access or set/add a single chromatogram variable (column) in
 the backend.
 \item \code{backendInitialize}: initialises the backend. This method is
-supposed to be called rights after creating an instance of the
+supposed to be called right after creating an instance of the
 backend class and should prepare the backend. This method has to ensure
 to set the spectra variable \code{dataStorage} correctly.
 \item \code{backendMerge}: merges (combines) \code{ChromBackend} objects into a single
@@ -309,6 +317,9 @@ only} or does allow also to write/update data.
 \item \code{msLevel}: gets the chromatogram's MS level. Returns an \code{integer}
 vector (of length equal to the number of chromatograms) with the MS
 level for each chromatogram (or \code{NA_integer_} if not available).
+\item \code{mz},\code{mz<-}: gets or sets the m/z value of the chromatograms. \code{mz} returns
+a \code{numeric} of length equal to the number of chromatograms in \code{object},
+\code{mz<-} expects a \code{numeric} of length \code{length(object)}.
 \item \code{mzMax},\code{mzMax<-}: gets or sets the upper m/z of the mass-to-charge range
 from which the chromatogram contains signal (e.g. if the chromatogram
 was extracted from MS data in spectra format and a m/z range was provided).
