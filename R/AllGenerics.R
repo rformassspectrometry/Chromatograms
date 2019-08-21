@@ -25,38 +25,6 @@ setGeneric("chromNames<-", function(object, value)
 setGeneric("chromVariables", function(object, ...)
     standardGeneric("chromVariables"))
 #' @rdname hidden_aliases
-setGeneric("dataOrigin", function(object, ...) standardGeneric("dataOrigin"))
-#' @rdname hidden_aliases
-setGeneric("dataOrigin<-", function(object, value)
-    standardGeneric("dataOrigin<-"))
-#' @rdname hidden_aliases
-setGeneric("dataStorage", function(object, ...) standardGeneric("dataStorage"))
-#' @rdname hidden_aliases
-setGeneric("dataStorage<-", function(object, value)
-    standardGeneric("dataStorage<-"))
-#' @rdname hidden_aliases
-setGeneric("filterDataOrigin", function(object, ...)
-    standardGeneric("filterDataOrigin"))
-#' @rdname hidden_aliases
-setGeneric("filterDataStorage", function(object, ...)
-    standardGeneric("filterDataStorage"))
-#' @rdname hidden_aliases
-setGeneric("filterMsLevel", function(object, ...)
-    standardGeneric("filterMsLevel"))
-#' @rdname hidden_aliases
-setGeneric("filterMz", function(object, ...) standardGeneric("filterMz"))
-#' @rdname hidden_aliases
-setGeneric("filterPolarity", function(object, ...)
-    standardGeneric("filterPolarity"))
-#' @rdname hidden_aliases
-setGeneric("filterPrecursorMz", function(object, ...)
-    standardGeneric("filterPrecursorMz"))
-#' @rdname hidden_aliases
-setGeneric("filterProductMz", function(object, ...)
-    standardGeneric("filterProductMz"))
-#' @rdname hidden_aliases
-setGeneric("filterRt", function(object, ...) standardGeneric("filterRt"))
-#' @rdname hidden_aliases
 setGeneric("isReadOnly", function(object, ...)
     standardGeneric("isReadOnly"))
 #' @rdname hidden_aliases
@@ -83,10 +51,6 @@ setGeneric("precursorMzMax", function(object, ...)
 #' @rdname hidden_aliases
 setGeneric("precursorMzMax<-", function(object, value)
     standardGeneric("precursorMzMax<-"))
-#' @rdname hidden_aliases
-setGeneric("productMz", function(object, ...) standardGeneric("productMz"))
-#' @rdname hidden_aliases
-setGeneric("productMz<-", function(object, value) standardGeneric("productMz<-"))
 #' @rdname hidden_aliases
 setGeneric("productMzMax", function(object, ...)
     standardGeneric("productMzMax"))
