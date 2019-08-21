@@ -20,7 +20,9 @@ Maintainer: Laurent Gatto <laurent.gatto@uclouvain.be> and Johannes Rainer <Joha
 Depends:
     ProtGenerics (>= 1.17.2)
 Imports:
-    methods
+    methods,
+    S4Vectors,
+    IRanges
 Suggests:
     testthat,
     knitr (>= 1.1.0)
@@ -31,3 +33,8 @@ BugReports: https://github.com/RforMassSpectrometry/Chromatograms/issues
 URL: https://github.com/RforMassSpectrometry/Chromatograms
 biocViews: Infrastructure, Proteomics, MassSpectrometry, Metabolomics
 RoxygenNote: 6.1.1
+Roxygen: list(markdown=TRUE)
+Collate:
+    'hidden_aliases.R'
+    'AllGenerics.R'
+    'ChromBackend.R'
