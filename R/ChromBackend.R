@@ -97,7 +97,7 @@ NULL
 #'   the backend.
 #'
 #' - `backendInitialize`: initialises the backend. This method is
-#'   supposed to be called rights after creating an instance of the
+#'   supposed to be called right after creating an instance of the
 #'   backend class and should prepare the backend. This method has to ensure
 #'   to set the spectra variable `dataStorage` correctly.
 #'
