@@ -3,7 +3,7 @@ NULL
 
 #' @title Chromatographic data backends
 #'
-#' @aliases ChromBackend-class
+#' @aliases ChromBackend-class ChromBackendDataFrame-class
 #'
 #' @description
 #'
@@ -61,20 +61,17 @@ NULL
 #'     the function should be applied. For `filterMsLevel`: the MS level to
 #'     which `object` should be subsetted.
 #'
-#' @param mz For `filterMz`: `numeric(2)` defining the lower and upper m/z of
-#'     the range to subset `object`. Chromatograms with `mzMin` or `mzMax` within
-#'     `mz` are retained.
-#'     For `filterPrecursorMz` and `filterProductMz`: `numeric(1)`
-#'     with the m/z value to filter the object.
+#' @param mz For `filterMz`, `filterPrecursorMz` and `filterProductMz`:
+#'     `numeric(2)` defining the lower and upper m/z of the range to subset
+#'     `object`. Chromatograms with their min m/z (`mzMin`, `precursorMzMin`
+#'     and `productMz`, respectively) **or** max m/z within `mz` are retained
+#'     (filtering thus returns chromatograms **overlapping** the specified m/z
+#'     range).
 #'
 #' @param name For `$` and `$<-`: the name of the chromatogram variable to
 #'     return or set.
 #'
 #' @param object Object extending `ChromBackend`.
-#'
-#' @param ppm For `filterPrecursorMz` and `filterProductMz`: `numeric(1)`
-#'     defining the accepted difference between the provided m/z and the
-#'     chromatogrm's (precursor or product) m/z in parts per million.
 #'
 #' @param chromVariables For `selectChromVariables`: `character` with the
 #'     names of the chromatogram variables to which the backend should be
@@ -124,8 +121,8 @@ NULL
 #'   chromatograms in `object` with the data storage of each. Note that a
 #'   `dataStorage` of `NA_character_` is not supported.
 #'
-#' - `filterDataOrigin`: filters the object retaining chromatograms matching the
-#'   provided `dataOrigin`. Parameter `dataOrigin` has to be of type
+#' - `filterDataOrigin`: filters the object retaining chromatograms matching any
+#'   of the provided `dataOrigin`. Parameter `dataOrigin` has to be of type
 #'   `character` and needs to match exactly the data origin value of the
 #'   chromatograms to subset.
 #'   `filterDataOrigin` should return the data ordered by the provided
@@ -134,8 +131,8 @@ NULL
 #'   (first chromatogram from data origin `"2"` and then from `"1"`).
 #'
 #' - `filterDataStorage`: filters the object retaining chromatograms matching
-#'   the provided `dataStorage`. Parameter `dataStorage` has to be of type
-#'   `character` and needs to match exactly the data storage value of the
+#'   any of the provided `dataStorage`. Parameter `dataStorage` has to be of
+#'   type `character` and needs to match exactly the data storage value of the
 #'   chromatograms to subset.
 #'   `filterDataStorage` should return the data ordered by the provided
 #'   `dataStorage` parameter, i.e. if `dataStorage = c("2", "1")` was provided,
@@ -145,18 +142,16 @@ NULL
 #' - `filterMsLevel`: retains chromatograms of MS level `msLevel`.
 #'
 #' - `filterMz`: retains chromatograms with `mzMin` or `mzMax` within the
-#'   provided m/z range.
+#'   provided m/z range (i.e. `mzMax(object) >= mz[1] & mzMin(object) <= mz[2]`
+#'   ).
 #'
-#' - `filterPrecursorMz`: retains chromatograms with a precursor m/z matching
-#'   the provided `mz` accepting also a small difference in m/z which can be
-#'   defined by parameter `ppm` (parts per million). With the default
-#'   (`ppm = 0`) only chromatograms with m/z identical to `mz` are retained.
+#' - `filterPrecursorMz`: retains chromatograms with a their precursor m/z
+#'   window overlapping the provided m/z range `mz` (i.e.
+#'   `precursorMzMax(object) >= mz[1] & precursorMzMin(object) <= mz[2]`).
 #'
-#' - `filterProductMz`: retains chromatograms with a product m/z matching the
-#'   provided `mz` accepting also a small difference in m/z which can be
-#'   defined by parameter `ppm` (parts per million). With the default
-#'   (`ppm = 0`) only chromatograms with product m/z identical to `mz` are
-#'   retained.
+#' - `filterProductMz`: retains chromatograms with a their product m/z
+#'   window overlapping the provided m/z range `mz` (i.e.
+#'   `productMzMax(object) >= mz[1] | productMzMax(object) <= mz[2]`).
 #'
 #' - `intensity`: gets the intensity values from the chromatograms. Returns
 #'   a [NumericList()] of `numeric` vectors (intensity values for each
@@ -211,6 +206,9 @@ NULL
 #'   The length of `value` has to be identical to the number of chromatograms
 #'   in `object`. Note that just writeable backends support this method.
 #'
+#' - `pairsCount`: returns the number of data pairs (rtime-intensity values)
+#'   per chromatogram.
+#'
 #' - `precursorMz`,`precursorMz<-`: gets or sets the (target) m/z of the
 #'   precursor (for SRM data). `precursorMz` returns a `numeric` of length
 #'   equal to the number of chromatograms in `object`. `precursorMz<-` expects
@@ -223,6 +221,8 @@ NULL
 #'
 #' - `precursorMzMin`,`precursorMzMax`,`productMzMin`, `productMzMax`: get
 #'   the lower and upper margin for the precursor or product isolation windows.
+#'   These functions might return the value of `productMz` if the respective
+#'   minimal or maximal m/z values are not defined in `object`.
 #'
 #' - `rtime`: gets the retention times from the chromatograms. returns a
 #'   [NumericList()] of `numeric` vectors (retention times for each
@@ -238,6 +238,49 @@ NULL
 #' - `selectChromVariables`: reduce `object` retaining only specified
 #'   chromatogram variables.
 #'
+#' @section `ChromBackendDataFrame`, in-memory chromatographic data backend:
+#'
+#' The `ChromBackendDataFrame` objects keep all chromatographic data in memory.
+#' To reduce memory requirement, all chromatogram variables with a single
+#' value (e.g. if all are from MS level 1) are internally represented
+#' as an [Rle()] object that are converted into the original class (e.g.
+#' `integer`) when the column is accessed.
+#'
+#' New objects can be created with the `ChromBackendDataFrame()`
+#' function. The backend can be subsequently initialized with the
+#' `backendInitialize` method, taking a `DataFrame` with the chromatographic
+#' data as parameter. Suggested columns of this `DataFrame` are:
+#'
+#' - `"msLevel"`: `integer` with MS levels of the spectra.
+#' - `"mz"`: `numeric` with (target) m/z of the spectra.
+#' - `"mzMin"`,`"mzMax"`: `numeric` with the lower and upper m/z per
+#'   chromatogram.
+#' - `"precursorMz"`,`"precursorMzMin"`,`"precursorMzMax"`: m/z value (target,
+#'   lower and upper limit) of the precursor ion (for SRM data).
+#' - `"productMz"`,`"productMzMin"`,`"productMzMax"`: m/z value (target,
+#'   lower and upper limit) of the product ion (for SRM data).
+#' - `"dataOrigin"`: `character` defining the *data origin*.
+#' - `"dataStorage"`: `character` indicating grouping of spectra in different
+#'   e.g. input files. Note that missing values are not supported.
+#' - `"precursorMz"`: `numeric` with the m/z value of the precursor.
+#' - `"rtime"`: [NumericList()] of `numeric` vectors representing the retention
+#'   times for the data values in a chromatogram.
+#' - `"intensity"`: [NumericList()] of `numeric` vectors representing the
+#'   intensity values for each chromatogram.
+#'
+#' Additional columns are allowed too.
+#'
+#' @section Implementation notes:
+#'
+#' Backends extending `ChromBackend` **must** implement all of its methods
+#' (listed above). Developers of new `ChromBackend`s should follow the
+#' `ChromBackendDataFrame` implementation.
+#'
+#' The `ChromBackend` defines the following slots:
+#'
+#' - `@readonly`: `logical(1)` whether the backend supports writing/replacing
+#'   of m/z or intensity values.
+#'
 #' @author Johannes Rainer, Sebastian Gibb, Laurent Gatto
 #'
 #' @md
@@ -245,6 +288,38 @@ NULL
 #' @importFrom IRanges NumericList
 #'
 #' @exportClass ChromBackend
+#'
+#' @examples
+#'
+#' ## In-memory backend
+#'
+#' ## Create a simple data set with 3 chromatograms
+#' df <- data.frame(msLevel = c(1L, 2L, 1L),
+#'     mz = c(34.5, 454.2, 123.4))
+#' df$rtime <- list(1:4, 2:3, 1:5)
+#' df$intensity <- list(c(34, 25, 5, 1), c(5, 2), c(1, 5, 7, 4, 2))
+#'
+#' be <- backendInitialize(ChromBackendDataFrame(), df)
+#' be
+#'
+#' ## Access variables
+#' msLevel(be)
+#' be$msLevel
+#'
+#' rtime(be)
+#' be$rtime
+#'
+#' ## Available variables
+#' chromVariables(be)
+#'
+#' ## Add an additional variable
+#' be$new_var <- c("a", "b", "c")
+#'
+#' chromVariables(be)
+#' be$new_var
+#'
+#' ## Extract the full data
+#' chromData(be)
 NULL
 
 setClass("ChromBackend",
@@ -253,6 +328,17 @@ setClass("ChromBackend",
              readonly = "logical",
              version = "character"),
          prototype = prototype(readonly = FALSE, version = "0.1"))
+
+#' @importFrom methods .valueClassTest is new validObject
+#'
+#' @noRd
+setValidity("ChromBackend", function(object) {
+    msg <- .valid_chrom_backend_data_storage(dataStorage(object))
+    if (length(dataStorage(object)) != length(object))
+        msg <- c(msg, "length of object and 'dataStorage' have to match")
+    if (is.null(msg)) TRUE
+    else msg
+})
 
 #' @exportMethod backendInitialize
 #'
@@ -391,7 +477,7 @@ setMethod("filterMz", "ChromBackend", function(object, mz, msLevel, ...) {
 #' @importMethodsFrom ProtGenerics filterPrecursorMz
 #'
 #' @rdname ChromBackend
-setMethod("filterPrecursorMz", "ChromBackend", function(object, mz, ppm) {
+setMethod("filterPrecursorMz", "ChromBackend", function(object, mz, ...) {
     stop("Not implemented for ", class(object), ".")
 })
 
@@ -400,7 +486,7 @@ setMethod("filterPrecursorMz", "ChromBackend", function(object, mz, ppm) {
 #' @importMethodsFrom ProtGenerics filterProductMz
 #'
 #' @rdname ChromBackend
-setMethod("filterProductMz", "ChromBackend", function(object, mz, ppm, ...) {
+setMethod("filterProductMz", "ChromBackend", function(object, mz, ...) {
     stop("Not implemented for ", class(object), ".")
 })
 
@@ -512,14 +598,26 @@ setReplaceMethod("mzMin", "ChromBackend", function(object, value) {
 #' @exportMethod pairs
 #'
 #' @rdname ChromBackend
-setMethod("pairs", "ChromBackend", function(object) {
-    stop("Not implemented for ", class(object), ".")
+setMethod("pairs", "ChromBackend", function(x, ...) {
+    stop("Not implemented for ", class(x), ".")
+})
+
+#' @rdname hidden_aliases
+setMethod("pairs", "ANY", function(x, ...) {
+    graphics::pairs(x, ...)
 })
 
 #' @exportMethod pairs<-
 #'
 #' @rdname ChromBackend
 setReplaceMethod("pairs", "ChromBackend", function(object, value) {
+    stop("Not implemented for ", class(object), ".")
+})
+
+#' @exportMethod pairsCount
+#'
+#' @rdname ChromBackend
+setMethod("pairsCount", "ChromBackend", function(object) {
     stop("Not implemented for ", class(object), ".")
 })
 
