@@ -17,6 +17,8 @@ setGeneric("chromData", function(object, ...) standardGeneric("chromData"))
 setGeneric("chromData<-", function(object, value)
     standardGeneric("chromData<-"))
 #' @rdname hidden_aliases
+setGeneric("chromIndex", function(object, ...) standardGeneric("chromIndex"))
+#' @rdname hidden_aliases
 setGeneric("chromNames", function(object, ...) standardGeneric("chromNames"))
 #' @rdname hidden_aliases
 setGeneric("chromNames<-", function(object, value)

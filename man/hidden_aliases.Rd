@@ -8,6 +8,7 @@
 \alias{backendMerge}
 \alias{chromData}
 \alias{chromData<-}
+\alias{chromIndex}
 \alias{chromNames}
 \alias{chromNames<-}
 \alias{chromVariables}
@@ -34,9 +35,12 @@
 \alias{backendMerge,ChromBackendDataFrame-method}
 \alias{chromData,ChromBackendDataFrame-method}
 \alias{chromData<-,ChromBackendDataFrame-method}
+\alias{chromIndex,ChromBackendDataFrame-method}
 \alias{chromNames,ChromBackendDataFrame-method}
 \alias{chromNames<-,ChromBackendDataFrame-method}
 \alias{chromVariables,ChromBackendDataFrame-method}
+\alias{collisionEnergy,ChromBackendDataFrame-method}
+\alias{collisionEnergy<-,ChromBackendDataFrame-method}
 \alias{dataOrigin,ChromBackendDataFrame-method}
 \alias{dataOrigin<-,ChromBackendDataFrame-method}
 \alias{dataStorage,ChromBackendDataFrame-method}
@@ -89,6 +93,8 @@ backendMerge(object, ...)
 chromData(object, ...)
 
 chromData(object) <- value
+
+chromIndex(object, ...)
 
 chromNames(object, ...)
 
@@ -143,11 +149,17 @@ selectChromVariables(object, ...)
 
 \S4method{chromData}{ChromBackendDataFrame}(object) <- value
 
+\S4method{chromIndex}{ChromBackendDataFrame}(object)
+
 \S4method{chromNames}{ChromBackendDataFrame}(object)
 
 \S4method{chromNames}{ChromBackendDataFrame}(object) <- value
 
 \S4method{chromVariables}{ChromBackendDataFrame}(object)
+
+\S4method{collisionEnergy}{ChromBackendDataFrame}(object)
+
+\S4method{collisionEnergy}{ChromBackendDataFrame}(object) <- value
 
 \S4method{dataOrigin}{ChromBackendDataFrame}(object)
 

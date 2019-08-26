@@ -13,7 +13,10 @@
 \alias{chromData<-,ChromBackend-method}
 \alias{chromNames,ChromBackend-method}
 \alias{chromNames<-,ChromBackend-method}
+\alias{chromIndex,ChromBackend-method}
 \alias{chromVariables,ChromBackend-method}
+\alias{collisionEnergy,ChromBackend-method}
+\alias{collisionEnergy<-,ChromBackend-method}
 \alias{dataOrigin,ChromBackend-method}
 \alias{dataOrigin<-,ChromBackend-method}
 \alias{dataStorage,ChromBackend-method}
@@ -76,7 +79,14 @@
 
 \S4method{chromNames}{ChromBackend}(object) <- value
 
+\S4method{chromIndex}{ChromBackend}(object,
+  columns = chromVariables(object))
+
 \S4method{chromVariables}{ChromBackend}(object)
+
+\S4method{collisionEnergy}{ChromBackend}(object)
+
+\S4method{collisionEnergy}{ChromBackend}(object) <- value
 
 \S4method{dataOrigin}{ChromBackend}(object)
 
@@ -224,6 +234,12 @@ should also be provided.
 
 The core chromatogram variables are:
 \itemize{
+\item \code{chromIndex}: an \code{integer} with the index of the chromatogram in the
+original source file (e.g. \emph{mzML} file). This is a required variable
+for the \code{ChromBackendMzR} backend but might not be needed or defined for
+other backends.
+\item \code{collisionEnergy}: for SRM data, \code{numeric} with the collision energy of
+the precursor.
 \item \code{dataOrigin}: optional \code{character} with the origin of a chromatogram.
 \item \code{dataStorage}: \code{character} defining where the data is (currently) stored.
 \item \code{intensity}: \code{NumericList} with the intensity values of each chromatogram.
@@ -268,9 +284,14 @@ instance. All objects to be merged have to be of the same type.
 metadata (annotation, also called header).  \code{chromData} returns
 a \code{DataFrame}, \code{chromData<-} expects a \code{DataFrame} with the same number
 of rows as there are chromatograms in \code{object}.
+\item \code{chromIndex}: returns a \code{integer} vector with the index of the chromatogram
+in the original source file.
 \item \code{chromNames}, \code{chromNames<-}: gets or sets the names for the chromatograms.
 \item \code{chromVariables}: returns a \code{character} vector with the available
 chromatogram variables available in \code{object}.
+\item \code{collisionEnergy}, \code{collisionEnergy<-}: gets or sets the collision energy
+for the precursor (for SRM data). \code{collisionEnergy} returns a \code{numeric} of
+length equal to the number of chromatograms in \code{object}.
 \item \code{dataOrigin}: gets a \code{character} of length equal to the number of
 chromatograms in \code{object} with the \emph{data origin} of each. This could e.g.
 be the mzML file from which the data was read.

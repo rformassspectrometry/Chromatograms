@@ -16,6 +16,12 @@ NULL
 #' should also be provided.
 #'
 #' The core chromatogram variables are:
+#' - `chromIndex`: an `integer` with the index of the chromatogram in the
+#'   original source file (e.g. *mzML* file). This is a required variable
+#'   for the `ChromBackendMzR` backend but might not be needed or defined for
+#'   other backends.
+#' - `collisionEnergy`: for SRM data, `numeric` with the collision energy of
+#'   the precursor.
 #' - `dataOrigin`: optional `character` with the origin of a chromatogram.
 #' - `dataStorage`: `character` defining where the data is (currently) stored.
 #' - `intensity`: `NumericList` with the intensity values of each chromatogram.
@@ -108,10 +114,17 @@ NULL
 #'   a `DataFrame`, `chromData<-` expects a `DataFrame` with the same number
 #'   of rows as there are chromatograms in `object`.
 #'
+#' - `chromIndex`: returns a `integer` vector with the index of the chromatogram
+#'   in the original source file.
+#'
 #' - `chromNames`, `chromNames<-`: gets or sets the names for the chromatograms.
 #'
 #' - `chromVariables`: returns a `character` vector with the available
 #'   chromatogram variables available in `object`.
+#'
+#' - `collisionEnergy`, `collisionEnergy<-`: gets or sets the collision energy
+#'   for the precursor (for SRM data). `collisionEnergy` returns a `numeric` of
+#'   length equal to the number of chromatograms in `object`.
 #'
 #' - `dataOrigin`: gets a `character` of length equal to the number of
 #'   chromatograms in `object` with the *data origin* of each. This could e.g.
@@ -392,10 +405,36 @@ setReplaceMethod("chromNames", "ChromBackend", function(object, value) {
     stop("Not implemented for ", class(object), ".")
 })
 
+#' @exportMethod chromIndex
+#'
+#' @rdname ChromBackend
+setMethod("chromIndex", "ChromBackend",
+          function(object, columns = chromVariables(object)) {
+              stop("Not implemented for ", class(object), ".")
+          })
+
 #' @exportMethod chromVariables
 #'
 #' @rdname ChromBackend
 setMethod("chromVariables", "ChromBackend", function(object) {
+    stop("Not implemented for ", class(object), ".")
+})
+
+#' @exportMethod collisionEnergy
+#'
+#' @importMethodsFrom ProtGenerics collisionEnergy
+#'
+#' @rdname ChromBackend
+setMethod("collisionEnergy", "ChromBackend", function(object) {
+    stop("Not implemented for ", class(object), ".")
+})
+
+#' @exportMethod collisionEnergy<-
+#'
+#' @importMethodsFrom ProtGenerics collisionEnergy
+#'
+#' @rdname ChromBackend
+setReplaceMethod("collisionEnergy", "ChromBackend", function(object, value) {
     stop("Not implemented for ", class(object), ".")
 })
 

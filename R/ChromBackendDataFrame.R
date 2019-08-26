@@ -35,13 +35,13 @@ setValidity("ChromBackendDataFrame", function(object) {
 #'
 #' @importFrom utils capture.output
 setMethod("show", "ChromBackendDataFrame", function(object) {
-    chd <- chromData(object, c("msLevel", "mz"))
+    chd <- chromData(object, c("msLevel", "mz", "chromIndex"))
     cat(class(object), "with", nrow(chd), "chromatograms\n")
     if (nrow(chd)) {
         txt <- capture.output(print(chd))
         cat(txt[-1], sep = "\n")
         ch_cols <- chromVariables(object)
-        cat(" ...", length(ch_cols) - 2, "more variables/columns.\n")
+        cat(" ...", length(ch_cols) - 3, "more variables/columns.\n")
     }
 })
 
@@ -143,6 +143,11 @@ setReplaceMethod("chromData", "ChromBackendDataFrame", function(object, value) {
 })
 
 #' @rdname hidden_aliases
+setMethod("chromIndex", "ChromBackendDataFrame", function(object) {
+    .get_rle_column(object@chromData, "chromIndex")
+})
+
+#' @rdname hidden_aliases
 setMethod("chromNames", "ChromBackendDataFrame", function(object) {
     rownames(object@chromData)
 })
@@ -160,13 +165,29 @@ setMethod("chromVariables", "ChromBackendDataFrame", function(object) {
 })
 
 #' @rdname hidden_aliases
+setMethod("collisionEnergy", "ChromBackendDataFrame", function(object) {
+    .get_rle_column(object@chromData, "collisionEnergy")
+})
+
+#' @rdname hidden_aliases
+#'
+#' @importFrom MsCoreUtils asRle
+setReplaceMethod("collisionEnergy", "ChromBackendDataFrame", function(object,
+                                                                      value) {
+    if (!is.numeric(value) || length(value) != length(object))
+        stop("'value' has to be a 'numeric' of length ", length(object))
+    object@chromData$collisionEnergy <- asRle(value)
+    validObject(object)
+    object
+})
+
+#' @rdname hidden_aliases
 setMethod("dataOrigin", "ChromBackendDataFrame", function(object) {
     .get_rle_column(object@chromData, "dataOrigin")
 })
 
 #' @rdname hidden_aliases
 #'
-#' @importFrom MsCoreUtils asRle
 setReplaceMethod("dataOrigin", "ChromBackendDataFrame", function(object,
                                                                  value) {
     if (!is.character(value) || length(value) != length(object))
