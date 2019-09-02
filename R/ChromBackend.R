@@ -602,11 +602,6 @@ setMethod("pairs", "ChromBackend", function(x, ...) {
     stop("Not implemented for ", class(x), ".")
 })
 
-#' @rdname hidden_aliases
-setMethod("pairs", "ANY", function(x, ...) {
-    graphics::pairs(x, ...)
-})
-
 #' @exportMethod pairs<-
 #'
 #' @rdname ChromBackend

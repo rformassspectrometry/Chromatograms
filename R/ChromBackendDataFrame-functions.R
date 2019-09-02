@@ -144,7 +144,8 @@ ChromBackendDataFrame <- function() {
     res <- new(class(objects[[1]]))
     suppressWarnings(
         res@chromData <- asRleDataFrame(do.call(
-            rbindFill, lapply(objects, function(z) z@chromData)))
+            rbindFill, lapply(objects, function(z) z@chromData)),
+            columns = c("dataStorage", "dataOrigin"))
     )
     if (any(colnames(res@chromData) == "rtime"))
         res@chromData$rtime[is.na(res@chromData$rtime)] <- list(numeric())
