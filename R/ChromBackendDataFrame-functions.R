@@ -99,6 +99,9 @@ ChromBackendDataFrame <- function() {
 #' the name of a mandatory variable but it is not available it is created on
 #' the fly.
 #'
+#' @note This function is equivalent to the `get_rle_column` function in
+#'     the `Spectra` package (defined in *MsBackendDataFrame-functions.R*).
+#'
 #' @param x `DataFrame`
 #'
 #' @param column `character(1)` with the name of the column to return.

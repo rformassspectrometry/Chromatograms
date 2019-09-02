@@ -491,11 +491,13 @@ setReplaceMethod("$", "ChromBackendDataFrame", function(x, name, value) {
 
 #' @importMethodsFrom S4Vectors [
 #'
+#' @importFrom MsCoreUtils i2index
+#'
 #' @rdname hidden_aliases
 setMethod("[", "ChromBackendDataFrame", function(x, i, j, ..., drop = FALSE) {
     if (!missing(j))
         stop("Subsetting by column ('j = ", j, "' is not supported")
-    i <- .i_to_index(i, length(x), rownames(x@chromData))
+    i <- i2index(i, length(x), rownames(x@chromData))
     x@chromData <- x@chromData[i, , drop = FALSE]
     validObject(x)
     x
