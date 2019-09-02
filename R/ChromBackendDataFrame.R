@@ -132,7 +132,7 @@ setReplaceMethod("chromData", "ChromBackendDataFrame", function(object, value) {
             value$dataStorage <- "<memory>"
     } else {
         if (length(value) == 1)
-            value <- rep(value, length(object))
+            value <- rep.int(value, length(object))
         if (length(value) != length(object))
             stop("length of 'value' has to be ", length(object))
     }
