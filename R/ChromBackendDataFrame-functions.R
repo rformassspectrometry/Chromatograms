@@ -116,7 +116,7 @@ ChromBackendDataFrame <- function() {
     } else if (any(names(.CHROMATOGRAMS_DATA_COLUMNS) == column)) {
         nr_x <- nrow(x)
         if (nr_x)
-            as(rep(NA, nr_x), .CHROMATOGRAMS_DATA_COLUMNS[column])
+            as(rep.int(NA, nr_x), .CHROMATOGRAMS_DATA_COLUMNS[column])
         else
             do.call(.CHROMATOGRAMS_DATA_COLUMNS[column], args = list())
     } else stop("column '", column, "' not available")
