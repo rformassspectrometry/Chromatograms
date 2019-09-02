@@ -197,7 +197,7 @@ setMethod("intensity", "ChromBackendDataFrame", function(object) {
         object@chromData$intensity
     else {
         lst <- NumericList(numeric(), compress = FALSE)
-        lst[rep(1, times = length(object))]
+        lst[rep.int(1, length(object))]
     }
 })
 
