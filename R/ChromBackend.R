@@ -283,6 +283,23 @@ NULL
 #'
 #' Additional columns are allowed too.
 #'
+#' @section `ChromBackendMzR`, on-disc chromatographic data backend:
+#'
+#' The `ChromBackendMzR` keeps only a limited amount of data in memory,
+#' while the chromatographic data (retention time and intensity values) are
+#' fetched from the raw files on-demand. This backend uses the `mzR` package
+#' for data import and retrieval and hence requires that package to be
+#' installed. Also, it can only be used to import and represent data
+#' stored in *mzML* files.
+#'
+#' The `ChromBackendMzR` backend extends the `ChromBackendDataFrame` backend
+#' using its `DataFrame` to keep chromatogram variables (except retention time
+#' and intensity) in memory.
+#'
+#' New objects can be created with the `ChromBackendMzR()` function which
+#' can be subsequently filled with data by calling `backendInitialize`
+#' passing the file names of the input data files with argument `files`.
+#'
 #' @section Implementation notes:
 #'
 #' Backends extending `ChromBackend` **must** implement all of its methods
