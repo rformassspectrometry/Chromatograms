@@ -164,7 +164,7 @@ NULL
 #'
 #' - `filterProductMz`: retains chromatograms with a their product m/z
 #'   window overlapping the provided m/z range `mz` (i.e.
-#'   `productMzMax(object) >= mz[1] | productMzMax(object) <= mz[2]`).
+#'   `productMzMax(object) >= mz[1] & productMzMax(object) <= mz[2]`).
 #'
 #' - `intensity`: gets the intensity values from the chromatograms. Returns
 #'   a [NumericList()] of `numeric` vectors (intensity values for each
@@ -656,11 +656,6 @@ setReplaceMethod("mzMin", "ChromBackend", function(object, value) {
 #' @rdname ChromBackend
 setMethod("pairs", "ChromBackend", function(x, ...) {
     stop("Not implemented for ", class(x), ".")
-})
-
-#' @rdname hidden_aliases
-setMethod("pairs", "ANY", function(x, ...) {
-    graphics::pairs(x, ...)
 })
 
 #' @exportMethod pairs<-

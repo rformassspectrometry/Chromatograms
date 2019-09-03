@@ -101,6 +101,9 @@ ChromBackendDataFrame <- function() {
 #' the name of a mandatory variable but it is not available it is created on
 #' the fly.
 #'
+#' @note This function is equivalent to the `get_rle_column` function in
+#'     the `Spectra` package (defined in *MsBackendDataFrame-functions.R*).
+#'
 #' @param x `DataFrame`
 #'
 #' @param column `character(1)` with the name of the column to return.
@@ -118,7 +121,7 @@ ChromBackendDataFrame <- function() {
     } else if (any(names(.CHROMATOGRAMS_DATA_COLUMNS) == column)) {
         nr_x <- nrow(x)
         if (nr_x)
-            as(rep(NA, nr_x), .CHROMATOGRAMS_DATA_COLUMNS[column])
+            as(rep.int(NA, nr_x), .CHROMATOGRAMS_DATA_COLUMNS[column])
         else
             do.call(.CHROMATOGRAMS_DATA_COLUMNS[column], args = list())
     } else stop("column '", column, "' not available")
@@ -143,7 +146,8 @@ ChromBackendDataFrame <- function() {
     res <- new(class(objects[[1]]))
     suppressWarnings(
         res@chromData <- asRleDataFrame(do.call(
-            rbindFill, lapply(objects, function(z) z@chromData)))
+            rbindFill, lapply(objects, function(z) z@chromData)),
+            columns = c("dataStorage", "dataOrigin"))
     )
     if (any(colnames(res@chromData) == "rtime"))
         res@chromData$rtime[is.na(res@chromData$rtime)] <- list(numeric())

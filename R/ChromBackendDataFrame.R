@@ -132,7 +132,7 @@ setReplaceMethod("chromData", "ChromBackendDataFrame", function(object, value) {
             value$dataStorage <- "<memory>"
     } else {
         if (length(value) == 1)
-            value <- rep(value, length(object))
+            value <- rep.int(value, length(object))
         if (length(value) != length(object))
             stop("length of 'value' has to be ", length(object))
     }
@@ -218,7 +218,7 @@ setMethod("intensity", "ChromBackendDataFrame", function(object) {
         object@chromData$intensity
     else {
         lst <- NumericList(numeric(), compress = FALSE)
-        lst[rep(1, times = length(object))]
+        lst[rep.int(1, length(object))]
     }
 })
 
@@ -449,7 +449,7 @@ setMethod("rtime", "ChromBackendDataFrame", function(object) {
         object@chromData$rtime
     else {
         lst <- NumericList(numeric(), compress = FALSE)
-        lst[rep(1, times = length(object))]
+        lst[rep.int(1, length(object))]
     }
 })
 
@@ -512,11 +512,13 @@ setReplaceMethod("$", "ChromBackendDataFrame", function(x, name, value) {
 
 #' @importMethodsFrom S4Vectors [
 #'
+#' @importFrom MsCoreUtils i2index
+#'
 #' @rdname hidden_aliases
 setMethod("[", "ChromBackendDataFrame", function(x, i, j, ..., drop = FALSE) {
     if (!missing(j))
         stop("Subsetting by column ('j = ", j, "' is not supported")
-    i <- .i_to_index(i, length(x), rownames(x@chromData))
+    i <- i2index(i, length(x), rownames(x@chromData))
     x@chromData <- x@chromData[i, , drop = FALSE]
     validObject(x)
     x

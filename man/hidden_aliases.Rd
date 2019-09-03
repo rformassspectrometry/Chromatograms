@@ -29,7 +29,6 @@
 \alias{productMzMin}
 \alias{productMzMin<-}
 \alias{selectChromVariables}
-\alias{pairs,ANY-method}
 \alias{show,ChromBackendDataFrame-method}
 \alias{backendInitialize,ChromBackendDataFrame-method}
 \alias{backendMerge,ChromBackendDataFrame-method}
@@ -146,8 +145,6 @@ productMzMin(object, ...)
 productMzMin(object) <- value
 
 selectChromVariables(object, ...)
-
-\S4method{pairs}{ANY}(x, ...)
 
 \S4method{show}{ChromBackendDataFrame}(object)
 

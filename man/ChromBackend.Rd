@@ -326,7 +326,7 @@ window overlapping the provided m/z range \code{mz} (i.e.
 \code{precursorMzMax(object) >= mz[1] & precursorMzMin(object) <= mz[2]}).
 \item \code{filterProductMz}: retains chromatograms with a their product m/z
 window overlapping the provided m/z range \code{mz} (i.e.
-\code{productMzMax(object) >= mz[1] | productMzMax(object) <= mz[2]}).
+\code{productMzMax(object) >= mz[1] & productMzMax(object) <= mz[2]}).
 \item \code{intensity}: gets the intensity values from the chromatograms. Returns
 a \code{\link[=NumericList]{NumericList()}} of \code{numeric} vectors (intensity values for each
 chromatogram). The length of the list is equal to the number of
