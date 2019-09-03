@@ -448,7 +448,7 @@ setMethod("collisionEnergy", "ChromBackend", function(object) {
 
 #' @exportMethod collisionEnergy<-
 #'
-#' @importMethodsFrom ProtGenerics collisionEnergy
+#' @importMethodsFrom ProtGenerics collisionEnergy<-
 #'
 #' @rdname ChromBackend
 setReplaceMethod("collisionEnergy", "ChromBackend", function(object, value) {
