@@ -101,6 +101,13 @@ NULL
 #' - `$`, `$<-`: access or set/add a single chromatogram variable (column) in
 #'   the backend.
 #'
+#' - `as.list`: returns a `list` of matrices with the data pairs from each
+#'   chromatogram. The length of the `list` is equal to the number of
+#'   chromatograms in `object`. Each element is a two-column `numeric` `matrix`
+#'   with the retention time (first column) and intensity values (second column)
+#'   of one chromatogram. For an empty chromatogram a `matrix` with 0 rows and
+#'   two columns (named `"rtime"` and `"intensity"`) has to be returned.
+#'
 #' - `backendInitialize`: initialises the backend. This method is
 #'   supposed to be called right after creating an instance of the
 #'   backend class and should prepare the backend. This method has to ensure
@@ -185,6 +192,9 @@ NULL
 #'
 #' - `length`: returns the number of chromatograms in the object.
 #'
+#' - `lengths`: returns the number of data pairs (rtime-intensity values)
+#'   per chromatogram.
+#'
 #' - `msLevel`: gets the chromatogram's MS level. Returns an `integer`
 #'   vector (of length equal to the number of chromatograms) with the MS
 #'   level for each chromatogram (or `NA_integer_` if not available).
@@ -206,21 +216,6 @@ NULL
 #'   `mzMin` returns a `numeric` of length equal to the number of chromatograms
 #'   in `object`, `mzMin` expects a `numeric` of length equal to the number
 #'   of chromatograms in `object`.
-#'
-#' - `pairs`: returns a `list` of matrices with the data pairs from each
-#'   chromatogram. The length of the `list` is equal to the number of
-#'   chromatograms in `object`. Each element is a two-column `numeric` `matrix`
-#'   with the retention time (first column) and intensity values (second column)
-#'   of one chromatogram. For an empty chromatogram a `matrix` with 0 rows and
-#'   two columns (named `"rtime"` and `"intensity"`) has to be returned.
-#'
-#' - `pairs<-`: replaces the chromatogram data of the backend. This function
-#'   expects a `list` of two-column matrices in the format returned by `pairs`.
-#'   The length of `value` has to be identical to the number of chromatograms
-#'   in `object`. Note that just writeable backends support this method.
-#'
-#' - `pairsCount`: returns the number of data pairs (rtime-intensity values)
-#'   per chromatogram.
 #'
 #' - `precursorMz`,`precursorMz<-`: gets or sets the (target) m/z of the
 #'   precursor (for SRM data). `precursorMz` returns a `numeric` of length
@@ -651,25 +646,20 @@ setReplaceMethod("mzMin", "ChromBackend", function(object, value) {
     stop("Not implemented for ", class(object), ".")
 })
 
-#' @exportMethod pairs
+#' @exportMethod as.list
+#'
+#' @importMethodsFrom BiocGenerics as.list
 #'
 #' @rdname ChromBackend
-setMethod("pairs", "ChromBackend", function(x, ...) {
+setMethod("as.list", "ChromBackend", function(x, ...) {
     stop("Not implemented for ", class(x), ".")
 })
 
-#' @exportMethod pairs<-
+#' @exportMethod lengths
 #'
 #' @rdname ChromBackend
-setReplaceMethod("pairs", "ChromBackend", function(object, value) {
-    stop("Not implemented for ", class(object), ".")
-})
-
-#' @exportMethod pairsCount
-#'
-#' @rdname ChromBackend
-setMethod("pairsCount", "ChromBackend", function(object) {
-    stop("Not implemented for ", class(object), ".")
+setMethod("lengths", "ChromBackend", function(x) {
+    stop("Not implemented for ", class(x), ".")
 })
 
 #' @exportMethod precursorMz

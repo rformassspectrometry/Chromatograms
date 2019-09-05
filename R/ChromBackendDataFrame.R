@@ -87,6 +87,12 @@ setMethod("backendMerge", "ChromBackendDataFrame", function(object, ...) {
 })
 
 #' @rdname hidden_aliases
+setMethod("as.list", "ChromBackendDataFrame", function(x, ...) {
+    mapply(cbind, rtime = rtime(x), intensity = intensity(x),
+           SIMPLIFY = FALSE, USE.NAMES = FALSE)
+})
+
+#' @rdname hidden_aliases
 #'
 #' @importFrom methods as
 #'
@@ -230,7 +236,7 @@ setReplaceMethod("intensity", "ChromBackendDataFrame", function(object, value) {
         stop("length of 'value' has to match the length of 'object'")
     if (!all(lengths(value) == lengths(object$rtime)))
         stop("lengths of 'value' has to match the number of data pairs ",
-             "(i.e. pairsCount(object))")
+             "(i.e. lengths(object))")
     if (!is(value, "NumericList"))
         value <- NumericList(value, compress = FALSE)
     object@chromData$intensity <- value
@@ -246,6 +252,11 @@ setMethod("isEmpty", "ChromBackendDataFrame", function(x) {
 #' @rdname hidden_aliases
 setMethod("length", "ChromBackendDataFrame", function(x) {
     nrow(x@chromData)
+})
+
+#' @rdname hidden_aliases
+setMethod("lengths", "ChromBackendDataFrame", function(x) {
+    lengths(intensity(x))
 })
 
 #' @rdname hidden_aliases
@@ -310,35 +321,6 @@ setReplaceMethod("mzMin", "ChromBackendDataFrame", function(object, value) {
     object@chromData$mzMin <- asRle(value)
     validObject(object)
     object
-})
-
-#' @rdname hidden_aliases
-setMethod("pairs", "ChromBackendDataFrame", function(x, ...) {
-    mapply(cbind, rtime = rtime(x), intensity = intensity(x),
-           SIMPLIFY = FALSE, USE.NAMES = FALSE)
-})
-
-#' @rdname hidden_aliases
-setReplaceMethod("pairs", "ChromBackendDataFrame", function(object, value) {
-    if (!(is.list(value) || inherits(value, "SimpleList")))
-        stop("'value' has to be a list-like object")
-    if (length(value) != length(object))
-        stop("Length of 'value' has to match length of 'object'")
-    vals <- lapply(value, "[", , 1L)
-    if (!is(vals, "NumericList"))
-        vals <- NumericList(vals, compress = FALSE)
-    object@chromData$rtime <- vals
-    vals <- lapply(value, "[", , 2L)
-    if (!is(vals, "NumericList"))
-        vals <- NumericList(vals, compress = FALSE)
-    object@chromData$intensity <- vals
-    validObject(object)
-    object
-})
-
-#' @rdname hidden_aliases
-setMethod("pairsCount", "ChromBackendDataFrame", function(object) {
-    lengths(intensity(object))
 })
 
 #' @rdname hidden_aliases
@@ -459,9 +441,9 @@ setReplaceMethod("rtime", "ChromBackendDataFrame", function(object, value) {
         stop("'value' has to be a list or NumericList")
     if (length(value) != length(object))
         stop("length of 'value' has to match the length of 'object'")
-    if (!all(lengths(value) == pairsCount(object)))
+    if (!all(lengths(value) == lengths(object)))
         stop("lengths of 'value' has to match the number of data points ",
-             "(i.e. pairsCount(object))")
+             "(i.e. lengths(object))")
     if (!is(value, "NumericList"))
         value <- NumericList(value, compress = FALSE)
     object@chromData$rtime <- value

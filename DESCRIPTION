@@ -23,8 +23,13 @@ Imports:
     methods,
     S4Vectors,
     MsCoreUtils (>= 0.0.2),
+<<<<<<< HEAD
     IRanges,
     BiocParallel
+=======
+    BiocGenerics,
+    IRanges
+>>>>>>> jomaster
 Suggests:
     testthat,
     knitr (>= 1.1.0),

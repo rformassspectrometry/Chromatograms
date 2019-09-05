@@ -40,9 +40,8 @@
 \alias{mzMax<-,ChromBackend-method}
 \alias{mzMin,ChromBackend-method}
 \alias{mzMin<-,ChromBackend-method}
-\alias{pairs,ChromBackend-method}
-\alias{pairs<-,ChromBackend-method}
-\alias{pairsCount,ChromBackend-method}
+\alias{as.list,ChromBackend-method}
+\alias{lengths,ChromBackend-method}
 \alias{precursorMz,ChromBackend-method}
 \alias{precursorMz<-,ChromBackend-method}
 \alias{precursorMzMin,ChromBackend-method}
@@ -135,11 +134,9 @@
 
 \S4method{mzMin}{ChromBackend}(object) <- value
 
-\S4method{pairs}{ChromBackend}(x, ...)
+\S4method{as.list}{ChromBackend}(x, ...)
 
-\S4method{pairs}{ChromBackend}(object) <- value
-
-\S4method{pairsCount}{ChromBackend}(object)
+\S4method{lengths}{ChromBackend}(x)
 
 \S4method{precursorMz}{ChromBackend}(object)
 
@@ -277,6 +274,12 @@ New backend classes \strong{must} extend the base \code{ChromBackend} class and
 allowed
 \item \code{$}, \code{$<-}: access or set/add a single chromatogram variable (column) in
 the backend.
+\item \code{as.list}: returns a \code{list} of matrices with the data pairs from each
+chromatogram. The length of the \code{list} is equal to the number of
+chromatograms in \code{object}. Each element is a two-column \code{numeric} \code{matrix}
+with the retention time (first column) and intensity values (second column)
+of one chromatogram. For an empty chromatogram a \code{matrix} with 0 rows and
+two columns (named \code{"rtime"} and \code{"intensity"}) has to be returned.
 \item \code{backendInitialize}: initialises the backend. This method is
 supposed to be called right after creating an instance of the
 backend class and should prepare the backend. This method has to ensure
@@ -341,6 +344,8 @@ chromatograms with \code{TRUE} for chromatograms without any data pairs.
 \item \code{isReadOnly}: returns a \code{logical(1)} whether the backend is \emph{read
 only} or does allow also to write/update data.
 \item \code{length}: returns the number of chromatograms in the object.
+\item \code{lengths}: returns the number of data pairs (rtime-intensity values)
+per chromatogram.
 \item \code{msLevel}: gets the chromatogram's MS level. Returns an \code{integer}
 vector (of length equal to the number of chromatograms) with the MS
 level for each chromatogram (or \code{NA_integer_} if not available).
@@ -359,18 +364,6 @@ was extracted from MS data in spectra format and a m/z range was provided).
 \code{mzMin} returns a \code{numeric} of length equal to the number of chromatograms
 in \code{object}, \code{mzMin} expects a \code{numeric} of length equal to the number
 of chromatograms in \code{object}.
-\item \code{pairs}: returns a \code{list} of matrices with the data pairs from each
-chromatogram. The length of the \code{list} is equal to the number of
-chromatograms in \code{object}. Each element is a two-column \code{numeric} \code{matrix}
-with the retention time (first column) and intensity values (second column)
-of one chromatogram. For an empty chromatogram a \code{matrix} with 0 rows and
-two columns (named \code{"rtime"} and \code{"intensity"}) has to be returned.
-\item \code{pairs<-}: replaces the chromatogram data of the backend. This function
-expects a \code{list} of two-column matrices in the format returned by \code{pairs}.
-The length of \code{value} has to be identical to the number of chromatograms
-in \code{object}. Note that just writeable backends support this method.
-\item \code{pairsCount}: returns the number of data pairs (rtime-intensity values)
-per chromatogram.
 \item \code{precursorMz},\code{precursorMz<-}: gets or sets the (target) m/z of the
 precursor (for SRM data). \code{precursorMz} returns a \code{numeric} of length
 equal to the number of chromatograms in \code{object}. \code{precursorMz<-} expects
