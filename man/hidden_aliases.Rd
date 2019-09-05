@@ -16,9 +16,6 @@
 \alias{mzMax<-}
 \alias{mzMin}
 \alias{mzMin<-}
-\alias{pairs}
-\alias{pairs<-}
-\alias{pairsCount}
 \alias{precursorMzMin}
 \alias{precursorMzMin<-}
 \alias{precursorMzMax}
@@ -31,6 +28,7 @@
 \alias{show,ChromBackendDataFrame-method}
 \alias{backendInitialize,ChromBackendDataFrame-method}
 \alias{backendMerge,ChromBackendDataFrame-method}
+\alias{as.list,ChromBackendDataFrame-method}
 \alias{chromData,ChromBackendDataFrame-method}
 \alias{chromData<-,ChromBackendDataFrame-method}
 \alias{chromNames,ChromBackendDataFrame-method}
@@ -44,6 +42,7 @@
 \alias{intensity<-,ChromBackendDataFrame-method}
 \alias{isEmpty,ChromBackendDataFrame-method}
 \alias{length,ChromBackendDataFrame-method}
+\alias{lengths,ChromBackendDataFrame-method}
 \alias{msLevel,ChromBackendDataFrame-method}
 \alias{msLevel<-,ChromBackendDataFrame-method}
 \alias{mz,ChromBackendDataFrame-method}
@@ -52,9 +51,6 @@
 \alias{mzMax<-,ChromBackendDataFrame-method}
 \alias{mzMin,ChromBackendDataFrame-method}
 \alias{mzMin<-,ChromBackendDataFrame-method}
-\alias{pairs,ChromBackendDataFrame-method}
-\alias{pairs<-,ChromBackendDataFrame-method}
-\alias{pairsCount,ChromBackendDataFrame-method}
 \alias{precursorMz,ChromBackendDataFrame-method}
 \alias{precursorMz<-,ChromBackendDataFrame-method}
 \alias{precursorMzMax,ChromBackendDataFrame-method}
@@ -105,12 +101,6 @@ mzMin(object, ...)
 
 mzMin(object) <- value
 
-pairs(x, ...)
-
-pairs(object) <- value
-
-pairsCount(object, ...)
-
 precursorMzMin(object, ...)
 
 precursorMzMin(object) <- value
@@ -134,6 +124,8 @@ selectChromVariables(object, ...)
 \S4method{backendInitialize}{ChromBackendDataFrame}(object, chromData, ...)
 
 \S4method{backendMerge}{ChromBackendDataFrame}(object, ...)
+
+\S4method{as.list}{ChromBackendDataFrame}(x, ...)
 
 \S4method{chromData}{ChromBackendDataFrame}(object,
   columns = chromVariables(object))
@@ -162,6 +154,8 @@ selectChromVariables(object, ...)
 
 \S4method{length}{ChromBackendDataFrame}(x)
 
+\S4method{lengths}{ChromBackendDataFrame}(x)
+
 \S4method{msLevel}{ChromBackendDataFrame}(object, ...)
 
 \S4method{msLevel}{ChromBackendDataFrame}(object) <- value
@@ -177,12 +171,6 @@ selectChromVariables(object, ...)
 \S4method{mzMin}{ChromBackendDataFrame}(object, ...)
 
 \S4method{mzMin}{ChromBackendDataFrame}(object) <- value
-
-\S4method{pairs}{ChromBackendDataFrame}(x, ...)
-
-\S4method{pairs}{ChromBackendDataFrame}(object) <- value
-
-\S4method{pairsCount}{ChromBackendDataFrame}(object)
 
 \S4method{precursorMz}{ChromBackendDataFrame}(object)
 

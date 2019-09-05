@@ -282,39 +282,28 @@ test_that("mzMin,mzMin<-,ChromBackendDataFrame works", {
     expect_error(mzMin(be) <- c("a", "b", "d"), "of length 3")
 })
 
-test_that("pairs,ChromBackendDataFrame works", {
+test_that("as.list,ChromBackendDataFrame works", {
     be <- ChromBackendDataFrame()
-    expect_equal(pairs(be), list())
+    expect_equal(as.list(be), list())
     df <- DataFrame(msLevel = c(1L, 1L))
     be <- backendInitialize(be, chromData = df)
-    expect_equal(pairs(be), list(cbind(rtime = numeric(), intensity = numeric()),
-                                 cbind(rtime = numeric(), intensity = numeric())))
+    expect_equal(as.list(be),
+                 list(cbind(rtime = numeric(), intensity = numeric()),
+                      cbind(rtime = numeric(), intensity = numeric())))
     df$rtime <- list(1:3, c(2.1))
     df$intensity <- list(1:3, 4)
     be <- backendInitialize(be, chromData = df)
-    expect_equal(pairs(be), list(cbind(rtime = 1:3, intensity = 1:3),
-                                 cbind(rtime = 2.1, intensity = 4)))
+    expect_equal(as.list(be), list(cbind(rtime = 1:3, intensity = 1:3),
+                                   cbind(rtime = 2.1, intensity = 4)))
 })
 
-test_that("pairs<-,ChromBackendDataFrame works", {
-    be <- backendInitialize(ChromBackendDataFrame(), chromData = test_df)
-
-    pks <- lapply(pairs(be), function(z) z / 2)
-    pairs(be) <- pks
-    expect_identical(pairs(be), pks)
-
-    expect_error(pairs(be) <- 3, "has to be a list")
-    expect_error(pairs(be) <- list(3, 2), "match length")
-    expect_error(pairs(be) <- list(3, 2, 4), "dimensions")
-})
-
-test_that("pairsCount,ChromBackendDataFrame works", {
+test_that("lenghts,ChromBackendDataFrame works", {
     be <- backendInitialize(ChromBackendDataFrame(), test_df)
-    expect_equal(pairsCount(be), c(3, 2, 4))
+    expect_equal(lengths(be), c(3, 2, 4))
 
     be <- backendInitialize(ChromBackendDataFrame(),
                             DataFrame(msLevel = c(1L, 2L, 1L)))
-    expect_equal(pairsCount(be), c(0, 0, 0))
+    expect_equal(lengths(be), c(0, 0, 0))
 })
 
 test_that("precursorMz,precursorMz<-,ChromBackendDataFrame works", {

@@ -23,6 +23,7 @@ Imports:
     methods,
     S4Vectors,
     MsCoreUtils (>= 0.0.2),
+    BiocGenerics,
     IRanges
 Suggests:
     testthat,

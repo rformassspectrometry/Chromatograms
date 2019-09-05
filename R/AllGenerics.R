@@ -36,12 +36,6 @@ setGeneric("mzMin", function(object, ...) standardGeneric("mzMin"))
 #' @rdname hidden_aliases
 setGeneric("mzMin<-", function(object, value) standardGeneric("mzMin<-"))
 #' @rdname hidden_aliases
-setGeneric("pairs", function(x, ...) standardGeneric("pairs"))
-#' @rdname hidden_aliases
-setGeneric("pairs<-", function(object, value) standardGeneric("pairs<-"))
-#' @rdname hidden_aliases
-setGeneric("pairsCount", function(object, ...) standardGeneric("pairsCount"))
-#' @rdname hidden_aliases
 setGeneric("precursorMzMin", function(object, ...)
     standardGeneric("precursorMzMin"))
 #' @rdname hidden_aliases
