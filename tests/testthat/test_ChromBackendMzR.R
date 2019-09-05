@@ -68,22 +68,6 @@ test_that("intensity,intensity<-,ChromBackendMzR works", {
     expect_true(length(res) == length(be))
 })
 
-test_that("pairs,pairs<-ChromBackendMzR works", {
-    fl <- msdata::proteomics(full.names = TRUE)[1]
-    be <- ChromBackendMzR()
-    res <- pairs(be)
-    expect_true(is(res, "list"))
-    expect_true(length(res) == 0)
-
-    be <- mrm_mzr
-    res <- pairs(be)
-    expect_true(is(res, "list"))
-    expect_true(is.matrix(res[[2]]))
-    expect_true(all(colnames(res[[2]]) == c("rtime", "intensity")))
-
-    expect_error(pairs(be) <- list(), "not support replacing")
-})
-
 test_that("rtime,rtime<-,ChromaBackendMzR works", {
     be <- ChromBackendMzR()
     res <- rtime(be)

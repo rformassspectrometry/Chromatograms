@@ -42,3 +42,17 @@ test_that(".mzR_chromatograms works", {
 test_that(".chrom_data_mzR works", {
     ## Tested in test_ChromBackendMzR.R chromData,chromData<-
 })
+
+test_that(".rtime_intensity_pairs_mzR works", {
+    fl <- msdata::proteomics(full.names = TRUE)[1]
+    be <- ChromBackendMzR()
+    res <- as.list(be)
+    expect_true(is(res, "list"))
+    expect_true(length(res) == 0)
+
+    be <- mrm_mzr
+    res <- .rtime_intensity_pairs_mzR(be)
+    expect_true(is(res, "list"))
+    expect_true(is.matrix(res[[2]]))
+    expect_true(all(colnames(res[[2]]) == c("rtime", "intensity")))
+})

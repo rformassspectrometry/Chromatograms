@@ -60,6 +60,12 @@ setMethod("show", "ChromBackendMzR", function(object) {
 
 #' @rdname hidden_aliases
 #'
+setMethod("as.list", "ChromBackendMzR", function(x) {
+    .rtime_intensity_pairs_mzR(x)
+})
+
+#' @rdname hidden_aliases
+#'
 #' @importFrom methods as
 setMethod("chromData", "ChromBackendMzR",
           function(object, columns = chromVariables(object)) {
@@ -84,7 +90,8 @@ setReplaceMethod("chromData", "ChromBackendMzR", function(object, value) {
 
 #' @rdname hidden_aliases
 setMethod("intensity", "ChromBackendMzR", function(object) {
-    NumericList(lapply(pairs(object), "[", , 2), compress = FALSE)
+    NumericList(lapply(.rtime_intensity_pairs_mzR(object), "[", , 2),
+                compress = FALSE)
 })
 
 #' @rdname hidden_aliases
@@ -93,30 +100,9 @@ setReplaceMethod("intensity", "ChromBackendMzR", function(object, value) {
 })
 
 #' @rdname hidden_aliases
-#'
-#' @importMethodsFrom S4Vectors unique
-setMethod("pairs", "ChromBackendMzR", function(x) {
-    if (!length(x))
-        return(list())
-    fls <- unique(x@chromData$dataStorage)
-    if (length(fls) > 1) {
-        f <- factor(dataStorage(x), levels = fls)
-        unsplit(mapply(FUN = .mzR_chromatograms, fls,
-                       split(chromIndex(x), f),
-                       SIMPLIFY = FALSE, USE.NAMES = FALSE), f)
-    } else
-        .mzR_chromatograms(fls, chromIndex(x))
-})
-
-#' @rdname hidden_aliases
-setReplaceMethod("pairs", "ChromBackendMzR", function(object, value) {
-    stop("'ChromBackendMzR' does not support replacing retention time ",
-         "and intensity values")
-})
-
-#' @rdname hidden_aliases
 setMethod("rtime", "ChromBackendMzR", function(object) {
-    NumericList(lapply(pairs(object), "[", , 1), compress = FALSE)
+    NumericList(lapply(.rtime_intensity_pairs_mzR(object), "[", , 1),
+                compress = FALSE)
 })
 
 #' @rdname hidden_aliases

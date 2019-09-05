@@ -81,12 +81,11 @@
 \alias{filterProductMz,ChromBackendDataFrame-method}
 \alias{backendInitialize,ChromBackendMzR-method}
 \alias{show,ChromBackendMzR-method}
+\alias{as.list,ChromBackendMzR-method}
 \alias{chromData,ChromBackendMzR-method}
 \alias{chromData<-,ChromBackendMzR-method}
 \alias{intensity,ChromBackendMzR-method}
 \alias{intensity<-,ChromBackendMzR-method}
-\alias{pairs,ChromBackendMzR-method}
-\alias{pairs<-,ChromBackendMzR-method}
 \alias{rtime,ChromBackendMzR-method}
 \alias{rtime<-,ChromBackendMzR-method}
 \alias{$<-,ChromBackendMzR-method}
@@ -254,6 +253,8 @@ selectChromVariables(object, ...)
 
 \S4method{show}{ChromBackendMzR}(object)
 
+\S4method{as.list}{ChromBackendMzR}(x)
+
 \S4method{chromData}{ChromBackendMzR}(object,
   columns = chromVariables(object))
 
@@ -262,10 +263,6 @@ selectChromVariables(object, ...)
 \S4method{intensity}{ChromBackendMzR}(object)
 
 \S4method{intensity}{ChromBackendMzR}(object) <- value
-
-\S4method{pairs}{ChromBackendMzR}(x)
-
-\S4method{pairs}{ChromBackendMzR}(object) <- value
 
 \S4method{rtime}{ChromBackendMzR}(object)
 

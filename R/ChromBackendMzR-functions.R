@@ -80,7 +80,7 @@ ChromBackendMzR <- function() {
 #'
 #' Helper to build the chromData `DataFrame` for `ChromBackendMzR` backend.
 #'
-#' @param x `ChromBackend` with a `chromData` slot and the `pairs` method
+#' @param x `ChromBackend` with a `chromData` slot and the `as.list` method
 #'     defined.
 #'
 #' @param columns `character` defining the columns to return.
@@ -106,7 +106,7 @@ ChromBackendMzR <- function() {
     any_rtime <- any(columns == "rtime")
     any_int <- any(columns == "intensity")
     if (any_rtime || any_int) {
-        prs <- pairs(x)
+        prs <- as.list(x)
         if (any_rtime)
             res$rtime <- NumericList(lapply(prs, "[", , 1), compress = FALSE)
         if (any_int)
@@ -120,4 +120,28 @@ ChromBackendMzR <- function() {
         res <- cbind(res, as(other_res, "DataFrame"))
     }
     res[, columns, drop = FALSE]
+}
+
+#' Get a list of matrices with retention time - intensity pairs from a backend
+#'
+#' @param x `ChromBackendMzR`.
+#'
+#' @return `list` of 2-column matrices.
+#'
+#' @author Johannes Rainer
+#'
+#' @noRd
+#'
+#' @importMethodsFrom S4Vectors unique
+.rtime_intensity_pairs_mzR <- function(x) {
+    if (!length(x))
+        return(list())
+    fls <- unique(x@chromData$dataStorage)
+    if (length(fls) > 1) {
+        f <- factor(dataStorage(x), levels = fls)
+        unsplit(mapply(FUN = .mzR_chromatograms, fls,
+                       split(chromIndex(x), f),
+                       SIMPLIFY = FALSE, USE.NAMES = FALSE), f)
+    } else
+        .mzR_chromatograms(fls, chromIndex(x))
 }
