@@ -17,6 +17,8 @@ dist: trusty
 addons:
   apt:
     packages:
+      - libnetcdf-dev
+      - netcdf-bin
       - libgit2-dev # git2r
 
 jobs:
