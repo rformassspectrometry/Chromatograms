@@ -22,6 +22,8 @@ Depends:
 Imports:
     methods,
     S4Vectors,
+    MsCoreUtils (>= 0.0.2),
+    BiocGenerics,
     IRanges
 Suggests:
     testthat,
@@ -32,9 +34,13 @@ VignetteBuilder: knitr
 BugReports: https://github.com/RforMassSpectrometry/Chromatograms/issues
 URL: https://github.com/RforMassSpectrometry/Chromatograms
 biocViews: Infrastructure, Proteomics, MassSpectrometry, Metabolomics
-RoxygenNote: 6.1.1
 Roxygen: list(markdown=TRUE)
+RoxygenNote: 6.1.1
 Collate:
     'hidden_aliases.R'
     'AllGenerics.R'
+    'ChromBackend-functions.R'
     'ChromBackend.R'
+    'ChromBackendDataFrame-functions.R'
+    'ChromBackendDataFrame.R'
+    'functions-utils.R'
