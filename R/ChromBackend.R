@@ -121,7 +121,7 @@ NULL
 #'   a `DataFrame`, `chromData<-` expects a `DataFrame` with the same number
 #'   of rows as there are chromatograms in `object`.
 #'
-#' - `chromIndex`: returns a `integer` vector with the index of the chromatogram
+#' - `chromIndex`: returns an `integer` vector with the index of the chromatograms
 #'   in the original source file.
 #'
 #' - `chromNames`, `chromNames<-`: gets or sets the names for the chromatograms.
