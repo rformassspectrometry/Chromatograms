@@ -33,14 +33,17 @@ ChromBackendMzR <- function() {
     msd <- mzR::openMSfile(x)
     on.exit(mzR::close(msd))
     hdr <- mzR::chromatogramHeader(msd)
-    colnames(hdr)[colnames(hdr) == "chromatogramIndex"] <- "chromIndex"
-    colnames(hdr)[colnames(hdr) == "precursorCollisionEnergy"] <- "collisionEnergy"
-    colnames(hdr)[colnames(hdr) == "precursorIsolationWindowTargetMZ"] <- "precursorMz"
-    colnames(hdr)[colnames(hdr) == "precursorIsolationWindowLowerOffset"] <- "precursorMzMin"
-    colnames(hdr)[colnames(hdr) == "precursorIsolationWindowUpperOffset"] <- "precursorMzMax"
-    colnames(hdr)[colnames(hdr) == "productIsolationWindowTargetMZ"] <- "productMz"
-    colnames(hdr)[colnames(hdr) == "productIsolationWindowLowerOffset"] <- "productMzMin"
-    colnames(hdr)[colnames(hdr) == "productIsolationWindowUpperOffset"] <- "productMzMax"
+    old_names <- c("chromatogramIndex", "precursorCollisionEnergy",
+                   "precursorIsolationWindowTargetMZ",
+                   "precursorIsolationWindowLowerOffset",
+                   "precursorIsolationWindowUpperOffset",
+                   "productIsolationWindowTargetMZ",
+                   "productIsolationWindowLowerOffset",
+                   "productIsolationWindowUpperOffset")
+    new_names <- c("chromIndex", "collisionEnergy", "precursorMz",
+                   "precursorMzMin", "precursorMzMax", "productMz",
+                   "productMzMin", "productMzMax")
+    colnames(hdr)[match(old_names, colnames(hdr))] <- new_names
     hdr$precursorMzMin <- hdr$precursorMz - hdr$precursorMzMin
     hdr$precursorMzMax <- hdr$precursorMz + hdr$precursorMzMax
     hdr$productMzMin <- hdr$productMz - hdr$productMzMin
