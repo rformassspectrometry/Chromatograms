@@ -130,6 +130,16 @@ test_that("chromData, chromData<-, ChromBackendDataFrame works", {
                  "with 2 rows")
 })
 
+test_that("chromIndex works", {
+    df <- test_df
+    df$chromIndex <- c("a", "b", "c")
+    expect_error(backendInitialize(ChromBackendDataFrame(), df),
+                 "wrong data")
+    df$chromIndex <- 1:3
+    be <- backendInitialize(ChromBackendDataFrame(), df)
+    expect_identical(chromIndex(be), 1:3)
+})
+
 test_that("chromNames, chromNames<-,ChromBackendDataFrame works", {
     be <- ChromBackendDataFrame()
     expect_null(chromNames(be))
@@ -155,6 +165,21 @@ test_that("chromVariables,ChromBackendDataFrame works", {
     be <- backendInitialize(be, chromData = df)
     expect_equal(chromVariables(be), c(names(.CHROMATOGRAMS_DATA_COLUMNS),
                                          "other_column"))
+})
+
+test_that("collisionEnergy,collisionEnergy<-,ChromBackendDataFrame work", {
+    be <- ChromBackendDataFrame()
+    expect_true(is.numeric(collisionEnergy(be)))
+    be <- backendInitialize(be, test_df)
+    expect_identical(collisionEnergy(be), rep(NA_real_, length(be)))
+
+    df <- test_df
+    df$collisionEnergy <- c(12.2, NA_real_, 34.4)
+    be <- backendInitialize(be, df)
+    expect_identical(collisionEnergy(be), c(12.2, NA_real_, 34.4))
+
+    collisionEnergy(be) <- c(34.1, 23.5, 1.2)
+    expect_identical(collisionEnergy(be), c(34.1, 23.5, 1.2))
 })
 
 test_that("dataOrigin,dataOrigin<-,ChromBackendDataFrame works", {

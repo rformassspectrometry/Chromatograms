@@ -71,6 +71,8 @@ NULL
 }
 
 .CHROMATOGRAMS_DATA_COLUMNS <- c(
+    chromIndex = "integer",
+    collisionEnergy = "numeric",
     dataOrigin = "character",
     dataStorage = "character",
     intensity = "NumericList",
