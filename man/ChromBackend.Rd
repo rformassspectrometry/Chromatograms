@@ -290,7 +290,7 @@ instance. All objects to be merged have to be of the same type.
 metadata (annotation, also called header).  \code{chromData} returns
 a \code{DataFrame}, \code{chromData<-} expects a \code{DataFrame} with the same number
 of rows as there are chromatograms in \code{object}.
-\item \code{chromIndex}: returns a \code{integer} vector with the index of the chromatogram
+\item \code{chromIndex}: returns an \code{integer} vector with the index of the chromatograms
 in the original source file.
 \item \code{chromNames}, \code{chromNames<-}: gets or sets the names for the chromatograms.
 \item \code{chromVariables}: returns a \code{character} vector with the available

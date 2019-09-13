@@ -116,10 +116,11 @@ setReplaceMethod("$", "ChromBackendMzR", function(x, name, value) {
         stop("'ChromBackendMzR' does not support replacing retention time ",
              "or intensity values")
     if (length(value) == 1)
-        value <- rep_len(value, length(x))
-    if (length(value) != length(x))
+        x@chromData[[name]] <- Rle(value, length(x))
+    else if (length(value) == length(x))
+        x@chromData[[name]] <- asRle(value)
+    else
         stop("Length of 'value' has to be either 1 or ", length(x))
-    x@chromData[[name]] <- asRle(value)
     validObject(x)
     x
 })

@@ -68,10 +68,7 @@ ChromBackendMzR <- function() {
     chrs <- mzR::chromatogram(msd, chromIndex)
     if (is.data.frame(chrs))
         chrs <- list(chrs)
-    lapply(chrs, function(z) {
-        colnames(z) <- c("rtime", "intensity")
-        as.matrix(z)
-    })
+    lapply(chrs, function(z) cbind(rtime = z[[1L]], intensity = z[[2L]]))
 }
 
 #' @importFrom IRanges NumericList
