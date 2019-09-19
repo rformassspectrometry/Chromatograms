@@ -19,24 +19,24 @@ test_that(".valid_column_datatype works", {
 
 test_that(".valid_rtime_column works", {
     df <- DataFrame(msLevel = c(1L, 1L))
-    df$rtime <- list(1:3, 1:12)
+    df$rtime <- IRanges::NumericList(1:3, 1:12)
     expect_null(.valid_rtime_column(df))
     expect_null(.valid_rtime_column(DataFrame(msLevel = 4L)))
     df$rtime <- list(1:3, letters[1:4])
     expect_match(.valid_rtime_column(df),
-                 "rtime column should contain a list of numeric")
-    df$rtime <- list(1:4, c(3, 2, 5))
+                 "rtime column should be of type NumericList")
+    df$rtime <- IRanges::NumericList(1:4, c(3, 2, 5))
     expect_match(.valid_rtime_column(df),
                  "sorted increasingly")
 })
 
 test_that(".valid_intensity_column works", {
     df <- DataFrame(msLevel = c(1L, 1L))
-    df$intensity <- list(4, 2:5)
+    df$intensity <- IRanges::NumericList(4, 2:5)
     expect_null(.valid_intensity_column(df))
     df$intensity <- list("g", TRUE)
     expect_match(.valid_intensity_column(df),
-                 "contain a list of numeric")
+                 "intensity column should be of type NumericList")
 })
 
 test_that(".valid_intensity_rtime_columns works", {

@@ -722,3 +722,18 @@ test_that("filterProductMz,ChromBackendDataFrame works", {
     res <- filterProductMz(be, c(2, 4))
     expect_equal(msLevel(res), 2:3)
 })
+
+test_that("split,ChromBackendDataFrame works", {
+    chb <- mrm_mzr
+    chbl <- split(chb, f = chb$dataStorage)
+    expect_true(is(chbl[[1]], "ChromBackendDataFrame"))
+    expect_identical(chb, chbl[[1]])
+    expect_true(is(chbl[[1]]@chromData$polarity, "Rle"))
+
+    chbl <- split(chb, f = 1:length(chb))
+    expect_true(is(chbl[[1]], "ChromBackendDataFrame"))
+    expect_identical(chbl[[1]]$intensity[[1]], chb$intensity[[1]])
+
+    chb2 <- backendMerge(chbl)
+    expect_identical(chb2, chb)
+})

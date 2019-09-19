@@ -46,8 +46,8 @@ NULL
 #' @noRd
 .valid_rtime_column <- function(x) {
     if (length(x$rtime)) {
-        if (!all(vapply1l(x$rtime, is.numeric)))
-            return("rtime column should contain a list of numeric")
+        if (!inherits(x$rtime, "NumericList"))
+            return("rtime column should be of type NumericList")
         if (any(vapply1l(x$rtime, is.unsorted)))
             return("rtime values have to be sorted increasingly")
     }
@@ -56,8 +56,8 @@ NULL
 
 .valid_intensity_column <- function(x) {
     if (length(x$intensity))
-        if (!all(vapply1l(x$intensity, is.numeric)))
-            return("intensity column should contain a list of numeric")
+        if (!inherits(x$intensity, "NumericList"))
+            return("intensity column should be of type NumericList")
     NULL
 }
 
