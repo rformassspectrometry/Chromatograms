@@ -248,7 +248,7 @@ NULL
 #' - `selectChromVariables`: reduce `object` retaining only specified
 #'   chromatogram variables.
 #'
-#' - `split`: split the backend into a `list` of backends (depending on
+#' - `split`: splits the backend into a `list` of backends (depending on
 #'   parameter `f`). The default method for `ChromBackend` uses
 #'   [split.default()], thus backends extending `ChromBackend` don't
 #'   necessarily need to implement this method.
