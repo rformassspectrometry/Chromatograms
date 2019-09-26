@@ -57,7 +57,9 @@ NULL
 #' @param dataStorage For `filterDataStorage`: `character` to define which
 #'     chromatograms to keep.
 #'
-#' @param drop For `[`: ignored.
+#' @param drop For `[`: not considered.
+#'
+#' @param f `factor` defining the grouping to split `x`. See [split()].
 #'
 #' @param i For `[`: `integer`, `logical` or `character` to subset the object.
 #'
@@ -245,6 +247,11 @@ NULL
 #'
 #' - `selectChromVariables`: reduce `object` retaining only specified
 #'   chromatogram variables.
+#'
+#' - `split`: splits the backend into a `list` of backends (depending on
+#'   parameter `f`). The default method for `ChromBackend` uses
+#'   [split.default()], thus backends extending `ChromBackend` don't
+#'   necessarily need to implement this method.
 #'
 #' @section `ChromBackendDataFrame`, in-memory chromatographic data backend:
 #'
@@ -778,6 +785,15 @@ setReplaceMethod("rtime", "ChromBackend", function(object, value) {
 setMethod("selectChromVariables", "ChromBackend",
           function(object, chromVariables = chromVariables(object)) {
               stop("Not implemented for ", class(object), ".")
+})
+
+#' @exportMethod split
+#'
+#' @importMethodsFrom S4Vectors split
+#'
+#' @rdname ChromBackend
+setMethod("split", "ChromBackend", function(x, f, drop = FALSE, ...) {
+    split.default(x, f, drop = drop, ...)
 })
 
 #' @exportMethod [

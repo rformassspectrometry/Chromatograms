@@ -494,16 +494,29 @@ setReplaceMethod("$", "ChromBackendDataFrame", function(x, name, value) {
 
 #' @importMethodsFrom S4Vectors [
 #'
+#' @importMethodsFrom S4Vectors extractROWS
+#'
+#' @importFrom methods slot<-
+#'
 #' @importFrom MsCoreUtils i2index
 #'
 #' @rdname hidden_aliases
 setMethod("[", "ChromBackendDataFrame", function(x, i, j, ..., drop = FALSE) {
-    if (!missing(j))
-        stop("Subsetting by column ('j = ", j, "' is not supported")
+    if (missing(i))
+        return(x)
     i <- i2index(i, length(x), rownames(x@chromData))
-    x@chromData <- x@chromData[i, , drop = FALSE]
-    validObject(x)
+    slot(x, "chromData", check = FALSE) <- extractROWS(x@chromData, i)
     x
+})
+
+#' @rdname hidden_aliases
+setMethod("split", "ChromBackendDataFrame", function(x, f, drop = FALSE, ...) {
+    if (!is.factor(f))
+        f <- as.factor(f)
+    if (length(levels(f)) > (nrow(x@chromData) / 10))
+        slot(x, "chromData", check = FALSE) <-
+            asVectorDataFrame(x@chromData)
+    lapply(split(seq_along(x), f, ...), function(i) x[i, ])
 })
 
 #' @rdname hidden_aliases

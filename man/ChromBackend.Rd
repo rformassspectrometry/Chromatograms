@@ -57,6 +57,7 @@
 \alias{rtime,ChromBackend-method}
 \alias{rtime<-,ChromBackend-method}
 \alias{selectChromVariables,ChromBackend-method}
+\alias{split,ChromBackend,ANY-method}
 \alias{[,ChromBackend-method}
 \alias{$,ChromBackend-method}
 \alias{$<-,ChromBackend-method}
@@ -169,6 +170,8 @@
 \S4method{selectChromVariables}{ChromBackend}(object,
   chromVariables = chromVariables(object))
 
+\S4method{split}{ChromBackend,ANY}(x, f, drop = FALSE, ...)
+
 \S4method{[}{ChromBackend}(x, i, j, ..., drop = FALSE)
 
 \S4method{$}{ChromBackend}(x, name)
@@ -214,11 +217,13 @@ range).}
 names of the chromatogram variables to which the backend should be
 subsetted.}
 
+\item{f}{\code{factor} defining the grouping to split \code{x}. See \code{\link[=split]{split()}}.}
+
+\item{drop}{For \code{[}: not considered.}
+
 \item{i}{For \code{[}: \code{integer}, \code{logical} or \code{character} to subset the object.}
 
 \item{j}{For \code{[}: ignored.}
-
-\item{drop}{For \code{[}: ignored.}
 
 \item{name}{For \code{$} and \code{$<-}: the name of the chromatogram variable to
 return or set.}
@@ -387,6 +392,10 @@ data pairs in each chromatogram. Note that just writeable backends support
 this method.
 \item \code{selectChromVariables}: reduce \code{object} retaining only specified
 chromatogram variables.
+\item \code{split}: split the backend into a \code{list} of backends (depending on
+parameter \code{f}). The default method for \code{ChromBackend} uses
+\code{\link[=split.default]{split.default()}}, thus backends extending \code{ChromBackend} don't
+necessarily need to implement this method.
 }
 }
 

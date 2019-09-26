@@ -73,6 +73,7 @@
 \alias{$,ChromBackendDataFrame-method}
 \alias{$<-,ChromBackendDataFrame-method}
 \alias{[,ChromBackendDataFrame-method}
+\alias{split,ChromBackendDataFrame,ANY-method}
 \alias{filterDataOrigin,ChromBackendDataFrame-method}
 \alias{filterDataStorage,ChromBackendDataFrame-method}
 \alias{filterMsLevel,ChromBackendDataFrame-method}
@@ -230,6 +231,8 @@ selectChromVariables(object, ...)
 \S4method{$}{ChromBackendDataFrame}(x, name) <- value
 
 \S4method{[}{ChromBackendDataFrame}(x, i, j, ..., drop = FALSE)
+
+\S4method{split}{ChromBackendDataFrame,ANY}(x, f, drop = FALSE, ...)
 
 \S4method{filterDataOrigin}{ChromBackendDataFrame}(object,
   dataOrigin = character(), ...)
