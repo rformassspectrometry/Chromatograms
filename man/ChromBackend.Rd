@@ -392,7 +392,7 @@ data pairs in each chromatogram. Note that just writeable backends support
 this method.
 \item \code{selectChromVariables}: reduce \code{object} retaining only specified
 chromatogram variables.
-\item \code{split}: split the backend into a \code{list} of backends (depending on
+\item \code{split}: splits the backend into a \code{list} of backends (depending on
 parameter \code{f}). The default method for \code{ChromBackend} uses
 \code{\link[=split.default]{split.default()}}, thus backends extending \code{ChromBackend} don't
 necessarily need to implement this method.
