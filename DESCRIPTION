@@ -31,6 +31,8 @@ Suggests:
     knitr (>= 1.1.0),
     mzR (>= 2.15.1),
     msdata (>= 0.19.3)
+Remotes:
+   RforMassSpectrometry/MsCoreUtils
 License: Artistic-2.0
 LazyData: yes
 VignetteBuilder: knitr
