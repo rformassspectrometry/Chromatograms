@@ -52,20 +52,20 @@ test_that(".valid_intensity_rtime_columns works", {
     expect_null(.valid_intensity_rtime_columns(be@chromData))
 })
 
-test_that(".get_rle_column works", {
+test_that(".get_column works", {
     df <- DataFrame(msLevel = c(NA_integer_, NA_integer_),
-                    fromFile = Rle(1L, 2), other_col = Rle("a", 2))
-    res <- .get_rle_column(df, column = "fromFile")
+                    fromFile = rep(1L, 2), other_col = rep("a", 2))
+    res <- .get_column(df, column = "fromFile")
     expect_equal(res, c(1L, 1L))
-    res <- .get_rle_column(df, column = "other_col")
+    res <- .get_column(df, column = "other_col")
     expect_equal(res, c("a", "a"))
-    res <- .get_rle_column(df, column = "msLevel")
+    res <- .get_column(df, column = "msLevel")
     expect_equal(res, c(NA_integer_, NA_integer_))
-    res <- .get_rle_column(df, column = "productMz")
+    res <- .get_column(df, column = "productMz")
     expect_equal(res, c(NA_real_, NA_real_))
-    expect_error(.get_rle_column(df, column = "a"), "not available")
+    expect_error(.get_column(df, column = "a"), "not available")
     df <- DataFrame()
-    res <- .get_rle_column(df, column = "msLevel")
+    res <- .get_column(df, column = "msLevel")
     expect_equal(res, integer())
 })
 
@@ -85,14 +85,14 @@ test_that(".combine_chrom_backend_data_frame works", {
 
     res <- .combine_chrom_backend_data_frame(list(be, be2, be3))
     expect_true(is(res, "ChromBackendDataFrame"))
-    expect_identical(res@chromData$dataStorage, Rle(rep("<memory>", 7)))
+    expect_identical(res@chromData$dataStorage, rep("<memory>", 7))
     expect_identical(dataStorage(res), rep("<memory>", 7))
     expect_identical(msLevel(res), c(1L, 2L, 2L, 2L, 1L, 1L, 2L))
     expect_identical(mz(res), c(1:3, 4.1, 5.2, NA, NA))
     expect_identical(res@chromData$other_col,
-                     Rle(c(rep(NA_character_, 5), "z", "z")))
+                     c(rep(NA_character_, 5), "z", "z"))
     expect_true(is(be3@chromData$precScanNum, "integer"))
-    expect_true(is(res@chromData$precScanNum, "Rle"))
+    expect_true(is(res@chromData$precScanNum, "integer"))
 
     ## One backend with and one without rtime
     df2$rtime <- list(c(1.1, 1.2), c(1.1, 1.2))
@@ -109,6 +109,6 @@ test_that(".combine_chrom_backend_data_frame works", {
     expect_identical(res$dataStorage,
                      c("a", "a", "a", "<memory>", "<memory>", "z", "b"))
     expect_identical(res@chromData$dataStorage,
-                     Rle(c("a", "a", "a", "<memory>", "<memory>", "z", "b")))
+                     c("a", "a", "a", "<memory>", "<memory>", "z", "b"))
     expect_identical(mz(res), c(1:3, 4.1, 5.2, NA, NA))
 })

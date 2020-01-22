@@ -12,7 +12,7 @@ test_that("initializeBackend,ChromBackendMzR works", {
     expect_equal(unique(be$dataStorage), normalizePath(fl))
     expect_equal(length(be), 138)
     expect_equal(be$chromIndex, 1:138)
-    expect_equal(be@chromData$dataStorage, Rle(rep(normalizePath(fl), 138)))
+    expect_equal(be@chromData$dataStorage, rep(normalizePath(fl), 138))
     expect_true(isReadOnly(be))
 
     show(be)

@@ -3,9 +3,9 @@ NULL
 
 #' @noRd
 #'
-#' @importClassesFrom S4Vectors DataFrame Rle
+#' @importClassesFrom S4Vectors DataFrame
 #'
-#' @importFrom S4Vectors DataFrame Rle
+#' @importFrom S4Vectors DataFrame
 #'
 #' @author Johannes Rainer
 #'
@@ -49,8 +49,6 @@ setMethod("show", "ChromBackendDataFrame", function(object) {
 #'
 #' @importClassesFrom IRanges NumericList
 #'
-#' @importFrom MsCoreUtils asRleDataFrame
-#'
 #' @importFrom IRanges NumericList
 #'
 #' @rdname hidden_aliases
@@ -64,8 +62,6 @@ setMethod("backendInitialize", signature = "ChromBackendDataFrame",
               if (!nrow(chromData))
                   return(object)
               chromData$dataStorage <- "<memory>"
-              chromData <- asRleDataFrame(
-                  chromData, columns = c("dataStorage", "dataOrigin"))
               if (nrow(chromData) && !is(chromData$rtime, "NumericList"))
                   chromData$rtime <- NumericList(chromData$rtime,
                                                  compress = FALSE)
@@ -98,8 +94,6 @@ setMethod("as.list", "ChromBackendDataFrame", function(x, ...) {
 #'
 #' @importFrom S4Vectors SimpleList
 #'
-#' @importFrom MsCoreUtils asVectorDataFrame
-#'
 #' @importMethodsFrom S4Vectors lapply
 setMethod("chromData", "ChromBackendDataFrame",
           function(object, columns = chromVariables(object)) {
@@ -107,7 +101,7 @@ setMethod("chromData", "ChromBackendDataFrame",
               res <- object@chromData[, df_columns, drop = FALSE]
               other_columns <- setdiff(columns, colnames(object@chromData))
               if (length(other_columns)) {
-                  other_res <- lapply(other_columns, .get_rle_column,
+                  other_res <- lapply(other_columns, .get_column,
                                       x = object@chromData)
                   names(other_res) <- other_columns
                   is_rtime_int <- names(other_res) %in% c("rtime", "intensity")
@@ -120,12 +114,10 @@ setMethod("chromData", "ChromBackendDataFrame",
                       res$intensity <- if (length(other_res$intensity)) other_res$intensity
                                        else NumericList(compress = FALSE)
               }
-              asVectorDataFrame(res[, columns, drop = FALSE])
+              res[, columns, drop = FALSE]
           })
 
 #' @rdname hidden_aliases
-#'
-#' @importFrom MsCoreUtils asRleDataFrame
 setReplaceMethod("chromData", "ChromBackendDataFrame", function(object, value) {
     if (inherits(value, "DataFrame")) {
         if (length(object) && nrow(value) != length(object))
@@ -142,15 +134,14 @@ setReplaceMethod("chromData", "ChromBackendDataFrame", function(object, value) {
         if (length(value) != length(object))
             stop("length of 'value' has to be ", length(object))
     }
-    object@chromData <- asRleDataFrame(value, columns = c("dataStorage",
-                                                          "dataOrigin"))
+    object@chromData <- value
     validObject(object)
     object
 })
 
 #' @rdname hidden_aliases
 setMethod("chromIndex", "ChromBackendDataFrame", function(object) {
-    .get_rle_column(object@chromData, "chromIndex")
+    .get_column(object@chromData, "chromIndex")
 })
 
 #' @rdname hidden_aliases
@@ -172,24 +163,22 @@ setMethod("chromVariables", "ChromBackendDataFrame", function(object) {
 
 #' @rdname hidden_aliases
 setMethod("collisionEnergy", "ChromBackendDataFrame", function(object) {
-    .get_rle_column(object@chromData, "collisionEnergy")
+    .get_column(object@chromData, "collisionEnergy")
 })
 
 #' @rdname hidden_aliases
-#'
-#' @importFrom MsCoreUtils asRle
 setReplaceMethod("collisionEnergy", "ChromBackendDataFrame", function(object,
                                                                       value) {
     if (!is.numeric(value) || length(value) != length(object))
         stop("'value' has to be a 'numeric' of length ", length(object))
-    object@chromData$collisionEnergy <- asRle(value)
+    object@chromData$collisionEnergy <- as.numeric(value)
     validObject(object)
     object
 })
 
 #' @rdname hidden_aliases
 setMethod("dataOrigin", "ChromBackendDataFrame", function(object) {
-    .get_rle_column(object@chromData, "dataOrigin")
+    .get_column(object@chromData, "dataOrigin")
 })
 
 #' @rdname hidden_aliases
@@ -198,14 +187,14 @@ setReplaceMethod("dataOrigin", "ChromBackendDataFrame", function(object,
                                                                  value) {
     if (!is.character(value) || length(value) != length(object))
         stop("'value' has to be a 'character' of length ", length(object))
-    object@chromData$dataOrigin <- asRle(as.character(value))
+    object@chromData$dataOrigin <- as.character(value)
     validObject(object)
     object
 })
 
 #' @rdname hidden_aliases
 setMethod("dataStorage", "ChromBackendDataFrame", function(object) {
-    .get_rle_column(object@chromData, "dataStorage")
+    .get_column(object@chromData, "dataStorage")
 })
 
 #' @rdname hidden_aliases
@@ -213,7 +202,7 @@ setReplaceMethod("dataStorage", "ChromBackendDataFrame", function(object,
                                                                   value) {
     if (!is.character(value) || length(value) != length(object))
         stop("'value' has to be a 'character' of length ", length(object))
-    object@chromData$dataStorage <- asRle(as.character(value))
+    object@chromData$dataStorage <- as.character(value)
     validObject(object)
     object
 })
@@ -261,7 +250,7 @@ setMethod("lengths", "ChromBackendDataFrame", function(x) {
 
 #' @rdname hidden_aliases
 setMethod("msLevel", "ChromBackendDataFrame", function(object, ...) {
-    .get_rle_column(object@chromData, "msLevel")
+    .get_column(object@chromData, "msLevel")
 })
 
 #' @rdname hidden_aliases
@@ -270,28 +259,28 @@ setMethod("msLevel", "ChromBackendDataFrame", function(object, ...) {
 setReplaceMethod("msLevel", "ChromBackendDataFrame", function(object, value) {
     if (!is.numeric(value) || length(value) != length(object))
         stop("'value' has to be a 'numeric' of length ", length(object))
-    object@chromData$msLevel <- asRle(asInteger(value))
+    object@chromData$msLevel <- asInteger(value)
     validObject(object)
     object
 })
 
 #' @rdname hidden_aliases
 setMethod("mz", "ChromBackendDataFrame", function(object, ...) {
-    .get_rle_column(object@chromData, "mz")
+    .get_column(object@chromData, "mz")
 })
 
 #' @rdname hidden_aliases
 setReplaceMethod("mz", "ChromBackendDataFrame", function(object, value) {
     if (!is.numeric(value) || length(value) != length(object))
         stop("'value' has to be a 'numeric' of length ", length(object))
-    object@chromData$mz <- asRle(value)
+    object@chromData$mz <- as.numeric(value)
     validObject(object)
     object
 })
 
 #' @rdname hidden_aliases
 setMethod("mzMax", "ChromBackendDataFrame", function(object, ...) {
-    vals <- .get_rle_column(object@chromData, "mzMax")
+    vals <- .get_column(object@chromData, "mzMax")
     if (all(is.na(vals)))
         mz(object)
     else vals
@@ -301,14 +290,14 @@ setMethod("mzMax", "ChromBackendDataFrame", function(object, ...) {
 setReplaceMethod("mzMax", "ChromBackendDataFrame", function(object, value) {
     if (!is.numeric(value) || length(value) != length(object))
         stop("'value' has to be a 'numeric' of length ", length(object))
-    object@chromData$mzMax <- asRle(value)
+    object@chromData$mzMax <- as.numeric(value)
     validObject(object)
     object
 })
 
 #' @rdname hidden_aliases
 setMethod("mzMin", "ChromBackendDataFrame", function(object, ...) {
-    vals <- .get_rle_column(object@chromData, "mzMin")
+    vals <- .get_column(object@chromData, "mzMin")
     if (all(is.na(vals)))
         mz(object)
     else vals
@@ -318,14 +307,14 @@ setMethod("mzMin", "ChromBackendDataFrame", function(object, ...) {
 setReplaceMethod("mzMin", "ChromBackendDataFrame", function(object, value) {
     if (!is.numeric(value) || length(value) != length(object))
         stop("'value' has to be a 'numeric' of length ", length(object))
-    object@chromData$mzMin <- asRle(value)
+    object@chromData$mzMin <- as.numeric(value)
     validObject(object)
     object
 })
 
 #' @rdname hidden_aliases
 setMethod("precursorMz", "ChromBackendDataFrame", function(object) {
-    .get_rle_column(object@chromData, "precursorMz")
+    .get_column(object@chromData, "precursorMz")
 })
 
 #' @rdname hidden_aliases
@@ -333,14 +322,14 @@ setReplaceMethod("precursorMz", "ChromBackendDataFrame", function(object,
                                                                   value) {
     if (!is.numeric(value) || length(value) != length(object))
         stop("'value' has to be a 'numeric' of length ", length(object))
-    object@chromData$precursorMz <- asRle(value)
+    object@chromData$precursorMz <- as.numeric(value)
     validObject(object)
     object
 })
 
 #' @rdname hidden_aliases
 setMethod("precursorMzMax", "ChromBackendDataFrame", function(object) {
-    vals <- .get_rle_column(object@chromData, "precursorMzMax")
+    vals <- .get_column(object@chromData, "precursorMzMax")
     if (all(is.na(vals)))
         precursorMz(object)
     else vals
@@ -351,14 +340,14 @@ setReplaceMethod("precursorMzMax", "ChromBackendDataFrame", function(object,
                                                                   value) {
     if (!is.numeric(value) || length(value) != length(object))
         stop("'value' has to be a 'numeric' of length ", length(object))
-    object@chromData$precursorMzMax <- asRle(value)
+    object@chromData$precursorMzMax <- as.numeric(value)
     validObject(object)
     object
 })
 
 #' @rdname hidden_aliases
 setMethod("precursorMzMin", "ChromBackendDataFrame", function(object) {
-    vals <- .get_rle_column(object@chromData, "precursorMzMin")
+    vals <- .get_column(object@chromData, "precursorMzMin")
     if (all(is.na(vals)))
         precursorMz(object)
     else vals
@@ -369,14 +358,14 @@ setReplaceMethod("precursorMzMin", "ChromBackendDataFrame", function(object,
                                                                      value) {
     if (!is.numeric(value) || length(value) != length(object))
         stop("'value' has to be a 'numeric' of length ", length(object))
-    object@chromData$precursorMzMin <- asRle(value)
+    object@chromData$precursorMzMin <- as.numeric(value)
     validObject(object)
     object
 })
 
 #' @rdname hidden_aliases
 setMethod("productMz", "ChromBackendDataFrame", function(object) {
-    .get_rle_column(object@chromData, "productMz")
+    .get_column(object@chromData, "productMz")
 })
 
 #' @rdname hidden_aliases
@@ -384,14 +373,14 @@ setReplaceMethod("productMz", "ChromBackendDataFrame", function(object,
                                                                 value) {
     if (!is.numeric(value) || length(value) != length(object))
         stop("'value' has to be a 'numeric' of length ", length(object))
-    object@chromData$productMz <- asRle(value)
+    object@chromData$productMz <- as.numeric(value)
     validObject(object)
     object
 })
 
 #' @rdname hidden_aliases
 setMethod("productMzMax", "ChromBackendDataFrame", function(object) {
-    vals <- .get_rle_column(object@chromData, "productMzMax")
+    vals <- .get_column(object@chromData, "productMzMax")
     if (all(is.na(vals)))
         productMz(object)
     else vals
@@ -402,14 +391,14 @@ setReplaceMethod("productMzMax", "ChromBackendDataFrame", function(object,
                                                                    value) {
     if (!is.numeric(value) || length(value) != length(object))
         stop("'value' has to be a 'numeric' of length ", length(object))
-    object@chromData$productMzMax <- asRle(value)
+    object@chromData$productMzMax <- as.numeric(value)
     validObject(object)
     object
 })
 
 #' @rdname hidden_aliases
 setMethod("productMzMin", "ChromBackendDataFrame", function(object) {
-    vals <- .get_rle_column(object@chromData, "productMzMin")
+    vals <- .get_column(object@chromData, "productMzMin")
     if (all(is.na(vals)))
         productMz(object)
     else vals
@@ -420,7 +409,7 @@ setReplaceMethod("productMzMin", "ChromBackendDataFrame", function(object,
                                                                   value) {
     if (!is.numeric(value) || length(value) != length(object))
         stop("'value' has to be a 'numeric' of length ", length(object))
-    object@chromData$productMzMin <- asRle(value)
+    object@chromData$productMzMin <- as.numeric(value)
     validObject(object)
     object
 })
@@ -472,16 +461,14 @@ setMethod("selectChromVariables", "ChromBackendDataFrame",
 
 #' @rdname hidden_aliases
 setMethod("$", "ChromBackendDataFrame", function(x, name) {
-    .get_rle_column(x@chromData, column = name)
+    .get_column(x@chromData, column = name)
 })
 
 #' @rdname hidden_aliases
 setReplaceMethod("$", "ChromBackendDataFrame", function(x, name, value) {
     if (is.list(value) && any(c("rtime", "intensity") == name))
         value <- NumericList(value, compress = FALSE)
-    if (name == "dataStorage")
-        value <- Rle(value)
-    x@chromData[[name]] <- asRle(value)
+    x@chromData[[name]] <- value
     validObject(x)
     x
 })
@@ -513,9 +500,6 @@ setMethod("[", "ChromBackendDataFrame", function(x, i, j, ..., drop = FALSE) {
 setMethod("split", "ChromBackendDataFrame", function(x, f, drop = FALSE, ...) {
     if (!is.factor(f))
         f <- as.factor(f)
-    if (length(levels(f)) > (nrow(x@chromData) / 10))
-        slot(x, "chromData", check = FALSE) <-
-            asVectorDataFrame(x@chromData)
     lapply(split(seq_along(x), f, ...), function(i) x[i, ])
 })
 

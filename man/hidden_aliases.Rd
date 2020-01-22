@@ -144,8 +144,7 @@ selectChromVariables(object, ...)
 
 \S4method{as.list}{ChromBackendDataFrame}(x, ...)
 
-\S4method{chromData}{ChromBackendDataFrame}(object,
-  columns = chromVariables(object))
+\S4method{chromData}{ChromBackendDataFrame}(object, columns = chromVariables(object))
 
 \S4method{chromData}{ChromBackendDataFrame}(object) <- value
 
@@ -223,8 +222,7 @@ selectChromVariables(object, ...)
 
 \S4method{rtime}{ChromBackendDataFrame}(object) <- value
 
-\S4method{selectChromVariables}{ChromBackendDataFrame}(object,
-  chromVariables = chromVariables(object))
+\S4method{selectChromVariables}{ChromBackendDataFrame}(object, chromVariables = chromVariables(object))
 
 \S4method{$}{ChromBackendDataFrame}(x, name)
 
@@ -234,32 +232,25 @@ selectChromVariables(object, ...)
 
 \S4method{split}{ChromBackendDataFrame,ANY}(x, f, drop = FALSE, ...)
 
-\S4method{filterDataOrigin}{ChromBackendDataFrame}(object,
-  dataOrigin = character(), ...)
+\S4method{filterDataOrigin}{ChromBackendDataFrame}(object, dataOrigin = character(), ...)
 
-\S4method{filterDataStorage}{ChromBackendDataFrame}(object,
-  dataStorage = character(), ...)
+\S4method{filterDataStorage}{ChromBackendDataFrame}(object, dataStorage = character(), ...)
 
-\S4method{filterMsLevel}{ChromBackendDataFrame}(object,
-  msLevel = integer(), ...)
+\S4method{filterMsLevel}{ChromBackendDataFrame}(object, msLevel = integer(), ...)
 
 \S4method{filterMz}{ChromBackendDataFrame}(object, mz = numeric(), ...)
 
-\S4method{filterPrecursorMz}{ChromBackendDataFrame}(object,
-  mz = numeric(), ...)
+\S4method{filterPrecursorMz}{ChromBackendDataFrame}(object, mz = numeric(), ...)
 
-\S4method{filterProductMz}{ChromBackendDataFrame}(object, mz = numeric(),
-  ...)
+\S4method{filterProductMz}{ChromBackendDataFrame}(object, mz = numeric(), ...)
 
-\S4method{backendInitialize}{ChromBackendMzR}(object, files, ...,
-  BPPARAM = bpparam())
+\S4method{backendInitialize}{ChromBackendMzR}(object, files, ..., BPPARAM = bpparam())
 
 \S4method{show}{ChromBackendMzR}(object)
 
 \S4method{as.list}{ChromBackendMzR}(x)
 
-\S4method{chromData}{ChromBackendMzR}(object,
-  columns = chromVariables(object))
+\S4method{chromData}{ChromBackendMzR}(object, columns = chromVariables(object))
 
 \S4method{chromData}{ChromBackendMzR}(object) <- value
 
