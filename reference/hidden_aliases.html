@@ -69,7 +69,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">Chromatograms</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">0.0.3</span>
       </span>
     </div>
 
@@ -171,8 +171,7 @@ backendMerge(object, ...)
 as.list(x, ...)
 
 # S4 method for ChromBackendDataFrame
-chromData(object,
-  columns = chromVariables(object))
+chromData(object, columns = chromVariables(object))
 
 # S4 method for ChromBackendDataFrame
 chromData(object) <- value
@@ -289,8 +288,7 @@ rtime(object)
 rtime(object) <- value
 
 # S4 method for ChromBackendDataFrame
-selectChromVariables(object,
-  chromVariables = chromVariables(object))
+selectChromVariables(object, chromVariables = chromVariables(object))
 
 # S4 method for ChromBackendDataFrame
 $(x, name)
@@ -305,31 +303,25 @@ $(x, name) <- value
 split(x, f, drop = FALSE, ...)
 
 # S4 method for ChromBackendDataFrame
-filterDataOrigin(object,
-  dataOrigin = character(), ...)
+filterDataOrigin(object, dataOrigin = character(), ...)
 
 # S4 method for ChromBackendDataFrame
-filterDataStorage(object,
-  dataStorage = character(), ...)
+filterDataStorage(object, dataStorage = character(), ...)
 
 # S4 method for ChromBackendDataFrame
-filterMsLevel(object,
-  msLevel = integer(), ...)
+filterMsLevel(object, msLevel = integer(), ...)
 
 # S4 method for ChromBackendDataFrame
 filterMz(object, mz = numeric(), ...)
 
 # S4 method for ChromBackendDataFrame
-filterPrecursorMz(object,
-  mz = numeric(), ...)
+filterPrecursorMz(object, mz = numeric(), ...)
 
 # S4 method for ChromBackendDataFrame
-filterProductMz(object, mz = numeric(),
-  ...)
+filterProductMz(object, mz = numeric(), ...)
 
 # S4 method for ChromBackendMzR
-backendInitialize(object, files, ...,
-  BPPARAM = bpparam())
+backendInitialize(object, files, ..., BPPARAM = bpparam())
 
 # S4 method for ChromBackendMzR
 show(object)
@@ -338,8 +330,7 @@ show(object)
 as.list(x)
 
 # S4 method for ChromBackendMzR
-chromData(object,
-  columns = chromVariables(object))
+chromData(object, columns = chromVariables(object))
 
 # S4 method for ChromBackendMzR
 chromData(object) <- value
