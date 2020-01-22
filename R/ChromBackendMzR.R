@@ -39,8 +39,7 @@ setMethod("backendInitialize", "ChromBackendMzR",
                                             dataStorage = fl)
                                   }, BPPARAM = BPPARAM))
               chromData$dataOrigin <- chromData$dataStorage
-              object@chromData <- asRleDataFrame(
-                  chromData, columns = c("dataStorage", "dataOrigin"))
+              object@chromData <- chromData
               validObject(object)
               object
           })
@@ -82,8 +81,7 @@ setReplaceMethod("chromData", "ChromBackendMzR", function(object, value) {
         value <- value[, !(colnames(value) %in% c("rtime", "intensity")),
                        drop = FALSE]
     }
-    object@chromData <- asRleDataFrame(value, columns = c("dataStorage",
-                                                          "dataOrigin"))
+    object@chromData <- value
     validObject(object)
     object
 })
@@ -115,13 +113,7 @@ setReplaceMethod("$", "ChromBackendMzR", function(x, name, value) {
     if (name == "rtime" || name == "intensity")
         stop("'ChromBackendMzR' does not support replacing retention time ",
              "or intensity values")
-    value_len <- length(value)
-    if (value_len == 1)
-        x@chromData[[name]] <- Rle(value, length(x))
-    else if (value_len == length(x))
-        x@chromData[[name]] <- asRle(value)
-    else
-        stop("Length of 'value' has to be either 1 or ", length(x))
+    x@chromData[[name]] <- value
     validObject(x)
     x
 })

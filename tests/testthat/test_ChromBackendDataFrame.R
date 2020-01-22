@@ -31,7 +31,7 @@ test_that("backendInitialize,ChromBackendDataFrame works", {
     expect_true(validObject(be))
     expect_true(is(be@chromData$rtime, "NumericList"))
     expect_true(is(be@chromData$intensity, "NumericList"))
-    expect_identical(be@chromData$dataStorage, Rle(rep("<memory>", 3)))
+    expect_identical(be@chromData$dataStorage, rep("<memory>", 3))
     expect_identical(be$dataStorage, rep("<memory>", 3))
 
     df$rtime <- NumericList(df$rtime)
@@ -58,14 +58,14 @@ test_that("backendMerge,ChromBackendDataFrame works", {
 
     res <- backendMerge(be, be2, be3)
     expect_true(is(res, "ChromBackendDataFrame"))
-    expect_identical(res@chromData$dataStorage, Rle(rep("<memory>", 7)))
+    expect_identical(res@chromData$dataStorage, rep("<memory>", 7))
     expect_identical(dataStorage(res), rep("<memory>", 7))
     expect_identical(msLevel(res), c(1L, 2L, 2L, 2L, 1L, 1L, 2L))
     expect_identical(mz(res), c(1:3, 4.1, 5.2, NA, NA))
     expect_identical(res@chromData$other_col,
-                     Rle(c(rep(NA_character_, 5), "z", "z")))
+                     c(rep(NA_character_, 5), "z", "z"))
     expect_true(is(be3@chromData$precScanNum, "integer"))
-    expect_true(is(res@chromData$precScanNum, "Rle"))
+    expect_true(is(res@chromData$precScanNum, "integer"))
 
     ## One backend with and one without rtime
     df2$rtime <- list(c(1.1, 1.2), c(1.1, 1.2))
@@ -83,7 +83,7 @@ test_that("backendMerge,ChromBackendDataFrame works", {
     expect_identical(res$dataStorage,
                      c("a", "a", "a", "<memory>", "<memory>", "z", "b"))
     expect_identical(res@chromData$dataStorage,
-                     Rle(c("a", "a", "a", "<memory>", "<memory>", "z", "b")))
+                     c("a", "a", "a", "<memory>", "<memory>", "z", "b"))
     expect_identical(mz(res), c(1:3, 4.1, 5.2, NA, NA))
 })
 
@@ -728,7 +728,7 @@ test_that("split,ChromBackendDataFrame works", {
     chbl <- split(chb, f = chb$dataStorage)
     expect_true(is(chbl[[1]], "ChromBackendDataFrame"))
     expect_identical(chb, chbl[[1]])
-    expect_true(is(chbl[[1]]@chromData$polarity, "Rle"))
+    expect_true(is(chbl[[1]]@chromData$polarity, "integer"))
 
     chbl <- split(chb, f = 1:length(chb))
     expect_true(is(chbl[[1]], "ChromBackendDataFrame"))

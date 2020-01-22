@@ -31,7 +31,7 @@ NULL
 #' @noRd
 .valid_column_datatype <- function(x, datatypes = .CHROMATOGRAMS_DATA_COLUMNS) {
     datatypes <- datatypes[names(datatypes) %in% colnames(x)]
-    res <- mapply(FUN = .is_class, x[, names(datatypes), drop = FALSE],
+    res <- mapply(FUN = is, x[, names(datatypes), drop = FALSE],
                   datatypes)
     if (!all(res))
         paste0("The following columns have a wrong data type: ",
@@ -97,11 +97,10 @@ ChromBackendDataFrame <- function() {
 }
 
 #' Helper function to return a column from the (chrom data) `DataFrame`. If
-#' the column `column` is an `Rle` `as.vector` is called on it. If column is
-#' the name of a mandatory variable but it is not available it is created on
-#' the fly.
+#' column is the name of a mandatory variable but it is not available it is
+#' created on the fly.
 #'
-#' @note This function is equivalent to the `get_rle_column` function in
+#' @note This function is equivalent to the `get_column` function in
 #'     the `Spectra` package (defined in *MsBackendDataFrame-functions.R*).
 #'
 #' @param x `DataFrame`
@@ -113,11 +112,9 @@ ChromBackendDataFrame <- function() {
 #' @author Johannes Rainer
 #'
 #' @noRd
-.get_rle_column <- function(x, column) {
+.get_column <- function(x, column) {
     if (any(colnames(x) == column)) {
-        if (is(x[[column]], "Rle"))
-            as.vector(x[[column]])
-        else x[[column]]
+        x[[column]]
     } else if (any(names(.CHROMATOGRAMS_DATA_COLUMNS) == column)) {
         nr_x <- nrow(x)
         if (nr_x)
@@ -145,9 +142,8 @@ ChromBackendDataFrame <- function() {
         stop("Can only merge backends of the same type: ", class(objects[[1]]))
     res <- new(class(objects[[1]]))
     suppressWarnings(
-        res@chromData <- asRleDataFrame(do.call(
-            rbindFill, lapply(objects, function(z) z@chromData)),
-            columns = c("dataStorage", "dataOrigin"))
+        res@chromData <- do.call(
+            rbindFill, lapply(objects, function(z) z@chromData))
     )
     if (any(colnames(res@chromData) == "rtime"))
         res@chromData$rtime[is.na(res@chromData$rtime)] <- list(numeric())

@@ -1,6 +1,6 @@
 Package: Chromatograms
 Title: Infrastructure for chromatographic representation of Mass Spectrometry Data
-Version: 0.0.2
+Version: 0.0.3
 Description: The Chromatograms packages defines a efficient infrastructure
    for storing and handling of chromatographic mass spectrometry data.
 Authors@R: c(person(given = "Laurent", family = "Gatto",
@@ -40,7 +40,7 @@ BugReports: https://github.com/RforMassSpectrometry/Chromatograms/issues
 URL: https://github.com/RforMassSpectrometry/Chromatograms
 biocViews: Infrastructure, Proteomics, MassSpectrometry, Metabolomics
 Roxygen: list(markdown=TRUE)
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 Collate:
     'hidden_aliases.R'
     'AllGenerics.R'
@@ -50,4 +50,3 @@ Collate:
     'ChromBackendDataFrame.R'
     'ChromBackendMzR-functions.R'
     'ChromBackendMzR.R'
-    'functions-utils.R'

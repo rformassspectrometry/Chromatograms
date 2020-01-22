@@ -102,7 +102,7 @@ ChromBackendMzR <- function() {
         stop("Column(s) ", paste(not_found, collapse = ", "),
              " not available")
     cols <- columns[columns %in% cn]
-    res <- asVectorDataFrame(x@chromData[, cols, drop = FALSE])
+    res <- x@chromData[, cols, drop = FALSE]
     any_rtime <- any(columns == "rtime")
     any_int <- any(columns == "intensity")
     if (any_rtime || any_int) {
@@ -115,7 +115,7 @@ ChromBackendMzR <- function() {
     }
     other_cols <- setdiff(columns, c(cols, "rtime", "intensity"))
     if (length(other_cols)) {
-        other_res <- lapply(other_cols, .get_rle_column, x = x@chromData)
+        other_res <- lapply(other_cols, .get_column, x = x@chromData)
         names(other_res) <- other_cols
         res <- cbind(res, as(other_res, "DataFrame"))
     }
