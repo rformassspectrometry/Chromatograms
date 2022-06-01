@@ -22,3 +22,7 @@ package, with support for different
 [backends](https://rformassspectrometry.github.io/Spectra/articles/Spectra.html#backends)
 in the [`Spectra`](https://rformassspectrometry.github.io/Spectra/)
 package.
+
+## Contributions
+
+Please the *R for Mass Spectrometry* [code of conduct](https://rformassspectrometry.github.io/RforMassSpectrometry/articles/RforMassSpectrometry.html#code-of-conduct) and [contribution guidelines](https://rformassspectrometry.github.io/RforMassSpectrometry/articles/RforMassSpectrometry.html#contributions).
