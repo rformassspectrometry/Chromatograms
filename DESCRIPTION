@@ -30,7 +30,8 @@ Suggests:
     testthat,
     knitr (>= 1.1.0),
     mzR (>= 2.15.1),
-    msdata (>= 0.19.3)
+    msdata (>= 0.19.3),
+    rmarkdown
 License: Artistic-2.0
 LazyData: yes
 VignetteBuilder: knitr
