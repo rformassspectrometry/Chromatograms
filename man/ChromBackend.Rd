@@ -34,6 +34,7 @@
 \alias{peaksData,ChromBackend-method}
 \alias{peaksData<-,ChromBackend-method}
 \alias{backendMerge,ChromBackend-method}
+\alias{backendParallelFactor,ChromBackend-method}
 \alias{backendMerge,list-method}
 \alias{chromVariables,ChromBackend-method}
 \alias{chromIndex,ChromBackend-method}
@@ -43,10 +44,10 @@
 \alias{dataOrigin<-,ChromBackend-method}
 \alias{dataStorage,ChromBackend-method}
 \alias{dataStorage<-,ChromBackend-method}
-\alias{isReadOnly,ChromBackend-method}
 \alias{intensity,ChromBackend-method}
 \alias{intensity<-,ChromBackend-method}
 \alias{isEmpty,ChromBackend-method}
+\alias{isReadOnly,ChromBackend-method}
 \alias{length,ChromBackend-method}
 \alias{lengths,ChromBackend-method}
 \alias{msLevel,ChromBackend-method}
@@ -60,16 +61,16 @@
 \alias{peaksVariables,ChromBackend-method}
 \alias{precursorMz,ChromBackend-method}
 \alias{precursorMz<-,ChromBackend-method}
-\alias{precursorMzMin,ChromBackend-method}
-\alias{precursorMzMin<-,ChromBackend-method}
 \alias{precursorMzMax,ChromBackend-method}
 \alias{precursorMzMax<-,ChromBackend-method}
+\alias{precursorMzMin,ChromBackend-method}
+\alias{precursorMzMin<-,ChromBackend-method}
 \alias{productMz,ChromBackend-method}
 \alias{productMz<-,ChromBackend-method}
-\alias{productMzMin,ChromBackend-method}
-\alias{productMzMin<-,ChromBackend-method}
 \alias{productMzMax,ChromBackend-method}
 \alias{productMzMax<-,ChromBackend-method}
+\alias{productMzMin,ChromBackend-method}
+\alias{productMzMin<-,ChromBackend-method}
 \alias{rtime,ChromBackend-method}
 \alias{rtime<-,ChromBackend-method}
 \alias{split,ChromBackend,ANY-method}
@@ -140,6 +141,8 @@ coreChromVariables()
 
 \S4method{backendMerge}{ChromBackend}(object, ...)
 
+\S4method{backendParallelFactor}{ChromBackend}(object, ...)
+
 \S4method{backendMerge}{list}(object, ...)
 
 \S4method{chromVariables}{ChromBackend}(object)
@@ -158,13 +161,13 @@ coreChromVariables()
 
 \S4method{dataStorage}{ChromBackend}(object) <- value
 
-\S4method{isReadOnly}{ChromBackend}(object)
-
 \S4method{intensity}{ChromBackend}(object)
 
 \S4method{intensity}{ChromBackend}(object) <- value
 
 \S4method{isEmpty}{ChromBackend}(x)
+
+\S4method{isReadOnly}{ChromBackend}(object)
 
 \S4method{length}{ChromBackend}(x)
 
@@ -192,25 +195,25 @@ coreChromVariables()
 
 \S4method{precursorMz}{ChromBackend}(object) <- value
 
-\S4method{precursorMzMin}{ChromBackend}(object)
-
-\S4method{precursorMzMin}{ChromBackend}(object) <- value
-
 \S4method{precursorMzMax}{ChromBackend}(object)
 
 \S4method{precursorMzMax}{ChromBackend}(object) <- value
+
+\S4method{precursorMzMin}{ChromBackend}(object)
+
+\S4method{precursorMzMin}{ChromBackend}(object) <- value
 
 \S4method{productMz}{ChromBackend}(object)
 
 \S4method{productMz}{ChromBackend}(object) <- value
 
-\S4method{productMzMin}{ChromBackend}(object)
-
-\S4method{productMzMin}{ChromBackend}(object) <- value
-
 \S4method{productMzMax}{ChromBackend}(object)
 
 \S4method{productMzMax}{ChromBackend}(object) <- value
+
+\S4method{productMzMin}{ChromBackend}(object)
+
+\S4method{productMzMin}{ChromBackend}(object) <- value
 
 \S4method{rtime}{ChromBackend}(object)
 
@@ -247,37 +250,38 @@ method description or expected data type.}
 \item{name}{For \code{$} and \verb{$<-}: the name of the chromatogram variable to
 return or set.}
 
-\item{columns}{For \code{chromData} accessor: optional \code{character} with column
+\item{columns}{For \code{chromData()} accessor: optional \code{character} with column
 names (chromatogram variables) that should be included in the
 returned \code{DataFrame}. By default, all columns are returned.}
 
-\item{chromVariables}{For \code{selectChromVariables}: \code{character} with the
+\item{chromVariables}{For \code{selectChromVariables()}: \code{character} with the
 names of the chromatogram variables to which the backend should be
 subsetted.}
 
 \item{f}{\code{factor} defining the grouping to split \code{x}. See \code{\link[=split]{split()}}.}
 
-\item{dataOrigin}{For \code{filterDataOrigin}: \code{character} to define which
+\item{dataOrigin}{For \code{filterDataOrigin()}: \code{character} to define which
 chromatograms to keep.}
 
-\item{dataStorage}{For \code{filterDataStorage}: \code{character} to define which
+\item{dataStorage}{For \code{filterDataStorage()}: \code{character} to define which
 chromatograms to keep.}
 
 \item{msLevel}{\code{integer} defining the MS level of the chromatograms to which
-the function should be applied. For \code{filterMsLevel}: the MS level to
+the function should be applied. For \code{filterMsLevel()}: the MS level to
 which \code{object} should be subsetted.}
 
-\item{mz}{For \code{filterMz}, \code{filterPrecursorMz} and \code{filterProductMz}:
-\code{numeric(2)} defining the lower and upper m/z of the range to subset
-\code{object}. Chromatograms with their min m/z (\code{mzMin}, \code{precursorMzMin}
-and \code{productMz}, respectively) \strong{or} max m/z within \code{mz} are retained
-(filtering thus returns chromatograms \strong{overlapping} the specified m/z
-range).}
+\item{mz}{For \code{filterMzValues()}: \code{numeric} with the m/z values of
+chromatograms to keep. All chromatograms with their \code{mz} chromatogram
+variable matching any of the values provided with this parameter are
+retained. Parameters \code{ppm} and \code{tolerance} allow relaxed matching.
+For \code{filterMzRange()}: \code{numeric(2)} defining the lower and upper
+boundary of the m/z range. Chromatograms with their \code{mz} chromatogram
+variable within this range are retained.}
 
-\item{ppm}{For \code{filterMzValues}: m/z-relative acceptable difference (in
+\item{ppm}{For \code{filterMzValues()}: m/z-relative acceptable difference (in
 parts-per-million) for m/z values to be considered \emph{matching}.}
 
-\item{tolerance}{For \code{filterMzValues}: largest acceptable absolute
+\item{tolerance}{For \code{filterMzValues()}: largest acceptable absolute
 difference in m/z values to consider them \emph{matching}.}
 }
 \description{
@@ -293,12 +297,8 @@ Through their implementation different backends can be either optimized for
 minimal memory requirements or performance. Each backend needs to implemet
 data access methods listed in section \emph{Backend functions:} below.
 
-Currently backend implementations are:
-\itemize{
-\item \code{ChromBackendMemory}: keeps the full data within the object and hence in
-memory. This backend is thus optimized for fast data access, but has the
-largest memory footprint.
-}
+And example implementation and more details and descriptions are provided
+in the \emph{Creating new \code{ChromBackend} classes for Chromatograms} vignette.
 }
 \section{Core chromatogram variables}{
 
@@ -311,7 +311,7 @@ should be returned. The names of the core variables are returned with the
 
 For each core chromatogram variable a dedicated access method exists.
 
-The \code{coreChromVariables} function returns the core chromatogram variables
+The \code{coreChromVariables()} function returns the core chromatogram variables
 along with their expected (defined) data type.
 
 The core chromatogram variables (in alphabetical order) are:
@@ -353,7 +353,7 @@ retention times are expected to be increasingly sorted.
 New backend classes \strong{must} extend the base \code{ChromBackend} class and
 implement the following mandatory methods:
 \itemize{
-\item \code{backendInitialize}: initialises the backend. This method is
+\item \code{backendInitialize()}: initialises the backend. This method is
 supposed to be called right after creating an instance of the
 backend class and should prepare the backend.
 Parameters can be defined freely for each backend, depending on what is
@@ -363,119 +363,117 @@ a parameter \code{data} that can be used to submit the full data as a
 usable for the \code{\link[=setBackend]{setBackend()}} function from \code{Chromatograms}.
 This method has to ensure to set the spectra variable \code{dataStorage}
 correctly.
-\item \code{chromData}, \verb{chromData<-}: gets or sets general chromatogram metadata
-(annotation).  \code{chromData} returns a \code{DataFrame}, \verb{chromData<-} expects
+\item \code{chromData()}, \verb{chromData<-}: gets or sets general chromatogram metadata
+(annotation).  \code{chromData()} returns a \code{DataFrame}, \verb{chromData<-} expects
 a \code{DataFrame} with the same number of rows as there are chromatograms in
-\code{object}. Note that \code{chromData} has to return the \strong{full} data, i.e.
+\code{object}. Note that \code{chromData()} has to return the \strong{full} data, i.e.
 all core chromatogram variables and also the intensity and retention
 time values (as a \code{list} or \code{SimpleList} in columns \code{"intensity"} and
 \code{"rtime"}. Read-only backends might not need to implement the
 replacement method \verb{chromData<-} (unless some internal caching mechanism
 could be used).
-\item \code{peaksData}: returns a \code{list} of two-dimensional arrays (\code{matrix} or
+\item \code{peaksData()}: returns a \code{list} of two-dimensional arrays (\code{matrix} or
 \code{data.frame}) with the data (e.g. retention time - intensity pairs) from
 each chromatogram. The length of the \code{list} is equal to the number of
 chromatograms in \code{object}. For an empty chromatogram a \code{matrix}
 with 0 rows and two columns (named \code{"rtime"} and \code{"intensity"}) has to be
 returned. The optional parameter \code{columns}, if supported by the backend\verb{allows to define which peak variables should be returned in each array. As default (minimum) columns}"rtime"\code{and}"intensity"` have to be
 provided.
-\item \verb{peaksData<-} replaces the peak data (rtime and intensity values) of the
-backend. This method expects a \code{list} of two dimensional arrays (\code{matrix}
-or \code{data.frame}) with columns representing the peak variables. All
-existing peaks data is expected to be replaced with these new values. The
-length of the \code{list} has to match the number of spectra of \code{object}.
+\item \verb{peaksData<-} replaces the peak data (retention time and intensity values)
+of the backend. This method expects a \code{list} of two-dimensional arrays
+(\code{matrix} or \code{data.frame}) with columns representing the peak variables.
+All existing peaks data are expected to be replaced with these new values.
+The length of the \code{list} has to match the number of spectra of \code{object}.
 Note that only writeable backends need to support this method.
 \item \code{[}: subset the backend. Only subsetting by element (\emph{row}/\code{i}) is
-allowed
+allowed.
 \item \code{$}, \verb{$<-}: access or set/add a single chromatogram variable (column) in
 the backend.
-\item \code{selectChromVariables}: reduce \code{object} retaining only specified
+\item \code{selectChromVariables()}: reduce \code{object} retaining only specified
 chromatogram variables.
-\item \code{backendMerge}: merges (combines) \code{ChromBackend} objects into a single
+\item \code{backendMerge()}: merges (combines) \code{ChromBackend} objects into a single
 instance. All objects to be merged have to be of the same type.
 }
 
 Additional methods that might be implemented, but for which default
 implementations are already present are:
 \itemize{
-\item \code{chromVariables}: returns a \code{character} vector with the
+\item \code{backendParallelFactor()}: returns a \code{factor} defining an optimal
+(preferred) way how the backend can be split for parallel processing
+used for all \emph{peak} data accessor or data manipulation functions.
+The default implementation returns a factor of length 0 (\code{factor()})
+providing thus no default splitting.
+\item \code{chromVariables()}: returns a \code{character} vector with the
 available chromatogram variables (columns, fields or attributes)
 available in \code{object}. This should return \strong{all} variables which
 are present in \code{object}, also \code{"intensity"} and \code{"rtime"} (which are by
 default not returned by the \verb{chromVariables,Chromatograms} method).
-\item \code{chromIndex}: returns an \code{integer} vector with the index of the
+\item \code{chromIndex()}: returns an \code{integer} vector with the index of the
 chromatograms in the original source file.
-For this method a default implementation is available and it thus does
-not need to be implemented.
-\item \code{collisionEnergy}, \verb{collisionEnergy<-}: gets or sets the collision energy
-for the precursor (for SRM data). \code{collisionEnergy} returns a \code{numeric} of
-length equal to the number of chromatograms in \code{object}.
-For this method a default implementation is available and it thus does
-not need to be implemented.
-\item \code{dataOrigin}, \verb{dataOrigin<-}: gets or sets the \emph{data origin} variable.
-\code{dataOrigin} returns a \code{character} of length equal to the number of
+\item \code{collisionEnergy()}, \verb{collisionEnergy<-}: gets or sets the collision energy
+for the precursor (for SRM data). \code{collisionEnergy()} returns a \code{numeric}
+of length equal to the number of chromatograms in \code{object}.
+\item \code{dataOrigin()}, \verb{dataOrigin<-}: gets or sets the \emph{data origin} variable.
+\code{dataOrigin()} returns a \code{character} of length equal to the number of
 chromatograms, \verb{dataOrigin<-} expects a \code{character} of length equal
 \code{length(object)}.
-For this method a default implementation is available and it thus does
-not need to be implemented.
-\item \code{dataStorage}, \verb{dataStorage<-}: gets or sets the \emph{data storage} variable.
-\code{dataStorage} returns a \code{character} of length equal to the number of
+\item \code{dataStorage()}, \verb{dataStorage<-}: gets or sets the \emph{data storage} variable.
+\code{dataStorage()} returns a \code{character} of length equal to the number of
 chromatograms in \code{object}, \verb{dataStorage<- } expects a \code{character} of
 length equal \code{length(object)}. Note that missing values (\code{NA_character_})
-are not supported for \code{dataStorage}.
-\item \code{intensity}: gets the intensity values from the chromatograms. Returns
+are not supported for \code{dataStorage()}.
+\item \code{intensity()}: gets the intensity values from the chromatograms. Returns
 a \code{\link[=NumericList]{NumericList()}} of \code{numeric} vectors (intensity values for each
 chromatogram). The length of the list is equal to the number of
 chromatograms in \code{object}.
 \item \verb{intensity<-}: replaces the intensity values. \code{value} has to be a \code{list}
-(or \code{\link[=NumericList]{NumericList()}}) of length equal to the number of chromatograms and the
-number of values within each list element identical to the number of
+(or \code{\link[=NumericList]{NumericList()}}) of length equal to the number of chromatograms and
+the number of values within each list element identical to the number of
 data pairs in each chromatogram. Note that just writeable backends
 need to support this method.
-\item \code{isReadOnly}: returns a \code{logical(1)} whether the backend is \emph{read
+\item \code{isReadOnly()}: returns a \code{logical(1)} whether the backend is \emph{read
 only} or does allow also to write/update data.
-\item \code{isEmpty}: returns a \code{logical} of length equal to the number of
+\item \code{isEmpty()}: returns a \code{logical} of length equal to the number of
 chromatograms with \code{TRUE} for chromatograms without any data pairs.
-\item \code{length}: returns the number of chromatograms in the object.
-\item \code{lengths}: returns the number of data pairs (rtime-intensity values)
-per chromatogram.
-\item \code{msLevel}: gets the chromatogram's MS level. Returns an \code{integer}
+\item \code{length()}: returns the number of chromatograms in the object.
+\item \code{lengths()}: returns the number of data pairs (retention time and intensity
+values) per chromatogram.
+\item \code{msLevel()}: gets the chromatogram's MS level. Returns an \code{integer}
 vector (of length equal to the number of chromatograms) with the MS
 level for each chromatogram (or \code{NA_integer_} if not available).
-\item \code{mz},\verb{mz<-}: gets or sets the m/z value of the chromatograms. \code{mz} returns
-a \code{numeric} of length equal to the number of chromatograms in \code{object},
-\verb{mz<-} expects a \code{numeric} of length \code{length(object)}.
-\item \code{mzMax},\verb{mzMax<-}: gets or sets the upper m/z of the mass-to-charge range
-from which the chromatogram contains signal (e.g. if the chromatogram
+\item \code{mz()},\verb{mz<-}: gets or sets the m/z value of the chromatograms. \code{mz()}
+returns a \code{numeric} of length equal to the number of chromatograms in \code{ object}, \verb{mz<-} expects a \code{numeric} of length \code{length(object)}.
+\item \code{mzMax()},\verb{mzMax<-}: gets or sets the upper m/z of the mass-to-charge
+range from which a chromatogram contains signal (e.g. if the chromatogram
 was extracted from MS data in spectra format and a m/z range was provided).
-\code{mzMax} returns a \code{numeric} of length equal to the number of chromatograms
-in \code{object}, \code{mzMax} expects a \code{numeric} of length equal to the number
-of chromatograms in \code{object}.
-\item \code{mzMin},\verb{mzMin<-}: gets or sets the lower m/z of the mass-to-charge range
-from which the chromatogram contains signal (e.g. if the chromatogram
+\code{mzMax()} returns a \code{numeric} of length equal to the number of
+chromatograms in \code{object}, \verb{mzMax<-} expects a \code{numeric} of length equal
+to the number of chromatograms in \code{object}.
+\item \code{mzMin()},\verb{mzMin<-}: gets or sets the lower m/z of the mass-to-charge range
+from which a chromatogram contains signal (e.g. if the chromatogram
 was extracted from MS data in spectra format and a m/z range was provided).
-\code{mzMin} returns a \code{numeric} of length equal to the number of chromatograms
-in \code{object}, \code{mzMin} expects a \code{numeric} of length equal to the number
-of chromatograms in \code{object}.
-\item \code{peaksVariables}: lists the available data variables for each
-chromatogram. Default peak variables are \code{"rtime"} and \code{"intensity"}
+\code{mzMin()} returns a \code{numeric} of length equal to the number of
+chromatograms in \code{object}, \verb{mzMin<-} expects a \code{numeric} of length equal
+to the number of chromatograms in \code{object}.
+\item \code{peaksVariables()}: lists the available data variables for the
+chromatograms. Default peak variables are \code{"rtime"} and \code{"intensity"}
 (which all backends need to support and provide), but some backends
 might provide additional variables.
-All these variables are expected to be returned (if requested) by the
-\code{peaksData} function.
-\item \code{precursorMz},\verb{precursorMz<-}: gets or sets the (target) m/z of the
-precursor (for SRM data). \code{precursorMz} returns a \code{numeric} of length
+Variables listed by this function are expected to be returned (if
+requested) by the \code{peaksData()} function.
+\item \code{precursorMz()},\verb{precursorMz<-}: gets or sets the (target) m/z of the
+precursor (for SRM data). \code{precursorMz()} returns a \code{numeric} of length
 equal to the number of chromatograms in \code{object}. \verb{precursorMz<-} expects
 a \code{numeric} of length equal to the number of chromatograms.
-\item \code{precursorMzMin},\code{precursorMzMax},\code{productMzMin}, \code{productMzMax}: get
-the lower and upper margin for the precursor or product isolation windows.
-These functions might return the value of \code{productMz} if the respective
-minimal or maximal m/z values are not defined in \code{object}.
-\item \code{productMz},\verb{productMz<-}: gets or sets the (target) m/z of the
-product (for SRM data). \code{productMz} returns a \code{numeric} of length
+\item \code{precursorMzMin()},\code{precursorMzMax()},\code{productMzMin()}, \code{productMzMax()}:
+gets the lower and upper margin for the precursor or product isolation
+windows. These functions might return the value of \code{productMz()} if the
+respective minimal or maximal m/z values are not defined in \code{object}.
+\item \code{productMz()},\verb{productMz<-}: gets or sets the (target) m/z of the
+product (for SRM data). \code{productMz()} returns a \code{numeric} of length
 equal to the number of chromatograms in \code{object}. \verb{productMz<-} expects
 a \code{numeric} of length equal to the number of chromatograms.
-\item \code{rtime}: gets the retention times from the chromatograms. returns a
+\item \code{rtime()}: gets the retention times from the chromatograms. returns a
 \code{\link[=NumericList]{NumericList()}} of \code{numeric} vectors (retention times for each
 chromatogram). The length of the returned list is equal to the number of
 chromatograms in \code{object}.
@@ -484,7 +482,7 @@ chromatograms in \code{object}.
 number of values within each list element identical to the number of
 data pairs in each chromatogram. Note that just writeable backends support
 this method.
-\item \code{split}: splits the backend into a \code{list} of backends (depending on
+\item \code{split()}: splits the backend into a \code{list} of backends (depending on
 parameter \code{f}). The default method for \code{ChromBackend} uses
 \code{\link[=split.default]{split.default()}}, thus backends extending \code{ChromBackend} don't
 necessarily need to implement this method.
@@ -492,27 +490,28 @@ necessarily need to implement this method.
 
 Filter methods:
 \itemize{
-\item \code{filterDataOrigin}: filters the object retaining chromatograms matching any
-of the provided \code{dataOrigin}. Parameter \code{dataOrigin} has to be of type
-\code{character} and needs to match exactly the data origin value of the
+\item \code{filterDataOrigin()}: filters the object retaining chromatograms matching
+any of the provided \code{dataOrigin}. Parameter \code{dataOrigin} has to be of
+type \code{character} and needs to match exactly the data origin value of the
 chromatograms to subset.
-\code{filterDataOrigin} should return the data ordered by the provided
+\code{filterDataOrigin()} should return the data ordered by the provided
 \code{dataOrigin} parameter, i.e. if \code{dataOrigin = c("2", "1")} was provided,
 the chromatograms in the resulting object should be ordered accordingly
 (first chromatogram from data origin \code{"2"} and then from \code{"1"}).
-\item \code{filterDataStorage}: filters the object retaining chromatograms matching
-any of the provided \code{dataStorage}. Parameter \code{dataStorage} has to be of
-type \code{character} and needs to match exactly the data storage value of the
-chromatograms to subset.
-\code{filterDataStorage} should return the data ordered by the provided
-\code{dataStorage} parameter, i.e. if \code{dataStorage = c("2", "1")} was provided,
-the chromatograms in the resulting object should be ordered accordingly
-(first chromatogram from data storage \code{"2"} and then from \code{"1"}).
-\item \code{filterMsLevel}: retains chromatograms of MS level \code{msLevel}.
-\item \code{filterMzRange}: retains chromatograms with their m/z within the provided
-m/z range.
-\item \code{filterMzValues}: retains chromatograms with their m/z matching any of the
-provided m/z values (given the provided acceptable differences defined
+\item \code{filterDataStorage()}: filters the object retaining chromatograms matching
+any of the provided \code{dataStorage}. Parameter \code{dataStorage} has to be
+of type \code{character} and needs to match exactly the data storage value of
+the chromatograms to subset.
+\code{filterDataStorage()} should return the data ordered by the provided
+\code{dataStorage} parameter, i.e. if \code{dataStorage = c("2", "1")} was
+provided, the chromatograms in the resulting object should be ordered
+accordingly (first chromatogram from data storage \code{"2"} and then from
+\code{"1"}).
+\item \code{filterMsLevel()}: retains chromatograms of MS level \code{msLevel()}.
+\item \code{filterMzRange()}: retains chromatograms with their m/z within the
+provided m/z range.
+\item \code{filterMzValues()}: retains chromatograms with their m/z matching any of
+the provided m/z values (given the provided acceptable differences defined
 by parameters \code{tolerance} and \code{ppm}.
 }
 }
@@ -522,7 +521,8 @@ by parameters \code{tolerance} and \code{ppm}.
 
 Backends extending \code{ChromBackend} \strong{must} implement all of its methods
 (listed above). A guide to create new backend classes is provided as a
-dedicated vignette.
+dedicated vignette. Additional information and an example for a backend
+implementation is provided in the respective vignette.
 }
 
 \examples{
@@ -532,5 +532,5 @@ ChromBackendDummy <- setClass("ChromBackendDummy",
     contains = "ChromBackend")
 }
 \author{
-Johannes Rainer, Sebastian Gibb, Laurent Gatto
+Johannes Rainer
 }

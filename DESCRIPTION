@@ -15,12 +15,12 @@ Authors@R: c(person(given = "Laurent", family = "Gatto",
 		    email = "Johannes.Rainer@eurac.edu",
 		    role = c("aut", "cre"),
 		    comment = c(ORCID = "0000-0002-6977-7147")),
-	     person(given = "Sebastian", family = "Gibb",
-		    email = "mail@sebastiangibb.de",
+	     person(given = "Philippine", family = "Louail",
+		    email = "philippine.louail@eurac.edu",
 		    role = c("aut"),
-		    comment = c(ORCID = "0000-0001-7406-4443")))
+		    comment = c(ORCID = "0009-0007-5429-6846")))
 Depends:
-    ProtGenerics (>= 1.35.3)
+    ProtGenerics (>= 1.35.4)
 Imports:
     methods,
     S4Vectors,
@@ -29,9 +29,8 @@ Imports:
 Suggests:
     testthat,
     knitr (>= 1.1.0),
-    mzR (>= 2.15.1),
-    msdata (>= 0.19.3),
-    rmarkdown
+    rmarkdown,
+    BiocStyle
 License: Artistic-2.0
 LazyData: yes
 VignetteBuilder: knitr

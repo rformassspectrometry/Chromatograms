@@ -55,7 +55,7 @@ coreChromVariables <- function() .CORE_CHROM_VARIABLES
 #'
 #' @description
 #'
-#' `fillCoreChromVariables` fills a provided `data.frame` (or `DataFrame`)
+#' `fillCoreChromVariables()` fills a provided `data.frame` (or `DataFrame`)
 #' with columns for eventually missing *core* chromatogram variables **except**
 #' peaks variables (i.e. `"intensity"` and `"rtime"`). The missing core
 #' variables are added as new columns with missing values (`NA`) of the
@@ -91,13 +91,28 @@ fillCoreChromVariables <- function(x = data.frame()) {
     cbind(x, lapply(cv, function(z, n) rep(as(NA, z), n), nr))
 }
 
-#' Checks that the columns of x representing core variables have the correct
-#' data type. Note that the function checks only the validity of data types
-#' for columns matching the name of a core variable. It does not check or
-#' require presence of all core chromatogram variables.
+#' @title Check core chromatogram variables for correct data types
 #'
-#' @noRd
-.valid_chrom_data_frame <- function(x = data.frame(), error = FALSE) {
+#' @description
+#'
+#' `validChromData()` checks that columns, representing *core* chromatogram
+#' variables are of the correct data type.
+#'
+#' @param x `data.frame` representing metadata of a `Chromatograms`
+#'
+#' @param error `logical(1)` whether an error should be thrown (the default)
+#'     if one or more columns don't have the correct data type.
+#'
+#' @return
+#'
+#' If core variables have all the correct data type: an empty character.
+#' If one or more core variables (columns) have the wrong data type the
+#' function either throws an error (with `error = TRUE`) or returns a
+#' `character` specifying which variables/columns don't have the correct
+#' type (for `error = FALSE`).
+#'
+#' @export
+validChromData <- function(x = data.frame(), error = TRUE) {
     cn <- intersect(colnames(x), names(.CORE_CHROM_VARIABLES))
     msg <- unlist(lapply(cn, function(z) {
         if (!is(x[, z], .CORE_CHROM_VARIABLES[z]))

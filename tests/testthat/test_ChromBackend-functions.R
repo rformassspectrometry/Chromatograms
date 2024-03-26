@@ -66,18 +66,19 @@ test_that("fillCoreChromVariables works", {
     expect_equal(res$msLevel, c(1L, 2L, 1L))
 })
 
-test_that(".valid_chrom_data_frame works", {
+test_that("validChromData works", {
     x <- data.frame()
-    res <- .valid_chrom_data_frame(x)
+    res <- validChromData(x)
     expect_true(length(res) == 0)
 
     x <- data.frame(msLevel = c(1L, 2L), other_col = "a")
-    res <- .valid_chrom_data_frame(x)
+    res <- validChromData(x)
     expect_true(length(res) == 0)
 
     x$mz <- "a"
     x$collisionEnergy <- "30ev"
-    res <- .valid_chrom_data_frame(x)
+    expect_error(validChromData(x, error = TRUE), "wrong data type")
+    res <- validChromData(x, error = FALSE)
+    expect_true(is.character(res))
     expect_true(length(res) == 2L)
-    expect_error(.valid_chrom_data_frame(x, error = TRUE), "wrong data type")
 })
