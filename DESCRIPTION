@@ -1,37 +1,36 @@
 Package: Chromatograms
-Title: Infrastructure for chromatographic representation of Mass Spectrometry Data
-Version: 0.0.3
+Title: Infrastructure for Chromatographic Mass Spectrometry Data
+Version: 0.1.0
 Description: The Chromatograms packages defines a efficient infrastructure
-   for storing and handling of chromatographic mass spectrometry data.
+   for storing and handling of chromatographic mass spectrometry data. It
+   provides different implementations of *backends* to store and represent the
+   data. Such backends can be optimized for small memory footprint or fast
+   data access/processing. A lazy evaluation queue and chunk-wise processing
+   capabilities ensure efficient analysis of also very large data sets.
 Authors@R: c(person(given = "Laurent", family = "Gatto",
 		    comment = c(ORCID = "0000-0002-1520-2268"),
 		    email = "laurent.gatto@uclouvain.be",
-		    role = c("aut","cre")),
+		    role = c("aut")),
 	     person(given = "Johannes", family = "Rainer",
 		    email = "Johannes.Rainer@eurac.edu",
 		    role = c("aut", "cre"),
 		    comment = c(ORCID = "0000-0002-6977-7147")),
-	     person(given = "Sebastian", family = "Gibb",
-		    email = "mail@sebastiangibb.de",
-		    role = c("aut", "cre"),
-		    comment = c(ORCID = "0000-0001-7406-4443")))
-Author: Laurent Gatto, Johannes Rainer and Sebastian Gibb.
-Maintainer: Laurent Gatto <laurent.gatto@uclouvain.be> and Johannes Rainer <Johannes.Rainer@eurac.edu>
+	     person(given = "Philippine", family = "Louail",
+		    email = "philippine.louail@eurac.edu",
+		    role = c("aut"),
+		    comment = c(ORCID = "0009-0007-5429-6846")))
 Depends:
-    ProtGenerics (>= 1.17.4)
+    ProtGenerics (>= 1.35.4)
 Imports:
     methods,
     S4Vectors,
-    MsCoreUtils (>= 0.0.2),
-    IRanges,
-    BiocParallel,
-    BiocGenerics
+    MsCoreUtils (>= 1.7.5),
+    IRanges
 Suggests:
     testthat,
     knitr (>= 1.1.0),
-    mzR (>= 2.15.1),
-    msdata (>= 0.19.3),
-    rmarkdown
+    rmarkdown,
+    BiocStyle
 License: Artistic-2.0
 LazyData: yes
 VignetteBuilder: knitr
@@ -39,13 +38,4 @@ BugReports: https://github.com/RforMassSpectrometry/Chromatograms/issues
 URL: https://github.com/RforMassSpectrometry/Chromatograms
 biocViews: Infrastructure, Proteomics, MassSpectrometry, Metabolomics
 Roxygen: list(markdown=TRUE)
-RoxygenNote: 7.0.2
-Collate:
-    'hidden_aliases.R'
-    'AllGenerics.R'
-    'ChromBackend-functions.R'
-    'ChromBackend.R'
-    'ChromBackendDataFrame-functions.R'
-    'ChromBackendDataFrame.R'
-    'ChromBackendMzR-functions.R'
-    'ChromBackendMzR.R'
+RoxygenNote: 7.3.1

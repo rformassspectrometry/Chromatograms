@@ -1,7 +1,7 @@
 library("testthat")
 library("Chromatograms")
 
-fl <- msdata::proteomics(full.names = TRUE)[1]
-mrm_mzr <- backendInitialize(ChromBackendMzR(), fl)
+## mzML with chromatographic data.
+## fl <- msdata::proteomics(full.names = TRUE)[1]
 
 test_check("Chromatograms")
