@@ -15,10 +15,9 @@ correct data type).
 }
 \description{
 \code{fillCoreChromVariables()} fills a provided \code{data.frame} (or \code{DataFrame})
-with columns for eventually missing \emph{core} chromatogram variables \strong{except}
-peaks variables (i.e. \code{"intensity"} and \code{"rtime"}). The missing core
-variables are added as new columns with missing values (\code{NA}) of the
-correct data type.
+with columns for eventually missing \emph{core} chromatogram variables.
+The missing core variables are added as new columns with missing values
+(\code{NA}) of the correct data type.
 Use \code{\link[=coreChromVariables]{coreChromVariables()}} to list the set of core variables and their data
 types.
 }

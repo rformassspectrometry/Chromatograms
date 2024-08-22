@@ -1,35 +1,10 @@
-.valid_chrom_backend_data_storage <- function(x) {
-    if (anyNA(x))
-        return("'NA' values in dataStorage are not allowed.")
-    NULL
-}
-
-#' Helper function that matches `x` against `mz` (using the `closest` function)
-#' and returns the indices of `x` that match any of the values in `mz`. The
-#' function takes care of sorting `x` and `mz` and deals also with missing
-#' values.
-#'
-#' @return `integer` with the indices of values in `x` that are not `NA` and
-#'     are matching any of the values in `mz` given `ppm` and `tolerance`.
-#'
-#' @noRd
-#'
-#' @importFrom MsCoreUtils common
-#'
-#' @author Sebastian Gibb, Johannes Rainer
-.values_match_mz <- function(x, mz, ppm = 20, tolerance = 0) {
-    o <- order(x, na.last = NA)
-    cmn <- common(x[o], sort(mz), tolerance = tolerance, ppm = ppm,
-                  duplicates = "keep", .check = FALSE)
-    sort(o[cmn])
-}
-
 #' @rdname ChromBackend
 #'
 #' @export
 coreChromVariables <- function() .CORE_CHROM_VARIABLES
 
-#' *core* chromatogram variables with expected data type:
+#' *core* chromatogram variables with expected data type: `integer`, `numeric`,
+#' and `character`. Must be a single value.
 #'
 #' @noRd
 .CORE_CHROM_VARIABLES <- c(
@@ -37,7 +12,6 @@ coreChromVariables <- function() .CORE_CHROM_VARIABLES
     collisionEnergy = "numeric",
     dataOrigin = "character",
     dataStorage = "character",
-    intensity = "NumericList",
     msLevel = "integer",
     mz = "numeric",
     mzMin = "numeric",
@@ -47,8 +21,7 @@ coreChromVariables <- function() .CORE_CHROM_VARIABLES
     precursorMzMax = "numeric",
     productMz = "numeric",
     productMzMin = "numeric",
-    productMzMax = "numeric",
-    rtime = "NumericList"
+    productMzMax = "numeric"
     )
 
 #' @title Fill data frame with columns for missing core chrom variables
@@ -56,10 +29,9 @@ coreChromVariables <- function() .CORE_CHROM_VARIABLES
 #' @description
 #'
 #' `fillCoreChromVariables()` fills a provided `data.frame` (or `DataFrame`)
-#' with columns for eventually missing *core* chromatogram variables **except**
-#' peaks variables (i.e. `"intensity"` and `"rtime"`). The missing core
-#' variables are added as new columns with missing values (`NA`) of the
-#' correct data type.
+#' with columns for eventually missing *core* chromatogram variables.
+#' The missing core variables are added as new columns with missing values
+#' (`NA`) of the correct data type.
 #' Use [coreChromVariables()] to list the set of core variables and their data
 #' types.
 #'
@@ -85,10 +57,11 @@ coreChromVariables <- function() .CORE_CHROM_VARIABLES
 #' ## missing values).
 fillCoreChromVariables <- function(x = data.frame()) {
     nr <- nrow(x)
-    cv <- .CORE_CHROM_VARIABLES[!names(.CORE_CHROM_VARIABLES) %in%
-                                c("intensity", "rtime")]
-    miss <- setdiff(names(cv), colnames(x))
-    cbind(x, lapply(cv, function(z, n) rep(as(NA, z), n), nr))
+    cv <- .CORE_CHROM_VARIABLES
+    miss <- cv[setdiff(names(cv), colnames(x))]
+    if (!length(miss))
+        return(x)
+    cbind(x, lapply(miss, function(z, n) rep(as(NA, z), n), nr))
 }
 
 #' @title Check core chromatogram variables for correct data types
@@ -124,17 +97,46 @@ validChromData <- function(x = data.frame(), error = TRUE) {
     else msg
 }
 
-#' Create a list of empty peak matrices
-#'
-#' @param x `integer` with the number of (empty) matrices to create.
-#'
-#' @param columns `character` with the column names for each peak matrix
-#'
-#' @return `list` of length `x` with 0-row peak matrices
+#' *core* peaks variables with expected data type:`numeric`, and
+#' must be plural.
 #'
 #' @noRd
-.empty_peaks_data <- function(x, columns = c("mz", "intensity")) {
-    emat <- matrix(numeric(), ncol = length(columns), nrow = 0,
-                   dimnames = list(character(), columns))
-    replicate(x, emat, simplify = FALSE)
+.CORE_PEAKS_VARIABLES <- c(
+    intensity = "numeric",
+    rtime = "numeric"
+)
+
+#' @rdname ChromBackend
+#'
+#' @export
+corePeaksVariables <- function() .CORE_PEAKS_VARIABLES
+
+#' `validPeaksData()` checks that the names of the input peaksData list,
+#' representing *core* peaks variables are of the correct data type.
+#'
+#' @param x `list` representing the peaks data of a `Chromatograms`
+#'
+#' @export
+
+#' @rdname hidden_aliases
+validPeaksData <- function(x = list()) {
+    if (!is.list(x)) {
+        stop("'peaksData' must be a 'list'")
+    }
+    lapply(x, function(df) {
+        if (!is.data.frame(df))
+            stop("All the peaksData entries should be of class 'data.frame'")
+        pv <- intersect(colnames(df), names(.CORE_PEAKS_VARIABLES))
+        if (!all(vapply(pv, function(col) is(df[[col]]
+                                             , .CORE_PEAKS_VARIABLES[[col]]),
+                        logical(1))))
+            stop("The peaksData variable ", col, " has the wrong data type.")
+    })
 }
+
+#' @noRd
+.valid_chrom_backend_data_storage <- function(x) {
+    if (anyNA(x))
+        return("'NA' values in dataStorage are not allowed.")
+    NULL
+}  ## what's this ?
