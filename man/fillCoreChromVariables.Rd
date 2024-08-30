@@ -14,7 +14,7 @@ input data frame \code{x} with missing core variables added (with the
 correct data type).
 }
 \description{
-\code{fillCoreChromVariables()} fills a provided \code{data.frame} (or \code{DataFrame})
+\code{fillCoreChromVariables()} fills a provided \code{data.frame}
 with columns for eventually missing \emph{core} chromatogram variables.
 The missing core variables are added as new columns with missing values
 (\code{NA}) of the correct data type.

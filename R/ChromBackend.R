@@ -42,7 +42,6 @@
 #'   the precursor.
 #' - `dataOrigin`: optional `character` with the origin of a chromatogram.
 #' - `dataStorage`: `character` defining where the data is (currently) stored.
-#' - `intensity`: `NumericList` with the intensity values of each chromatogram.
 #' - `msLevel`: `integer` defining the MS level of the data.
 #' - `mz`: optional `numeric` with the (target) m/z value for the
 #'   chromatographic data.
@@ -62,8 +61,6 @@
 #'   the product's isolation window.
 #' - `productMzMax`: for SRM data, optional `numeric` with the upper m/z of
 #'   the product's isolation window.
-#' - `rtime`: `NumericList` with the retention times of each chromatogram.
-#'   retention times are expected to be increasingly sorted.
 #'
 #' @param chromVariables For `selectChromVariables()`: `character` with the
 #'     names of the chromatogram variables to which the backend should be
@@ -71,7 +68,7 @@
 #'
 #' @param columns For `chromData()` accessor: optional `character` with column
 #'     names (chromatogram variables) that should be included in the
-#'     returned `DataFrame`. By default, all columns are returned.
+#'     returned `data.frame`. By default, all columns are returned.
 #'
 #' @param dataOrigin For `filterDataOrigin()`: `character` to define which
 #'     chromatograms to keep.
@@ -79,7 +76,10 @@
 #' @param dataStorage For `filterDataStorage()`: `character` to define which
 #'     chromatograms to keep.
 #'
-#' @param drop For `[`: not considered.
+#' @param drop For `chromData()` and `peaksData()`: `logical(1)` default to
+#' `FALSE`. If `TRUE`, and one column is called by the user, the method should
+#' return a vector (or list of vector for `peaksData()`) of the single column
+#' requested.
 #'
 #' @param f `factor` defining the grouping to split `x`. See [split()].
 #'
@@ -126,19 +126,20 @@
 #'   supposed to be called right after creating an instance of the
 #'   backend class and should prepare the backend.
 #'   Parameters can be defined freely for each backend, depending on what is
-#'   needed to initialize the backend. It is however suggested to also support
-#'   a parameter `data` that can be used to submit the full data as a
-#'   `DataFrame` to the backend. This would allow the backend to be also
-#'   usable for the [setBackend()] function from `Chromatograms`.
+#'   needed to initialize the backend.
 #'   This method has to ensure to set the spectra variable `dataStorage`
 #'   correctly.
 #'
 #' - `chromData()`, `chromData<-`: gets or sets general chromatogram metadata
-#'   (annotation). `chromData()` returns a `DataFrame`, `chromData<-` expects
-#'   a `DataFrame` with the same number of rows as there are chromatograms in
+#'   (annotation). `chromData()` returns a `data.frame`, `chromData<-` expects
+#'   a `data.frame` with the same number of rows as there are chromatograms in
 #'   `object`. Read-only backends might not need to implement the
 #'   replacement method `chromData<-` (unless some internal caching mechanism
-#'   could be used).
+#'   could be used). `chromData()` should be implemented with the parameter
+#'   `drop` set to `FALSE` as default. this mean that by default the method
+#'   should return a `data.frame` even if only one column is called. If
+#'   `drop = TRUE` is specified, the output will be a vector of the single
+#'   column requested.
 #'
 #' - `peaksData()`: returns a `list` of `data.frame` with the data
 #'   (e.g. retention time - intensity pairs) from each chromatogram. The length
@@ -147,7 +148,11 @@
 #'   `"rtime"` and `"intensity"`) has to be returned. The optional parameter
 #'   `columns`, if supported by the backend allows to define which peak
 #'   variables should be returned in each array. As default (minimum) columns
-#'   `"rtime"` and `"intensity"` have to be provided.
+#'   `"rtime"` and `"intensity"` have to be provided. `peaksData()` should be
+#'   implemented with the parameter `drop` set to `FALSE` as default. this mean
+#'   that by default the method should return a `list` of `data.frame` even if
+#'   only one column is called. If `drop = TRUE` is specified, the output will
+#'   be a list of vectors of the single column requested.
 #'
 #' - `peaksData<-` replaces the peak data (retention time and intensity values)
 #'   of the backend. This method expects a `list` of two-dimensional arrays
@@ -340,15 +345,6 @@ setClass("ChromBackend",
          slots = c(
              version = "character"),
          prototype = prototype(readonly = FALSE, version = "0.1"))
-
-#' @importFrom methods .valueClassTest is new validObject
-#'
-#' @noRd
-setValidity("ChromBackend", function(object) {
-    msg <- .valid_chrom_backend_data_storage(dataStorage(object))
-    if (is.null(msg)) TRUE
-    else msg
-})
 
 #' @exportMethod [
 #'
@@ -676,7 +672,7 @@ setReplaceMethod("mzMin", "ChromBackend", function(object, value) {
 #'
 #' @rdname ChromBackend
 setMethod("peaksVariables", "ChromBackend", function(object) {
-    colnames(peaksData(object)[[1]])
+    colnames(peaksData(object[1L])[[1L]])
     })
 
 #' @exportMethod precursorMz

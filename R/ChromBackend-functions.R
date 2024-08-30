@@ -28,7 +28,7 @@ coreChromVariables <- function() .CORE_CHROM_VARIABLES
 #'
 #' @description
 #'
-#' `fillCoreChromVariables()` fills a provided `data.frame` (or `DataFrame`)
+#' `fillCoreChromVariables()` fills a provided `data.frame`
 #' with columns for eventually missing *core* chromatogram variables.
 #' The missing core variables are added as new columns with missing values
 #' (`NA`) of the correct data type.
@@ -84,8 +84,11 @@ fillCoreChromVariables <- function(x = data.frame()) {
 #' `character` specifying which variables/columns don't have the correct
 #' type (for `error = FALSE`).
 #'
+#' @importFrom methods is
+#'
 #' @export
 validChromData <- function(x = data.frame(), error = TRUE) {
+    .valid_chrom_backend_data_storage(x$dataStorage)
     cn <- intersect(colnames(x), names(.CORE_CHROM_VARIABLES))
     msg <- unlist(lapply(cn, function(z) {
         if (!is(x[, z], .CORE_CHROM_VARIABLES[z]))
@@ -115,6 +118,8 @@ corePeaksVariables <- function() .CORE_PEAKS_VARIABLES
 #' representing *core* peaks variables are of the correct data type.
 #'
 #' @param x `list` representing the peaks data of a `Chromatograms`
+#'
+#' @importFrom methods is
 #'
 #' @export
 

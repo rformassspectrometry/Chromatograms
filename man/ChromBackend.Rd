@@ -245,14 +245,17 @@ method description or expected data type.}
 
 \item{j}{For \code{[}: ignored.}
 
-\item{drop}{For \code{[}: not considered.}
+\item{drop}{For \code{chromData()} and \code{peaksData()}: \code{logical(1)} default to
+\code{FALSE}. If \code{TRUE}, and one column is called by the user, the method should
+return a vector (or list of vector for \code{peaksData()}) of the single column
+requested.}
 
 \item{name}{For \code{$} and \verb{$<-}: the name of the chromatogram variable to
 return or set.}
 
 \item{columns}{For \code{chromData()} accessor: optional \code{character} with column
 names (chromatogram variables) that should be included in the
-returned \code{DataFrame}. By default, all columns are returned.}
+returned \code{data.frame}. By default, all columns are returned.}
 
 \item{chromVariables}{For \code{selectChromVariables()}: \code{character} with the
 names of the chromatogram variables to which the backend should be
@@ -322,7 +325,6 @@ original source file (e.g. \emph{mzML} file).
 the precursor.
 \item \code{dataOrigin}: optional \code{character} with the origin of a chromatogram.
 \item \code{dataStorage}: \code{character} defining where the data is (currently) stored.
-\item \code{intensity}: \code{NumericList} with the intensity values of each chromatogram.
 \item \code{msLevel}: \code{integer} defining the MS level of the data.
 \item \code{mz}: optional \code{numeric} with the (target) m/z value for the
 chromatographic data.
@@ -342,8 +344,6 @@ product ion.
 the product's isolation window.
 \item \code{productMzMax}: for SRM data, optional \code{numeric} with the upper m/z of
 the product's isolation window.
-\item \code{rtime}: \code{NumericList} with the retention times of each chromatogram.
-retention times are expected to be increasingly sorted.
 }
 }
 
@@ -357,18 +357,19 @@ implement the following mandatory methods:
 supposed to be called right after creating an instance of the
 backend class and should prepare the backend.
 Parameters can be defined freely for each backend, depending on what is
-needed to initialize the backend. It is however suggested to also support
-a parameter \code{data} that can be used to submit the full data as a
-\code{DataFrame} to the backend. This would allow the backend to be also
-usable for the \code{\link[=setBackend]{setBackend()}} function from \code{Chromatograms}.
+needed to initialize the backend.
 This method has to ensure to set the spectra variable \code{dataStorage}
 correctly.
 \item \code{chromData()}, \verb{chromData<-}: gets or sets general chromatogram metadata
-(annotation). \code{chromData()} returns a \code{DataFrame}, \verb{chromData<-} expects
-a \code{DataFrame} with the same number of rows as there are chromatograms in
+(annotation). \code{chromData()} returns a \code{data.frame}, \verb{chromData<-} expects
+a \code{data.frame} with the same number of rows as there are chromatograms in
 \code{object}. Read-only backends might not need to implement the
 replacement method \verb{chromData<-} (unless some internal caching mechanism
-could be used).
+could be used). \code{chromData()} should be implemented with the parameter
+\code{drop} set to \code{FALSE} as default. this mean that by default the method
+should return a \code{data.frame} even if only one column is called. If
+\code{drop = TRUE} is specified, the output will be a vector of the single
+column requested.
 \item \code{peaksData()}: returns a \code{list} of \code{data.frame} with the data
 (e.g. retention time - intensity pairs) from each chromatogram. The length
 of the \code{list} is equal to the number of chromatograms in \code{object}. For an
@@ -376,7 +377,11 @@ empty chromatogram a \code{data.frame} with 0 rows and two columns (named
 \code{"rtime"} and \code{"intensity"}) has to be returned. The optional parameter
 \code{columns}, if supported by the backend allows to define which peak
 variables should be returned in each array. As default (minimum) columns
-\code{"rtime"} and \code{"intensity"} have to be provided.
+\code{"rtime"} and \code{"intensity"} have to be provided. \code{peaksData()} should be
+implemented with the parameter \code{drop} set to \code{FALSE} as default. this mean
+that by default the method should return a \code{list} of \code{data.frame} even if
+only one column is called. If \code{drop = TRUE} is specified, the output will
+be a list of vectors of the single column requested.
 \item \verb{peaksData<-} replaces the peak data (retention time and intensity values)
 of the backend. This method expects a \code{list} of two-dimensional arrays
 (\code{data.frame}) with columns representing the peak variables.
