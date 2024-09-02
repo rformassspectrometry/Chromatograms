@@ -136,10 +136,9 @@
 #'   `object`. Read-only backends might not need to implement the
 #'   replacement method `chromData<-` (unless some internal caching mechanism
 #'   could be used). `chromData()` should be implemented with the parameter
-#'   `drop` set to `FALSE` as default. this mean that by default the method
-#'   should return a `data.frame` even if only one column is called. If
-#'   `drop = TRUE` is specified, the output will be a vector of the single
-#'   column requested.
+#'   `drop` set to `FALSE` as default. With `drop = FALSE` the method should
+#'   return a `data.frame` even if only one column is called. If `drop = TRUE`
+#'   is specified, the output will be a vector of the single column requested.
 #'
 #' - `peaksData()`: returns a `list` of `data.frame` with the data
 #'   (e.g. retention time - intensity pairs) from each chromatogram. The length
@@ -149,10 +148,10 @@
 #'   `columns`, if supported by the backend allows to define which peak
 #'   variables should be returned in each array. As default (minimum) columns
 #'   `"rtime"` and `"intensity"` have to be provided. `peaksData()` should be
-#'   implemented with the parameter `drop` set to `FALSE` as default. this mean
-#'   that by default the method should return a `list` of `data.frame` even if
-#'   only one column is called. If `drop = TRUE` is specified, the output will
-#'   be a list of vectors of the single column requested.
+#'   implemented with the parameter `drop` set to `FALSE` as default.  With
+#'   `drop = FALSE` the method should return a `data.frame` even if only one
+#'   column is called. If `drop = TRUE`  is specified, the output will be a
+#'   vector of the single column requested.
 #'
 #' - `peaksData<-` replaces the peak data (retention time and intensity values)
 #'   of the backend. This method expects a `list` of two-dimensional arrays

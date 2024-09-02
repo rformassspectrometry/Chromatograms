@@ -366,10 +366,9 @@ a \code{data.frame} with the same number of rows as there are chromatograms in
 \code{object}. Read-only backends might not need to implement the
 replacement method \verb{chromData<-} (unless some internal caching mechanism
 could be used). \code{chromData()} should be implemented with the parameter
-\code{drop} set to \code{FALSE} as default. this mean that by default the method
-should return a \code{data.frame} even if only one column is called. If
-\code{drop = TRUE} is specified, the output will be a vector of the single
-column requested.
+\code{drop} set to \code{FALSE} as default. With \code{drop = FALSE} the method should
+return a \code{data.frame} even if only one column is called. If \code{drop = TRUE}
+is specified, the output will be a vector of the single column requested.
 \item \code{peaksData()}: returns a \code{list} of \code{data.frame} with the data
 (e.g. retention time - intensity pairs) from each chromatogram. The length
 of the \code{list} is equal to the number of chromatograms in \code{object}. For an
@@ -378,10 +377,10 @@ empty chromatogram a \code{data.frame} with 0 rows and two columns (named
 \code{columns}, if supported by the backend allows to define which peak
 variables should be returned in each array. As default (minimum) columns
 \code{"rtime"} and \code{"intensity"} have to be provided. \code{peaksData()} should be
-implemented with the parameter \code{drop} set to \code{FALSE} as default. this mean
-that by default the method should return a \code{list} of \code{data.frame} even if
-only one column is called. If \code{drop = TRUE} is specified, the output will
-be a list of vectors of the single column requested.
+implemented with the parameter \code{drop} set to \code{FALSE} as default.  With
+\code{drop = FALSE} the method should return a \code{data.frame} even if only one
+column is called. If \code{drop = TRUE}  is specified, the output will be a
+vector of the single column requested.
 \item \verb{peaksData<-} replaces the peak data (retention time and intensity values)
 of the backend. This method expects a \code{list} of two-dimensional arrays
 (\code{data.frame}) with columns representing the peak variables.
