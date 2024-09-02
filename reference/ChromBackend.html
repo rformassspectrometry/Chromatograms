@@ -35,16 +35,6 @@ in the Creating new ChromBackend classes for Chromatograms vignette."><!-- mathj
       <ul class="nav navbar-nav"><li>
   <a href="../reference/index.html">Reference</a>
 </li>
-<li class="dropdown">
-  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-    Articles
-
-    <span class="caret"></span>
-  </a>
-  <ul class="dropdown-menu" role="menu"><li>
-      <a href="../articles/creating-backend-classes.html">Creating new `ChromBackend` classes for Chromatograms</a>
-    </li>
-  </ul></li>
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/RforMassSpectrometry/Chromatograms/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
@@ -86,6 +76,8 @@ in the <em>Creating new <code>ChromBackend</code> classes for Chromatograms</em>
 <span></span>
 <span><span class="fu">chromIndex</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
+<span><span class="fu">chromIndex</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
+<span></span>
 <span><span class="fu">chromNames</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">chromNames</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
@@ -118,7 +110,11 @@ in the <em>Creating new <code>ChromBackend</code> classes for Chromatograms</em>
 <span></span>
 <span><span class="fu">selectChromVariables</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
+<span><span class="fu">reset</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
 <span><span class="fu">coreChromVariables</span><span class="op">(</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu">corePeaksVariables</span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'ChromBackend'</span></span>
 <span><span class="va">x</span><span class="op">[</span><span class="va">i</span>, <span class="va">j</span>, <span class="va">...</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
@@ -130,25 +126,25 @@ in the <em>Creating new <code>ChromBackend</code> classes for Chromatograms</em>
 <span><span class="va">x</span><span class="op">$</span><span class="va">name</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'ChromBackend'</span></span>
-<span><span class="fu">backendInitialize</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu">backendMerge</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'ChromBackend'</span></span>
-<span><span class="fu">chromData</span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="fu">chromVariables</span><span class="op">(</span><span class="va">object</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu">chromData</span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="fu">chromVariables</span><span class="op">(</span><span class="va">object</span><span class="op">)</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'ChromBackend'</span></span>
 <span><span class="fu">chromData</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'ChromBackend'</span></span>
-<span><span class="fu">selectChromVariables</span><span class="op">(</span><span class="va">object</span>, chromVariables <span class="op">=</span> <span class="fu">chromVariables</span><span class="op">(</span><span class="va">object</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># S4 method for class 'ChromBackend'</span></span>
-<span><span class="fu">peaksData</span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"rtime"</span>, <span class="st">"intensity"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu">peaksData</span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"rtime"</span>, <span class="st">"intensity"</span><span class="op">)</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'ChromBackend'</span></span>
 <span><span class="fu">peaksData</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'ChromBackend'</span></span>
-<span><span class="fu">backendMerge</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu">selectChromVariables</span><span class="op">(</span><span class="va">object</span>, chromVariables <span class="op">=</span> <span class="fu">chromVariables</span><span class="op">(</span><span class="va">object</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S4 method for class 'ChromBackend'</span></span>
+<span><span class="fu">backendInitialize</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'ChromBackend'</span></span>
 <span><span class="fu">backendParallelFactor</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
@@ -161,6 +157,9 @@ in the <em>Creating new <code>ChromBackend</code> classes for Chromatograms</em>
 <span></span>
 <span><span class="co"># S4 method for class 'ChromBackend'</span></span>
 <span><span class="fu">chromIndex</span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="fu">chromVariables</span><span class="op">(</span><span class="va">object</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S4 method for class 'ChromBackend'</span></span>
+<span><span class="fu">chromIndex</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'ChromBackend'</span></span>
 <span><span class="fu">collisionEnergy</span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
@@ -262,28 +261,16 @@ in the <em>Creating new <code>ChromBackend</code> classes for Chromatograms</em>
 <span><span class="fu">productMzMin</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'ChromBackend'</span></span>
+<span><span class="fu">reset</span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S4 method for class 'ChromBackend'</span></span>
 <span><span class="fu">rtime</span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'ChromBackend'</span></span>
 <span><span class="fu">rtime</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'ChromBackend,ANY'</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/split.html" class="external-link">split</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">f</span>, drop <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># S4 method for class 'ChromBackend'</span></span>
-<span><span class="fu">filterDataOrigin</span><span class="op">(</span><span class="va">object</span>, dataOrigin <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># S4 method for class 'ChromBackend'</span></span>
-<span><span class="fu">filterDataStorage</span><span class="op">(</span><span class="va">object</span>, dataStorage <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># S4 method for class 'ChromBackend'</span></span>
-<span><span class="fu">filterMsLevel</span><span class="op">(</span><span class="va">object</span>, msLevel <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># S4 method for class 'ChromBackend'</span></span>
-<span><span class="fu">filterMzRange</span><span class="op">(</span><span class="va">object</span>, mz <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></span><span class="op">(</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># S4 method for class 'ChromBackend'</span></span>
-<span><span class="fu">filterMzValues</span><span class="op">(</span><span class="va">object</span>, mz <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></span><span class="op">(</span><span class="op">)</span>, ppm <span class="op">=</span> <span class="fl">20</span>, tolerance <span class="op">=</span> <span class="fl">0</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/split.html" class="external-link">split</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">f</span>, drop <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -316,7 +303,10 @@ method description or expected data type.</p></dd>
 
 
 <dt id="arg-drop">drop<a class="anchor" aria-label="anchor" href="#arg-drop"></a></dt>
-<dd><p>For <code>[</code>: not considered.</p></dd>
+<dd><p>For <code>chromData()</code> and <code>peaksData()</code>: <code>logical(1)</code> default to
+<code>FALSE</code>. If <code>TRUE</code>, and one column is called by the user, the method should
+return a vector (or list of vector for <code>peaksData()</code>) of the single column
+requested.</p></dd>
 
 
 <dt id="arg-name">name<a class="anchor" aria-label="anchor" href="#arg-name"></a></dt>
@@ -327,7 +317,7 @@ return or set.</p></dd>
 <dt id="arg-columns">columns<a class="anchor" aria-label="anchor" href="#arg-columns"></a></dt>
 <dd><p>For <code>chromData()</code> accessor: optional <code>character</code> with column
 names (chromatogram variables) that should be included in the
-returned <code>DataFrame</code>. By default, all columns are returned.</p></dd>
+returned <code>data.frame</code>. By default, all columns are returned.</p></dd>
 
 
 <dt id="arg-chromvariables">chromVariables<a class="anchor" aria-label="anchor" href="#arg-chromvariables"></a></dt>
@@ -395,7 +385,6 @@ original source file (e.g. <em>mzML</em> file).</p></li>
 the precursor.</p></li>
 <li><p><code>dataOrigin</code>: optional <code>character</code> with the origin of a chromatogram.</p></li>
 <li><p><code>dataStorage</code>: <code>character</code> defining where the data is (currently) stored.</p></li>
-<li><p><code>intensity</code>: <code>NumericList</code> with the intensity values of each chromatogram.</p></li>
 <li><p><code>msLevel</code>: <code>integer</code> defining the MS level of the data.</p></li>
 <li><p><code>mz</code>: optional <code>numeric</code> with the (target) m/z value for the
 chromatographic data.</p></li>
@@ -415,8 +404,6 @@ product ion.</p></li>
 the product's isolation window.</p></li>
 <li><p><code>productMzMax</code>: for SRM data, optional <code>numeric</code> with the upper m/z of
 the product's isolation window.</p></li>
-<li><p><code>rtime</code>: <code>NumericList</code> with the retention times of each chromatogram.
-retention times are expected to be increasingly sorted.</p></li>
 </ul></div>
     <div id="backend-functions">
     <h2>Backend functions</h2>
@@ -428,31 +415,33 @@ implement the following mandatory methods:</p><ul><li><p><code>backendInitialize
 supposed to be called right after creating an instance of the
 backend class and should prepare the backend.
 Parameters can be defined freely for each backend, depending on what is
-needed to initialize the backend. It is however suggested to also support
-a parameter <code>data</code> that can be used to submit the full data as a
-<code>DataFrame</code> to the backend. This would allow the backend to be also
-usable for the <code>setBackend()</code> function from <code>Chromatograms</code>.
+needed to initialize the backend.
 This method has to ensure to set the spectra variable <code>dataStorage</code>
 correctly.</p></li>
 <li><p><code>chromData()</code>, <code>chromData&lt;-</code>: gets or sets general chromatogram metadata
-(annotation).  <code>chromData()</code> returns a <code>DataFrame</code>, <code>chromData&lt;-</code> expects
-a <code>DataFrame</code> with the same number of rows as there are chromatograms in
-<code>object</code>. Note that <code>chromData()</code> has to return the <strong>full</strong> data, i.e.
-all core chromatogram variables and also the intensity and retention
-time values (as a <code>list</code> or <code>SimpleList</code> in columns <code>"intensity"</code> and
-<code>"rtime"</code>. Read-only backends might not need to implement the
+(annotation). <code>chromData()</code> returns a <code>data.frame</code>, <code>chromData&lt;-</code> expects
+a <code>data.frame</code> with the same number of rows as there are chromatograms in
+<code>object</code>. Read-only backends might not need to implement the
 replacement method <code>chromData&lt;-</code> (unless some internal caching mechanism
-could be used).</p></li>
-<li><p><code>peaksData()</code>: returns a <code>list</code> of two-dimensional arrays (<code>matrix</code> or
-<code>data.frame</code>) with the data (e.g. retention time - intensity pairs) from
-each chromatogram. The length of the <code>list</code> is equal to the number of
-chromatograms in <code>object</code>. For an empty chromatogram a <code>matrix</code>
-with 0 rows and two columns (named <code>"rtime"</code> and <code>"intensity"</code>) has to be
-returned. The optional parameter <code>columns</code>, if supported by the backend<code>allows to define which peak variables should be returned in each array. As default (minimum) columns</code>"rtime"<code>and</code>"intensity"` have to be
-provided.</p></li>
+could be used). <code>chromData()</code> should be implemented with the parameter
+<code>drop</code> set to <code>FALSE</code> as default. With <code>drop = FALSE</code> the method should
+return a <code>data.frame</code> even if only one column is called. If <code>drop = TRUE</code>
+is specified, the output will be a vector of the single column requested.</p></li>
+<li><p><code>peaksData()</code>: returns a <code>list</code> of <code>data.frame</code> with the data
+(e.g. retention time - intensity pairs) from each chromatogram. The length
+of the <code>list</code> is equal to the number of chromatograms in <code>object</code>. For an
+empty chromatogram a <code>data.frame</code> with 0 rows and two columns (named
+<code>"rtime"</code> and <code>"intensity"</code>) has to be returned. The optional parameter
+<code>columns</code>, if supported by the backend allows to define which peak
+variables should be returned in each array. As default (minimum) columns
+<code>"rtime"</code> and <code>"intensity"</code> have to be provided. <code>peaksData()</code> should be
+implemented with the parameter <code>drop</code> set to <code>FALSE</code> as default.  With
+<code>drop = FALSE</code> the method should return a <code>data.frame</code> even if only one
+column is called. If <code>drop = TRUE</code>  is specified, the output will be a
+vector of the single column requested.</p></li>
 <li><p><code>peaksData&lt;-</code> replaces the peak data (retention time and intensity values)
 of the backend. This method expects a <code>list</code> of two-dimensional arrays
-(<code>matrix</code> or <code>data.frame</code>) with columns representing the peak variables.
+(<code>data.frame</code>) with columns representing the peak variables.
 All existing peaks data are expected to be replaced with these new values.
 The length of the <code>list</code> has to match the number of spectra of <code>object</code>.
 Note that only writeable backends need to support this method.</p></li>
@@ -472,9 +461,7 @@ The default implementation returns a factor of length 0 (<code><a href="https://
 providing thus no default splitting.</p></li>
 <li><p><code>chromVariables()</code>: returns a <code>character</code> vector with the
 available chromatogram variables (columns, fields or attributes)
-available in <code>object</code>. This should return <strong>all</strong> variables which
-are present in <code>object</code>, also <code>"intensity"</code> and <code>"rtime"</code> (which are by
-default not returned by the <code>chromVariables,Chromatograms</code> method).</p></li>
+available in <code>object</code>.</p></li>
 <li><p><code>chromIndex()</code>: returns an <code>integer</code> vector with the index of the
 chromatograms in the original source file.</p></li>
 <li><p><code>collisionEnergy()</code>, <code>collisionEnergy&lt;-</code>: gets or sets the collision energy
@@ -490,14 +477,14 @@ chromatograms in <code>object</code>, <code>dataStorage&lt;- </code> expects a <
 length equal <code>length(object)</code>. Note that missing values (<code>NA_character_</code>)
 are not supported for <code>dataStorage()</code>.</p></li>
 <li><p><code>intensity()</code>: gets the intensity values from the chromatograms. Returns
-a <code>NumericList()</code> of <code>numeric</code> vectors (intensity values for each
+a <code>list</code> of <code>numeric</code> vectors (intensity values for each
 chromatogram). The length of the list is equal to the number of
 chromatograms in <code>object</code>.</p></li>
 <li><p><code>intensity&lt;-</code>: replaces the intensity values. <code>value</code> has to be a <code>list</code>
-(or <code>NumericList()</code>) of length equal to the number of chromatograms and
-the number of values within each list element identical to the number of
-data pairs in each chromatogram. Note that just writeable backends
-need to support this method.</p></li>
+of length equal to the number of chromatograms and the number of values
+within each list element identical to the number of data pairs in each
+chromatogram. Note that just writeable backends need to support this
+method.</p></li>
 <li><p><code>isReadOnly()</code>: returns a <code>logical(1)</code> whether the backend is <em>read
 only</em> or does allow also to write/update data.</p></li>
 <li><p><code>isEmpty()</code>: returns a <code>logical</code> of length equal to the number of
@@ -589,7 +576,7 @@ implementation is provided in the respective vignette.</p>
     </div>
     <div id="author">
     <h2>Author</h2>
-    <p>Johannes Rainer</p>
+    <p>Johannes Rainer, Philippine Louail</p>
     </div>
 
     <div id="ref-examples">

@@ -1,6 +1,5 @@
 pandoc: '3.3'
 pkgdown: 2.1.0.9000
-pkgdown_sha: 020dc44c138193ad0a63a9778bb832ac7afed1f1
-articles:
-  creating-backend-classes: creating-backend-classes.html
-last_built: 2024-08-22T12:31Z
+pkgdown_sha: ee72108bc3a9827dcf313817525652dbd9d4284d
+articles: {}
+last_built: 2024-09-02T14:24Z
