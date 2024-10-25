@@ -1,5 +1,3 @@
-library(S4Vectors)
-
 test_that("ChromBackend methods throw errors", {
     setClass("DummyBackend",
              contains = "ChromBackend")
@@ -10,13 +8,49 @@ test_that("ChromBackend methods throw errors", {
     expect_error(dm$a <- "a", "Not implemented for ")
     expect_error(backendMerge(dm), "Not implemented for ")
     expect_error(chromData(dm), "Not implemented for ")
-    expect_error(chromData(dm) <- DataFrame(), "Not implemented for ")
+    expect_error(chromData(dm) <- data.frame(), "Not implemented for ")
+    expect_error(chromVariables(dm), "Not implemented for ")
     expect_error(peaksData(dm), "Not implemented for ")
     expect_error(peaksData(dm) <- list(), "Not implemented for ")
-    expect_error(selectChromVariables(dm), "Not implemented for ")
-
+    expect_error(peaksVariables(dm), "Not implemented for ")
     expect_true(isReadOnly(dm))
     expect_equal(backendParallelFactor(dm), factor())
+
+    expect_true(is(reset(dm), class(dm)))
+
+    # accessor function with default but dependent on chromData() and
+    # therefore not implemented
+    expect_true(is(backendInitialize(dm), class(dm)))
+    expect_error(chromIndex(dm), "Not implemented for ")
+    expect_error(chromIndex(dm) <- 1, "Not implemented for ")
+    expect_error(collisionEnergy(dm), "Not implemented for ")
+    expect_error(collisionEnergy(dm) <- 1, "Not implemented for ")
+    expect_error(dataOrigin(dm), "Not implemented for ")
+    expect_error(dataOrigin(dm) <- "a", "Not implemented for ")
+    expect_error(dataStorage(dm), "Not implemented for ")
+    expect_error(dataStorage(dm) <- "a", "Not implemented for ")
+    expect_error(msLevel(dm), "Not implemented for ")
+    expect_error(msLevel(dm) <- 1, "Not implemented for ")
+    expect_error(mz(dm), "Not implemented for ")
+    expect_error(mz(dm) <- 1, "Not implemented for ")
+    expect_error(mzMax(dm), "Not implemented for ")
+    expect_error(mzMax(dm) <- 1, "Not implemented for ")
+    expect_error(mzMin(dm), "Not implemented for ")
+    expect_error(mzMin(dm) <- 1, "Not implemented for ")
+    expect_error(precursorMz(dm), "Not implemented for ")
+    expect_error(precursorMz(dm) <- 1, "Not implemented for ")
+    expect_error(precursorMzMax(dm), "Not implemented for ")
+    expect_error(precursorMzMax(dm) <- 1, "Not implemented for ")
+    expect_error(precursorMzMin(dm), "Not implemented for ")
+    expect_error(precursorMzMin(dm) <- 1, "Not implemented for ")
+    expect_error(productMz(dm), "Not implemented for ")
+    expect_error(productMz(dm) <- 1, "Not implemented for ")
+    expect_error(productMzMax(dm), "Not implemented for ")
+    expect_error(productMzMax(dm) <- 1, "Not implemented for ")
+    expect_error(productMzMin(dm), "Not implemented for ")
+    expect_error(productMzMin(dm) <- 1, "Not implemented for ")
+    expect_error(rtime(dm), "Not implemented for ")
+    expect_error(rtime(dm) <- c(1,1,1), "Not implemented for ")
 })
 
 

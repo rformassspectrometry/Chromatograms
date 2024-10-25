@@ -3,6 +3,7 @@
 #' @name ChromBackend
 #'
 #' @aliases ChromBackend-class
+#' @aliases ChromBackendMemory-class
 #'
 #' @description
 #'
@@ -15,19 +16,30 @@
 #' should also be provided.
 #'
 #' Through their implementation different backends can be either optimized for
-#' minimal memory requirements or performance. Each backend needs to implemet
+#' minimal memory requirements or performance. Each backend needs to implement
 #' data access methods listed in section *Backend functions:* below.
 #'
 #' And example implementation and more details and descriptions are provided
 #' in the *Creating new `ChromBackend` classes for Chromatograms* vignette.
+#'
+#' Currently available backends are:
+#'
+#' - `ChromBackendMemory`: This backend is used to store chromatographic data in
+#'   memory. It is particularly useful for small datasets or for testing
+#'   purposes. The backend can be initialized by inputing a `data.frame`  with
+#'   the chromatographic data in the `chromData` parameter and a `list` of
+#'   `data.frame` with the peaks data in the `peaksData` parameter. Both of
+#'   these information can be retrieved using the accessor functions
+#'   `chromData()` and `peaksData()`.
+#'
 #'
 #' @section Core chromatogram variables:
 #'
 #' The *core* chromatogram variables are variables (metadata) that can/should
 #' be provided by a backend. For each of these variables a value needs to be
 #' returned, if none is defined, a missing value (of the correct data type)
-#' should be returned. The names of the core variables are returned with the
-#' `chromVariables` function.
+#' should be returned. The names of the chromatogram variables in your current
+#' chromatogram object are returned with the `chromVariables()` function.
 #'
 #' For each core chromatogram variable a dedicated access method exists.
 #'
@@ -62,9 +74,33 @@
 #' - `productMzMax`: for SRM data, optional `numeric` with the upper m/z of
 #'   the product's isolation window.
 #'
-#' @param chromVariables For `selectChromVariables()`: `character` with the
-#'     names of the chromatogram variables to which the backend should be
-#'     subsetted.
+#' @section Core Peaks variables:
+#'
+#' In a similar fashion as the core chromatogram variables, the core peaks
+#' variables are variables (metadata) that can/should be provided by a backend.
+#' For each of these variables a value needs to be returned, if none is defined,
+#' a missing value (of the correct data type) should be returned.
+#' The names of the peaks variables in your current chromatogram object are
+#' returned with the `peaksVariables()` function.
+#'
+#' For each core peaks variable a dedicated access method exists.
+#'
+#' The `corePeaksVariables()` function returns the core peaks variables along
+#' with their expected (defined) data type.
+#'
+#' The core peaks variables (in alphabetical order) are:
+#'
+#' - `rtime`: `numeric` with the retention time values.
+#' - `intensity`: `numeric` with the intensity values.
+#'
+#' They should be provided for each chromatogram in the backend, **in this order**,
+#' No NAs are allowed for the `rtime` values. These characteristics will be
+#' checked with the `validPeaksData()` function.
+#'
+#' @param chromData For `backendInitialize()` of a `ChromBackendMemory` backend,
+#'     a `data.frame` with the chromatographic data. If not provided
+#'     (or if empty), a default `data.frame` with the core chromatographic
+#'     variables will be created.
 #'
 #' @param columns For `chromData()` accessor: optional `character` with column
 #'     names (chromatogram variables) that should be included in the
@@ -104,6 +140,12 @@
 #'
 #' @param object Object extending `ChromBackend`.
 #'
+#' @param peaksData For `backendInitialize()` of a `ChromBackendMemory` backend,
+#'     a `list` of `data.frame` with the peaks data. If not provided (or if
+#'     empty), a default `list` of empty `data.frame` with the core peaks
+#'     variables will be created. The length of the list should match the number
+#'     of chromatograms in the `chromData` parameter.
+#'
 #' @param ppm For `filterMzValues()`: m/z-relative acceptable difference (in
 #'     parts-per-million) for m/z values to be considered *matching*.
 #'
@@ -122,6 +164,13 @@
 #' New backend classes **must** extend the base `ChromBackend` class and
 #' implement the following mandatory methods:
 #'
+#' **Phili: I have now implemented a lot of default methods, so should I maybe
+#'  remove these from the list below ? or keep them and say that if not
+#'  implemented with the new backend the developper has to ensure it satifies
+#'  the required described below when ran with the default method. Example:
+#'  most accessor method, chromIndex, collisionEnergy, dataOrigin, dataStorage,
+#'   msLevel, mz BUT also the filter functions, filterDataOrigin, ...**
+#'
 #' - `backendInitialize()`: initialises the backend. This method is
 #'   supposed to be called right after creating an instance of the
 #'   backend class and should prepare the backend.
@@ -139,6 +188,15 @@
 #'   `drop` set to `FALSE` as default. With `drop = FALSE` the method should
 #'   return a `data.frame` even if only one column is called. If `drop = TRUE`
 #'   is specified, the output will be a vector of the single column requested.
+#'   New backends should be implemented such as if empty, the method returns a
+#'   `data.frame` with 0 rows and the columns defined by `chromVariables()`.
+#'   By default, the function *should* return at minimum the coreChromVariables,
+#'   even if NAs.
+#'
+#' - `chromVariables()`: returns a `character` vector with the
+#'   available chromatogram variables (columns, fields or attributes)
+#'   available in `object`. Vairables listed by this function are expected to
+#'   be returned (if requested) by the `chromData()` function.
 #'
 #' - `peaksData()`: returns a `list` of `data.frame` with the data
 #'   (e.g. retention time - intensity pairs) from each chromatogram. The length
@@ -160,14 +218,18 @@
 #'   The length of the `list` has to match the number of spectra of `object`.
 #'   Note that only writeable backends need to support this method.
 #'
+#' - `peaksVariables()`: lists the available data variables for the
+#'   chromatograms. Default peak variables are `"rtime"` and `"intensity"`
+#'   (which all backends need to support and provide), but some backends
+#'   might provide additional variables.
+#'   Variables listed by this function are expected to be returned (if
+#'   requested) by the `peaksData()` function.
+#'
 #' - `[`: subset the backend. Only subsetting by element (*row*/`i`) is
 #'   allowed.
 #'
 #' - `$`, `$<-`: access or set/add a single chromatogram variable (column) in
 #'   the backend.
-#'
-#' - `selectChromVariables()`: reduce `object` retaining only specified
-#'   chromatogram variables.
 #'
 #' - `backendMerge()`: merges (combines) `ChromBackend` objects into a single
 #'   instance. All objects to be merged have to be of the same type.
@@ -181,10 +243,6 @@
 #'   The default implementation returns a factor of length 0 (`factor()`)
 #'   providing thus no default splitting.
 #'
-#' - `chromVariables()`: returns a `character` vector with the
-#'   available chromatogram variables (columns, fields or attributes)
-#'   available in `object`.
-#'
 #' - `chromIndex()`: returns an `integer` vector with the index of the
 #'   chromatograms in the original source file.
 #'
@@ -195,7 +253,8 @@
 #' - `dataOrigin()`, `dataOrigin<-`: gets or sets the *data origin* variable.
 #'   `dataOrigin()` returns a `character` of length equal to the number of
 #'   chromatograms, `dataOrigin<-` expects a `character` of length equal
-#'   `length(object)`.
+#'   `length(object)`. Note that missing values (`NA_character_`)
+#'   are not supported for `dataOrigin()`.
 #'
 #' - `dataStorage()`, `dataStorage<-`: gets or sets the *data storage* variable.
 #'   `dataStorage()` returns a `character` of length equal to the number of
@@ -246,13 +305,6 @@
 #'   `mzMin()` returns a `numeric` of length equal to the number of
 #'   chromatograms in `object`, `mzMin<-` expects a `numeric` of length equal
 #'   to the number of chromatograms in `object`.
-#'
-#' - `peaksVariables()`: lists the available data variables for the
-#'   chromatograms. Default peak variables are `"rtime"` and `"intensity"`
-#'   (which all backends need to support and provide), but some backends
-#'   might provide additional variables.
-#'   Variables listed by this function are expected to be returned (if
-#'   requested) by the `peaksData()` function.
 #'
 #' - `precursorMz()`,`precursorMz<-`: gets or sets the (target) m/z of the
 #'   precursor (for SRM data). `precursorMz()` returns a `numeric` of length
@@ -391,6 +443,13 @@ setReplaceMethod("chromData", "ChromBackend",
     stop("Not implemented for ", class(object), ".")
 })
 
+#' @exportMethod chromVariables
+#'
+#' @rdname ChromBackend
+setMethod("chromVariables", "ChromBackend", function(object) {
+    stop("Not implemented for ", class(object), ".")
+})
+
 #' @exportMethod peaksData
 #'
 #' @importMethodsFrom ProtGenerics peaksData
@@ -410,14 +469,14 @@ setReplaceMethod("peaksData", "ChromBackend", function(object, value) {
     stop("Not implemented for ", class(object), ".")
 })
 
-#' @exportMethod selectChromVariables
+#' @exportMethod peaksData
+#'
+#' @importMethodsFrom ProtGenerics peaksVariables
 #'
 #' @rdname ChromBackend
-setMethod("selectChromVariables", "ChromBackend",
-          function(object, chromVariables = chromVariables(object)) {
-              stop("Not implemented for ", class(object), ".")
+setMethod("peaksVariables", "ChromBackend", function(object) {
+    stop("Not implemented for ", class(object), ".")
 })
-
 
 ################################################################################
 ## Methods with default implementations below.
@@ -451,18 +510,11 @@ setMethod("backendMerge", "list", function(object, ...) {
     backendMerge(object[[1]], object[-1])
 })
 
-#' @exportMethod chromVariables
-#'
-#' @rdname ChromBackend
-setMethod("chromVariables", "ChromBackend", function(object) {
-    colnames(chromData(object))
-})
-
 #' @exportMethod chromIndex
 #'
 #' @rdname ChromBackend
 setMethod("chromIndex", "ChromBackend",
-          function(object, columns = chromVariables(object)) {
+          function(object) {
               chromData(object, columns = "chromIndex", drop = TRUE)
               })
 
@@ -665,15 +717,6 @@ setReplaceMethod("mzMin", "ChromBackend", function(object, value) {
     object
 })
 
-#' @exportMethod peaksData
-#'
-#' @importMethodsFrom ProtGenerics peaksVariables
-#'
-#' @rdname ChromBackend
-setMethod("peaksVariables", "ChromBackend", function(object) {
-    colnames(peaksData(object[1L])[[1L]])
-    })
-
 #' @exportMethod precursorMz
 #'
 #' @importMethodsFrom ProtGenerics precursorMz
@@ -761,7 +804,7 @@ setReplaceMethod("productMzMax", "ChromBackend", function(object, value) {
 #'
 #' @rdname ChromBackend
 setMethod("productMzMin", "ChromBackend", function(object) {
-    chromData(object, columns = "productMz", drop = TRUE)
+    chromData(object, columns = "productMzMin", drop = TRUE)
 })
 
 #' @exportMethod productMzMin<-
@@ -822,79 +865,79 @@ setMethod("split", "ChromBackend", function(x, f, drop = FALSE, ...) {
 })
 
 ################################################################################
-## Filter functions TODO ADD MORE! (phili: will implement these properly when I
-## am working on chromBackendMemory)
+## Filter functions TODO ADD MORE!
 
-#' #' @exportMethod filterDataOrigin
-#' #'
-#' #' @importMethodsFrom ProtGenerics filterDataOrigin
-#' #'
-#' #' @rdname ChromBackend
-#' setMethod("filterDataOrigin", "ChromBackend",
-#'           function(object, dataOrigin = character(), ...) {
-#'               if (length(dataOrigin)) {
-#'                   object <- object[dataOrigin(object) %in% dataOrigin]
-#'                   if (is.unsorted(dataOrigin))
-#'                       object[order(match(dataOrigin(object), dataOrigin))]
-#'                   else object
-#'               } else object
-#'           })
+#' @exportMethod filterDataOrigin
 #'
-#' #' @exportMethod filterDataStorage
-#' #'
-#' #' @importMethodsFrom ProtGenerics filterDataStorage
-#' #'
-#' #' @rdname ChromBackend
-#' setMethod("filterDataStorage", "ChromBackend",
-#'           function(object, dataStorage = character()) {
-#'               if (length(dataStorage)) {
-#'                   object <- object[dataStorage(object) %in% dataStorage]
-#'                   if (is.unsorted(dataStorage))
-#'                       object[order(match(dataStorage(object), dataStorage))]
-#'                   else object
-#'               } else object
-#'           })
+#' @importMethodsFrom ProtGenerics filterDataOrigin
 #'
-#' #' @exportMethod filterMsLevel
-#' #'
-#' #' @importMethodsFrom ProtGenerics filterMsLevel
-#' #'
-#' #' @rdname ChromBackend
-#' setMethod("filterMsLevel", "ChromBackend",
-#'           function(object, msLevel = integer()) {
-#'               if (length(msLevel)) {
-#'                   object[msLevel(object) %in% msLevel]
-#'               } else object
-#'           })
+#' @rdname ChromBackend
+setMethod("filterDataOrigin", "ChromBackend",
+          function(object, dataOrigin = character(), ...) {
+              if (length(dataOrigin)) {
+                  object <- object[dataOrigin(object) %in% dataOrigin]
+                  if (is.unsorted(dataOrigin))
+                      object[order(match(dataOrigin(object), dataOrigin))]
+                  else object
+              } else object
+          })
+
+#' @exportMethod filterDataStorage
 #'
-#' #' @exportMethod filterMzRange
-#' #'
-#' #' @importMethodsFrom ProtGenerics filterMzRange
-#' #'
-#' #' @importFrom MsCoreUtils between
-#' #'
-#' #' @rdname ChromBackend
-#' setMethod("filterMzRange", "ChromBackend", function(object, mz = numeric(),
-#'                                                     ...) {
-#'     if (length(mz)) {
-#'         mz <- range(mz)
-#'         keep <- which(between(mz(object), mz))
-#'         object[keep]
-#'     } else object
-#' })
+#' @importMethodsFrom ProtGenerics filterDataStorage
 #'
-#' #' @exportMethod filterMzValues
-#' #'
-#' #' @importMethodsFrom ProtGenerics filterMzValues
-#' #'
-#' #' @rdname ChromBackend
-#' setMethod("filterMzValues", "ChromBackend",
-#'           function(object, mz = numeric(), ppm = 20, tolerance = 0, ...) {
-#'               if (length(mz)) {
-#'                   object[.values_match_mz(precursorMz(object), mz = mz,
-#'                                           ppm = ppm, tolerance = tolerance)]
-#'               } else object
-#'           })
+#' @rdname ChromBackend
+setMethod("filterDataStorage", "ChromBackend",
+          function(object, dataStorage = character()) {
+              if (length(dataStorage)) {
+                  object <- object[dataStorage(object) %in% dataStorage]
+                  if (is.unsorted(dataStorage))
+                      object[order(match(dataStorage(object), dataStorage))]
+                  else object
+              } else object
+          })
+
+#' @exportMethod filterMsLevel
+#'
+#' @importMethodsFrom ProtGenerics filterMsLevel
+#'
+#' @rdname ChromBackend
+setMethod("filterMsLevel", "ChromBackend",
+          function(object, msLevel = integer()) {
+              if (length(msLevel)) {
+                  object[msLevel(object) %in% msLevel]
+              } else object
+          })
+
+#' @exportMethod filterMzRange
+#'
+#' @importMethodsFrom ProtGenerics filterMzRange
+#'
+#' @importFrom MsCoreUtils between
+#'
+#' @rdname ChromBackend
+setMethod("filterMzRange", "ChromBackend", function(object, mz = numeric(),
+                                                    ...) {
+    if (length(mz)) {
+        mz <- range(mz)
+        keep <- which(between(mz(object), mz))
+        object[keep]
+    } else object
+})
+
+#' @exportMethod filterMzValues
+#'
+#' @importMethodsFrom ProtGenerics filterMzValues
+#'
+#' @rdname ChromBackend
+setMethod("filterMzValues", "ChromBackend",
+          function(object, mz = numeric(), ppm = 20, tolerance = 0, ...) {
+              if (length(mz)) {
+                  object[.values_match_mz(precursorMz(object), mz = mz,
+                                          ppm = ppm, tolerance = tolerance)]
+              } else object
+          })
 
 ## TODO:
 ## - generic filterRanges, filterValues methods as in Spectra.
+## - filterRtime hsould be an important one no ?

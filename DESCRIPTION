@@ -1,6 +1,6 @@
 Package: Chromatograms
 Title: Infrastructure for Chromatographic Mass Spectrometry Data
-Version: 0.1.0
+Version: 0.2.0
 Description: The Chromatograms packages defines a efficient infrastructure
    for storing and handling of chromatographic mass spectrometry data. It
    provides different implementations of *backends* to store and represent the
@@ -20,7 +20,8 @@ Authors@R: c(person(given = "Laurent", family = "Gatto",
 		    role = c("aut", "cre"),
 		    comment = c(ORCID = "0009-0007-5429-6846")))
 Depends:
-    ProtGenerics (>= 1.35.4)
+    ProtGenerics (>= 1.35.4),
+    R (>= 4.2.0)
 Imports:
     methods,
     S4Vectors,
@@ -33,7 +34,6 @@ Suggests:
     BiocStyle
 License: Artistic-2.0
 Encoding: UTF-8
-LazyData: yes
 VignetteBuilder: knitr
 BugReports: https://github.com/RforMassSpectrometry/Chromatograms/issues
 URL: https://github.com/RforMassSpectrometry/Chromatograms
@@ -44,3 +44,7 @@ Collate:
     'AllGenerics.R'
     'ChromBackend-functions.R'
     'ChromBackend.R'
+    'ChromBackendMemory-functions.R'
+    'hidden_aliases.R'
+    'helpers.R'
+    'ChromBackendMemory.R'
