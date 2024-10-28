@@ -29,7 +29,7 @@ files, e.g. the test file that checks that all spectra variables can be
 correctly accessed or set:
 
 ```
-test_file(file.path(test_suite, "test_spectra_variables.R"),
+test_file(file.path(test_suite, "test_peaksData.R"),
     stop_on_failure = TRUE)
 ```
 
