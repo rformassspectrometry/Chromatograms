@@ -76,11 +76,6 @@
 \alias{rtime,ChromBackend-method}
 \alias{rtime<-,ChromBackend-method}
 \alias{split,ChromBackend,ANY-method}
-\alias{filterDataOrigin,ChromBackend-method}
-\alias{filterDataStorage,ChromBackend-method}
-\alias{filterMsLevel,ChromBackend-method}
-\alias{filterMzRange,ChromBackend-method}
-\alias{filterMzValues,ChromBackend-method}
 \alias{ChromBackendMemory}
 \alias{backendInitialize,ChromBackendMemory-method}
 \title{Chromatographic MS Data Backends}
@@ -227,16 +222,6 @@ corePeaksVariables()
 
 \S4method{split}{ChromBackend,ANY}(x, f, drop = FALSE, ...)
 
-\S4method{filterDataOrigin}{ChromBackend}(object, dataOrigin = character(), ...)
-
-\S4method{filterDataStorage}{ChromBackend}(object, dataStorage = character())
-
-\S4method{filterMsLevel}{ChromBackend}(object, msLevel = integer())
-
-\S4method{filterMzRange}{ChromBackend}(object, mz = numeric(), ...)
-
-\S4method{filterMzValues}{ChromBackend}(object, mz = numeric(), ppm = 20, tolerance = 0, ...)
-
 ChromBackendMemory()
 
 \S4method{backendInitialize}{ChromBackendMemory}(
@@ -272,30 +257,6 @@ names (chromatogram variables) that should be included in the
 returned \code{data.frame}. By default, all columns are returned.}
 
 \item{f}{\code{factor} defining the grouping to split \code{x}. See \code{\link[=split]{split()}}.}
-
-\item{dataOrigin}{For \code{filterDataOrigin()}: \code{character} to define which
-chromatograms to keep.}
-
-\item{dataStorage}{For \code{filterDataStorage()}: \code{character} to define which
-chromatograms to keep.}
-
-\item{msLevel}{\code{integer} defining the MS level of the chromatograms to which
-the function should be applied. For \code{filterMsLevel()}: the MS level to
-which \code{object} should be subsetted.}
-
-\item{mz}{For \code{filterMzValues()}: \code{numeric} with the m/z values of
-chromatograms to keep. All chromatograms with their \code{mz} chromatogram
-variable matching any of the values provided with this parameter are
-retained. Parameters \code{ppm} and \code{tolerance} allow relaxed matching.
-For \code{filterMzRange()}: \code{numeric(2)} defining the lower and upper
-boundary of the m/z range. Chromatograms with their \code{mz} chromatogram
-variable within this range are retained.}
-
-\item{ppm}{For \code{filterMzValues()}: m/z-relative acceptable difference (in
-parts-per-million) for m/z values to be considered \emph{matching}.}
-
-\item{tolerance}{For \code{filterMzValues()}: largest acceptable absolute
-difference in m/z values to consider them \emph{matching}.}
 
 \item{chromData}{For \code{backendInitialize()} of a \code{ChromBackendMemory} backend,
 a \code{data.frame} with the chromatographic data. If not provided
@@ -411,12 +372,12 @@ checked with the \code{validPeaksData()} function.
 New backend classes \strong{must} extend the base \code{ChromBackend} class and
 implement the following mandatory methods:
 
-\strong{Phili: I have now implemented a lot of default methods, so should I maybe
+**Phili: I have now implemented a lot of default methods, so should I maybe
 remove these from the list below ? or keep them and say that if not
 implemented with the new backend the developper has to ensure it satifies
 the required described below when ran with the default method. Example:
 most accessor method, chromIndex, collisionEnergy, dataOrigin, dataStorage,
-msLevel, mz BUT also the filter functions, filterDataOrigin, ...}
+msLevel, mz,...
 \itemize{
 \item \code{backendInitialize()}: initialises the backend. This method is
 supposed to be called right after creating an instance of the
@@ -555,33 +516,6 @@ this method.
 parameter \code{f}). The default method for \code{ChromBackend} uses
 \code{\link[=split.default]{split.default()}}, thus backends extending \code{ChromBackend} don't
 necessarily need to implement this method.
-}
-
-Filter methods:
-\itemize{
-\item \code{filterDataOrigin()}: filters the object retaining chromatograms matching
-any of the provided \code{dataOrigin}. Parameter \code{dataOrigin} has to be of
-type \code{character} and needs to match exactly the data origin value of the
-chromatograms to subset.
-\code{filterDataOrigin()} should return the data ordered by the provided
-\code{dataOrigin} parameter, i.e. if \code{dataOrigin = c("2", "1")} was provided,
-the chromatograms in the resulting object should be ordered accordingly
-(first chromatogram from data origin \code{"2"} and then from \code{"1"}).
-\item \code{filterDataStorage()}: filters the object retaining chromatograms matching
-any of the provided \code{dataStorage}. Parameter \code{dataStorage} has to be
-of type \code{character} and needs to match exactly the data storage value of
-the chromatograms to subset.
-\code{filterDataStorage()} should return the data ordered by the provided
-\code{dataStorage} parameter, i.e. if \code{dataStorage = c("2", "1")} was
-provided, the chromatograms in the resulting object should be ordered
-accordingly (first chromatogram from data storage \code{"2"} and then from
-\code{"1"}).
-\item \code{filterMsLevel()}: retains chromatograms of MS level \code{msLevel()}.
-\item \code{filterMzRange()}: retains chromatograms with their m/z within the
-provided m/z range.
-\item \code{filterMzValues()}: retains chromatograms with their m/z matching any of
-the provided m/z values (given the provided acceptable differences defined
-by parameters \code{tolerance} and \code{ppm}.
 }
 }
 

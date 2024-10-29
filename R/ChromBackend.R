@@ -106,12 +106,6 @@
 #'     names (chromatogram variables) that should be included in the
 #'     returned `data.frame`. By default, all columns are returned.
 #'
-#' @param dataOrigin For `filterDataOrigin()`: `character` to define which
-#'     chromatograms to keep.
-#'
-#' @param dataStorage For `filterDataStorage()`: `character` to define which
-#'     chromatograms to keep.
-#'
 #' @param drop For `chromData()` and `peaksData()`: `logical(1)` default to
 #' `FALSE`. If `TRUE`, and one column is called by the user, the method should
 #' return a vector (or list of vector for `peaksData()`) of the single column
@@ -123,18 +117,6 @@
 #'
 #' @param j For `[`: ignored.
 #'
-#' @param msLevel `integer` defining the MS level of the chromatograms to which
-#'     the function should be applied. For `filterMsLevel()`: the MS level to
-#'     which `object` should be subsetted.
-#'
-#' @param mz For `filterMzValues()`: `numeric` with the m/z values of
-#'     chromatograms to keep. All chromatograms with their `mz` chromatogram
-#'     variable matching any of the values provided with this parameter are
-#'     retained. Parameters `ppm` and `tolerance` allow relaxed matching.
-#'     For `filterMzRange()`: `numeric(2)` defining the lower and upper
-#'     boundary of the m/z range. Chromatograms with their `mz` chromatogram
-#'     variable within this range are retained.
-#'
 #' @param name For `$` and `$<-`: the name of the chromatogram variable to
 #'     return or set.
 #'
@@ -145,12 +127,6 @@
 #'     empty), a default `list` of empty `data.frame` with the core peaks
 #'     variables will be created. The length of the list should match the number
 #'     of chromatograms in the `chromData` parameter.
-#'
-#' @param ppm For `filterMzValues()`: m/z-relative acceptable difference (in
-#'     parts-per-million) for m/z values to be considered *matching*.
-#'
-#' @param tolerance For `filterMzValues()`: largest acceptable absolute
-#'     difference in m/z values to consider them *matching*.
 #'
 #' @param value replacement value for `<-` methods. See individual
 #'     method description or expected data type.
@@ -169,7 +145,7 @@
 #'  implemented with the new backend the developper has to ensure it satifies
 #'  the required described below when ran with the default method. Example:
 #'  most accessor method, chromIndex, collisionEnergy, dataOrigin, dataStorage,
-#'   msLevel, mz BUT also the filter functions, filterDataOrigin, ...**
+#'   msLevel, mz,...
 #'
 #' - `backendInitialize()`: initialises the backend. This method is
 #'   supposed to be called right after creating an instance of the
@@ -336,38 +312,6 @@
 #'   parameter `f`). The default method for `ChromBackend` uses
 #'   [split.default()], thus backends extending `ChromBackend` don't
 #'   necessarily need to implement this method.
-#'
-#'
-#' Filter methods:
-#'
-#' - `filterDataOrigin()`: filters the object retaining chromatograms matching
-#'   any of the provided `dataOrigin`. Parameter `dataOrigin` has to be of
-#'   type `character` and needs to match exactly the data origin value of the
-#'   chromatograms to subset.
-#'   `filterDataOrigin()` should return the data ordered by the provided
-#'   `dataOrigin` parameter, i.e. if `dataOrigin = c("2", "1")` was provided,
-#'   the chromatograms in the resulting object should be ordered accordingly
-#'   (first chromatogram from data origin `"2"` and then from `"1"`).
-#'
-#' - `filterDataStorage()`: filters the object retaining chromatograms matching
-#'   any of the provided `dataStorage`. Parameter `dataStorage` has to be
-#'   of type `character` and needs to match exactly the data storage value of
-#'   the chromatograms to subset.
-#'   `filterDataStorage()` should return the data ordered by the provided
-#'   `dataStorage` parameter, i.e. if `dataStorage = c("2", "1")` was
-#'   provided, the chromatograms in the resulting object should be ordered
-#'   accordingly (first chromatogram from data storage `"2"` and then from
-#'   `"1"`).
-#'
-#' - `filterMsLevel()`: retains chromatograms of MS level `msLevel()`.
-#'
-#' - `filterMzRange()`: retains chromatograms with their m/z within the
-#'   provided m/z range.
-#'
-#' - `filterMzValues()`: retains chromatograms with their m/z matching any of
-#'   the provided m/z values (given the provided acceptable differences defined
-#'   by parameters `tolerance` and `ppm`.
-#'
 #'
 #' @section Implementation notes:
 #'
@@ -865,79 +809,7 @@ setMethod("split", "ChromBackend", function(x, f, drop = FALSE, ...) {
 })
 
 ################################################################################
-## Filter functions TODO ADD MORE!
-
-#' @exportMethod filterDataOrigin
-#'
-#' @importMethodsFrom ProtGenerics filterDataOrigin
-#'
-#' @rdname ChromBackend
-setMethod("filterDataOrigin", "ChromBackend",
-          function(object, dataOrigin = character(), ...) {
-              if (length(dataOrigin)) {
-                  object <- object[dataOrigin(object) %in% dataOrigin]
-                  if (is.unsorted(dataOrigin))
-                      object[order(match(dataOrigin(object), dataOrigin))]
-                  else object
-              } else object
-          })
-
-#' @exportMethod filterDataStorage
-#'
-#' @importMethodsFrom ProtGenerics filterDataStorage
-#'
-#' @rdname ChromBackend
-setMethod("filterDataStorage", "ChromBackend",
-          function(object, dataStorage = character()) {
-              if (length(dataStorage)) {
-                  object <- object[dataStorage(object) %in% dataStorage]
-                  if (is.unsorted(dataStorage))
-                      object[order(match(dataStorage(object), dataStorage))]
-                  else object
-              } else object
-          })
-
-#' @exportMethod filterMsLevel
-#'
-#' @importMethodsFrom ProtGenerics filterMsLevel
-#'
-#' @rdname ChromBackend
-setMethod("filterMsLevel", "ChromBackend",
-          function(object, msLevel = integer()) {
-              if (length(msLevel)) {
-                  object[msLevel(object) %in% msLevel]
-              } else object
-          })
-
-#' @exportMethod filterMzRange
-#'
-#' @importMethodsFrom ProtGenerics filterMzRange
-#'
-#' @importFrom MsCoreUtils between
-#'
-#' @rdname ChromBackend
-setMethod("filterMzRange", "ChromBackend", function(object, mz = numeric(),
-                                                    ...) {
-    if (length(mz)) {
-        mz <- range(mz)
-        keep <- which(between(mz(object), mz))
-        object[keep]
-    } else object
-})
-
-#' @exportMethod filterMzValues
-#'
-#' @importMethodsFrom ProtGenerics filterMzValues
-#'
-#' @rdname ChromBackend
-setMethod("filterMzValues", "ChromBackend",
-          function(object, mz = numeric(), ppm = 20, tolerance = 0, ...) {
-              if (length(mz)) {
-                  object[.values_match_mz(precursorMz(object), mz = mz,
-                                          ppm = ppm, tolerance = tolerance)]
-              } else object
-          })
+## Filter functions
 
 ## TODO:
-## - generic filterRanges, filterValues methods as in Spectra.
-## - filterRtime hsould be an important one no ?
+## - generic filterChromData and filterPeaksData

@@ -29,31 +29,6 @@
     res
 }
 
-
-#' Helper function that matches `x` against `mz` (using the `closest` function)
-#' and returns the indices of `x` that match any of the values in `mz`. The
-#' function takes care of sorting `x` and `mz` and deals also with missing
-#' values.
-#'
-#' @return `integer` with the indices of values in `x` that are not `NA` and
-#'     are matching any of the values in `mz` given `ppm` and `tolerance`.
-#'
-#' @noRd
-#'
-#' @importFrom MsCoreUtils common
-#'
-#' @note
-#' Used in:
-#' - filterMzValues
-#'
-#' @author Sebastian Gibb, Johannes Rainer
-.values_match_mz <- function(x, mz, ppm = 20, tolerance = 0) {
-    o <- order(x, na.last = NA)
-    cmn <- common(x[o], sort(mz), tolerance = tolerance, ppm = ppm,
-                  duplicates = "keep", .check = FALSE)
-    sort(o[cmn])
-}
-
 #' Helper function that checks if the `dataStorage` of a `Chromatogram` object
 #' contains any `NA` values.
 #'
