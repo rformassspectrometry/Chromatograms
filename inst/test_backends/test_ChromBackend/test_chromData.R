@@ -224,3 +224,15 @@ test_that("$ works", {
     ## Error if spectra variable not available
     expect_error(be$doesnt_exist)
 })
+
+test_that("[ works", {
+    # Test 1: Single-element indexing
+    be1 <- be[1]
+    expect_equal(nrow(be1@chromData), 1)
+    expect_equal(be1@chromData$chromIndex, 1)
+
+    # Test 2: Multi-element indexing with a sequence
+    be12 <- be[1:2]
+    expect_equal(nrow(be12@chromData), 2)
+    expect_equal(be12@chromData$chromIndex, c(1, 2))
+})

@@ -52,6 +52,8 @@ test_that("validChromData works", {
 test_that("validPeaksData works", {
     x <- matrix()
     expect_error(validPeaksData(x), "list")
+    x <- data.frame()
+    expect_equal(validPeaksData(x), NULL)
     x <- list(data.frame(rtime = numeric(), intensity = numeric()))
     res <- validPeaksData(x)
     expect_true(is.null(res))

@@ -114,3 +114,24 @@ test_that("$<-,ChromBackendMemory works", {
 })
 
 
+test_that("split,ChrombackendMemory works", {
+    be_split <- be
+    be_split$new_vars <- c("a", "b", "b")
+    f <- factor(be_split$new_vars)
+    res <- split(be, f)
+    expect_true(is.list(res))
+    expect_true(length(res) == 2)
+    expect_s4_class(res[[1L]], "ChromBackendMemory")
+    expect_s4_class(res[[2L]], "ChromBackendMemory")
+    expect_equal(res[[1L]]$chromIndex, c(1))
+    expect_equal(res[[2L]]$chromIndex, c(2,3))
+
+    res <- split(be, factor(be_split$new_vars, levels = c("b", "a")))
+    expect_true(is.list(res))
+    expect_true(length(res) == 2)
+    expect_s4_class(res[[1L]], "ChromBackendMemory")
+    expect_s4_class(res[[2L]], "ChromBackendMemory")
+    expect_equal(res[[2L]]$chromIndex, c(1))
+    expect_equal(res[[1L]]$chromIndex, c(2,3))
+})
+

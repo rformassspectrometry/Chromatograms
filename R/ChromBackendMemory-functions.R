@@ -1,4 +1,4 @@
-#' @rdname ChromBackend
+#' @rdname ChromBackendMemory
 #'
 #' @importFrom methods new
 #' @export ChromBackendMemory

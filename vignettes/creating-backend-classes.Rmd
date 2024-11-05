@@ -51,7 +51,7 @@ backend is only needed if necessary (e.g. if the data is stored in a way that a
 different access to it would be better). In addition, a core set of variables
 (data fields), the so called *core* chromatogram variables, is defined to
 describe the chromatographic data. Each backend needs to provide these, but can
-in also define additional data fields. Before implementing a new backend it is
+also define additional data fields. Before implementing a new backend it is
 highly suggested to carefully read the following *Conventions and definitions*
 section.
 
@@ -111,7 +111,7 @@ and *Optional methods*, respectively.
 To create a new backend a class extending the virtual `ChromBackend` needs to be
 implemented. In the following example we define a simple class that uses a
 `data.frame` to store general properties (*chromatogram variables*) and a list of
-`data.frame` for the retention time and intensity values for each chromatograms,
+`data.frame` for the retention time and intensity values of each chromatograms,
 which represent the actual chromatographic MS data. These values are store in a 
 `list`, where each element correspond to one chromatogram, as the 
 number of values (*peaks*) can vary between chromatograms. We also provide a
@@ -239,14 +239,14 @@ The `backendInitialize()` method should be called after creating an instance of
 the backend class and is responsible for preparing (initializing) the backend
 with data. This method can accept any parameters required by the backend to
 load or initialize the data, such as file names, a database connection, or
-objects containing the data. It is also recommended to set the special
+objects containing the data. It is also recommended that the the special
 chromatogram variables `dataStorage` and `dataOrigin` are set during 
 `backendInitialize()`.
 
 It is strongly recommended to validate the input data within the initialize
 method. The advantage of performing these validity checks in
 `backendInitialize()` rather than using `setValidity()` is that computationally
-expensive operations/checks would only performed once,during initialization, 
+expensive operations/checks would only be performed once,during initialization, 
 instead of each time values within the object are modified (e.g., through
 subsetting or similar operations), which would occur with `setValidity()`. 
 
@@ -340,14 +340,15 @@ coreChromVariables()
 
 A typical `chromVariables()` method for a `ChromBackend` class will thus be
 implemented similarly to the one for our `ChromBackendTest` test backend: it
-will return the names for all available spectra variables within the backend
-object.
+will return the names for all available chromatogram variables that can be 
+called by `chromData()` within the backend object.
 
 ```{r}
 #' Accessor for available chromatogram variables
 setMethod("chromVariables", "ChromBackendTest", function(object) {
-    names(object@chromData)
+    union(names(object@chromData), names(coreChromVariables()))
 })
+
 chromVariables(be)
 ```
 
@@ -380,19 +381,13 @@ variables in the `chromData` implementation for our backend:
 #' function to extract the full chromData
 setMethod(
     "chromData", "ChromBackendTest",
-    function(object, columns = union(names(coreChromVariables()),
-                                   chromVariables(object)),
+    function(object, columns = chromVariables(object),
              drop = FALSE) {
-      if (!any(chromVariables(object) %in% columns) &&
-          !any(names(coreChromVariables()) %in% columns))
+      if (!any(chromVariables(object) %in% columns))
         stop("Some of the requested Chromatogram variables are not ",
                    "available")
-      if (all(columns %in% chromVariables(object)))
-        res <- object@chromData[, columns, drop = drop]
-      else {
-        res <- fillCoreChromVariables(object@chromData)
-        res <- res[, columns, drop = drop]
-        }
+      res <- fillCoreChromVariables(object@chromData)
+      res <- res[, columns, drop = drop]
       res
       })
 ```
@@ -414,10 +409,8 @@ chromData(be, c("collisionEnergy", "mzMin"))
 ### `peaksVariables()`
 
 The `peaksVariables()` function is supposed to provide the names of the
-available *peaks variables*. Backends **must** provide retention time and
-intensity values, thus, the default implementation simply returns `c("rtime",
-"intensity")`. If additional peaks variables would be available, these could
-also be listed by the `peaksVariables()` method.
+available *peaks variables*. If additional peaks variables would be available, 
+these could also be listed by the `peaksVariables()` method.
 
 ```{r}
 setMethod("peaksVariables", "ChromBackendTest", function(object) {
@@ -440,7 +433,7 @@ chromatograms' retention time and intensity values. This data is returned as a
 data pairs. Each backend must provide retention times and intensity values with
 this method, but additional peaks variables (columns) are also supported.
 
-In a simialr way as for the chromatogram variables, a bakcned should support 
+In a similar way as for the chromatogram variables, a backend should support 
 defining and providing their own variables and each `ChromBackend`
 class **must** provide also the *core peaks variables* (in the correct
 data type). These can be listed by the `corePeaksVariables()` function:
@@ -619,10 +612,9 @@ backend class that was used as input.
 ### `chromData<-`
 
 The main replacement method is `chromData<-` which should allow to replace the
-content of a backend with new data. This data is expected to be provided as a
-`data.frame` (similar to the one returned by `chromData()`). Also the method is
-expected to replace the **full** data within the backend, i.e., all chromatogram
-and peaks variables. While values can be replaced, the number of chromatograms
+chormtaogram variables content of a backend with new data. This data is 
+expected to be provided as a `data.frame` (similar to the one returned by
+`chromData()`). While values can be replaced, the number of chromatograms
 before and after a call to `chromData<-` has to be the same. 
 
 ```{r}
@@ -845,7 +837,7 @@ is:
 #' Default replacement method for collisionEnergy
 setReplaceMethod(
     "collisionEnergy", "ChromBackend", function(object, value) {
-    chromData(object)$chromIndex <- value
+    object$collisionEnergy <- value
     object
     })
 ```
@@ -888,7 +880,7 @@ replacement methods, the `$<-` method:
 ```{r}
 #' Default implementation of the `dataOrigin<-` replacement method
 setReplaceMethod("dataOrigin", "ChromBackend", function(object, value) {
-  chromData(object)$dataOrigin <- value
+  object$dataOrigin <- value
   object
 })
 ```
@@ -937,7 +929,7 @@ methods, the `$<-` method:
 ```{r}
 #' Default implementation of the `dataStorage<-` replacement method
 setReplaceMethod("dataStorage", "ChromBackend", function(object, value) {
-  chromData(object)$dataStorage <- value
+  object$dataStorage <- value
   object
 })
 ```
@@ -1096,7 +1088,7 @@ setMethod("msLevel", "ChromBackend", function(object) {
     chromData(object, columns = "msLevel", drop = TRUE)
 })
 setReplaceMethod("msLevel", "ChromBackend", function(object, value) {
-    chromData(object)$msLevel <- value
+    object$msLevel <- value
     object
 })
 ```
@@ -1124,7 +1116,7 @@ setMethod("mz", "ChromBackend", function(object) {
     chromData(object, columns = "mz", drop = TRUE)
 })
 setReplaceMethod("mz", "ChromBackend", function(object, value) {
-    chromData(object)$mz <- value
+    object$mz <- value
     object
 })
 ```
@@ -1150,7 +1142,7 @@ setMethod("mzMax", "ChromBackend", function(object) {
     chromData(object, columns = "mzMax", drop = TRUE)
 })
 setReplaceMethod("mzMax", "ChromBackend", function(object, value) {
-    chromData(object)$mzMax <- value
+    object$mzMax <- value
     object
 })
 ```
@@ -1177,7 +1169,7 @@ setMethod("mzMin", "ChromBackend", function(object) {
 })
 
 setReplaceMethod("mzMin", "ChromBackend", function(object, value) {
-  chromData(object)$mzMin <- value
+  object$mzMin <- value
   object
 })
 ```
@@ -1202,7 +1194,7 @@ setMethod("precursorMz", "ChromBackend", function(object) {
     chromData(object, columns = "precursorMz", drop = TRUE)
 })
 setReplaceMethod("precursorMz", "ChromBackend", function(object, value) {
-    chromData(object)$precursorMz <- value
+    object$precursorMz <- value
     object
 })
 ```
@@ -1226,7 +1218,7 @@ setMethod("precursorMzMax", "ChromBackend", function(object) {
     chromData(object, columns = "precursorMzMax", drop = FALSE)
 })
 setReplaceMethod("precursorMzMax", "ChromBackend", function(object, value) {
-    chromData(object)$precursorMzMax <- value
+    object$precursorMzMax <- value
     object
 })
 ```
@@ -1251,7 +1243,7 @@ setMethod("precursorMzMin", "ChromBackend", function(object) {
     chromData(object, columns = "precursorMzMin", drop = FALSE)
 })
 setReplaceMethod("precursorMzMin", "ChromBackend", function(object, value) {
-    chromData(object)$precursorMzMin <- value
+    object$precursorMzMin <- value
     object
 })
 ```
@@ -1276,7 +1268,7 @@ setMethod("productMz", "ChromBackend", function(object) {
     chromData(object, columns = "productMz", drop = TRUE)
 })
 setReplaceMethod("productMz", "ChromBackend", function(object, value) {
-    chromData(object)$productMz <- value
+    object$productMz <- value
     object
 })
 ```
@@ -1301,7 +1293,7 @@ setMethod("productMzMax", "ChromBackend", function(object) {
     chromData(object, columns = "productMzMax", drop = FALSE)
 })
 setReplaceMethod("productMzMax", "ChromBackend", function(object, value) {
-    chromData(object)$productMzMax <- value
+    object$productMzMax <- value
     object
 })
 ```
@@ -1326,7 +1318,7 @@ setMethod("productMzMin", "ChromBackend", function(object) {
     chromData(object, columns = "productMzMin", drop = FALSE)
 })
 setReplaceMethod("productMzMin", "ChromBackend", function(object, value) {
-    chromData(object)$productMzMin <- value
+    object$productMzMin <- value
     object
 })
 ```

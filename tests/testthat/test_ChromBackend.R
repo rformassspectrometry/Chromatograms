@@ -13,7 +13,7 @@ test_that("ChromBackend methods throw errors", {
     expect_error(peaksData(dm), "Not implemented for ")
     expect_error(peaksData(dm) <- list(), "Not implemented for ")
     expect_error(peaksVariables(dm), "Not implemented for ")
-    expect_true(isReadOnly(dm))
+    expect_true(!isReadOnly(dm))
     expect_equal(backendParallelFactor(dm), factor())
 
     expect_true(is(reset(dm), class(dm)))

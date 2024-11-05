@@ -11,7 +11,6 @@
 \alias{chromData,ChromBackendMemory-method}
 \alias{chromData<-,ChromBackendMemory-method}
 \alias{chromVariables,ChromBackendMemory-method}
-\alias{isReadOnly,ChromBackendMemory-method}
 \alias{peaksData,ChromBackendMemory-method}
 \alias{peaksData<-,ChromBackendMemory-method}
 \alias{peaksVariables,ChromBackendMemory-method}
@@ -29,17 +28,11 @@ validPeaksData(x = list(), error = TRUE)
 
 \S4method{backendMerge}{ChromBackendMemory}(object, ...)
 
-\S4method{chromData}{ChromBackendMemory}(
-  object,
-  columns = union(names(coreChromVariables()), chromVariables(object)),
-  drop = FALSE
-)
+\S4method{chromData}{ChromBackendMemory}(object, columns = chromVariables(object), drop = FALSE)
 
 \S4method{chromData}{ChromBackendMemory}(object) <- value
 
 \S4method{chromVariables}{ChromBackendMemory}(object)
-
-\S4method{isReadOnly}{ChromBackendMemory}(object)
 
 \S4method{peaksData}{ChromBackendMemory}(object, columns = peaksVariables(object), drop = FALSE)
 
