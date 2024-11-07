@@ -341,7 +341,11 @@ coreChromVariables()
 A typical `chromVariables()` method for a `ChromBackend` class will thus be
 implemented similarly to the one for our `ChromBackendTest` test backend: it
 will return the names for all available chromatogram variables that can be 
-called by `chromData()` within the backend object.
+called by `chromData()` within the backend object. There is a default
+implementation for `chromVariables()` that will return the core chromatogram 
+variables. However if a backend class defines additional chromatogram variables,
+the `chromVariables()` method should be implemented to return the names of
+these additional variables as well.
 
 ```{r}
 #' Accessor for available chromatogram variables
@@ -351,7 +355,6 @@ setMethod("chromVariables", "ChromBackendTest", function(object) {
 
 chromVariables(be)
 ```
-
 
 ### `chromData()`
 
@@ -411,10 +414,14 @@ chromData(be, c("collisionEnergy", "mzMin"))
 The `peaksVariables()` function is supposed to provide the names of the
 available *peaks variables*. If additional peaks variables would be available, 
 these could also be listed by the `peaksVariables()` method.
+There is a default implementation for `peaksVaraibles()` that will return the
+core peaks variables. However if a backend class defines additional
+peaks variables, the `peaksVariables()` method should be implemented to
+return the names of these additional variables as well.
 
 ```{r}
 setMethod("peaksVariables", "ChromBackendTest", function(object) {
-  names(object@peaksData[[1]])
+  union(names(corePeaksVariables()), names(object@peaksData[[1]]))
 })
 ```
 

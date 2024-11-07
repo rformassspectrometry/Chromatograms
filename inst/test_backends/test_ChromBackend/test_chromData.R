@@ -29,7 +29,7 @@ test_that("backend removes NA columns", {
 test_that("chromVariables", {
     res <- chromVariables(be)
     expect_type(res, "character")
-    #what else ?
+    expect_true(all(names(coreChromVariables()) %in% res))
 })
 
 test_that("chromIndex", {
@@ -176,7 +176,6 @@ test_that("productMz", {
     }
 })
 
-## that one below is the only one that does not work for some reason - replacment broken
 test_that("productMzMin", {
     res <- productMzMin(be)
     expect_type(res, "double")

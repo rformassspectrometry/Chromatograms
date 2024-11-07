@@ -117,7 +117,6 @@ validChromData <- function(x = data.frame(), error = TRUE) {
 .EMPTY_PEAKS_DATA <- as.data.frame(lapply(.CORE_PEAKS_VARIABLES,
                                           function(x) vector(x, 0)))
 
-
 #' @rdname ChromBackend
 #'
 #' @export
@@ -136,21 +135,18 @@ corePeaksVariables <- function() .CORE_PEAKS_VARIABLES
 validPeaksData <- function(x = list(), error = TRUE) {
     if (!is.list(x)) stop("'peaksData' must be a 'list'")
     if (!length(x)) return(NULL)
-
     first_cols <- colnames(x[[1]])
     expected_cols <- names(.CORE_PEAKS_VARIABLES)
     expected_types <- .CORE_PEAKS_VARIABLES
-
     msgs <- unlist(lapply(seq_along(x), function(i) {
         df <- x[[i]]
         # Check if the column names match those in the first data.frame
-        if (!identical(colnames(df), first_cols)) {
-            return(paste("All data.frames must have the same columns in the same order. Issue found in entry", i))
-        }
+        if (!identical(colnames(df), first_cols))
+            return(paste("All data.frames must have the same columns in the",
+                         " same order. Issue found in entry", i))
         # Check column types and any other validation with .validate_entry
         .validate_entry(x[[i]], i, expected_cols, expected_types)
     }))
-
     if (length(msgs) && error) stop(msgs)
     else msgs
 }

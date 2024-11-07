@@ -31,15 +31,14 @@
 \alias{backendMerge,ChromBackend-method}
 \alias{chromData,ChromBackend-method}
 \alias{chromData<-,ChromBackend-method}
-\alias{chromVariables,ChromBackend-method}
 \alias{peaksData,ChromBackend-method}
 \alias{peaksData<-,ChromBackend-method}
-\alias{peaksVariables,ChromBackend-method}
 \alias{backendInitialize,ChromBackend-method}
 \alias{backendParallelFactor,ChromBackend-method}
 \alias{backendMerge,list-method}
 \alias{chromIndex,ChromBackend-method}
 \alias{chromIndex<-,ChromBackend-method}
+\alias{chromVariables,ChromBackend-method}
 \alias{collisionEnergy,ChromBackend-method}
 \alias{collisionEnergy<-,ChromBackend-method}
 \alias{dataOrigin,ChromBackend-method}
@@ -60,6 +59,7 @@
 \alias{mzMax<-,ChromBackend-method}
 \alias{mzMin,ChromBackend-method}
 \alias{mzMin<-,ChromBackend-method}
+\alias{peaksVariables,ChromBackend-method}
 \alias{precursorMz,ChromBackend-method}
 \alias{precursorMz<-,ChromBackend-method}
 \alias{precursorMzMax,ChromBackend-method}
@@ -130,13 +130,9 @@ corePeaksVariables()
 
 \S4method{chromData}{ChromBackend}(object) <- value
 
-\S4method{chromVariables}{ChromBackend}(object)
-
 \S4method{peaksData}{ChromBackend}(object, columns = c("rtime", "intensity"), drop = FALSE)
 
 \S4method{peaksData}{ChromBackend}(object) <- value
-
-\S4method{peaksVariables}{ChromBackend}(object)
 
 \S4method{backendInitialize}{ChromBackend}(object, ...)
 
@@ -147,6 +143,8 @@ corePeaksVariables()
 \S4method{chromIndex}{ChromBackend}(object)
 
 \S4method{chromIndex}{ChromBackend}(object) <- value
+
+\S4method{chromVariables}{ChromBackend}(object)
 
 \S4method{collisionEnergy}{ChromBackend}(object)
 
@@ -187,6 +185,8 @@ corePeaksVariables()
 \S4method{mzMin}{ChromBackend}(object)
 
 \S4method{mzMin}{ChromBackend}(object) <- value
+
+\S4method{peaksVariables}{ChromBackend}(object)
 
 \S4method{precursorMz}{ChromBackend}(object)
 
@@ -284,7 +284,7 @@ should be returned. The names of the chromatogram variables in your current
 chromatogram object are returned with the \code{chromVariables()} function.
 
 For each core chromatogram variable a dedicated access method exists. In
-contract with the peaks data described below, a single value should be
+contrast to the peaks data described below, a single value should be
 returned for each chromatogram.
 
 The \code{coreChromVariables()} function returns the core chromatogram variables
@@ -342,10 +342,11 @@ The core peaks variables, listed in the required order for \code{peaksData}, are
 \itemize{
 \item \code{rtime}: A \code{numeric} vector containing retention time values.
 \item \code{intensity}: A \code{numeric} vector containing intensity values.
+}
+
 They should be provided for each chromatogram in the backend, \strong{in this order},
 No NAs are allowed for the \code{rtime} values. These characteristics will be
 checked with the \code{validPeaksData()} function.
-}
 }
 
 \section{Mandatory methods}{
@@ -353,13 +354,6 @@ checked with the \code{validPeaksData()} function.
 
 New backend classes \strong{must} extend the base \code{ChromBackend} class and
 implement the following mandatory methods:
-
-**Phili: I have now implemented a lot of default methods, so should I maybe
-remove these from the list below ? or keep them and say that if not
-implemented with the new backend the developper has to ensure it satifies
-the required described below when ran with the default method. Example:
-most accessor method, chromIndex, collisionEnergy, dataOrigin, dataStorage,
-msLevel, mz,...
 \itemize{
 \item \code{backendInitialize()}: initialises the backend. This method is
 supposed to be called right after creating an instance of the
@@ -381,10 +375,6 @@ New backends should be implemented such as if empty, the method returns a
 \code{data.frame} with 0 rows and the columns defined by \code{chromVariables()}.
 By default, the function \emph{should} return at minimum the coreChromVariables,
 even if NAs.
-\item \code{chromVariables()}: returns a \code{character} vector with the
-available chromatogram variables (columns, fields or attributes)
-available in \code{object}. Variables listed by this function are expected to
-be returned (if requested) by the \code{chromData()} function.
 \item \code{peaksData()}: returns a \code{list} of \code{data.frame} with the data
 (e.g. retention time - intensity pairs) from each chromatogram. The length
 of the \code{list} is equal to the number of chromatograms in \code{object}. For an
@@ -403,12 +393,6 @@ of the backend. This method expects a \code{list} of two-dimensional arrays
 All existing peaks data are expected to be replaced with these new values.
 The length of the \code{list} has to match the number of spectra of \code{object}.
 Note that only writeable backends need to support this method.
-\item \code{peaksVariables()}: lists the available data variables for the
-chromatograms. Default peak variables are \code{"rtime"} and \code{"intensity"}
-(which all backends need to support and provide), but some backends
-might provide additional variables.
-Variables listed by this function are expected to be returned (if
-requested) by the \code{peaksData()} function.
 \item \code{[}: subset the backend. Only subsetting by element (\emph{row}/\code{i}) is
 allowed.
 \item \code{$}, \verb{$<-}: access or set/add a single chromatogram variable (column) in
@@ -431,6 +415,10 @@ The default implementation returns a factor of length 0 (\code{factor()})
 providing thus no default splitting.
 \item \code{chromIndex()}: returns an \code{integer} vector with the index of the
 chromatograms in the original source file.
+\item \code{chromVariables()}: returns a \code{character} vector with the
+available chromatogram variables (columns, fields or attributes)
+available in \code{object}. Variables listed by this function are expected to
+be returned (if requested) by the \code{chromData()} function.
 \item \code{collisionEnergy()}, \verb{collisionEnergy<-}: gets or sets the collision energy
 for the precursor (for SRM data). \code{collisionEnergy()} returns a \code{numeric}
 of length equal to the number of chromatograms in \code{object}.
@@ -476,6 +464,12 @@ was extracted from MS data in spectra format and a m/z range was provided).
 \code{mzMin()} returns a \code{numeric} of length equal to the number of
 chromatograms in \code{object}, \verb{mzMin<-} expects a \code{numeric} of length equal
 to the number of chromatograms in \code{object}.
+\item \code{peaksVariables()}: lists the available data variables for the
+chromatograms. Default peak variables are \code{"rtime"} and \code{"intensity"}
+(which all backends need to support and provide), but some backends
+might provide additional variables.
+Variables listed by this function are expected to be returned (if
+requested) by the \code{peaksData()} function.
 \item \code{precursorMz()},\verb{precursorMz<-}: gets or sets the (target) m/z of the
 precursor (for SRM data). \code{precursorMz()} returns a \code{numeric} of length
 equal to the number of chromatograms in \code{object}. \verb{precursorMz<-} expects

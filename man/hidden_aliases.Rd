@@ -81,7 +81,8 @@ For S4 methods that require a documentation entry but only clutter the index.
 
 This method returns the chromatographic data stored in the
 backend. If not specified otherwise it will return all defined column in the
-chromData slot as well as dding the coreChromVariables missing with NA values.
+chromData slot as well as dding the coreChromVariables missing with NA
+values.
 }
 \examples{
 

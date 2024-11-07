@@ -19,12 +19,11 @@ test_that("peaksData() output is valid", {
     expect_true(is.null(validPeaksData(peaksData(be))))
 })
 
-
-
 test_that("peaksVariables", {
     res <- peaksVariables(be)
     expect_type(res, "character")
-    expect_true(all(c("rtime", "intensity") %in% res))
+    expect_true(all(names(corePeaksVariables()) %in% res))
+
 })
 
 test_that("intensity", {

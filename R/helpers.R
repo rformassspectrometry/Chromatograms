@@ -1,5 +1,5 @@
-## Here i want to group all the helper function used in the package...
-# put explanation that this is for the reused fct and list methd in which it is used
+#' Here are the helper functions used in the package.
+#' Please add a description of the function and the methods in which it is used.
 
 #' @note
 #' Used for:
@@ -49,13 +49,10 @@
 #' - `ValidPeaksData()`
 #' @noRd
 .check_column_order_and_types <- function(df, expected_cols, expected_types) {
-    # Check if the first two columns are 'rtime' and 'intensity'
     if (!identical(colnames(df)[1:2], expected_cols))
         return(paste0("Columns should be in the order 'rtime', 'intensity'."))
-    # Check if the data types match the expected types
-    invalid_cols <- sapply(expected_cols, function(col) {
-        !is(df[[col]], expected_types[[col]])
-    })
+    invalid_cols <- vapply(expected_cols, function(col) {
+        !is(df[[col]], expected_types[[col]]) }, logical(1))
     if (any(invalid_cols)) {
         invalid_col_names <- expected_cols[invalid_cols]
         return(paste0("The peaksData variable(s) ", paste(invalid_col_names,
@@ -94,10 +91,8 @@
         msgs <- c(msgs, paste0("Entry ", i, ": all 'peaksData' entries should ",
                                "be of class 'data.frame'"))
     else
-        msgs <- c(msgs,
-                  .check_column_order_and_types(df,
-                                                expected_cols,
-                                                expected_types),
+        msgs <- c(msgs, .check_column_order_and_types(df, expected_cols,
+                                                      expected_types),
                   .check_rtime(df))
     return(msgs)
 }

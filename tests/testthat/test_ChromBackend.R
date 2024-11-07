@@ -9,10 +9,8 @@ test_that("ChromBackend methods throw errors", {
     expect_error(backendMerge(dm), "Not implemented for ")
     expect_error(chromData(dm), "Not implemented for ")
     expect_error(chromData(dm) <- data.frame(), "Not implemented for ")
-    expect_error(chromVariables(dm), "Not implemented for ")
     expect_error(peaksData(dm), "Not implemented for ")
     expect_error(peaksData(dm) <- list(), "Not implemented for ")
-    expect_error(peaksVariables(dm), "Not implemented for ")
     expect_true(!isReadOnly(dm))
     expect_equal(backendParallelFactor(dm), factor())
 
@@ -51,6 +49,9 @@ test_that("ChromBackend methods throw errors", {
     expect_error(productMzMin(dm) <- 1, "Not implemented for ")
     expect_error(rtime(dm), "Not implemented for ")
     expect_error(rtime(dm) <- c(1,1,1), "Not implemented for ")
+
+    expect_identical(chromVariables(dm), names(coreChromVariables()))
+    expect_identical(peaksVariables(dm), names(corePeaksVariables()))
 })
 
 

@@ -41,7 +41,7 @@
 #' chromatogram object are returned with the `chromVariables()` function.
 #'
 #' For each core chromatogram variable a dedicated access method exists. In
-#' contract with the peaks data described below, a single value should be
+#' contrast to the peaks data described below, a single value should be
 #' returned for each chromatogram.
 #'
 #' The `coreChromVariables()` function returns the core chromatogram variables
@@ -88,7 +88,7 @@
 #' obtained with the `peaksVariables()` function.
 #'
 #' Each core peaks variable has a dedicated accessor method.
-
+#'
 #'
 #' The `corePeaksVariables()` function returns the core peaks variables along
 #' with their expected (defined) data type.
@@ -97,7 +97,7 @@
 #'
 #' - `rtime`: A `numeric` vector containing retention time values.
 #' - `intensity`: A `numeric` vector containing intensity values.
-
+#'
 #' They should be provided for each chromatogram in the backend, **in this order**,
 #' No NAs are allowed for the `rtime` values. These characteristics will be
 #' checked with the `validPeaksData()` function.
@@ -134,13 +134,6 @@
 #' New backend classes **must** extend the base `ChromBackend` class and
 #' implement the following mandatory methods:
 #'
-#' **Phili: I have now implemented a lot of default methods, so should I maybe
-#'  remove these from the list below ? or keep them and say that if not
-#'  implemented with the new backend the developper has to ensure it satifies
-#'  the required described below when ran with the default method. Example:
-#'  most accessor method, chromIndex, collisionEnergy, dataOrigin, dataStorage,
-#'   msLevel, mz,...
-#'
 #' - `backendInitialize()`: initialises the backend. This method is
 #'   supposed to be called right after creating an instance of the
 #'   backend class and should prepare the backend.
@@ -163,11 +156,6 @@
 #'   By default, the function *should* return at minimum the coreChromVariables,
 #'   even if NAs.
 #'
-#' - `chromVariables()`: returns a `character` vector with the
-#'   available chromatogram variables (columns, fields or attributes)
-#'   available in `object`. Variables listed by this function are expected to
-#'   be returned (if requested) by the `chromData()` function.
-#'
 #' - `peaksData()`: returns a `list` of `data.frame` with the data
 #'   (e.g. retention time - intensity pairs) from each chromatogram. The length
 #'   of the `list` is equal to the number of chromatograms in `object`. For an
@@ -187,13 +175,6 @@
 #'   All existing peaks data are expected to be replaced with these new values.
 #'   The length of the `list` has to match the number of spectra of `object`.
 #'   Note that only writeable backends need to support this method.
-#'
-#' - `peaksVariables()`: lists the available data variables for the
-#'   chromatograms. Default peak variables are `"rtime"` and `"intensity"`
-#'   (which all backends need to support and provide), but some backends
-#'   might provide additional variables.
-#'   Variables listed by this function are expected to be returned (if
-#'   requested) by the `peaksData()` function.
 #'
 #' - `[`: subset the backend. Only subsetting by element (*row*/`i`) is
 #'   allowed.
@@ -217,6 +198,11 @@
 #'
 #' - `chromIndex()`: returns an `integer` vector with the index of the
 #'   chromatograms in the original source file.
+#'
+#' - `chromVariables()`: returns a `character` vector with the
+#'   available chromatogram variables (columns, fields or attributes)
+#'   available in `object`. Variables listed by this function are expected to
+#'   be returned (if requested) by the `chromData()` function.
 #'
 #' - `collisionEnergy()`, `collisionEnergy<-`: gets or sets the collision energy
 #'   for the precursor (for SRM data). `collisionEnergy()` returns a `numeric`
@@ -276,6 +262,13 @@
 #'   `mzMin()` returns a `numeric` of length equal to the number of
 #'   chromatograms in `object`, `mzMin<-` expects a `numeric` of length equal
 #'   to the number of chromatograms in `object`.
+#'
+#' - `peaksVariables()`: lists the available data variables for the
+#'   chromatograms. Default peak variables are `"rtime"` and `"intensity"`
+#'   (which all backends need to support and provide), but some backends
+#'   might provide additional variables.
+#'   Variables listed by this function are expected to be returned (if
+#'   requested) by the `peaksData()` function.
 #'
 #' - `precursorMz()`,`precursorMz<-`: gets or sets the (target) m/z of the
 #'   precursor (for SRM data). `precursorMz()` returns a `numeric` of length
@@ -382,13 +375,6 @@ setReplaceMethod("chromData", "ChromBackend",
     stop("Not implemented for ", class(object), ".")
 })
 
-#' @exportMethod chromVariables
-#'
-#' @rdname ChromBackend
-setMethod("chromVariables", "ChromBackend", function(object) {
-    stop("Not implemented for ", class(object), ".")
-})
-
 #' @exportMethod peaksData
 #'
 #' @importMethodsFrom ProtGenerics peaksData
@@ -405,15 +391,6 @@ setMethod("peaksData", "ChromBackend",
 #'
 #' @rdname ChromBackend
 setReplaceMethod("peaksData", "ChromBackend", function(object, value) {
-    stop("Not implemented for ", class(object), ".")
-})
-
-#' @exportMethod peaksData
-#'
-#' @importMethodsFrom ProtGenerics peaksVariables
-#'
-#' @rdname ChromBackend
-setMethod("peaksVariables", "ChromBackend", function(object) {
     stop("Not implemented for ", class(object), ".")
 })
 
@@ -463,6 +440,13 @@ setMethod("chromIndex", "ChromBackend",
 setReplaceMethod("chromIndex", "ChromBackend", function(object, value) {
     object$chromIndex <- value
     object
+})
+
+#' @exportMethod chromVariables
+#'
+#' @rdname ChromBackend
+setMethod("chromVariables", "ChromBackend", function(object) {
+    names(coreChromVariables())
 })
 
 #' @exportMethod collisionEnergy
@@ -543,11 +527,10 @@ setReplaceMethod("intensity", "ChromBackend", function(object, value) {
     if (!is.list(value) || length(pd) != length(value))
         stop("'value' should be a list of the same length as 'object'")
     for (i in seq_along(pd)) {
-        if (length(value[[i]]) != nrow(pd[[i]])) {
+        if (length(value[[i]]) != nrow(pd[[i]]))
             stop(paste0("Length of 'value[[", i, "]]' does not match ",
                        "the number of rows in the intensity of chromatogram: ",
                        i, "'"))
-        }
     }
     peaksData(object) <- lapply(seq_along(pd), function(i) {
         pd[[i]]$intensity <- value[[i]]
@@ -652,6 +635,15 @@ setMethod("mzMin", "ChromBackend", function(object) {
 setReplaceMethod("mzMin", "ChromBackend", function(object, value) {
     object$mzMin <- value
     object
+})
+
+#' @exportMethod peaksData
+#'
+#' @importMethodsFrom ProtGenerics peaksVariables
+#'
+#' @rdname ChromBackend
+setMethod("peaksVariables", "ChromBackend", function(object) {
+    names(corePeaksVariables())
 })
 
 #' @exportMethod precursorMz

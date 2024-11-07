@@ -50,18 +50,13 @@ setMethod("backendInitialize", "ChromBackendMemory",
           function(object,
                    chromData = fillCoreChromVariables(data.frame()),
                    peaksData = list(.EMPTY_PEAKS_DATA)) {
-
-            # Ensure chromData is a data.frame
             if (!is(chromData, "data.frame"))
               stop("'chromData' needs to be a 'data.frame' with the general",
                    " chromatogram variables")
-
             n_cd <- nrow(chromData)
-            # If chromData is not empty, fill default values if needed
             if (n_cd) {
               if (is.null(chromData$dataStorage))
                 chromData$dataStorage <- "<memory>"
-              # Validate and clean up chromData
               validChromData(chromData)
               chromData <- chromData[, !vapply(chromData,
                                                      function(x) all(is.na(x)),
@@ -69,19 +64,13 @@ setMethod("backendInitialize", "ChromBackendMemory",
             } else {
               chromData <- fillCoreChromVariables(data.frame())
             }
-
-            # Assign chromData to the object@chromData slot
             object@chromData <- chromData
-
-            # Handle peaksData
             if (length(peaksData) > 1) {
               validPeaksData(peaksData)
             } else {
               peaksData <- replicate(n_cd, .EMPTY_PEAKS_DATA, simplify = FALSE)
             }
-            # Assign peaksData to the object@peaksData slot
             object@peaksData <- peaksData
-
             object
           })
 
@@ -100,9 +89,8 @@ setMethod("backendMerge", "ChromBackendMemory", function(object, ...) {
 #' @rdname hidden_aliases
 #' @description This method returns the chromatographic data stored in the
 #' backend. If not specified otherwise it will return all defined column in the
-#' chromData slot as well as dding the coreChromVariables missing with NA values.
-#'
-#' @importMethodsFrom S4Vectors sapply
+#' chromData slot as well as dding the coreChromVariables missing with NA
+#' values.
 setMethod("chromData", "ChromBackendMemory",
           function(object, columns = chromVariables(object),
                drop = FALSE) {
@@ -153,7 +141,7 @@ setReplaceMethod("peaksData", "ChromBackendMemory", function(object, value) {
 
 #' @rdname hidden_aliases
 setMethod("peaksVariables", "ChromBackendMemory", function(object) {
-  names(object@peaksData[[1]])
+  union(names(object@peaksData[[1]]), names(corePeaksVariables()))
 })
 
 #' @importFrom utils capture.output
