@@ -9,11 +9,6 @@ setGeneric("chromIndex", function(object, ...) standardGeneric("chromIndex"))
 setGeneric("chromIndex<-", function(object, value)
     standardGeneric("chromIndex<-"))
 #' @rdname ChromBackend
-setGeneric("chromNames", function(object, ...) standardGeneric("chromNames"))
-#' @rdname ChromBackend
-setGeneric("chromNames<-", function(object, value)
-    standardGeneric("chromNames<-"))
-#' @rdname ChromBackend
 setGeneric("chromVariables", function(object, ...)
     standardGeneric("chromVariables"))
 #' @rdname ChromBackend
@@ -49,8 +44,5 @@ setGeneric("productMzMin", function(object, ...)
 setGeneric("productMzMin<-", function(object, value)
     standardGeneric("productMzMin<-"))
 #' @rdname ChromBackend
-setGeneric("selectChromVariables", function(object, ...)
-    standardGeneric("selectChromVariables"))
-#' @rdname ChromBackend
 setGeneric("reset", function(object, ...)
-    standardGeneric("reset"))
+    standardGeneric("reset")) ## needs to be moved to ProtGenerics

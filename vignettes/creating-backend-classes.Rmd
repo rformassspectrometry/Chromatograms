@@ -1,0 +1,1412 @@
+---
+title: "Creating new `ChromBackend` classes for Chromatograms"
+output:
+    BiocStyle::html_document:
+        toc_float: true
+vignette: >
+    %\VignetteIndexEntry{Creating new `ChromBackend` class for Chromatograms}
+    %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteEncoding{UTF-8}
+    %\VignettePackage{Chromatograms}
+    %\VignetteDepends{Chromatograms,BiocStyle,S4Vectors,IRanges}
+---
+
+```{r style, echo = FALSE, results = 'asis', message=FALSE}
+BiocStyle::markdown()
+```
+
+**Package**: `r Biocpkg("Chromatograms")`<br />
+**Authors**: `r packageDescription("Chromatograms")[["Author"]] `<br />
+**Compiled**: `r date()`
+
+```{r, echo = FALSE, message = FALSE}
+library(Chromatograms)
+library(BiocStyle)
+```
+
+# Introduction
+
+Similar to the `r Biocpkg("Spectra")` package, the `r Biocpkg("Chromatograms")`
+also separates the user-faced functionality to process and analyze
+chromatographic mass spectrometry (MS) data from the code for storage and
+*representation* of the data. The latter functionality is provided by
+implementations of the `ChromBackend` class, further on called *backends*. This
+vignette describes the `ChromBackend` class and illustrates on a simple example
+how a backend extending this class could be implemented.
+
+Contributions to this vignette (content or correction of typos) or requests for
+additional details and information are highly welcome, ideally *via* pull
+requests or *issues* on the package's [github repository](https://github.com/RforMassSpectrometry/Chromatograms).
+
+
+# What is a `ChromBackend`?
+
+The purpose of a backend class extending the virtual `ChromBackend` is to
+provide the chromatographic MS data to the `Chromatograms` object, which is used
+by the user to interact with - and analyze the data. The `ChromBackend` defines
+the API that new backends need to provide so that they can be used with
+`Chromatograms`. This API defines a set of methods to access the data. For many
+functions default implementations exist and a dedicated implementation for a new
+backend is only needed if necessary (e.g. if the data is stored in a way that a
+different access to it would be better). In addition, a core set of variables
+(data fields), the so called *core* chromatogram variables, is defined to
+describe the chromatographic data. Each backend needs to provide these, but can
+also define additional data fields. Before implementing a new backend it is
+highly suggested to carefully read the following *Conventions and definitions*
+section.
+
+
+## Conventions and definitions
+
+General conventions for chromatographic MS data of a `Chromatograms` are:
+
+- One `Chromatograms` object is designed to contain multiple chromatographic
+  data (not data from a single chromatogram).
+- retention time values within each chromatogram are expected to be sorted
+  increasingly.
+- Missing values (`NA`) for retention time values are not supported.
+- Properties (data fields) of a chromatogram are called *chromatogram
+  variables*. While backends can define their own properties, a minimum required
+  set of chromatogram variables **must** be provided by each backend (even if
+  their values are empty). These *core chromatogram variables* are listed (along
+  with their expected data type) by the `coreChromVariables()` function.
+- `dataStorage` and `dataOrigin` are two special variables that define
+  for each chromatogram where the data is (currently) stored and from where the
+  data derived, respectively. Both are expected to be of
+  type`character`. Missing values for `dataStorage` are not allowed.
+- `ChromBackend` implementations can also represent purely *read-only* data
+  resources. In this case only data accessor methods need to be implemented but
+  not data replacement methods (i.e. `<-` methods that would allow to add or set
+  variables. Read-only backends should implement the `isReadOnly()` method, that
+  should then return `TRUE`. Note that backends for purely read-only resources
+  could also implement a *caching* mechanism to (temporarily) store changes to
+  the data locally within the object (and hence in memory). See information on
+  the `MsBackendCached` in the `r Biocpkg("Spectra")` package for more details.
+
+
+## Notes on parallel and chunk-wise processing
+
+For parallel processing, `Chromatograms` splits the backend based on a defined
+`factor` and processes each in parallel (or *in serial* if a `SerialParam` is
+used). The splitting `factor` can be defined for `Chromatograms` by setting the
+parameter `processingChunkSize`. Alternatively, through the
+`backendParallelFactor()` method the backend can also *suggest* a `factor` that
+should/could be used for splitting and parallel processing. The default
+implementation for `backendParallelFactor()` is to return an empty `factor`
+(`factor()`) hence not suggesting any preferred splitting.
+
+Besides parallel processing, for on-disk backends (i.e., backends that don't
+keep all of the data in memory), this chunk-wise processing can also reduce the
+memory demand for operations, because only the peak data of the current chunk
+needs to be realized in memory.
+
+
+# API
+
+The `ChromBackend` class defines core methods that have to be implemented by a
+MS *backend* as well as *optional* methods for which a default implementation is
+already available. These functions are described in sections *Required methods*
+and *Optional methods*, respectively.
+
+To create a new backend a class extending the virtual `ChromBackend` needs to be
+implemented. In the following example we define a simple class that uses a
+`data.frame` to store general properties (*chromatogram variables*) and a list of
+`data.frame` for the retention time and intensity values of each chromatograms,
+which represent the actual chromatographic MS data. These values are store in a 
+`list`, where each element correspond to one chromatogram, as the 
+number of values (*peaks*) can vary between chromatograms. We also provide a
+basic constructor function that returns an empty instance of the new class.
+
+```{r, message = FALSE}
+library(Chromatograms)
+
+#' Definition of the backend class extending ChromBackend
+setClass("ChromBackendTest",
+         contains = "ChromBackend",
+         slots = c(
+             chromData = "data.frame",
+             peaksData = "list"
+         ),
+         prototype = prototype(
+             chromData = data.frame(),
+             peaksData = list()
+         ))
+
+#' Simple constructor function
+ChromBackendTest <- function() {
+    new("ChromBackendTest")
+}
+```
+
+The 2 slots `@chromData` and `@peaksData` will be used to store the general
+properties of the chromatograms and the actual chromatographic data, respectively.
+each row in `chromData` will contain data for one chromatogram with the columns
+being the different *chromatogram variables* (i.e. additional properties of a
+chromatogram such as its m/z value or MS level) and each element in `@peaksData`
+a `data.frame` with the retention time and intensity values representing thus
+the *peaks* data of the respective chromatogram. This is only one of the possibly
+many ways chromatographic data might be represented.
+
+We should ideally also add some basic validity function that ensures the data to
+be correct (valid). The function below simply checks that the number of rows of
+the `@chromData` slot matches the length of the `@peaksData` slots.
+
+```{r, message = FALSE}
+#' Basic validation function
+setValidity("ChromBackendTest", function(object) {
+    if (length(object@peaksData) != nrow(object@chromData))
+        return("length of 'peaksData' has to match the number of rows of ",
+               "'chromData'")
+    NULL
+})
+```
+
+We can now create an instance of our new class with the `ChromBackendTest()`
+function.
+
+```{r}
+#' Create an empty instance of ChromBackendTest
+be <- ChromBackendTest()
+be
+```
+
+A `show()` method would allow for a more convenient way how general information
+of our object is displayed. Below we add an implementation of the `show()`
+method.
+
+```{r}
+#' implementation of show for ChromBackendTest
+setMethod("show", "ChromBackendTest", function(object) {
+    cd <- object@chromData
+    cat(class(object), "with", nrow(cd), "chromatograms\n")
+})
+be
+```
+
+
+## Required methods
+
+Methods listed in this section **must** be implemented for a new class extending
+`ChromBackend`. Methods should ideally also be implemented in the order they are
+listed here. Also, it is strongly advised to write dedicated unit tests for each
+newly implemented method or function already **during** the development.
+
+
+### `dataStorage()`
+
+The `dataStorage` chromatogram variable provides information how or where the
+data is stored. The `dataStorage()` method should therefore return a `character`
+vector of length equal to the number of chromatograms that are represented by
+the object. The values for `dataStorage` can be any character value, except
+`NA`. For our example backend we define a simple `dataStorage()` method that
+simply returns the column `"dataStorage"` from the `@chromData` (as a
+`character`).
+
+```{r}
+#' dataStorage method to provide information *where* data is stored
+setMethod("dataStorage", "ChromBackendTest", function(object) {
+    as.character(object@chromData$dataStorage)
+})
+```
+
+Calling `dataStorage()` on our example backend will thus return an empty
+`character` (since the object created above does not contain any data).
+
+```{r}
+dataStorage(be)
+```
+
+
+### `length()`
+
+`length()` is expected to return an `integer` of length 1 with the total number
+of chromatograms that are represented by the backend. For our example backend we
+simply return the number of rows of the `data.frame` stored in the `@chromData`
+slot.
+
+```{r}
+#' length to provide information on the number of chromatograms
+setMethod("length", "ChromBackendTest", function(x) {
+    nrow(x@chromData)
+})
+length(be)
+```
+
+
+### `backendInitialize()`
+
+The `backendInitialize()` method should be called after creating an instance of
+the backend class and is responsible for preparing (initializing) the backend
+with data. This method can accept any parameters required by the backend to
+load or initialize the data, such as file names, a database connection, or
+objects containing the data. It is also recommended that the the special
+chromatogram variables `dataStorage` and `dataOrigin` are set during 
+`backendInitialize()`.
+
+It is strongly recommended to validate the input data within the initialize
+method. The advantage of performing these validity checks in
+`backendInitialize()` rather than using `setValidity()` is that computationally
+expensive operations/checks would only be performed once,during initialization, 
+instead of each time values within the object are modified (e.g., through
+subsetting or similar operations), which would occur with `setValidity()`. 
+
+We also use the `validChromData()` and `validPeaksData()` functions to ensure
+that core chromatogram variables and core peaks variables have the correct data
+type. These checks verify that the`peaksData` contains only numeric values and
+that the number of retention time and intensity values matches for each 
+chromatogram.
+
+Below we define a `backendInitialize()` method that accepts a `data.frame` 
+containing chromatogram variables and a `list` with retention time and
+intensity values for each chromatogram. 
+
+```{r}
+#' backendInitialize method to fill the backend with data.
+setMethod(
+    "backendInitialize", "ChromBackendTest",
+    function(object, chromData, peaksData) {
+        if (!is.data.frame(chromData))
+            stop("'chromData' needs to be a 'data.frame' with the general",
+                 "chromatogram variables")
+        ## Defining dataStorage and dataOrigin, if not available
+        if (is.null(chromData$dataStorage))
+            chromData$dataStorage <- "<memory>"
+        if (is.null(chromData$dataOrigin))
+            chromData$dataOrigin <- "<user provided>"
+        ## Validate the provided data
+        validChromData(chromData)
+        validPeaksData(peaksData)
+        ## Fill the object with data
+        object@chromData <- chromData
+        object@peaksData <- peaksData
+        object
+    })
+```
+
+In addition to adding the data to object, the function also defined the
+`dataStorage` and `dataOrigin` spectra variables. The purpose of these two
+variables is to provide some information on where the data is currently stored
+(*in memory* as in our example) and from where the data is originating.
+
+We can now create an instance of our backend class and fill it with data. We
+thus first define our MS data and pass this to the `backendInitialize()` method.
+
+```{r}
+# A data.frame with chromatogram variables.
+cdata <- data.frame(msLevel = c(1L, 1L),
+                    mz = c(112.2, 123.3))
+
+# Retention time and intensity values for each chromatogram.
+pdata <- list(
+  data.frame(rtime = c(12.4, 12.8, 13.2, 14.6),
+       intensity = c(123.3, 153.6, 2354.3, 243.4)),
+  data.frame(rtime = c(45.1, 46.2),
+       intensity = c(100, 80.1))
+)
+
+#' Create and initialize the backend
+be <- backendInitialize(ChromBackendTest(),
+                        chromData = cdata, peaksData = pdata)
+be
+```
+
+This `backendInitialize()` implementation should assure data
+validity and integrity. Below we use this function again to create our backend
+instance.
+
+The `backendInitialize()` method that we implemented for our backend class
+expects the user to provide the full MS data. It would alternatively also be
+possible to implement a method that takes data file names as input from which
+the function can then import the data. The purpose of the `backendInitialize()`
+method is to *initialize* and prepare the data in a way that it can be accessed
+by a `Chromatograms` object. Whether the data is actually loaded into memory or
+simply referenced and loaded upon request does not matter as long as the backend
+is able to provide the data though its accessor methods when requested by the
+`Chromatograms` object.
+
+
+### `chromVariables()`
+
+The `chromVariables()` method should return a `character` vector with the names
+of all available chromatogram variables of the backend. While a backend class
+should support defining and providing their own variables, each `ChromBackend`
+class **must** provide also the *core chromatogram variables* (in the correct
+data type). These can be listed by the `coreChromVariables()` function:
+
+```{r}
+#' List core chromatogram variables along with data types.
+coreChromVariables()
+```
+
+A typical `chromVariables()` method for a `ChromBackend` class will thus be
+implemented similarly to the one for our `ChromBackendTest` test backend: it
+will return the names for all available chromatogram variables that can be 
+called by `chromData()` within the backend object. There is a default
+implementation for `chromVariables()` that will return the core chromatogram 
+variables. However if a backend class defines additional chromatogram variables,
+the `chromVariables()` method should be implemented to return the names of
+these additional variables as well.
+
+```{r}
+#' Accessor for available chromatogram variables
+setMethod("chromVariables", "ChromBackendTest", function(object) {
+    union(names(object@chromData), names(coreChromVariables()))
+})
+
+chromVariables(be)
+```
+
+### `chromData()`
+
+The `chromData` method should return the **full** chromatogram data within a
+backend as a `data.frame` object. A parameter `columns` should allow to define
+the names of the variables that should be returned. A parameter `drop` should
+also be implemented to allow for the calling of one column while still 
+controlling the return type.
+Each row in this data frame should represent one chromatogram, each column a 
+chromatogram variable. The `data.frame` **must** provide values (even if they
+are `NA`) for **all** requested chromatogram variables of the backend
+(**including** the core chromatogram variables). The `fillCoreChromVariables()` 
+function from the *Chromatograms* package allows to *complete* (fill) a
+provided `data.frame` with eventually missing core chromatogram variables:
+
+```{r}
+#' Get the data.frame with the available chrom variables
+be@chromData
+#' Complete this data.frame with missing core variables
+fillCoreChromVariables(be@chromData)
+```
+
+We can thus use this function to add eventually missing core chromatogram
+variables in the `chromData` implementation for our backend:
+
+```{r}
+#' function to extract the full chromData
+setMethod(
+    "chromData", "ChromBackendTest",
+    function(object, columns = chromVariables(object),
+             drop = FALSE) {
+      if (!any(chromVariables(object) %in% columns))
+        stop("Some of the requested Chromatogram variables are not ",
+                   "available")
+      res <- fillCoreChromVariables(object@chromData)
+      res <- res[, columns, drop = drop]
+      res
+      })
+```
+
+We can now use `chromData()` to either extract the full chromatogram data from
+the backend, or only the data for selected variables.
+
+```{r}
+#' Extract the full data
+chromData(be)
+
+#' Selected variables
+chromData(be, c("mz", "msLevel"))
+
+#' Only missing core spectra variables
+chromData(be, c("collisionEnergy", "mzMin"))
+```
+
+### `peaksVariables()`
+
+The `peaksVariables()` function is supposed to provide the names of the
+available *peaks variables*. If additional peaks variables would be available, 
+these could also be listed by the `peaksVariables()` method.
+There is a default implementation for `peaksVaraibles()` that will return the
+core peaks variables. However if a backend class defines additional
+peaks variables, the `peaksVariables()` method should be implemented to
+return the names of these additional variables as well.
+
+```{r}
+setMethod("peaksVariables", "ChromBackendTest", function(object) {
+  union(names(corePeaksVariables()), names(object@peaksData[[1]]))
+})
+```
+
+We can now see what peaks variables are present in our object:
+
+```{r}
+peaksVariables(be)
+```
+
+### `peaksData()`
+
+The `peaksData()` method extracts the chromatographic data (*peaks*), i.e., the
+chromatograms' retention time and intensity values. This data is returned as a
+`list` of `data.frame`, with one array per chromatogram with columns being the
+*peaks variables* (retention time and intensity values) and rows the individual
+data pairs. Each backend must provide retention times and intensity values with
+this method, but additional peaks variables (columns) are also supported.
+
+In a similar way as for the chromatogram variables, a backend should support 
+defining and providing their own variables and each `ChromBackend`
+class **must** provide also the *core peaks variables* (in the correct
+data type). These can be listed by the `corePeaksVariables()` function:
+
+```{r}
+corePeaksVariables()
+```
+
+Below we implement the `peaksData()` method for our backend.
+
+```{r}
+#' method to extract the full chromatographic data as list of arrays
+setMethod(
+    "peaksData", "ChromBackendTest",
+    function(object, columns = peaksVariables(object), drop = FALSE) { 
+      if (!all(columns %in% peaksVariables(object)))
+        stop("Some of the requested peaks variables are not available")
+      res <- lapply(object@peaksData, function(x) x[, columns, drop = drop])
+      res
+    })
+```
+
+And with this method we can now extract the peaks data from our backend.
+
+```{r}
+#' Extract the *peaks* data (i.e. intensity and retention times)
+peaksData(be)
+```
+
+Since the `peaksData()` method is the main function used by a `Chromatograms` to
+retrieve data from the backend (and further process the values), this method
+should be implemented in an efficient way.
+
+
+### `[`
+
+The `[` method allows to subset `ChromBackend` objects. This operation is
+expected to reduce a `ChromBackend` object to the selected chromatograms without
+changing values for the subset chromatograms. The method should support to
+subset by indices or logical vectors and should also support duplicating
+elements (i.e., when duplicated indices are used) as well as to subset in
+arbitrary order. An error should be thrown if indices are out of bounds, but the
+method should also support returning an empty backend with `[integer()]`. The
+`MsCoreUtils::i2index` function can be used to check and convert the provided
+parameter `i` (defining the subset) to an integer vector.
+
+Below we implement a possible `[` for our test backend class. We ignore the
+parameters `j` from the definition of the `[` generic, since we treat our data
+to be one-dimensional (with each chromatogram being one element).
+
+```{r}
+#' Main subset method.
+setMethod("[", "ChromBackendTest", function(x, i, j, ..., drop = FALSE) {
+  i <- MsCoreUtils::i2index(i, length = length(x))
+  x@chromData <- x@chromData[i, ]
+  x@peaksData <- x@peaksData[i]
+  x
+})
+```
+
+We can now subset our backend to the last two chromatograms.
+
+```{r}
+a <- be[1]
+chromData(a)
+```
+
+Or extracting the second chromatogram multiple times.
+
+```{r}
+a <- be[c(1, 1, 1)]
+chromData(a)
+```
+
+
+### `$`
+
+The `$` method is expected to extract a single chromatogram or peaks variable 
+from a backend. Parameter `name` should allow to name the variable to return. 
+Each `ChromBackend` **must** support extracting the core chromatogram and core
+peaks variables with this method (even if no data might be available for that
+variable). In our example implementation below we make use of the `chromData()`
+method, but more efficient implementations might be possible as well.
+Also, the `$` method should check if the requested variable is available and
+should throw an error otherwise.
+
+```{r}
+#' Access a single chromatogram variable
+setMethod("$", "ChromBackendTest", function(x, name) {
+  if (name %in% union(chromVariables(x), names(coreChromVariables())))
+    res <- chromData(x, columns = name, drop = TRUE)
+  else if (name %in% peaksVariables(x))
+    res <- peaksData(x, columns = name, drop = TRUE)
+  else stop("The requested variable '", name, "' is not available")
+  res
+})
+```
+
+With this we can now extract the MS levels
+
+```{r}
+be$msLevel
+```
+
+or a core chromatogram variable without values in our example backend.
+
+```{r}
+be$precursorMz
+```
+
+or also the intensity values
+
+```{r}
+be$intensity
+```
+
+### `backendMerge()`
+
+The `backendMerge()` method merges (combines) `ChromBackend` objects (of the
+same type!) into a single instance. For our test backend we thus need to combine
+the values in the `@chromData`, `@peaksData` slots. To support also
+merging of `data.frame`s with different sets of columns we use the
+`MsCoreUtils::rbindFill` function instead of a simple `rbind` (this function
+joins data frames making an union of all available columns filling eventually
+missing columns with `NA`).
+
+```{r}
+#' Method allowing to join (concatenate) backends
+setMethod("backendMerge", "ChromBackendTest", function(object, ...) {
+    res <- object
+    object <- unname(c(list(object), list(...)))
+    res@peaksData <- do.call(c, lapply(object, function(z) z@peaksData))
+    res@chromData <- do.call(MsCoreUtils::rbindFill,
+                             lapply(object, function(z) z@chromData))
+    validObject(res)
+    res
+})
+```
+
+Testing the function by merging the example backend instance with itself.
+
+```{r}
+a <- backendMerge(be, be[2], be)
+a
+```
+
+
+## Data replacement methods
+
+As stated in the general description, `ChromBackend` implementations can also be
+purely *read-only* resources allowing to just access, but not to replace
+data. For these backends `isReadOnly()` should return `FALSE`. Data replacement
+methods listed in this section would not need to be implemented. Our example
+backend stores the full data in memory, within the object, and hence we can
+easily change and replace values.
+
+Since we support replacing values we also implement the `isReadOnly()` method
+for our example implementation to return `FALSE` (instead of the default
+`TRUE`).
+
+```{r}
+#' Default for backends:
+isReadOnly(be)
+```
+
+```{r}
+#' Implementation of isReadOnly for ChromBackendTest
+setMethod("isReadOnly", "ChromBackendTest", function(object) FALSE)
+isReadOnly(be)
+```
+
+All data replacement function are expected to return an instance of the same
+backend class that was used as input.
+
+
+### `chromData<-`
+
+The main replacement method is `chromData<-` which should allow to replace the
+chormtaogram variables content of a backend with new data. This data is 
+expected to be provided as a `data.frame` (similar to the one returned by
+`chromData()`). While values can be replaced, the number of chromatograms
+before and after a call to `chromData<-` has to be the same. 
+
+```{r}
+#' Replacement method for the full chromatogram data
+setReplaceMethod("chromData", "ChromBackendTest", function(object, value) {
+  if (is(value, "DataFrame"))
+    value <- as(value, "data.frame")
+  if (!inherits(value, "data.frame"))
+    stop("'value' is expected to be a 'data.frame'")
+  if (length(object) && length(object) != nrow(value))
+    stop("'value' has to be a 'data.frame' with ", length(object), " rows")
+  validChromData(value)
+  object@chromData <- value
+  object
+})
+```
+
+To test this new method we extract the full chromatogram data from our example
+data set, add an additional column (chromatogram variable) and use `chromData<-`
+to replace the data of the backend.
+
+```{r}
+d <- chromData(be)
+d$new_col <- c("a", "b")
+
+chromData(be) <- d
+```
+
+Check that we have now also the new column available.
+
+```{r}
+be$new_col
+```
+
+
+### `$<-`
+
+The `$<-` method should allow to replace values for an existing chromatogram
+variable or to add an additional variable to the backend. As with all
+replacement methods, the `length` of `value` has to match the number of
+chromatograms represented by the backend. For replacement of retention time or
+intensity values we need also to ensure that the data would be correct after the
+operation, i.e., that the number of retention time and intensity values per
+chromatogram are the identical and that all retention time and intensity values
+are numeric. Finally, we use the `validChromData()` function to ensure that,
+after replacement, all core chromatogram variables have the correct data type.
+
+```{r}
+#' Replace or add a single chromatogram variable.
+setReplaceMethod("$", "ChromBackendTest", function(x, name, value) {
+  if (length(x) && length(value) != length(x))
+    stop("length of 'value' needs to match the number of chromatograms ",
+         "in object.")
+  if (name %in% peaksVariables(x)) {
+    if (!is.list(value))
+      stop("The value for peaksData should be a list")
+    for (i in seq_along(value)) {
+      x@peaksData[[i]][[name]] <- value[[i]]
+      validPeaksData(x@peaksData)
+    }
+  } else {
+    x@chromData[, name] <- value
+    validChromData(x@chromData)
+  }
+  x
+})
+```
+
+We can thus replace an existing chromatogram variable, such as `msLevel`:
+
+```{r}
+#' Values before replacement
+be$msLevel
+
+#' Replace MS levels
+be$msLevel <- c(3L, 2L)
+
+#' Values after replacement
+be$msLevel
+```
+
+We can also add a new chromatogram variables:
+
+```{r}
+#' Add a new chromatogram variable
+be$name <- c("A", "B")
+be$name
+```
+
+Or also replace intensity values. Below we replace the intensity values by
+adding a value of +3 to each.
+
+```{r}
+#' Replace intensity values
+be$msLevel3 <- be$msLevel + 3
+be$msLevel3
+```
+
+
+### `peaksData<-`
+
+The `peaksData<-` method should allow to replace the full peaks data (retention
+time and intensity value pairs) of all chromatograms in a backend. As `value`, a
+`list` of `data.frame` should be provided with columns names `"rtime"` and
+`"intensity"`. Because the full peaks data is provided at once, this method can
+(and should) support changing also the number of peaks per chromatogram (while
+the methods like `rtime<-` or `$rtime` would not allow).
+
+```{r}
+#' replacement method for peaks data
+setReplaceMethod("peaksData", "ChromBackendTest", function(object, value) {
+  if (!is.list(value))
+    stop("'value' is expected to be a list")
+  if (length(object) && length(object) != length(value))
+    stop("'value' has to be a list with ", length(object), " elements")
+  validPeaksData(value)
+  object@peaksData <- value
+  object
+})
+```
+
+With this method we can now replace the peaks data of a backend:
+
+```{r}
+#' Create a list with peaks matrices; our backend has 3 chromatograms
+#' thus our `list` has to be of length 3
+tmp <- list(
+    data.frame(rtime = c(12.3, 14.4, 15.4, 16.4),
+          intensity = c(200, 312, 354.1, 232)),
+    data.frame(rtime = c(14.4),
+          intensity = c(13.4))
+)
+
+be_2 <- be
+#' Assign this peaks data to one of our test backends
+peaksData(be_2) <- tmp
+
+#' Evaluate that we properly added the peaks data
+peaksData(be_2)
+```
+
+
+## Methods with available default implementations
+
+Default implementations for the `ChromBackend` class are available for a large
+number of methods. Thus, any backend extending this class will automatically
+inherit these default implementations. Alternative, class-specific, versions
+can, but don't need to be developed. The default versions are defined in the
+*R/ChromBackend.R* file, and also listed in this section. If alternative
+versions are implemented it should be ensured that the expected data type is
+always used for core chromatogram variables. Use `coreChromVariables()` and 
+`corePeaksVariables()` to list these mandatory data types.
+
+
+### `backendParallelFactor()`
+
+The `backendParallelFactor()` function allows a backend to suggest a preferred
+way it could be split for parallel processing. The default implementation
+returns `factor()` (i.e. a `factor` of length 0) hence not suggesting any
+specific splitting setup.
+
+```{r, eval = FALSE}
+#' Is there a specific way how the object could be best split for
+#' parallel processing?
+setMethod("backendParallelFactor", "ChromBackend", function(object, ...) {
+    factor()
+})
+```
+
+```{r}
+backendParallelFactor(be)
+```
+
+### `chromIndex()`
+
+The `chromIndex()` function should return the value for the `"chromIndex"`
+chromatogram variable. As a result, an `integer` of length equal to the number
+of chromatograms in `object` needs to be returned. The default implementation
+is:
+
+```{r, eval = FALSE}
+#' get the values for the chromIndex chromatogram variable
+setMethod("chromIndex", "ChromBackend",
+          function(object, columns = chromVariables(object)) {
+              chromData(object, columns = "chromIndex", drop = TRUE)
+          })
+```
+
+The result of calling this method on our test backend:
+
+```{r}
+chromIndex(be)
+```
+
+
+### `collisionEnergy()`
+
+The `collisionEnergy()` function should return the value for the
+`"collisionEnergy"` chromatogram variable. As a result, a `numeric` of length
+equal to the number of chromatograms has to be returned. The default
+implementation is:
+
+```{r, eval = FALSE}
+#' get the values for the collisionEnergy chromatogram variable
+setMethod("collisionEnergy", "ChromBackend", function(object) {
+    chromData(object, columns = "collisionEnergy", drop = TRUE)
+})
+```
+
+The result of calling this method on our test backend:
+
+```{r}
+collisionEnergy(be)
+```
+
+The default replacement method for the `collisionEnergy` chromatogram variable
+is:
+
+```{r, eval = FALSE}
+#' Default replacement method for collisionEnergy
+setReplaceMethod(
+    "collisionEnergy", "ChromBackend", function(object, value) {
+    object$collisionEnergy <- value
+    object
+    })
+```
+
+This method thus makes use of the `$<-` replacement method we implemented
+above. To test this function we replace the collision energy below.
+
+```{r}
+#' Replace the collision energy
+collisionEnergy(be) <- c(20, 30)
+collisionEnergy(be)
+```
+
+
+### `dataOrigin()`, `dataOrigin<-`
+
+The `dataOrigin()` and `dataOrigin<-` methods return or set the value(s) for the
+`"dataOrigin"` chromatogram variable. The values for this chromatogram variable
+need to be of type `character` (the length equal to the number of
+chromatograms). The default implementation for `dataOrigin()` is:
+
+```{r, eval = FALSE}
+#' Default implementation to access dataOrigin
+setMethod("dataOrigin", "ChromBackend", function(object) {
+    chromData(object, columns = "dataOrigin", drop = TRUE)
+})
+```
+
+Below we use this method to access the values of the `dataOrigin` chromatogram
+variable.
+
+```{r}
+#' Access the dataOrigin values
+dataOrigin(be)
+```
+
+The default implementation for `dataOrigin<-` uses, like all defaults for
+replacement methods, the `$<-` method:
+
+```{r}
+#' Default implementation of the `dataOrigin<-` replacement method
+setReplaceMethod("dataOrigin", "ChromBackend", function(object, value) {
+  object$dataOrigin <- value
+  object
+})
+```
+
+For our backend we can change the values of the `dataOrigin` variable:
+
+```{r}
+#' Replace the backend's dataOrigin values
+dataOrigin(be) <- rep("from somewhere", 2)
+dataOrigin(be)
+```
+
+
+### `dataStorage()`, `dataStorage<-`
+
+Similarly, the `dataStorage()` and `dataStorage<-` methods should allow to get
+or set the data storage chromatogram variable. Values of the `dataStorage`
+chromatogram variable are expected to be of type `character` and for each
+chromatogram in a backend one value needs to be defined (which can not be
+`NA_character`). The default implementation for `dataStorage()` uses, like most
+access methods, the `chromData()` function:
+
+```{r, eval = FALSE}
+#' Default implementation to access dataStorage
+setMethod("dataStorage", "ChromBackend", function(object) {
+    chromData(object, columns = "dataStorage", drop = TRUE)
+})
+```
+
+Below we use this method to access the values of the `dataStorage` chromatogram
+variable.
+
+```{r}
+#' Access the dataStorage values
+dataStorage(be)
+```
+
+Note that this variable is supposed to provide information on the location where
+the data is stored and hence for some type of backends it might not be possible
+or advised to let the user change its values. For such backends a
+`dataStorage<-` replacement method should be implemented specifically that
+throws an error if values are replaced with eventually invalid values. The
+default implementation for this method uses, like all defaults for replacement
+methods, the `$<-` method:
+
+```{r}
+#' Default implementation of the `dataStorage<-` replacement method
+setReplaceMethod("dataStorage", "ChromBackend", function(object, value) {
+  object$dataStorage <- value
+  object
+})
+```
+
+For our backend we can change the values of the `dataStorage` variable:
+
+```{r}
+#' Replace the backend's datastorage values
+dataStorage(be) <- c("here", "here")
+dataStorage(be)
+```
+
+
+### `intensity()`, `intensity<-`
+
+The `intensity()` and `intensity<-` methods allow to extract or set the
+intensity values of the individual chromatograms represented by the backend. The
+default for the `intensity()` function, which is expected to return a `list` of
+`numeric` values with the intensity values of each chromatogram, uses the `peaksData()` method:
+
+```{r, eval = FALSE}
+#' Default method to extract intensity values
+setMethod("intensity", "ChromBackend", function(object) {
+    if (length(object)) {
+        peaksData(object, column = "intensity", drop = TRUE)
+    } else list()
+})
+```
+
+The default replacement method for intensity values uses the `$<-` method:
+
+```{r, eval = FALSE}
+#' Default implementation of the replacement method for intensity values
+setReplaceMethod("intensity", "ChromBackend", function(object, value) {
+    pd <- peaksData(object)
+    if (!is.list(value) || length(pd) != length(value))
+        stop("'value' should be a list of the same length as 'object'")
+    for (i in seq_along(pd)) {
+        if (length(value[[i]]) != nrow(pd[[i]])) {
+            stop(paste0("Length of 'value[[", i, "]]' does not match ",
+                       "the number of rows in the intensity of chromatogram: ",
+                       i, "'"))
+        }
+    }
+    peaksData(object) <- lapply(seq_along(pd), function(i) {
+        pd[[i]]$intensity <- value[[i]]
+        return(pd[[i]])
+    })
+    object
+})
+
+```
+
+```{r}
+#' Replace intensity values
+intensity(be)[[1]] <- intensity(be)[[1]] + 10
+intensity(be)
+```
+
+
+### `isEmpty()`
+
+The `isEmpty()` is a simple helper function to evaluate whether chromatograms
+are *empty*, i.e. have no peaks (retention time and intensity values). It should
+return a logical vector of length equal to the number of chromatograms in the
+backend with `TRUE` if a chromatogram is empty and `FALSE` otherwise. The
+default implementation uses the `lengths()` method (defined further below) that
+returns for each chromatogram the number of available data points (peaks).
+
+```{r, eval = FALSE}
+#' Default implementation for `isEmpty()`
+setMethod("isEmpty", "ChromBackend", function(x) {
+    lengths(x) == 0L
+})
+```
+
+```{r}
+isEmpty(be)
+```
+
+
+### `isReadOnly()`
+
+As discussed above, backends can also be *read-only*, hence only allowing to
+access, but not to change any values (e.g. if the data is stored in a data base
+and the connection to this data base does not support updating or replacing
+data). In such cases, the default `isReadOnly()` method can be used, which
+returns always `TRUE`:
+
+```{r, eval = FALSE}
+#' Default implementation of `isReadOnly()`
+setMethod("isReadOnly", "ChromBackend", function(object) {
+    TRUE
+})
+
+```
+
+Backends that support changing data values should implement their own version
+(like we did above) to return `FALSE` instead:
+
+```{r}
+isReadOnly(be)
+```
+
+
+### `length()`
+
+The `length()` method should return a single `integer` with the total number of
+chromatograms available through the backend. The default implementation for this
+function is:
+
+```{r, eval = FALSE}
+#' Default implementation for `length()`
+setMethod("length", "ChromBackend", function(x) {
+    nrow(chromData(x, columns = "dataStorage"))
+})
+```
+
+```{r}
+length(be)
+```
+
+
+### `lengths()`
+
+The `lengths()` function should return the number of data pairs (peaks;
+retention time or intensity values) per chromatogram. The result should be an
+`integer` vector (of length equal to the number of chromatograms in the backend)
+with these counts. The default implementation uses the `intensity()` function.
+
+```{r, eval = FALSE}
+#' Default implementation for `lengths()`
+setMethod("lengths", "ChromBackend", function(x) {
+    lengths(intensity(x))
+})
+```
+
+The number of peaks for our test backend:
+
+```{r}
+lengths(be)
+```
+
+
+### `msLevel()`, `msLevel<-`
+
+The `msLevel()` and `msLevel<-` methods should allow extracting and setting the
+MS level for the individual chromatograms. MS levels are encoded as `integer`,
+thus, `msLevel()` must return an `integer` vector of length equal to the number
+of chromatograms of the backend and `msLevel<-` should take/accept such a vector
+as input. The default implementations for both methods are shown below.
+
+```{r, eval = FALSE}
+#' Default methods to get or set MS levels
+setMethod("msLevel", "ChromBackend", function(object) {
+    chromData(object, columns = "msLevel", drop = TRUE)
+})
+setReplaceMethod("msLevel", "ChromBackend", function(object, value) {
+    object$msLevel <- value
+    object
+})
+```
+
+To test these we below replace the MS levels for our test data set and extract
+these values again.
+
+```{r}
+msLevel(be) <- c(1L, 2L)
+msLevel(be)
+```
+
+
+### `mz()`, `mz<-`
+
+The `mz()` and `mz<-` methods should allow to extract or set the m/z value for
+each chromatogram. The m/z value of a chromatogram is encoded as `numeric`,
+thus, the methods are expected to return or accept a `numeric` vector of length
+equal to the number of chromatograms. The default implementations are shown
+below.
+
+```{r, eval = FALSE}
+#' Default implementations to get or set m/z value(s)
+setMethod("mz", "ChromBackend", function(object) {
+    chromData(object, columns = "mz", drop = TRUE)
+})
+setReplaceMethod("mz", "ChromBackend", function(object, value) {
+    object$mz <- value
+    object
+})
+```
+
+We below set and extract these *target* m/z values.
+
+```{r}
+mz(be) <- c(314.3, 312.5)
+mz(be)
+```
+
+
+### `mzMax()`, `mzMax<-`
+
+The `mzMax()` and `mzMax<-` methods should allow to extract or set the upper m/z
+boundary for each chromatogram. m/z values are encoded as `numeric`, thus, the
+methods are expected to return or accept a `numeric` vector of length equal to
+the number of chromatograms. The default implementations are shown below.
+
+```{r, eval = FALSE}
+#' Default implementations to get or set upper m/z limits
+setMethod("mzMax", "ChromBackend", function(object) {
+    chromData(object, columns = "mzMax", drop = TRUE)
+})
+setReplaceMethod("mzMax", "ChromBackend", function(object, value) {
+    object$mzMax <- value
+    object
+})
+```
+
+Testing these functions by replacing the upper m/z boundary with new values.
+
+```{r}
+mzMax(be) <- mz(be) + 0.01
+mzMax(be)
+```
+
+
+### `mzMin(), `mzMin<-`
+
+The `mzMin()` and `mzMin<-` methods should allow to extract or set the lower m/z
+boundary for each chromatogram. m/z values are encoded as `numeric`, thus, the
+methods are expected to return or accept a `numeric` vector of length equal to
+the number of chromatograms. The default implementations are shown below.
+
+```{r, eval = FALSE}
+#' Default methods to get or set the lower m/z boundary
+setMethod("mzMin", "ChromBackend", function(object) {
+  chromData(object, columns = "mzMin", drop = TRUE)
+})
+
+setReplaceMethod("mzMin", "ChromBackend", function(object, value) {
+  object$mzMin <- value
+  object
+})
+```
+
+Testing these functions by replacing the lower m/z boundary with new values.
+
+```{r}
+mzMin(be) <- mz(be) - 0.01
+mzMin(be)
+```
+
+### `precursorMz()`, `precursorMz<-`
+
+The `precursorMz()` and `precursorMz<-` methods are expected to get or set the
+values for the precursor m/z of each chromatogram (if available). These are
+encoded as `numeric` (one value per chromatogram) - and if a value is not
+available `NA_real_` should be returned. The default implementations are:
+
+```{r, eval = FALSE}
+#' Default implementations to get or set the precursorMz chrom variable
+setMethod("precursorMz", "ChromBackend", function(object) {
+    chromData(object, columns = "precursorMz", drop = TRUE)
+})
+setReplaceMethod("precursorMz", "ChromBackend", function(object, value) {
+    object$precursorMz <- value
+    object
+})
+```
+
+Below we set and get the `precursorMz` chromatogram variable for our backend.
+
+```{r}
+precursorMz(be) <- c(NA_real_, 123.3)
+precursorMz(be)
+```
+
+
+### `precursorMzMax()`, `precursorMzMax<-`
+
+These methods are supposed to allow to get and set the `precursorMzMax`
+chromatogram variable. The default implementations are:
+
+```{r, eval = FALSE}
+#' Default implementations for `precursorMzMax`
+setMethod("precursorMzMax", "ChromBackend", function(object) {
+    chromData(object, columns = "precursorMzMax", drop = FALSE)
+})
+setReplaceMethod("precursorMzMax", "ChromBackend", function(object, value) {
+    object$precursorMzMax <- value
+    object
+})
+```
+
+Below we test these functions by setting and extracting the values for this
+chromatogram variable.
+
+```{r}
+precursorMzMax(be) <- precursorMz(be) + 0.1
+precursorMzMax(be)
+```
+
+
+### `precursorMzMin()`, `precursorMzMin<-`
+
+These methods are supposed to allow to get and set the `precursorMzMin`
+chromatogram variable. The default implementations are:
+
+```{r, eval = FALSE}
+#' Default implementations for `precursorMzMin`
+setMethod("precursorMzMin", "ChromBackend", function(object) {
+    chromData(object, columns = "precursorMzMin", drop = FALSE)
+})
+setReplaceMethod("precursorMzMin", "ChromBackend", function(object, value) {
+    object$precursorMzMin <- value
+    object
+})
+```
+
+Below we test these functions by setting and extracting the values for this
+chromatogram variable.
+
+```{r}
+precursorMzMin(be) <- precursorMz(be) - 0.1
+precursorMzMin(be)
+```
+
+
+### `productMz()`, `productMz<-`
+
+These methods are supposed to allow to get and set the `productMz` chromatogram
+variable. The default implementations are:
+
+```{r, eval = FALSE}
+#' Default implementations for `productMz`
+setMethod("productMz", "ChromBackend", function(object) {
+    chromData(object, columns = "productMz", drop = TRUE)
+})
+setReplaceMethod("productMz", "ChromBackend", function(object, value) {
+    object$productMz <- value
+    object
+})
+```
+
+Below we test these functions by setting and extracting the values for this
+chromatogram variable.
+
+```{r}
+productMz(be) <- c(123.2, NA_real_)
+productMz(be)
+```
+
+
+### `productMzMax()`, `productMzMax<-`
+
+These methods are supposed to allow to get and set the `productMzMax`
+chromatogram variable. The default implementations are:
+
+```{r, eval = FALSE}
+#' Default implementations for `productMzMax`
+setMethod("productMzMax", "ChromBackend", function(object) {
+    chromData(object, columns = "productMzMax", drop = FALSE)
+})
+setReplaceMethod("productMzMax", "ChromBackend", function(object, value) {
+    object$productMzMax <- value
+    object
+})
+```
+
+Below we test these functions by setting and extracting the values for this
+chromatogram variable.
+
+```{r}
+productMzMax(be) <- productMz(be) + 0.02
+productMzMax(be)
+```
+
+
+### `productMzMin()`, `productMzMin<-`
+
+These methods are supposed to allow to get and set the `productMzMin`
+chromatogram variable. The default implementations are:
+
+```{r, eval = FALSE}
+#' Default implementations for `productMzMin`
+setMethod("productMzMin", "ChromBackend", function(object) {
+    chromData(object, columns = "productMzMin", drop = FALSE)
+})
+setReplaceMethod("productMzMin", "ChromBackend", function(object, value) {
+    object$productMzMin <- value
+    object
+})
+```
+
+Below we test these functions by setting and extracting the values for this
+chromatogram variable.
+
+```{r}
+productMzMin(be) <- productMz(be) - 0.2
+productMzMin(be)
+```
+
+
+### `rtime()`, `rtime<-`
+
+The `rtime()` and `rtime<-` methods allow to get and set the retention times of
+the individual chromatograms of the backend. Similar to the method for the
+intensity values described above they should return or accept a `NumericList`,
+each element being a `numeric` vector with the retention time values of one
+chromatogram. The default implementations of these methods are shown below.
+
+```{r, eval = FALSE}
+#' Default methods for `rtime()` and `rtime<-`
+setMethod("rtime", "ChromBackend", function(object) {    
+  if (length(object)) {
+      peaksData(object, column = "rtime", drop = TRUE)
+  } else list()
+})
+
+setReplaceMethod("rtime", "ChromBackend", function(object, value) {
+    pd <- peaksData(object)
+    if (!is.list(value) || length(pd) != length(value))
+        stop("'value' should be a list of the same length as 'object'")
+    for (i in seq_along(pd)) {
+        if (length(value[[i]]) != nrow(pd[[i]])) {
+            stop(paste0("Length of 'value[[", i, "]]' does not match ",
+            "the number of rows in 'the rtime of chromatogram: ", i, "'"))
+        }
+    }
+    peaksData(object) <- lapply(seq_along(pd), function(i) {
+        pd[[i]]$rtime <- value[[i]]
+        return(pd[[i]])
+    })
+    object
+})
+```
+
+We below test this implementation replacing the retention times of our example
+backend by shifting all values by 2 seconds.
+
+```{r}
+rtime(be)[[1]] <- rtime(be)[[1]] + 2
+rtime(be)
+```
+
+
+### `split()`
+
+The `split()` method should split the backend into a `list` of backends
+containing subsets of the original backend. The default implementation uses the
+default implementation of `split()` from R and should work in most cases. This
+function uses the `[` method to subset/split the object.
+
+```{r, eval = FALSE}
+#' Default method to split a backend
+setMethod("split", "ChromBackend", function(x, f, drop = FALSE, ...) {
+    split.default(x, f, drop = drop, ...)
+})
+```
+
+We below test this by splitting the backend into two subsets.
+
+```{r}
+split(be, f = c(1, 2, 1))
+```
+
+
+# Session information
+
+```{r si}
+sessionInfo()
+```
+
+# References

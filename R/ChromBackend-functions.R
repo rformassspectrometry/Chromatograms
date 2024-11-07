@@ -55,6 +55,8 @@ coreChromVariables <- function() .CORE_CHROM_VARIABLES
 #' ## The data.frame thus contains columns for all core chromatogram
 #' ## variables in the respective expected data type (but filled with
 #' ## missing values).
+#'
+#' @rdname hidden_aliases
 fillCoreChromVariables <- function(x = data.frame()) {
     nr <- nrow(x)
     cv <- .CORE_CHROM_VARIABLES
@@ -87,13 +89,14 @@ fillCoreChromVariables <- function(x = data.frame()) {
 #' @importFrom methods is
 #'
 #' @export
+#' @rdname hidden_aliases
 validChromData <- function(x = data.frame(), error = TRUE) {
-    .valid_chrom_backend_data_storage(x$dataStorage)
+    msg <- .valid_chrom_backend_data_storage(x$dataStorage)
     cn <- intersect(colnames(x), names(.CORE_CHROM_VARIABLES))
     msg <- unlist(lapply(cn, function(z) {
         if (!is(x[, z], .CORE_CHROM_VARIABLES[z]))
             paste0("Column \"", z, "\" has the wrong data type. ")
-        else character()
+        else NULL
     }), use.names = FALSE)
     if (length(msg) && error)
         stop(msg)
@@ -105,9 +108,14 @@ validChromData <- function(x = data.frame(), error = TRUE) {
 #'
 #' @noRd
 .CORE_PEAKS_VARIABLES <- c(
-    intensity = "numeric",
-    rtime = "numeric"
+    rtime = "numeric",
+    intensity = "numeric"
 )
+
+#' an empty peaks data.frame
+#' @noRd
+.EMPTY_PEAKS_DATA <- as.data.frame(lapply(.CORE_PEAKS_VARIABLES,
+                                          function(x) vector(x, 0)))
 
 #' @rdname ChromBackend
 #'
@@ -124,24 +132,21 @@ corePeaksVariables <- function() .CORE_PEAKS_VARIABLES
 #' @export
 
 #' @rdname hidden_aliases
-validPeaksData <- function(x = list()) {
-    if (!is.list(x)) {
-        stop("'peaksData' must be a 'list'")
-    }
-    lapply(x, function(df) {
-        if (!is.data.frame(df))
-            stop("All the peaksData entries should be of class 'data.frame'")
-        pv <- intersect(colnames(df), names(.CORE_PEAKS_VARIABLES))
-        if (!all(vapply(pv, function(col) is(df[[col]]
-                                             , .CORE_PEAKS_VARIABLES[[col]]),
-                        logical(1))))
-            stop("The peaksData variable ", col, " has the wrong data type.")
-    })
+validPeaksData <- function(x = list(), error = TRUE) {
+    if (!is.list(x)) stop("'peaksData' must be a 'list'")
+    if (!length(x)) return(NULL)
+    first_cols <- colnames(x[[1]])
+    expected_cols <- names(.CORE_PEAKS_VARIABLES)
+    expected_types <- .CORE_PEAKS_VARIABLES
+    msgs <- unlist(lapply(seq_along(x), function(i) {
+        df <- x[[i]]
+        # Check if the column names match those in the first data.frame
+        if (!identical(colnames(df), first_cols))
+            return(paste("All data.frames must have the same columns in the",
+                         " same order. Issue found in entry", i))
+        # Check column types and any other validation with .validate_entry
+        .validate_entry(x[[i]], i, expected_cols, expected_types)
+    }))
+    if (length(msgs) && error) stop(msgs)
+    else msgs
 }
-
-#' @noRd
-.valid_chrom_backend_data_storage <- function(x) {
-    if (anyNA(x))
-        return("'NA' values in dataStorage are not allowed.")
-    NULL
-}  ## what's this ?
