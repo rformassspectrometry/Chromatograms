@@ -6,10 +6,19 @@ consists of (paired) intensity and retention time values. Additional
 chromatographic metadata such as MS level and precursor and product m/z
 should also be provided.
 Through their implementation different backends can be either optimized for
-minimal memory requirements or performance. Each backend needs to implemet
+minimal memory requirements or performance. Each backend needs to implement
 data access methods listed in section Backend functions: below.
 And example implementation and more details and descriptions are provided
-in the Creating new ChromBackend classes for Chromatograms vignette."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
+in the Creating new ChromBackend classes for Chromatograms vignette.
+Currently available backends are:
+ChromBackendMemory: This backend stores chromatographic data directly
+in memory, making it ideal for small datasets or testing. It can be
+initialized with a data.frame of chromatographic data via the
+chromData parameter and a list of data.frame entries for peaks data
+using the peaksData parameter. These data can be accessed with the
+chromData() and peaksData() functions.
+
+"><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
@@ -27,13 +36,26 @@ in the Creating new ChromBackend classes for Chromatograms vignette."><!-- mathj
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">Chromatograms</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.0</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav"><li>
   <a href="../reference/index.html">Reference</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Articles
+
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu"><li>
+      <a href="../articles/creating-backend-classes.html">Creating new `ChromBackend` classes for Chromatograms</a>
+    </li>
+  </ul></li>
+<li>
+  <a href="../news/index.html">Changelog</a>
 </li>
       </ul><ul class="nav navbar-nav navbar-right"><li>
   <a href="https://github.com/RforMassSpectrometry/Chromatograms/" class="external-link">
@@ -63,11 +85,17 @@ consists of (paired) intensity and retention time values. Additional
 chromatographic metadata such as MS level and precursor and product m/z
 should also be provided.</p>
 <p>Through their implementation different backends can be either optimized for
-minimal memory requirements or performance. Each backend needs to implemet
+minimal memory requirements or performance. Each backend needs to implement
 data access methods listed in section <em>Backend functions:</em> below.</p>
 <p>And example implementation and more details and descriptions are provided
 in the <em>Creating new <code>ChromBackend</code> classes for Chromatograms</em> vignette.</p>
-    </div>
+<p>Currently available backends are:</p><ul><li><p><code>ChromBackendMemory</code>: This backend stores chromatographic data directly
+in memory, making it ideal for small datasets or testing. It can be
+initialized with a <code>data.frame</code> of chromatographic data via the
+<code>chromData</code> parameter and a <code>list</code> of <code>data.frame</code> entries for peaks data
+using the <code>peaksData</code> parameter. These data can be accessed with the
+<code>chromData()</code> and <code>peaksData()</code> functions.</p></li>
+</ul></div>
 
     <div id="ref-usage">
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">chromData</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
@@ -77,10 +105,6 @@ in the <em>Creating new <code>ChromBackend</code> classes for Chromatograms</em>
 <span><span class="fu">chromIndex</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">chromIndex</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
-<span></span>
-<span><span class="fu">chromNames</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu">chromNames</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span></span>
 <span><span class="fu">chromVariables</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
@@ -107,8 +131,6 @@ in the <em>Creating new <code>ChromBackend</code> classes for Chromatograms</em>
 <span><span class="fu">productMzMin</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">productMzMin</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
-<span></span>
-<span><span class="fu">selectChromVariables</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">reset</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
@@ -141,9 +163,6 @@ in the <em>Creating new <code>ChromBackend</code> classes for Chromatograms</em>
 <span><span class="fu">peaksData</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'ChromBackend'</span></span>
-<span><span class="fu">selectChromVariables</span><span class="op">(</span><span class="va">object</span>, chromVariables <span class="op">=</span> <span class="fu">chromVariables</span><span class="op">(</span><span class="va">object</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># S4 method for class 'ChromBackend'</span></span>
 <span><span class="fu">backendInitialize</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'ChromBackend'</span></span>
@@ -153,13 +172,13 @@ in the <em>Creating new <code>ChromBackend</code> classes for Chromatograms</em>
 <span><span class="fu">backendMerge</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'ChromBackend'</span></span>
-<span><span class="fu">chromVariables</span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># S4 method for class 'ChromBackend'</span></span>
-<span><span class="fu">chromIndex</span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="fu">chromVariables</span><span class="op">(</span><span class="va">object</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu">chromIndex</span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'ChromBackend'</span></span>
 <span><span class="fu">chromIndex</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
+<span></span>
+<span><span class="co"># S4 method for class 'ChromBackend'</span></span>
+<span><span class="fu">chromVariables</span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'ChromBackend'</span></span>
 <span><span class="fu">collisionEnergy</span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
@@ -320,50 +339,8 @@ names (chromatogram variables) that should be included in the
 returned <code>data.frame</code>. By default, all columns are returned.</p></dd>
 
 
-<dt id="arg-chromvariables">chromVariables<a class="anchor" aria-label="anchor" href="#arg-chromvariables"></a></dt>
-<dd><p>For <code>selectChromVariables()</code>: <code>character</code> with the
-names of the chromatogram variables to which the backend should be
-subsetted.</p></dd>
-
-
 <dt id="arg-f">f<a class="anchor" aria-label="anchor" href="#arg-f"></a></dt>
 <dd><p><code>factor</code> defining the grouping to split <code>x</code>. See <code><a href="https://rdrr.io/r/base/split.html" class="external-link">split()</a></code>.</p></dd>
-
-
-<dt id="arg-dataorigin">dataOrigin<a class="anchor" aria-label="anchor" href="#arg-dataorigin"></a></dt>
-<dd><p>For <code>filterDataOrigin()</code>: <code>character</code> to define which
-chromatograms to keep.</p></dd>
-
-
-<dt id="arg-datastorage">dataStorage<a class="anchor" aria-label="anchor" href="#arg-datastorage"></a></dt>
-<dd><p>For <code>filterDataStorage()</code>: <code>character</code> to define which
-chromatograms to keep.</p></dd>
-
-
-<dt id="arg-mslevel">msLevel<a class="anchor" aria-label="anchor" href="#arg-mslevel"></a></dt>
-<dd><p><code>integer</code> defining the MS level of the chromatograms to which
-the function should be applied. For <code>filterMsLevel()</code>: the MS level to
-which <code>object</code> should be subsetted.</p></dd>
-
-
-<dt id="arg-mz">mz<a class="anchor" aria-label="anchor" href="#arg-mz"></a></dt>
-<dd><p>For <code>filterMzValues()</code>: <code>numeric</code> with the m/z values of
-chromatograms to keep. All chromatograms with their <code>mz</code> chromatogram
-variable matching any of the values provided with this parameter are
-retained. Parameters <code>ppm</code> and <code>tolerance</code> allow relaxed matching.
-For <code>filterMzRange()</code>: <code>numeric(2)</code> defining the lower and upper
-boundary of the m/z range. Chromatograms with their <code>mz</code> chromatogram
-variable within this range are retained.</p></dd>
-
-
-<dt id="arg-ppm">ppm<a class="anchor" aria-label="anchor" href="#arg-ppm"></a></dt>
-<dd><p>For <code>filterMzValues()</code>: m/z-relative acceptable difference (in
-parts-per-million) for m/z values to be considered <em>matching</em>.</p></dd>
-
-
-<dt id="arg-tolerance">tolerance<a class="anchor" aria-label="anchor" href="#arg-tolerance"></a></dt>
-<dd><p>For <code>filterMzValues()</code>: largest acceptable absolute
-difference in m/z values to consider them <em>matching</em>.</p></dd>
 
 </dl></div>
     <div id="core-chromatogram-variables">
@@ -374,9 +351,11 @@ difference in m/z values to consider them <em>matching</em>.</p></dd>
 <p>The <em>core</em> chromatogram variables are variables (metadata) that can/should
 be provided by a backend. For each of these variables a value needs to be
 returned, if none is defined, a missing value (of the correct data type)
-should be returned. The names of the core variables are returned with the
-<code>chromVariables</code> function.</p>
-<p>For each core chromatogram variable a dedicated access method exists.</p>
+should be returned. The names of the chromatogram variables in your current
+chromatogram object are returned with the <code>chromVariables()</code> function.</p>
+<p>For each core chromatogram variable a dedicated access method exists. In
+contrast to the peaks data described below, a single value should be
+returned for each chromatogram.</p>
 <p>The <code>coreChromVariables()</code> function returns the core chromatogram variables
 along with their expected (defined) data type.</p>
 <p>The core chromatogram variables (in alphabetical order) are:</p><ul><li><p><code>chromIndex</code>: an <code>integer</code> with the index of the chromatogram in the
@@ -405,8 +384,30 @@ the product's isolation window.</p></li>
 <li><p><code>productMzMax</code>: for SRM data, optional <code>numeric</code> with the upper m/z of
 the product's isolation window.</p></li>
 </ul></div>
-    <div id="backend-functions">
-    <h2>Backend functions</h2>
+    <div id="core-peaks-variables">
+    <h2>Core Peaks variables</h2>
+
+
+
+<p>Similar to the <em>core</em> chromatogram variables, <em>core</em> peaks variables
+represent  metadata that should be provided by a backend. Each of these
+variables should return a value, and if undefined, a missing value (with the
+appropriate data type) is returned. The number of values for a peaks
+variable in a single chromatogram can vary, from none to multiple, and may
+differ between chromatograms.</p>
+<p>The names of peaks variables in the current chromatogram object can be
+obtained with the <code>peaksVariables()</code> function.</p>
+<p>Each core peaks variable has a dedicated accessor method.</p>
+<p>The <code>corePeaksVariables()</code> function returns the core peaks variables along
+with their expected (defined) data type.</p>
+<p>The core peaks variables, listed in the required order for <code>peaksData</code>, are:</p><ul><li><p><code>rtime</code>: A <code>numeric</code> vector containing retention time values.</p></li>
+<li><p><code>intensity</code>: A <code>numeric</code> vector containing intensity values.</p></li>
+</ul><p>They should be provided for each chromatogram in the backend, <strong>in this order</strong>,
+No NAs are allowed for the <code>rtime</code> values. These characteristics will be
+checked with the <code><a href="hidden_aliases.html">validPeaksData()</a></code> function.</p>
+    </div>
+    <div id="mandatory-methods">
+    <h2>Mandatory methods</h2>
 
 
 
@@ -426,7 +427,11 @@ replacement method <code>chromData&lt;-</code> (unless some internal caching mec
 could be used). <code>chromData()</code> should be implemented with the parameter
 <code>drop</code> set to <code>FALSE</code> as default. With <code>drop = FALSE</code> the method should
 return a <code>data.frame</code> even if only one column is called. If <code>drop = TRUE</code>
-is specified, the output will be a vector of the single column requested.</p></li>
+is specified, the output will be a vector of the single column requested.
+New backends should be implemented such as if empty, the method returns a
+<code>data.frame</code> with 0 rows and the columns defined by <code>chromVariables()</code>.
+By default, the function <em>should</em> return at minimum the coreChromVariables,
+even if NAs.</p></li>
 <li><p><code>peaksData()</code>: returns a <code>list</code> of <code>data.frame</code> with the data
 (e.g. retention time - intensity pairs) from each chromatogram. The length
 of the <code>list</code> is equal to the number of chromatograms in <code>object</code>. For an
@@ -449,21 +454,26 @@ Note that only writeable backends need to support this method.</p></li>
 allowed.</p></li>
 <li><p><code>$</code>, <code>$&lt;-</code>: access or set/add a single chromatogram variable (column) in
 the backend.</p></li>
-<li><p><code>selectChromVariables()</code>: reduce <code>object</code> retaining only specified
-chromatogram variables.</p></li>
 <li><p><code>backendMerge()</code>: merges (combines) <code>ChromBackend</code> objects into a single
 instance. All objects to be merged have to be of the same type.</p></li>
-</ul><p>Additional methods that might be implemented, but for which default
+</ul></div>
+    <div id="optional-methods-with-default-implementations">
+    <h2>Optional methods with default implementations</h2>
+
+
+
+<p>Additional methods that might be implemented, but for which default
 implementations are already present are:</p><ul><li><p><code>backendParallelFactor()</code>: returns a <code>factor</code> defining an optimal
 (preferred) way how the backend can be split for parallel processing
 used for all <em>peak</em> data accessor or data manipulation functions.
 The default implementation returns a factor of length 0 (<code><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor()</a></code>)
 providing thus no default splitting.</p></li>
-<li><p><code>chromVariables()</code>: returns a <code>character</code> vector with the
-available chromatogram variables (columns, fields or attributes)
-available in <code>object</code>.</p></li>
 <li><p><code>chromIndex()</code>: returns an <code>integer</code> vector with the index of the
 chromatograms in the original source file.</p></li>
+<li><p><code>chromVariables()</code>: returns a <code>character</code> vector with the
+available chromatogram variables (columns, fields or attributes)
+available in <code>object</code>. Variables listed by this function are expected to
+be returned (if requested) by the <code>chromData()</code> function.</p></li>
 <li><p><code>collisionEnergy()</code>, <code>collisionEnergy&lt;-</code>: gets or sets the collision energy
 for the precursor (for SRM data). <code>collisionEnergy()</code> returns a <code>numeric</code>
 of length equal to the number of chromatograms in <code>object</code>.</p></li>
@@ -486,7 +496,7 @@ within each list element identical to the number of data pairs in each
 chromatogram. Note that just writeable backends need to support this
 method.</p></li>
 <li><p><code>isReadOnly()</code>: returns a <code>logical(1)</code> whether the backend is <em>read
-only</em> or does allow also to write/update data.</p></li>
+only</em> or does allow also to write/update data. Defaults to FALSE.</p></li>
 <li><p><code>isEmpty()</code>: returns a <code>logical</code> of length equal to the number of
 chromatograms with <code>TRUE</code> for chromatograms without any data pairs.</p></li>
 <li><p><code><a href="https://rdrr.io/r/base/length.html" class="external-link">length()</a></code>: returns the number of chromatograms in the object.</p></li>
@@ -540,29 +550,6 @@ this method.</p></li>
 parameter <code>f</code>). The default method for <code>ChromBackend</code> uses
 <code><a href="https://rdrr.io/r/base/split.html" class="external-link">split.default()</a></code>, thus backends extending <code>ChromBackend</code> don't
 necessarily need to implement this method.</p></li>
-</ul><p>Filter methods:</p><ul><li><p><code>filterDataOrigin()</code>: filters the object retaining chromatograms matching
-any of the provided <code>dataOrigin</code>. Parameter <code>dataOrigin</code> has to be of
-type <code>character</code> and needs to match exactly the data origin value of the
-chromatograms to subset.
-<code>filterDataOrigin()</code> should return the data ordered by the provided
-<code>dataOrigin</code> parameter, i.e. if <code>dataOrigin = c("2", "1")</code> was provided,
-the chromatograms in the resulting object should be ordered accordingly
-(first chromatogram from data origin <code>"2"</code> and then from <code>"1"</code>).</p></li>
-<li><p><code>filterDataStorage()</code>: filters the object retaining chromatograms matching
-any of the provided <code>dataStorage</code>. Parameter <code>dataStorage</code> has to be
-of type <code>character</code> and needs to match exactly the data storage value of
-the chromatograms to subset.
-<code>filterDataStorage()</code> should return the data ordered by the provided
-<code>dataStorage</code> parameter, i.e. if <code>dataStorage = c("2", "1")</code> was
-provided, the chromatograms in the resulting object should be ordered
-accordingly (first chromatogram from data storage <code>"2"</code> and then from
-<code>"1"</code>).</p></li>
-<li><p><code>filterMsLevel()</code>: retains chromatograms of MS level <code>msLevel()</code>.</p></li>
-<li><p><code>filterMzRange()</code>: retains chromatograms with their m/z within the
-provided m/z range.</p></li>
-<li><p><code>filterMzValues()</code>: retains chromatograms with their m/z matching any of
-the provided m/z values (given the provided acceptable differences defined
-by parameters <code>tolerance</code> and <code>ppm</code>.</p></li>
 </ul></div>
     <div id="implementation-notes">
     <h2>Implementation notes</h2>
@@ -599,7 +586,7 @@ implementation is provided in the respective vignette.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.9000.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.9000.</p>
 </div>
 
       </footer></div>
