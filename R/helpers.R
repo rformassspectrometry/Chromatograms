@@ -96,3 +96,22 @@
                   .check_rtime(df))
     return(msgs)
 }
+
+#' function to loop through  query column and check if within corresponding
+#' ranges. Return an index of the corresponding matches.
+#' Used in:
+#' - `filterPeaksData()`
+#' - `filterChromData()`
+#' @noRd
+.filter_ranges <- function(query, ranges, match){
+    nc <- ncol(query)
+    within_ranges <- vapply(seq_len(nc), function(i) {
+        pairs <-  c(ranges[2*i - 1], ranges[2*i])
+        between(query[[i]], pairs)
+    }, logical(nrow(query)))
+    if (match == "all")
+        idx <- which(rowSums(within_ranges, na.rm = FALSE) == nc)
+    else
+        idx <- which(rowSums(within_ranges, na.rm = FALSE) > 0)
+    idx
+}

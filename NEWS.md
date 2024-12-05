@@ -1,4 +1,7 @@
-# Version 0.2.0
+# Version 0.3.0
+
+## Change in 0.3.0
+- Addition of `filterChromData()` and `filterPeaksData()` methods.
 
 ## Changes in 0.2.0
 - Addition of ChomBackendMemory class and associated methods 

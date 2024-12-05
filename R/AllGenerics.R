@@ -12,6 +12,12 @@ setGeneric("chromIndex<-", function(object, value)
 setGeneric("chromVariables", function(object, ...)
     standardGeneric("chromVariables"))
 #' @rdname ChromBackend
+setGeneric("filterChromData", function(object, ...)
+    standardGeneric("filterChromData"))
+#' @rdname ChromBackend
+setGeneric("filterPeaksData", function(object, ...)
+    standardGeneric("filterPeaksData"))
+#' @rdname ChromBackend
 setGeneric("mzMax", function(object, ...) standardGeneric("mzMax"))
 #' @rdname ChromBackend
 setGeneric("mzMax<-", function(object, value) standardGeneric("mzMax<-"))

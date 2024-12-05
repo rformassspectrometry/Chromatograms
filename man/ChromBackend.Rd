@@ -7,6 +7,8 @@
 \alias{chromIndex}
 \alias{chromIndex<-}
 \alias{chromVariables}
+\alias{filterChromData}
+\alias{filterPeaksData}
 \alias{mzMax}
 \alias{mzMax<-}
 \alias{mzMin}
@@ -76,6 +78,8 @@
 \alias{rtime,ChromBackend-method}
 \alias{rtime<-,ChromBackend-method}
 \alias{split,ChromBackend,ANY-method}
+\alias{filterChromData,ChromBackend-method}
+\alias{filterPeaksData,ChromBackend-method}
 \title{Chromatographic MS Data Backends}
 \usage{
 chromData(object, ...)
@@ -87,6 +91,10 @@ chromIndex(object, ...)
 chromIndex(object) <- value
 
 chromVariables(object, ...)
+
+filterChromData(object, ...)
+
+filterPeaksData(object, ...)
 
 mzMax(object, ...)
 
@@ -219,6 +227,22 @@ corePeaksVariables()
 \S4method{rtime}{ChromBackend}(object) <- value
 
 \S4method{split}{ChromBackend,ANY}(x, f, drop = FALSE, ...)
+
+\S4method{filterChromData}{ChromBackend}(
+  object,
+  variables = character(),
+  ranges = numeric(),
+  match = c("any", "all"),
+  keep = TRUE
+)
+
+\S4method{filterPeaksData}{ChromBackend}(
+  object,
+  variables = character(),
+  ranges = numeric(),
+  match = c("any", "all"),
+  keep = TRUE
+)
 }
 \arguments{
 \item{object}{Object extending \code{ChromBackend}.}
@@ -247,6 +271,27 @@ names (chromatogram variables) that should be included in the
 returned \code{data.frame}. By default, all columns are returned.}
 
 \item{f}{\code{factor} defining the grouping to split \code{x}. See \code{\link[=split]{split()}}.}
+
+\item{variables}{For \code{filterChromData()}: \code{character} vector with the names
+of the chromatogram variables to filter for. The list of available
+chromatogram variables can be obtained with \code{chromVariables()}.
+For \code{filterPeaksData()}: \code{character} vector with the names of the
+peaks variables to filter for. The list of available peaks variables
+can be obtained with \code{peaksVariables()}.}
+
+\item{ranges}{For \code{filterChromData()} and \code{filterPeaksData()}: a \code{numeric}
+vector of paired values (upper and lower boundary) that define the
+ranges to filter the \code{object}. These paired values need to be in the
+same order as the \code{variables} parameter (see below).}
+
+\item{match}{For \code{filterChromData()} and \code{filterPeaksData()}: \code{character(1) }
+defining whether the condition has to match for all provided
+\code{ranges} (\code{match = "all"}; the default), or for any of them
+(\code{match = "any"}) for chromatogram data to be retained.}
+
+\item{keep}{For \code{filterChromData()} and \code{filterPeaksData()}: \code{logical(1)}
+defining whether to keep (\code{keep = TRUE}) or remove (\code{keep = FALSE})
+the chromatogram data that match the condition.}
 }
 \description{
 \code{ChromBackend} is a virtual class that defines what different backends need
@@ -273,6 +318,14 @@ initialized with a \code{data.frame} of chromatographic data via the
 using the \code{peaksData} parameter. These data can be accessed with the
 \code{chromData()} and \code{peaksData()} functions.
 }
+}
+\note{
+Filter chromData removes chromatograms that do not match the filter criteria.
+FilterPeaks Data does not, only some data points are removed.
+
+can i make it possible that it can filter both character and numeric columns?
+mm idk for now.. i feel like for character values just using base R function makes sense,
+can i make it so that it keeps what i want or remove?
 }
 \section{Core chromatogram variables}{
 
@@ -360,7 +413,7 @@ supposed to be called right after creating an instance of the
 backend class and should prepare the backend.
 Parameters can be defined freely for each backend, depending on what is
 needed to initialize the backend.
-This method has to ensure to set the spectra variable \code{dataStorage}
+This method has to ensure to set the chromtogram variable \code{dataStorage}
 correctly.
 \item \code{chromData()}, \verb{chromData<-}: gets or sets general chromatogram metadata
 (annotation). \code{chromData()} returns a \code{data.frame}, \verb{chromData<-} expects
@@ -391,7 +444,7 @@ vector of the single column requested.
 of the backend. This method expects a \code{list} of two-dimensional arrays
 (\code{data.frame}) with columns representing the peak variables.
 All existing peaks data are expected to be replaced with these new values.
-The length of the \code{list} has to match the number of spectra of \code{object}.
+The length of the \code{list} has to match the number of chromatogram of \code{object}.
 Note that only writeable backends need to support this method.
 \item \code{[}: subset the backend. Only subsetting by element (\emph{row}/\code{i}) is
 allowed.
@@ -431,6 +484,14 @@ chromatograms, \verb{dataOrigin<-} expects a \code{character} of length equal
 chromatograms in \code{object}, \verb{dataStorage<- } expects a \code{character} of
 length equal \code{length(object)}. Note that missing values (\code{NA_character_})
 are not supported for \code{dataStorage()}.
+\item \code{filterChromData()}: filters any numerical chromatographic data variables
+the based on the provided numerical \code{ranges}. The method should return a
+\code{ChromBackend} object with the chromatograms that match the condition. This
+function will results in an object with less chromatogram than the original.
+\item \code{filterPeaksData()}: filters any numerical peaks data variables based on
+the provided numerical \code{ranges}. The method should return a \code{ChromBackend}
+object with the chromatograms that match the condition. This function will
+results in an object with the same number of chromatogram as the original.
 \item \code{intensity()}: gets the intensity values from the chromatograms. Returns
 a \code{list} of \code{numeric} vectors (intensity values for each
 chromatogram). The length of the list is equal to the number of

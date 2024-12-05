@@ -225,13 +225,65 @@ test_that("$ works", {
 })
 
 test_that("[ works", {
-    # Test 1: Single-element indexing
     be1 <- be[1]
-    expect_equal(nrow(be1@chromData), 1)
-    expect_equal(be1@chromData$chromIndex, 1)
-
-    # Test 2: Multi-element indexing with a sequence
+    expect_equal(nrow(chromData(be1)), 1)
+    expect_equal(chromData(be1)$chromIndex, 1)
     be12 <- be[1:2]
-    expect_equal(nrow(be12@chromData), 2)
-    expect_equal(be12@chromData$chromIndex, c(1, 2))
+    expect_equal(nrow(chromData(be12)), 2)
+    expect_equal(chromData(be12)$chromIndex, c(1, 2))
 })
+
+test_that("filterChromData works", {
+    res <- filterChromData(be,
+                              variables = c("mz", "chromIndex"),
+                              ranges = c(134, 150, 1, 1),
+                              match = "any",
+                              keep = FALSE)
+
+    expect_equal(nrow(chromData(res)), 1)
+    expect_equal(chromData(res)$mz, 123.3)
+    expect_error(filterChromData(be,
+                                 variables = c("mz"),
+                                 ranges = c(134), # Wrong length
+                                 match = "any",
+                                 keep = TRUE),
+                 "needs to be twice the length")
+    expect_error(filterChromData(be,
+                                 variables = c("invalid_var"),
+                                 ranges = c(134, 150, 1, 1),
+                                 match = "any",
+                                 keep = TRUE),
+                 "One or more values passed")
+    res <- filterChromData(be,
+                              variables = c("mz"),
+                              ranges = c(134, 150),
+                              match = "all",
+                              keep = FALSE)
+
+    expect_equal(nrow(chromData(res)), 2)
+    expect_equal(chromData(res)$mz, c(112.2, 123.3))
+
+    expect_identical(filterChromData(be,
+                                     match = "all",
+                                     keep = TRUE),
+                     be)
+    expect_error(filterChromData(be,
+                                 variables = c("mz"),
+                                 ranges = c("a", "b"),
+                                 keep = TRUE),
+                 "only support filtering for numerical")
+    expect_error(filterChromData(be,
+                                 variables = c(200),
+                                 ranges = c(134, 150),
+                                 keep = TRUE),
+                 "parameter needs to be of type")
+    res <- filterChromData(be,
+                              variables = c("mz", "chromIndex"),
+                              ranges = c(134, 150, 1, 1),
+                              match = "any",
+                              keep = TRUE)
+    expect_equal(nrow(chromData(res)), 2)
+    expect_equal(chromData(res)$mz, c(112.2, 134.4))
+    expect_equal(chromData(res)$chromIndex, c(1,3))
+})
+
