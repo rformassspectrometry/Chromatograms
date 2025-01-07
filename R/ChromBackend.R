@@ -4,6 +4,7 @@
 #'
 #' @aliases ChromBackend-class
 #' @aliases ChromBackendMemory-class
+#' @aliases [,ChromBackend-method
 #'
 #' @description
 #'
@@ -115,13 +116,13 @@
 #'
 #' @param i For `[`: `integer`, `logical` or `character` to subset the object.
 #'
-#' @param j For `[`: ignored.
+#' @param j For `[` and `[[`: ignored.
 #'
-#' @param keep For `filterChromData()` and `filterPeaksData()`: `logical(1)`
-#'       defining whether to keep (`keep = TRUE`) or remove (`keep = FALSE`)
-#'       the chromatogram data that match the condition.
+#' @param keep For `filterChromData()`: `logical(1)`
+#'        defining whether to keep (`keep = TRUE`) or remove (`keep = FALSE`)
+#'        the chromatogram data that match the condition.
 #'
-#' @param match For `filterChromData()` and `filterPeaksData()`: `character(1) `
+#' @param match For `filterChromData()` : `character(1) `
 #'        defining whether the condition has to match for all provided
 #'        `ranges` (`match = "all"`; the default), or for any of them
 #'        (`match = "any"`) for chromatogram data to be retained.
@@ -131,21 +132,18 @@
 #'
 #' @param object Object extending `ChromBackend`.
 #'
-#' @param ranges For `filterChromData()` and `filterPeaksData()`: a `numeric`
+#' @param ranges For `filterChromData()` : a `numeric`
 #'        vector of paired values (upper and lower boundary) that define the
 #'        ranges to filter the `object`. These paired values need to be in the
 #'        same order as the `variables` parameter (see below).
 #'
 #'
 #' @param value replacement value for `<-` methods. See individual
-#'     method description or expected data type.
+#'        method description or expected data type.
 #'
 #' @param variables For `filterChromData()`: `character` vector with the names
 #'        of the chromatogram variables to filter for. The list of available
 #'        chromatogram variables can be obtained with `chromVariables()`.
-#'        For `filterPeaksData()`: `character` vector with the names of the
-#'        peaks variables to filter for. The list of available peaks variables
-#'        can be obtained with `peaksVariables()`.
 #'
 #' @param x Object extending `ChromBackend`.
 #'
@@ -212,6 +210,8 @@
 #' Additional methods that might be implemented, but for which default
 #' implementations are already present are:
 #'
+#' - `[[`
+#'
 #' - `backendParallelFactor()`: returns a `factor` defining an optimal
 #'   (preferred) way how the backend can be split for parallel processing
 #'   used for all *peak* data accessor or data manipulation functions.
@@ -242,14 +242,9 @@
 #'   are not supported for `dataStorage()`.
 #'
 #' - `filterChromData()`: filters any numerical chromatographic data variables
-#'   the based on the provided numerical `ranges`. The method should return a
+#'   based on the provided numerical `ranges`. The method should return a
 #'   `ChromBackend` object with the chromatograms that match the condition. This
 #'   function will results in an object with less chromatogram than the original.
-#'
-#' - `filterPeaksData()`: filters any numerical peaks data variables based on
-#'   the provided numerical `ranges`. The method should return a `ChromBackend`
-#'   object with the chromatograms that match the condition. This function will
-#'   results in an object with the same number of chromatogram as the original.
 #'
 #' - `intensity()`: gets the intensity values from the chromatograms. Returns
 #'   a `list` of `numeric` vectors (intensity values for each
@@ -361,6 +356,7 @@ setClass("ChromBackend",
              version = "character"),
          prototype = prototype(readonly = FALSE, version = "0.1"))
 
+#' @importMethodsFrom S4Vectors [ [<-
 #' @exportMethod [
 #'
 #' @rdname ChromBackend
@@ -368,6 +364,8 @@ setMethod("[", "ChromBackend", function(x, i, j, ..., drop = FALSE) {
     stop("Not implemented for ", class(x), ".")
 })
 
+#' @importMethodsFrom S4Vectors $ $<-
+#'
 #' @exportMethod $
 #'
 #' @rdname ChromBackend
@@ -428,6 +426,32 @@ setReplaceMethod("peaksData", "ChromBackend", function(object, value) {
 
 ################################################################################
 ## Methods with default implementations below.
+
+#' @rdname ChromBackend
+#'
+#' @importMethodsFrom S4Vectors [[ [[<-
+#'
+#' @export
+setMethod("[[", "ChromBackend", function(x, i, j, ...) {
+    if (!is.character(i))
+        stop("'i' is supposed to be a character defining the chromatogram ",
+             "variable to access.")
+    if (!missing(j))
+        stop("'j' is not supported.")
+    do.call("$", list(x, i))
+})
+
+#' @rdname ChromBackend
+#'
+#' @export
+setReplaceMethod("[[", "ChromBackend", function(x, i, j, ..., value) {
+    if (!is.character(i))
+        stop("'i' is supposed to be a character defining the chromatogram ",
+             "variable to replace or create.")
+    if (!missing(j))
+        stop("'j' is not supported.")
+    do.call("$<-", list(x, i, value))
+})
 
 #' @exportMethod backendInitialize
 #'
@@ -585,7 +609,7 @@ setMethod("isEmpty", "ChromBackend", function(x) {
 #' @importMethodsFrom ProtGenerics isReadOnly
 #'
 #' @rdname ChromBackend
-setMethod("isReadOnly", "ChromBackend", function(object) FALSE )
+setMethod("isReadOnly", "ChromBackend", function(object) FALSE)
 
 #' @exportMethod length
 #'
@@ -830,13 +854,6 @@ setMethod("split", "ChromBackend", function(x, f, drop = FALSE, ...) {
 
 #' @exportMethod filterChromData
 #'
-#' @note
-#' Filter chromData removes chromatograms that do not match the filter criteria.
-#' FilterPeaks Data does not, only some data points are removed.
-#'
-#' can i make it possible that it can filter both character and numeric columns?
-#' mm idk for now.. i feel like for character values just using base R function makes sense,
-#' can i make it so that it keeps what i want or remove?
 #' @rdname ChromBackend
 #'
 #' @importFrom MsCoreUtils between
@@ -863,8 +880,8 @@ setMethod("filterChromData", "ChromBackend",
               if (length(variables) != length(ranges) / 2)
                   stop("Length of 'ranges' needs to be twice the length of ",
                        "the parameter 'variables' and define the lower ",
-                       "and upper bound for values of each chromatogram variable ",
-                       "defined with parameter 'variables'.")
+                       "and upper bound for values of each chromatogram ",
+                       "variable defined with parameter 'variables'.")
               query <- chromData(object, columns = variables)
               idx <- .filter_ranges(query, ranges, match)
               if (keep) object <- object[idx]
@@ -872,43 +889,3 @@ setMethod("filterChromData", "ChromBackend",
               object
           })
 
-#' @exportMethod filterPeaksData
-#'
-#' @rdname ChromBackend
-#'
-#' @export
-setMethod("filterPeaksData", "ChromBackend",
-          function(object, variables = character(),
-                   ranges = numeric(), match = c("any", "all"),
-                   keep = TRUE) {
-              if (!length(ranges) || !length(variables))
-                  return(object)
-              if (!is.numeric(ranges))
-                  stop("filterPeaksData only support filtering for numerical ",
-                       "peak variables")
-              match <- match.arg(match)
-              if (is.character(variables)) {
-                  if (!all(variables %in% peaksVariables(object)))
-                      stop("One or more values passed with parameter ",
-                           "'variables' are not available as peaks variables in ",
-                           "object. Use the 'peaksVariables()' function to list ",
-                           "possible values.")
-              } else
-                  stop("The 'variables' parameter needs to be of type ",
-                       "'character'.")
-              if (length(variables) != length(ranges) / 2)
-                  stop("Length of 'ranges' needs to be twice the length of the ",
-                       "parameter 'variables' and define the lower and upper ",
-                       "bound for values of each peak variable defined with ",
-                       "parameter 'variables'.")
-              pds <- peaksData(object, columns = variables)
-              filtpd <- lapply(pds, function(pd) {
-                  idx <- .filter_ranges(pd, ranges, match)
-                  if (keep) pd <- pd[idx, ]
-                  else pd <- pd[-idx, ]
-                  pd
-              })
-              validPeaksData(filtpd)
-              peaksData(object) <- filtpd
-              object
-          })

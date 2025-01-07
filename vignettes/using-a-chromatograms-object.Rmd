@@ -1,0 +1,54 @@
+---
+title: "Using a Chromatograms object"
+author: "Philippine Louail"
+date: '`r Sys.Date()`'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# A data.frame with chromatogram variables.
+cdata <- data.frame(msLevel = c(1L, 1L),
+                    mz = c(112.2, 123.3))
+
+# Retention time and intensity values for each chromatogram.
+pdata <- list(
+  data.frame(rtime = c(11, 12.4, 12.8, 13.2, 14.6, 15.1, 16.5),
+       intensity = c(50.5, 123.3, 153.6, 2354.3, 243.4, 123.4, 83.2)),
+  data.frame(rtime = c(45.1, 46.2, 53, 54.2, 55.3, 56.4, 57.5),
+       intensity = c(100, 180.1, 300.45, 1400, 1200.3, 300.2, 150.1))
+)
+
+#' Create and initialize the backend
+be <- backendInitialize(ChromBackendMemory(),
+                        chromData = cdata, peaksData = pdata)
+be
+
+#' create Chromatograms object 
+chrom <- Chromatogram(be)
+```
+
+## The Chromatograms class 
+
+```{r}
+chrom
+
+length(chrom)
+```
+
+
+## Access data from a Chromatograms object
+
+
+## Plotting a Chromatograms object
+
+```{r}
+plotChromatograms(chrom)
+
+plotChromatogram(chrom[1])
+```
+
+## Filtering a Chromatograms object 

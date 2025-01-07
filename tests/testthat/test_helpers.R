@@ -57,7 +57,7 @@ test_that(".check_column_order_and_types works", {
 })
 
 
-test_that(".check_rtime wprks", {
+test_that(".check_rtime works", {
     df_valid <- data.frame(rtime = c(1, 2, 3),
                            intensity = c(10, 20, 30))
     df_invalid_na <- data.frame(rtime = c(1, NA, 3),

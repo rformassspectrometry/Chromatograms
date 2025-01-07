@@ -48,3 +48,5 @@ Collate:
     'hidden_aliases.R'
     'helpers.R'
     'ChromBackendMemory.R'
+    'Chromatograms.R'
+    'Chromatograms-chromData.R'

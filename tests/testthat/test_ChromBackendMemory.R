@@ -113,6 +113,60 @@ test_that("$<-,ChromBackendMemory works", {
     expect_equal(be_cd@chromData$mz, c(111.1, 222.2, 333.3))
 })
 
+test_that("filterChromData works", {
+    res <- filterChromData(be,
+                           variables = c("mz", "chromIndex"),
+                           ranges = c(134, 150, 1, 1),
+                           match = "any",
+                           keep = FALSE)
+
+    expect_equal(nrow(chromData(res)), 1)
+    expect_equal(chromData(res)$mz, 123.3)
+    expect_error(filterChromData(be,
+                                 variables = c("mz"),
+                                 ranges = c(134), # Wrong length
+                                 match = "any",
+                                 keep = TRUE),
+                 "needs to be twice the length")
+    expect_error(filterChromData(be,
+                                 variables = c("invalid_var"),
+                                 ranges = c(134, 150, 1, 1),
+                                 match = "any",
+                                 keep = TRUE),
+                 "One or more values passed")
+    res <- filterChromData(be,
+                           variables = c("mz"),
+                           ranges = c(134, 150),
+                           match = "all",
+                           keep = FALSE)
+
+    expect_equal(nrow(chromData(res)), 2)
+    expect_equal(chromData(res)$mz, c(112.2, 123.3))
+
+    expect_identical(filterChromData(be,
+                                     match = "all",
+                                     keep = TRUE),
+                     be)
+    expect_error(filterChromData(be,
+                                 variables = c("mz"),
+                                 ranges = c("a", "b"),
+                                 keep = TRUE),
+                 "only support filtering for numerical")
+    expect_error(filterChromData(be,
+                                 variables = c(200),
+                                 ranges = c(134, 150),
+                                 keep = TRUE),
+                 "parameter needs to be of type")
+    res <- filterChromData(be,
+                           variables = c("mz", "chromIndex"),
+                           ranges = c(134, 150, 1, 1),
+                           match = "any",
+                           keep = TRUE)
+    expect_equal(nrow(chromData(res)), 2)
+    expect_equal(chromData(res)$mz, c(112.2, 134.4))
+    expect_equal(chromData(res)$chromIndex, c(1,3))
+})
+
 
 test_that("split,ChrombackendMemory works", {
     be_split <- be

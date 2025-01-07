@@ -20,13 +20,13 @@ be_empty <- new("ChromBackendMemory")
 be_cd <- backendInitialize(be_empty, chromData = cdata)
 be <- backendInitialize(be_empty, chromData = cdata, peaksData = pdata)
 
-## Run tests with the unit test suite defined in the Spectra package to ensure
-## compliance with the definitions of the MsBackend interface/class.
+## Run tests with the unit test suite defined in the Chromatograms package to
+## ensure compliance with the definitions of the ChromBackend interface/class.
 test_suite <- system.file("test_backends", "test_ChromBackend",
                           package = "Chromatograms")
 test_dir(test_suite, stop_on_failure = TRUE)
 
-## mzML with chromatographic data.
-## ?? idk where/what to get
+c_empty <- Chromatograms()
+c_full <- Chromatograms(be)
 
 test_check("Chromatograms")

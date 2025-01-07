@@ -1,0 +1,274 @@
+#' @include Chromatograms.R hidden_aliases.R
+
+#' @title Accessing chromatographic variables.
+#'
+#' @name chromData
+#'
+#' @aliases chromData
+#' @aliases msLevel
+#' @aliases chromIndex
+#' @aliases collisionEnergy
+#' @aliases dataOrigin
+#' @aliases dataStorage
+#' @aliases mz
+#' @aliases mzMin
+#' @aliases mzMax
+#' @aliases precursorMz
+#' @aliases precursorMzMin
+#' @aliases precursorMzMax
+#' @aliases productMz
+#' @aliases productMzMin
+#' @aliases productMzMax
+#' @aliases filterChromData
+#' @aliases chromVariables
+#'
+#' @description
+#'
+#' As explained in the `Chromatograms` class documentation, the `Chromatograms`
+#' object is a container for chromatogram data that includes chromatographic
+#' peaks data (*retention time* and related intensity values, also referred to
+#' as *peaks data variables* in the context of `Chromatograms`) and metadata of
+#' individual chromatograms (so called *chromatograms variables*).
+#'
+#' The *chromatograms variables* information can be accessed using the
+#' `chromData()` function. it is also possible to access specific
+#' chromatograms variables using `$`.
+#'
+#' @param object A [Chromatograms] object.
+#'
+#' @param x A [Chromatograms] object.
+#'
+#' @param columns A `character` vector of chromatograms variables to extract.
+#'
+#' @param drop A `logical` indicating whether to drop dimensions when extracting
+#'        a single variable.
+#'
+#' @param keep For `filterChromData()`: `logical(1)`
+#'        defining whether to keep (`keep = TRUE`) or remove (`keep = FALSE`)
+#'        the chromatogram data that match the condition.
+#'
+#' @param match For `filterChromData()` : `character(1) `
+#'        defining whether the condition has to match for all provided
+#'        `ranges` (`match = "all"`; the default), or for any of them
+#'        (`match = "any"`) for chromatogram data to be retained.
+#'
+#' @param ranges For `filterChromData()` : a `numeric`
+#'        vector of paired values (upper and lower boundary) that define the
+#'        ranges to filter the `object`. These paired values need to be in the
+#'        same order as the `variables` parameter (see below).
+#'
+#' @param value replacement value for `<-` methods. See individual
+#'        method description or expected data type.
+#'
+#' @param variables For `filterChromData()`: `character` vector with the names
+#'        of the chromatogram variables to filter for. The list of available
+#'        chromatogram variables can be obtained with `chromVariables()`.
+#'
+#' @section Chromatograms variables and accessor functions:
+#'
+#' The following chromatograms variables are guaranteed to be provided by a
+#' `Chromatograms` object and to be accessible with either the `chromData()` or
+#'  a specific function named after the variables names:
+#'
+#' - `chromIndex`: an `integer` with the index of the chromatogram in the
+#'   original source file (e.g. *mzML* file).
+#' - `collisionEnergy`: for SRM data, `numeric` with the collision energy of
+#'   the precursor.
+#' - `dataOrigin`: optional `character` with the origin of a chromatogram.
+#' - `dataStorage`: `character` defining where the data is (currently) stored.
+#' - `msLevel`: `integer` defining the MS level of the data.
+#' - `mz`: optional `numeric` with the (target) m/z value for the
+#'   chromatographic data.
+#' - `mzMin`: optional `numeric` with the lower m/z value of the m/z range in
+#'   case the data (e.g. an extracted ion chromatogram EIC) was extracted from
+#'   a `Spectra` object.
+#' - `mzMax`: optional `numeric` with the upper m/z value of the m/z range.
+#' - `precursorMz`: for SRM data, `numeric` with the target m/z of the
+#'   precursor (parent).
+#' - `precursorMzMin`: for SRM data, optional `numeric` with the lower m/z of
+#'   the precursor's isolation window.
+#' - `precursorMzMax`: for SRM data, optional `numeric` with the upper m/z of
+#'   the precursor's isolation window.
+#' - `productMz` for SRM data, `numeric` with the target m/z of the
+#'   product ion.
+#' - `productMzMin`: for SRM data, optional `numeric` with the lower m/z of
+#'   the product's isolation window.
+#' - `productMzMax`: for SRM data, optional `numeric` with the upper m/z of
+#'   the product's isolation window.
+#'
+#' @seealso [Chromatograms] for a general description of the `Chromatograms`
+#'          object.
+#' @md
+#'
+#' @author Philippine Louail
+NULL
+
+#' @rdname chromData
+setMethod("chromData", "Chromatograms", function(object,
+                                                 columns = chromVariables(object),
+                                                 drop = FALSE)
+    chromData(object@backend, columns = columns, drop = drop)
+    )
+
+#' @rdname chromData
+setReplaceMethod("chromData", "Chromatograms", function(object, value) {
+    chromData(object@backend) <- value
+    object
+})
+
+#' @rdname chromData
+setMethod("chromVariables", "Chromatograms", function(object)
+    chromVariables(object@backend))
+
+#' @rdname chromData
+setMethod("chromIndex", "Chromatograms", function(object)
+    chromIndex(object@backend))
+
+#' @rdname chromData
+setReplaceMethod("chromIndex", "Chromatograms", function(object, value) {
+    chromIndex(object@backend) <- value
+    object
+})
+
+#' @rdname chromData
+setMethod("collisionEnergy", "Chromatograms", function(object)
+    collisionEnergy(object@backend))
+
+#' @rdname chromData
+setReplaceMethod("collisionEnergy", "Chromatograms", function(object, value) {
+    collisionEnergy(object@backend) <- value
+    object
+})
+
+#' @rdname chromData
+setMethod("dataOrigin", "Chromatograms", function(object)
+    dataOrigin(object@backend))
+
+#' @rdname chromData
+setReplaceMethod("dataOrigin", "Chromatograms", function(object, value) {
+    dataOrigin(object@backend) <- value
+    object
+})
+
+#' @rdname chromData
+setMethod("dataStorage", "Chromatograms", function(object)
+    dataStorage(object@backend))
+
+#' @rdname chromData
+setReplaceMethod("dataStorage", "Chromatograms", function(object, value) {
+    dataStorage(object@backend) <- value
+    object
+})
+
+#' @rdname chromData
+setMethod("msLevel", "Chromatograms", function(object) msLevel(object@backend))
+
+#' @rdname chromData
+setReplaceMethod("msLevel", "Chromatograms", function(object, value) {
+    msLevel(object@backend) <- value
+    object
+})
+
+#' @rdname chromData
+setMethod("mz", "Chromatograms", function(object) mz(object@backend))
+
+#' @rdname chromData
+setReplaceMethod("mz", "Chromatograms", function(object, value) {
+    mz(object@backend) <- value
+    object
+})
+
+#' @rdname chromData
+setMethod("mzMax", "Chromatograms", function(object) mzMax(object@backend))
+
+#' @rdname chromData
+setReplaceMethod("mzMax", "Chromatograms", function(object, value) {
+    mzMax(object@backend) <- value
+    object
+})
+
+#' @rdname chromData
+setMethod("mzMin", "Chromatograms", function(object) mzMin(object@backend))
+
+#' @rdname chromData
+setReplaceMethod("mzMin", "Chromatograms", function(object, value) {
+    mzMin(object@backend) <- value
+    object
+})
+
+#' @rdname chromData
+setMethod("length", "Chromatograms", function(x) length(x@backend))
+
+#' @rdname chromData
+setMethod("precursorMz", "Chromatograms", function(object)
+    precursorMz(object@backend))
+
+#' @rdname chromData
+setReplaceMethod("precursorMz", "Chromatograms", function(object, value) {
+    precursorMz(object@backend) <- value
+    object
+})
+
+#' @rdname chromData
+setMethod("precursorMzMin", "Chromatograms", function(object)
+    precursorMzMin(object@backend))
+
+#' @rdname chromData
+setReplaceMethod("precursorMzMin", "Chromatograms", function(object, value) {
+    precursorMzMin(object@backend) <- value
+    object
+})
+
+#' @rdname chromData
+setMethod("precursorMzMax", "Chromatograms", function(object)
+    precursorMzMax(object@backend))
+
+#' @rdname chromData
+setReplaceMethod("precursorMzMax", "Chromatograms", function(object, value) {
+    precursorMzMax(object@backend) <- value
+    object
+})
+
+#' @rdname chromData
+setMethod("productMz", "Chromatograms", function(object)
+    productMz(object@backend))
+
+#' @rdname chromData
+setReplaceMethod("productMz", "Chromatograms", function(object, value) {
+    productMz(object@backend) <- value
+    object
+})
+
+#' @rdname chromData
+setMethod("productMzMin", "Chromatograms", function(object)
+    productMzMin(object@backend))
+
+#' @rdname chromData
+setReplaceMethod("productMzMin", "Chromatograms", function(object, value) {
+    productMzMin(object@backend) <- value
+    object
+})
+
+#' @rdname chromData
+setMethod("productMzMax", "Chromatograms", function(object)
+    productMzMax(object@backend))
+
+#' @rdname chromData
+setReplaceMethod("productMzMax", "Chromatograms", function(object, value) {
+    productMzMax(object@backend) <- value
+    object
+})
+
+#' @rdname chromData
+setMethod("filterChromData", "Chromatograms", function(object,
+                                                       variables = character(),
+                                                       ranges = numeric(),
+                                                       match = c("any", "all"),
+                                                       keep = TRUE) {
+    object@backend <- filterChromData(object@backend,
+                                      variables = variables,
+                                      ranges = ranges,
+                                      match = match,
+                                      keep = keep)
+    object
+})
