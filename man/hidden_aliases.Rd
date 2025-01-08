@@ -2,15 +2,7 @@
 % Please edit documentation in R/AllGenerics.R, R/ChromBackend-functions.R,
 %   R/hidden_aliases.R, R/ChromBackendMemory.R, R/Chromatograms.R
 \docType{methods}
-\name{chromData<-}
-\alias{chromData<-}
-\alias{chromIndex<-}
-\alias{mzMax<-}
-\alias{mzMin<-}
-\alias{precursorMzMin<-}
-\alias{precursorMzMax<-}
-\alias{productMzMax<-}
-\alias{productMzMin<-}
+\name{reset}
 \alias{reset}
 \alias{fillCoreChromVariables}
 \alias{validChromData}
@@ -30,22 +22,6 @@
 \alias{show,Chromatograms-method}
 \title{Fill data frame with columns for missing core chrom variables}
 \usage{
-chromData(object) <- value
-
-chromIndex(object) <- value
-
-mzMax(object) <- value
-
-mzMin(object) <- value
-
-precursorMzMin(object) <- value
-
-precursorMzMax(object) <- value
-
-productMzMax(object) <- value
-
-productMzMin(object) <- value
-
 reset(object, ...)
 
 fillCoreChromVariables(x = data.frame())

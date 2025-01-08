@@ -38,10 +38,16 @@ and metadata of individual chromatogram (so called
 it is possible to add arbitrary additional chromatograms variables to a
 \code{Chromatograms} object.
 
+The \emph{chromatograms variables} information can be accessed using the
+\code{chromData()} function. it is also possible to access specific
+chromatograms variables using \code{$}. \code{chromData} can be accessed, replaced but
+also filtered/subsetted. Refer t the \link{chromData} documentation for more
+details.
+
 The \code{Chromatograms} object is designed to contain chromatographic data of a
 (large) set of chromatograms. The data is organized \emph{linearly} and can be
 thought of a list of chromatograms, i.e. each element in the \code{Chromatograms}
-is one chomatogram.
+is one chromatogram.
 }
 
 \section{Creation of objects}{
@@ -55,4 +61,9 @@ construction function.
 ## create a Chromatograms object
 chroms <- Chromatograms(backend = ChromBackendMemory())
 
+}
+\seealso{
+\link{chromData} for a general description of the chromatographic
+metadata available in the object, as well as how to access, replace
+and subset them.
 }

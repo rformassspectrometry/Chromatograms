@@ -1,6 +1,6 @@
 #' @include Chromatograms.R hidden_aliases.R
 
-#' @title Accessing chromatographic variables.
+#' @title Chromatographic Peaks Metadata.
 #'
 #' @name chromData
 #'
@@ -21,10 +21,26 @@
 #' @aliases productMzMax
 #' @aliases filterChromData
 #' @aliases chromVariables
+#' @aliases chromData<-
+#' @aliases msLevel<-
+#' @aliases chromIndex<-
+#' @aliases collisionEnergy<-
+#' @aliases dataOrigin<-
+#' @aliases dataStorage<-
+#' @aliases mz<-
+#' @aliases mzMin<-
+#' @aliases mzMax<-
+#' @aliases precursorMz<-
+#' @aliases precursorMzMin<-
+#' @aliases precursorMzMax<-
+#' @aliases productMz<-
+#' @aliases productMzMin<-
+#' @aliases productMzMax<-
+#' @aliases chromVariables<-
 #'
 #' @description
 #'
-#' As explained in the `Chromatograms` class documentation, the `Chromatograms`
+#' As explained in the [`Chromatograms`] class documentation, the `Chromatograms`
 #' object is a container for chromatogram data that includes chromatographic
 #' peaks data (*retention time* and related intensity values, also referred to
 #' as *peaks data variables* in the context of `Chromatograms`) and metadata of
@@ -33,6 +49,9 @@
 #' The *chromatograms variables* information can be accessed using the
 #' `chromData()` function. it is also possible to access specific
 #' chromatograms variables using `$`.
+#'
+#' `chromData` can be accessed, replaced but also filtered/subsetted. Refer to
+#' the sections below for more details.
 #'
 #' @param object A [Chromatograms] object.
 #'
@@ -95,6 +114,23 @@
 #'   the product's isolation window.
 #' - `productMzMax`: for SRM data, optional `numeric` with the upper m/z of
 #'   the product's isolation window.
+#'
+#' @section Filter Chromatograms variables:
+#'
+#' Functions that filter `Chromatograms` based on chromatograms variables
+#' (i.e, `chromData` ) will remove chromatographic data that do not meet the
+#' specified conditions. This means that if a chromatogram is filtered out, its
+#' corresponding `chromData` and `peaksData` will be removed from the object
+#' immediately.
+#'
+#' The available functions to filter chromatogram data are:
+#'
+#' - `filterChromData()`: Filters numerical chromatographic data variables
+#'   based on the provided numerical `ranges`. The method returns a
+#'   `ChromBackend` object containing only the chromatograms that match the
+#'   specified conditions. This function results in an object with fewer
+#'   chromatograms than the original.
+
 #'
 #' @seealso [Chromatograms] for a general description of the `Chromatograms`
 #'          object.

@@ -18,6 +18,22 @@
 \alias{productMzMax}
 \alias{filterChromData}
 \alias{chromVariables}
+\alias{chromData<-}
+\alias{msLevel<-}
+\alias{chromIndex<-}
+\alias{collisionEnergy<-}
+\alias{dataOrigin<-}
+\alias{dataStorage<-}
+\alias{mz<-}
+\alias{mzMin<-}
+\alias{mzMax<-}
+\alias{precursorMz<-}
+\alias{precursorMzMin<-}
+\alias{precursorMzMax<-}
+\alias{productMz<-}
+\alias{productMzMin<-}
+\alias{productMzMax<-}
+\alias{chromVariables<-}
 \alias{chromData,Chromatograms-method}
 \alias{chromData<-,Chromatograms-method}
 \alias{chromVariables,Chromatograms-method}
@@ -51,7 +67,7 @@
 \alias{productMzMax,Chromatograms-method}
 \alias{productMzMax<-,Chromatograms-method}
 \alias{filterChromData,Chromatograms-method}
-\title{Accessing chromatographic variables.}
+\title{Chromatographic Peaks Metadata.}
 \usage{
 \S4method{chromData}{Chromatograms}(object, columns = chromVariables(object), drop = FALSE)
 
@@ -157,7 +173,7 @@ defining whether to keep (\code{keep = TRUE}) or remove (\code{keep = FALSE})
 the chromatogram data that match the condition.}
 }
 \description{
-As explained in the \code{Chromatograms} class documentation, the \code{Chromatograms}
+As explained in the \code{\link{Chromatograms}} class documentation, the \code{Chromatograms}
 object is a container for chromatogram data that includes chromatographic
 peaks data (\emph{retention time} and related intensity values, also referred to
 as \emph{peaks data variables} in the context of \code{Chromatograms}) and metadata of
@@ -166,6 +182,9 @@ individual chromatograms (so called \emph{chromatograms variables}).
 The \emph{chromatograms variables} information can be accessed using the
 \code{chromData()} function. it is also possible to access specific
 chromatograms variables using \code{$}.
+
+\code{chromData} can be accessed, replaced but also filtered/subsetted. Refer to
+the sections below for more details.
 }
 \section{Chromatograms variables and accessor functions}{
 
@@ -199,6 +218,25 @@ product ion.
 the product's isolation window.
 \item \code{productMzMax}: for SRM data, optional \code{numeric} with the upper m/z of
 the product's isolation window.
+}
+}
+
+\section{Filter Chromatograms variables}{
+
+
+Functions that filter \code{Chromatograms} based on chromatograms variables
+(i.e, \code{chromData} ) will remove chromatographic data that do not meet the
+specified conditions. This means that if a chromatogram is filtered out, its
+corresponding \code{chromData} and \code{peaksData} will be removed from the object
+immediately.
+
+The available functions to filter chromatogram data are:
+\itemize{
+\item \code{filterChromData()}: Filters numerical chromatographic data variables
+based on the provided numerical \code{ranges}. The method returns a
+\code{ChromBackend} object containing only the chromatograms that match the
+specified conditions. This function results in an object with fewer
+chromatograms than the original.
 }
 }
 
