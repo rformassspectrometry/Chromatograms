@@ -52,6 +52,11 @@ test_that("ChromBackend methods throw errors", {
 
     expect_identical(chromVariables(dm), names(coreChromVariables()))
     expect_identical(peaksVariables(dm), names(corePeaksVariables()))
+
+    expect_error(dm[[123]], "is supposed to be a character")
+    expect_error(dm[["character", "character2"]], "is not supported")
+    expect_error(dm[[123]] <- 123, "is supposed to be a character")
+    expect_error(dm[["character", "character2"]] <- 123, "is not supported")
 })
 
 

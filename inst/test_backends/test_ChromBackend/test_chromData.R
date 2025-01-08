@@ -225,13 +225,19 @@ test_that("$ works", {
 })
 
 test_that("[ works", {
-    # Test 1: Single-element indexing
     be1 <- be[1]
-    expect_equal(nrow(be1@chromData), 1)
-    expect_equal(be1@chromData$chromIndex, 1)
-
-    # Test 2: Multi-element indexing with a sequence
+    expect_equal(nrow(chromData(be1)), 1)
+    expect_equal(chromData(be1)$chromIndex, 1)
     be12 <- be[1:2]
-    expect_equal(nrow(be12@chromData), 2)
-    expect_equal(be12@chromData$chromIndex, c(1, 2))
+    expect_equal(nrow(chromData(be12)), 2)
+    expect_equal(chromData(be12)$chromIndex, c(1, 2))
+})
+
+test_that("[[ works", {
+    expect_error(be[["doesnt_exist"]], "The requested variable")
+    expect_error(be[["msLevel", "no"]], "is not supported")
+    expect_equal(be[["msLevel"]], msLevel(be))
+    be2 <- be
+    be2[["msLevel"]] <- c(1L,2L,3L)
+    expect_false(all(be2[["msLevel"]] == msLevel(be)))
 })

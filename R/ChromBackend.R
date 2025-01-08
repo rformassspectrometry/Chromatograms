@@ -4,6 +4,7 @@
 #'
 #' @aliases ChromBackend-class
 #' @aliases ChromBackendMemory-class
+#' @aliases [,ChromBackend-method
 #'
 #' @description
 #'
@@ -115,15 +116,34 @@
 #'
 #' @param i For `[`: `integer`, `logical` or `character` to subset the object.
 #'
-#' @param j For `[`: ignored.
+#' @param j For `[` and `[[`: ignored.
+#'
+#' @param keep For `filterChromData()`: `logical(1)`
+#'        defining whether to keep (`keep = TRUE`) or remove (`keep = FALSE`)
+#'        the chromatogram data that match the condition.
+#'
+#' @param match For `filterChromData()` : `character(1) `
+#'        defining whether the condition has to match for all provided
+#'        `ranges` (`match = "all"`; the default), or for any of them
+#'        (`match = "any"`) for chromatogram data to be retained.
 #'
 #' @param name For `$` and `$<-`: the name of the chromatogram variable to
 #'     return or set.
 #'
 #' @param object Object extending `ChromBackend`.
 #'
+#' @param ranges For `filterChromData()` : a `numeric`
+#'        vector of paired values (upper and lower boundary) that define the
+#'        ranges to filter the `object`. These paired values need to be in the
+#'        same order as the `variables` parameter (see below).
+#'
+#'
 #' @param value replacement value for `<-` methods. See individual
-#'     method description or expected data type.
+#'        method description or expected data type.
+#'
+#' @param variables For `filterChromData()`: `character` vector with the names
+#'        of the chromatogram variables to filter for. The list of available
+#'        chromatogram variables can be obtained with `chromVariables()`.
 #'
 #' @param x Object extending `ChromBackend`.
 #'
@@ -139,7 +159,7 @@
 #'   backend class and should prepare the backend.
 #'   Parameters can be defined freely for each backend, depending on what is
 #'   needed to initialize the backend.
-#'   This method has to ensure to set the spectra variable `dataStorage`
+#'   This method has to ensure to set the chromtogram variable `dataStorage`
 #'   correctly.
 #'
 #' - `chromData()`, `chromData<-`: gets or sets general chromatogram metadata
@@ -173,7 +193,7 @@
 #'   of the backend. This method expects a `list` of two-dimensional arrays
 #'   (`data.frame`) with columns representing the peak variables.
 #'   All existing peaks data are expected to be replaced with these new values.
-#'   The length of the `list` has to match the number of spectra of `object`.
+#'   The length of the `list` has to match the number of chromatogram of `object`.
 #'   Note that only writeable backends need to support this method.
 #'
 #' - `[`: subset the backend. Only subsetting by element (*row*/`i`) is
@@ -189,6 +209,8 @@
 #'
 #' Additional methods that might be implemented, but for which default
 #' implementations are already present are:
+#'
+#' - `[[`
 #'
 #' - `backendParallelFactor()`: returns a `factor` defining an optimal
 #'   (preferred) way how the backend can be split for parallel processing
@@ -218,6 +240,11 @@
 #'   chromatograms in `object`, `dataStorage<- ` expects a `character` of
 #'   length equal `length(object)`. Note that missing values (`NA_character_`)
 #'   are not supported for `dataStorage()`.
+#'
+#' - `filterChromData()`: filters any numerical chromatographic data variables
+#'   based on the provided numerical `ranges`. The method should return a
+#'   `ChromBackend` object with the chromatograms that match the condition. This
+#'   function will results in an object with less chromatogram than the original.
 #'
 #' - `intensity()`: gets the intensity values from the chromatograms. Returns
 #'   a `list` of `numeric` vectors (intensity values for each
@@ -329,6 +356,7 @@ setClass("ChromBackend",
              version = "character"),
          prototype = prototype(readonly = FALSE, version = "0.1"))
 
+#' @importMethodsFrom S4Vectors [ [<-
 #' @exportMethod [
 #'
 #' @rdname ChromBackend
@@ -336,6 +364,8 @@ setMethod("[", "ChromBackend", function(x, i, j, ..., drop = FALSE) {
     stop("Not implemented for ", class(x), ".")
 })
 
+#' @importMethodsFrom S4Vectors $ $<-
+#'
 #' @exportMethod $
 #'
 #' @rdname ChromBackend
@@ -396,6 +426,32 @@ setReplaceMethod("peaksData", "ChromBackend", function(object, value) {
 
 ################################################################################
 ## Methods with default implementations below.
+
+#' @rdname ChromBackend
+#'
+#' @importMethodsFrom S4Vectors [[ [[<-
+#'
+#' @export
+setMethod("[[", "ChromBackend", function(x, i, j, ...) {
+    if (!is.character(i))
+        stop("'i' is supposed to be a character defining the chromatogram ",
+             "variable to access.")
+    if (!missing(j))
+        stop("'j' is not supported.")
+    do.call("$", list(x, i))
+})
+
+#' @rdname ChromBackend
+#'
+#' @export
+setReplaceMethod("[[", "ChromBackend", function(x, i, j, ..., value) {
+    if (!is.character(i))
+        stop("'i' is supposed to be a character defining the chromatogram ",
+             "variable to replace or create.")
+    if (!missing(j))
+        stop("'j' is not supported.")
+    do.call("$<-", list(x, i, value))
+})
 
 #' @exportMethod backendInitialize
 #'
@@ -553,7 +609,7 @@ setMethod("isEmpty", "ChromBackend", function(x) {
 #' @importMethodsFrom ProtGenerics isReadOnly
 #'
 #' @rdname ChromBackend
-setMethod("isReadOnly", "ChromBackend", function(object) FALSE )
+setMethod("isReadOnly", "ChromBackend", function(object) FALSE)
 
 #' @exportMethod length
 #'
@@ -796,5 +852,40 @@ setMethod("split", "ChromBackend", function(x, f, drop = FALSE, ...) {
 ################################################################################
 ## Filter functions
 
-## TODO:
-## - generic filterChromData and filterPeaksData
+#' @exportMethod filterChromData
+#'
+#' @rdname ChromBackend
+#'
+#' @importFrom MsCoreUtils between
+#'
+setMethod("filterChromData", "ChromBackend",
+          function(object, variables = character(),
+                   ranges = numeric(), match = c("any", "all"),
+                   keep = TRUE) {
+              if (!length(chromVariables) || !length(ranges))
+                  return(object)
+              if (!is.numeric(ranges))
+                  stop("filterChromData only support filtering for numerical ",
+                       "'variables'")
+              match <- match.arg(match)
+              if (is.character(variables)){
+                  if(!all(variables %in% chromVariables(object)))
+                      stop("One or more values passed with parameter ",
+                           "'variables' are not available as chromatogram ",
+                           "variables in object. Use the 'chromVariables()' ",
+                           "function to list possible values.")
+              } else
+                  stop("The 'variables' parameter needs to be of type ",
+                       "'character'.")
+              if (length(variables) != length(ranges) / 2)
+                  stop("Length of 'ranges' needs to be twice the length of ",
+                       "the parameter 'variables' and define the lower ",
+                       "and upper bound for values of each chromatogram ",
+                       "variable defined with parameter 'variables'.")
+              query <- chromData(object, columns = variables)
+              idx <- .filter_ranges(query, ranges, match)
+              if (keep) object <- object[idx]
+              else object <- object[-idx]
+              object
+          })
+

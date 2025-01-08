@@ -1,6 +1,6 @@
 Package: Chromatograms
 Title: Infrastructure for Chromatographic Mass Spectrometry Data
-Version: 0.2.0
+Version: 0.3.0
 Description: The Chromatograms packages defines a efficient infrastructure
    for storing and handling of chromatographic mass spectrometry data. It
    provides different implementations of *backends* to store and represent the
@@ -48,3 +48,5 @@ Collate:
     'hidden_aliases.R'
     'helpers.R'
     'ChromBackendMemory.R'
+    'Chromatograms.R'
+    'Chromatograms-chromData.R'

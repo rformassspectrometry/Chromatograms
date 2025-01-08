@@ -160,9 +160,8 @@ setMethod("show", "ChromBackendMemory", function(object){
   }
 })
 
-#' @importMethodsFrom S4Vectors [
-#'
 #' @importFrom MsCoreUtils i2index
+#' @importMethodsFrom S4Vectors [ [<-
 #' @rdname hidden_aliases
 setMethod("[", "ChromBackendMemory", function(x, i, j, ..., drop = FALSE) {
   i <- i2index(i, length = length(x))

@@ -79,10 +79,11 @@ test_that("$ works", {
 })
 
 test_that("[ works", {
-    # Test 1: Single-element indexing
     be1 <- be[1]
-    expect_equal(length(be1@peaksData), 1)
-    # Test 2: Multi-element indexing with a sequence
+    expect_equal(length(peaksData(be1)), 1)
     be12 <- be[1:2]
-    expect_equal(length(be12@peaksData), 2)
+    expect_equal(length(peaksData(be12)), 2)
 })
+
+
+
