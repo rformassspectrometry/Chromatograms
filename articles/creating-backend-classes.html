@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">Chromatograms</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.2.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.0</span>
       </span>
     </div>
 
@@ -101,7 +101,7 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script><p><strong>Package</strong>: <em><a href="https://bioconductor.org/packages/3.20/Chromatograms" class="external-link">Chromatograms</a></em><br><strong>Authors</strong>: Laurent Gatto [aut] (<a href="https://orcid.org/0000-0002-1520-2268" class="external-link uri">https://orcid.org/0000-0002-1520-2268</a>), Johannes Rainer
 [aut] (<a href="https://orcid.org/0000-0002-6977-7147" class="external-link uri">https://orcid.org/0000-0002-6977-7147</a>), Philippine
-Louail [aut, cre] (<a href="https://orcid.org/0009-0007-5429-6846" class="external-link uri">https://orcid.org/0009-0007-5429-6846</a>)<br><strong>Compiled</strong>: Fri Nov 8 09:54:46 2024</p>
+Louail [aut, cre] (<a href="https://orcid.org/0009-0007-5429-6846" class="external-link uri">https://orcid.org/0009-0007-5429-6846</a>)<br><strong>Compiled</strong>: Wed Jan 8 12:37:48 2025</p>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
@@ -308,12 +308,12 @@ development.</p>
 </h4>
 <p>The <code>dataStorage</code> chromatogram variable provides
 information how or where the data is stored. The
-<code><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">dataStorage()</a></code> method should therefore return a
+<code><a href="../reference/chromData.html">dataStorage()</a></code> method should therefore return a
 <code>character</code> vector of length equal to the number of
 chromatograms that are represented by the object. The values for
 <code>dataStorage</code> can be any character value, except
 <code>NA</code>. For our example backend we define a simple
-<code><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">dataStorage()</a></code> method that simply returns the column
+<code><a href="../reference/chromData.html">dataStorage()</a></code> method that simply returns the column
 <code>"dataStorage"</code> from the <code>@chromData</code> (as a
 <code>character</code>).</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
@@ -321,11 +321,11 @@ chromatograms that are represented by the object. The values for
 <span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"dataStorage"</span>, <span class="st">"ChromBackendTest"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">object</span><span class="op">@</span><span class="va">chromData</span><span class="op">$</span><span class="va">dataStorage</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
-<p>Calling <code><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">dataStorage()</a></code> on our example backend will thus
+<p>Calling <code><a href="../reference/chromData.html">dataStorage()</a></code> on our example backend will thus
 return an empty <code>character</code> (since the object created above
 does not contain any data).</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">dataStorage</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/chromData.html">dataStorage</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## character(0)</span></span></code></pre>
 </div>
 <div class="section level4">
@@ -441,7 +441,7 @@ though its accessor methods when requested by the
 <h4 id="chromvariables">
 <code>chromVariables()</code><a class="anchor" aria-label="anchor" href="#chromvariables"></a>
 </h4>
-<p>The <code><a href="../reference/ChromBackend.html">chromVariables()</a></code> method should return a
+<p>The <code><a href="../reference/chromData.html">chromVariables()</a></code> method should return a
 <code>character</code> vector with the names of all available
 chromatogram variables of the backend. While a backend class should
 support defining and providing their own variables, each
@@ -457,15 +457,15 @@ can be listed by the <code><a href="../reference/ChromBackend.html">coreChromVar
 <span><span class="co">##       "numeric"       "numeric"       "numeric"       "numeric"       "numeric" </span></span>
 <span><span class="co">##  precursorMzMax       productMz    productMzMin    productMzMax </span></span>
 <span><span class="co">##       "numeric"       "numeric"       "numeric"       "numeric"</span></span></code></pre>
-<p>A typical <code><a href="../reference/ChromBackend.html">chromVariables()</a></code> method for a
+<p>A typical <code><a href="../reference/chromData.html">chromVariables()</a></code> method for a
 <code>ChromBackend</code> class will thus be implemented similarly to
 the one for our <code>ChromBackendTest</code> test backend: it will
 return the names for all available chromatogram variables that can be
-called by <code><a href="../reference/ChromBackend.html">chromData()</a></code> within the backend object. There is a
-default implementation for <code><a href="../reference/ChromBackend.html">chromVariables()</a></code> that will
+called by <code><a href="../reference/chromData.html">chromData()</a></code> within the backend object. There is a
+default implementation for <code><a href="../reference/chromData.html">chromVariables()</a></code> that will
 return the core chromatogram variables. However if a backend class
 defines additional chromatogram variables, the
-<code><a href="../reference/ChromBackend.html">chromVariables()</a></code> method should be implemented to return the
+<code><a href="../reference/chromData.html">chromVariables()</a></code> method should be implemented to return the
 names of these additional variables as well.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Accessor for available chromatogram variables</span></span>
@@ -473,7 +473,7 @@ names of these additional variables as well.</p>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">union</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">object</span><span class="op">@</span><span class="va">chromData</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="../reference/ChromBackend.html">coreChromVariables</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="../reference/ChromBackend.html">chromVariables</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/chromData.html">chromVariables</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##  [1] "msLevel"         "mz"              "dataStorage"     "dataOrigin"     </span></span>
 <span><span class="co">##  [5] "chromIndex"      "collisionEnergy" "mzMin"           "mzMax"          </span></span>
 <span><span class="co">##  [9] "precursorMz"     "precursorMzMin"  "precursorMzMax"  "productMz"      </span></span>
@@ -523,21 +523,21 @@ our backend:</p>
 <code class="sourceCode R"><span><span class="co">#' function to extract the full chromData</span></span>
 <span><span class="kw">setMethod</span><span class="op">(</span></span>
 <span>    <span class="st">"chromData"</span>, <span class="st">"ChromBackendTest"</span>,</span>
-<span>    <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">columns</span> <span class="op">=</span> <span class="fu"><a href="../reference/ChromBackend.html">chromVariables</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>,</span>
+<span>    <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">columns</span> <span class="op">=</span> <span class="fu"><a href="../reference/chromData.html">chromVariables</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>,</span>
 <span>             <span class="va">drop</span> <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
-<span>      <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/any.html" class="external-link">any</a></span><span class="op">(</span><span class="fu"><a href="../reference/ChromBackend.html">chromVariables</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">columns</span><span class="op">)</span><span class="op">)</span></span>
+<span>      <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/any.html" class="external-link">any</a></span><span class="op">(</span><span class="fu"><a href="../reference/chromData.html">chromVariables</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">columns</span><span class="op">)</span><span class="op">)</span></span>
 <span>        <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"Some of the requested Chromatogram variables are not "</span>,</span>
 <span>                   <span class="st">"available"</span><span class="op">)</span></span>
 <span>      <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hidden_aliases.html">fillCoreChromVariables</a></span><span class="op">(</span><span class="va">object</span><span class="op">@</span><span class="va">chromData</span><span class="op">)</span></span>
 <span>      <span class="va">res</span> <span class="op">&lt;-</span> <span class="va">res</span><span class="op">[</span>, <span class="va">columns</span>, drop <span class="op">=</span> <span class="va">drop</span><span class="op">]</span></span>
 <span>      <span class="va">res</span></span>
 <span>      <span class="op">}</span><span class="op">)</span></span></code></pre></div>
-<p>We can now use <code><a href="../reference/ChromBackend.html">chromData()</a></code> to either extract the full
+<p>We can now use <code><a href="../reference/chromData.html">chromData()</a></code> to either extract the full
 chromatogram data from the backend, or only the data for selected
 variables.</p>
 <div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Extract the full data</span></span>
-<span><span class="fu"><a href="../reference/ChromBackend.html">chromData</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##   msLevel    mz dataStorage      dataOrigin chromIndex collisionEnergy mzMin</span></span>
 <span><span class="co">## 1       1 112.2    &lt;memory&gt; &lt;user provided&gt;         NA              NA    NA</span></span>
 <span><span class="co">## 2       1 123.3    &lt;memory&gt; &lt;user provided&gt;         NA              NA    NA</span></span>
@@ -549,13 +549,13 @@ variables.</p>
 <span><span class="co">## 2           NA</span></span></code></pre>
 <div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Selected variables</span></span>
-<span><span class="fu"><a href="../reference/ChromBackend.html">chromData</a></span><span class="op">(</span><span class="va">be</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mz"</span>, <span class="st">"msLevel"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">be</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mz"</span>, <span class="st">"msLevel"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##      mz msLevel</span></span>
 <span><span class="co">## 1 112.2       1</span></span>
 <span><span class="co">## 2 123.3       1</span></span></code></pre>
 <div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Only missing core spectra variables</span></span>
-<span><span class="fu"><a href="../reference/ChromBackend.html">chromData</a></span><span class="op">(</span><span class="va">be</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"collisionEnergy"</span>, <span class="st">"mzMin"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">be</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"collisionEnergy"</span>, <span class="st">"mzMin"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##   collisionEnergy mzMin</span></span>
 <span><span class="co">## 1              NA    NA</span></span>
 <span><span class="co">## 2              NA    NA</span></span></code></pre>
@@ -667,7 +667,7 @@ one-dimensional (with each chromatogram being one element).</p>
 <p>We can now subset our backend to the last two chromatograms.</p>
 <div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">a</span> <span class="op">&lt;-</span> <span class="va">be</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span>
-<span><span class="fu"><a href="../reference/ChromBackend.html">chromData</a></span><span class="op">(</span><span class="va">a</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">a</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##   msLevel    mz dataStorage      dataOrigin chromIndex collisionEnergy mzMin</span></span>
 <span><span class="co">## 1       1 112.2    &lt;memory&gt; &lt;user provided&gt;         NA              NA    NA</span></span>
 <span><span class="co">##   mzMax precursorMz precursorMzMin precursorMzMax productMz productMzMin</span></span>
@@ -677,7 +677,7 @@ one-dimensional (with each chromatogram being one element).</p>
 <p>Or extracting the second chromatogram multiple times.</p>
 <div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">a</span> <span class="op">&lt;-</span> <span class="va">be</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span><span class="op">]</span></span>
-<span><span class="fu"><a href="../reference/ChromBackend.html">chromData</a></span><span class="op">(</span><span class="va">a</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">a</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##     msLevel    mz dataStorage      dataOrigin chromIndex collisionEnergy mzMin</span></span>
 <span><span class="co">## 1         1 112.2    &lt;memory&gt; &lt;user provided&gt;         NA              NA    NA</span></span>
 <span><span class="co">## 1.1       1 112.2    &lt;memory&gt; &lt;user provided&gt;         NA              NA    NA</span></span>
@@ -701,15 +701,15 @@ chromatogram or peaks variable from a backend. Parameter
 <code>ChromBackend</code> <strong>must</strong> support extracting the
 core chromatogram and core peaks variables with this method (even if no
 data might be available for that variable). In our example
-implementation below we make use of the <code><a href="../reference/ChromBackend.html">chromData()</a></code> method,
+implementation below we make use of the <code><a href="../reference/chromData.html">chromData()</a></code> method,
 but more efficient implementations might be possible as well. Also, the
 <code>$</code> method should check if the requested variable is
 available and should throw an error otherwise.</p>
 <div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Access a single chromatogram variable</span></span>
 <span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"$"</span>, <span class="st">"ChromBackendTest"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">name</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="kw">if</span> <span class="op">(</span><span class="va">name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">union</a></span><span class="op">(</span><span class="fu"><a href="../reference/ChromBackend.html">chromVariables</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="../reference/ChromBackend.html">coreChromVariables</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span>    <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ChromBackend.html">chromData</a></span><span class="op">(</span><span class="va">x</span>, columns <span class="op">=</span> <span class="va">name</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="va">name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">union</a></span><span class="op">(</span><span class="fu"><a href="../reference/chromData.html">chromVariables</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="../reference/ChromBackend.html">coreChromVariables</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">x</span>, columns <span class="op">=</span> <span class="va">name</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span>  <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/peaksData.html" class="external-link">peaksVariables</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/peaksData.html" class="external-link">peaksData</a></span><span class="op">(</span><span class="va">x</span>, columns <span class="op">=</span> <span class="va">name</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span>  <span class="kw">else</span> <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"The requested variable '"</span>, <span class="va">name</span>, <span class="st">"' is not available"</span><span class="op">)</span></span>
@@ -798,7 +798,7 @@ the same backend class that was used as input.</p>
 should allow to replace the chormtaogram variables content of a backend
 with new data. This data is expected to be provided as a
 <code>data.frame</code> (similar to the one returned by
-<code><a href="../reference/ChromBackend.html">chromData()</a></code>). While values can be replaced, the number of
+<code><a href="../reference/chromData.html">chromData()</a></code>). While values can be replaced, the number of
 chromatograms before and after a call to <code>chromData&lt;-</code> has
 to be the same.</p>
 <div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
@@ -819,10 +819,10 @@ our example data set, add an additional column (chromatogram variable)
 and use <code>chromData&lt;-</code> to replace the data of the
 backend.</p>
 <div class="sourceCode" id="cb59"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ChromBackend.html">chromData</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">d</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span>
 <span><span class="va">d</span><span class="op">$</span><span class="va">new_col</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"a"</span>, <span class="st">"b"</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu"><a href="../reference/ChromBackend.html">chromData</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">d</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">d</span></span></code></pre></div>
 <p>Check that we have now also the new column available.</p>
 <div class="sourceCode" id="cb60"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">be</span><span class="op">$</span><span class="va">new_col</span></span></code></pre></div>
@@ -979,7 +979,7 @@ splitting setup.</p>
 <h4 id="chromindex">
 <code>chromIndex()</code><a class="anchor" aria-label="anchor" href="#chromindex"></a>
 </h4>
-<p>The <code><a href="../reference/ChromBackend.html">chromIndex()</a></code> function should return the value for
+<p>The <code><a href="../reference/chromData.html">chromIndex()</a></code> function should return the value for
 the <code>"chromIndex"</code> chromatogram variable. As a result, an
 <code>integer</code> of length equal to the number of chromatograms in
 <code>object</code> needs to be returned. The default implementation
@@ -987,30 +987,30 @@ is:</p>
 <div class="sourceCode" id="cb77"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' get the values for the chromIndex chromatogram variable</span></span>
 <span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"chromIndex"</span>, <span class="st">"ChromBackend"</span>,</span>
-<span>          <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">columns</span> <span class="op">=</span> <span class="fu"><a href="../reference/ChromBackend.html">chromVariables</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>              <span class="fu"><a href="../reference/ChromBackend.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"chromIndex"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>          <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">columns</span> <span class="op">=</span> <span class="fu"><a href="../reference/chromData.html">chromVariables</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>              <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"chromIndex"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span>          <span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>The result of calling this method on our test backend:</p>
 <div class="sourceCode" id="cb78"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/ChromBackend.html">chromIndex</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/chromData.html">chromIndex</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] NA NA</span></span></code></pre>
 </div>
 <div class="section level4">
 <h4 id="collisionenergy">
 <code>collisionEnergy()</code><a class="anchor" aria-label="anchor" href="#collisionenergy"></a>
 </h4>
-<p>The <code><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">collisionEnergy()</a></code> function should return the value
+<p>The <code><a href="../reference/chromData.html">collisionEnergy()</a></code> function should return the value
 for the <code>"collisionEnergy"</code> chromatogram variable. As a
 result, a <code>numeric</code> of length equal to the number of
 chromatograms has to be returned. The default implementation is:</p>
 <div class="sourceCode" id="cb80"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' get the values for the collisionEnergy chromatogram variable</span></span>
 <span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"collisionEnergy"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="fu"><a href="../reference/ChromBackend.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"collisionEnergy"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"collisionEnergy"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>The result of calling this method on our test backend:</p>
 <div class="sourceCode" id="cb81"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">collisionEnergy</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/chromData.html">collisionEnergy</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] NA NA</span></span></code></pre>
 <p>The default replacement method for the <code>collisionEnergy</code>
 chromatogram variable is:</p>
@@ -1026,30 +1026,30 @@ method we implemented above. To test this function we replace the
 collision energy below.</p>
 <div class="sourceCode" id="cb84"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Replace the collision energy</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">collisionEnergy</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">20</span>, <span class="fl">30</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">collisionEnergy</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/chromData.html">collisionEnergy</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">20</span>, <span class="fl">30</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/chromData.html">collisionEnergy</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 20 30</span></span></code></pre>
 </div>
 <div class="section level4">
 <h4 id="dataorigin-dataorigin-">
 <code>dataOrigin()</code>, <code>dataOrigin&lt;-</code><a class="anchor" aria-label="anchor" href="#dataorigin-dataorigin-"></a>
 </h4>
-<p>The <code><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">dataOrigin()</a></code> and <code>dataOrigin&lt;-</code>
+<p>The <code><a href="../reference/chromData.html">dataOrigin()</a></code> and <code>dataOrigin&lt;-</code>
 methods return or set the value(s) for the <code>"dataOrigin"</code>
 chromatogram variable. The values for this chromatogram variable need to
 be of type <code>character</code> (the length equal to the number of
-chromatograms). The default implementation for <code><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">dataOrigin()</a></code>
+chromatograms). The default implementation for <code><a href="../reference/chromData.html">dataOrigin()</a></code>
 is:</p>
 <div class="sourceCode" id="cb86"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default implementation to access dataOrigin</span></span>
 <span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"dataOrigin"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="fu"><a href="../reference/ChromBackend.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"dataOrigin"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"dataOrigin"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>Below we use this method to access the values of the
 <code>dataOrigin</code> chromatogram variable.</p>
 <div class="sourceCode" id="cb87"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Access the dataOrigin values</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">dataOrigin</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/chromData.html">dataOrigin</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] "&lt;user provided&gt;" "&lt;user provided&gt;"</span></span></code></pre>
 <p>The default implementation for <code>dataOrigin&lt;-</code> uses,
 like all defaults for replacement methods, the <code>$&lt;-</code>
@@ -1064,32 +1064,32 @@ method:</p>
 <code>dataOrigin</code> variable:</p>
 <div class="sourceCode" id="cb90"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Replace the backend's dataOrigin values</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">dataOrigin</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"from somewhere"</span>, <span class="fl">2</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">dataOrigin</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/chromData.html">dataOrigin</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"from somewhere"</span>, <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/chromData.html">dataOrigin</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] "from somewhere" "from somewhere"</span></span></code></pre>
 </div>
 <div class="section level4">
 <h4 id="datastorage-datastorage-">
 <code>dataStorage()</code>, <code>dataStorage&lt;-</code><a class="anchor" aria-label="anchor" href="#datastorage-datastorage-"></a>
 </h4>
-<p>Similarly, the <code><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">dataStorage()</a></code> and
+<p>Similarly, the <code><a href="../reference/chromData.html">dataStorage()</a></code> and
 <code>dataStorage&lt;-</code> methods should allow to get or set the
 data storage chromatogram variable. Values of the
 <code>dataStorage</code> chromatogram variable are expected to be of
 type <code>character</code> and for each chromatogram in a backend one
 value needs to be defined (which can not be <code>NA_character</code>).
-The default implementation for <code><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">dataStorage()</a></code> uses, like
-most access methods, the <code><a href="../reference/ChromBackend.html">chromData()</a></code> function:</p>
+The default implementation for <code><a href="../reference/chromData.html">dataStorage()</a></code> uses, like
+most access methods, the <code><a href="../reference/chromData.html">chromData()</a></code> function:</p>
 <div class="sourceCode" id="cb92"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default implementation to access dataStorage</span></span>
 <span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"dataStorage"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="fu"><a href="../reference/ChromBackend.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"dataStorage"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"dataStorage"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>Below we use this method to access the values of the
 <code>dataStorage</code> chromatogram variable.</p>
 <div class="sourceCode" id="cb93"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Access the dataStorage values</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">dataStorage</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/chromData.html">dataStorage</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] "&lt;memory&gt;" "&lt;memory&gt;"</span></span></code></pre>
 <p>Note that this variable is supposed to provide information on the
 location where the data is stored and hence for some type of backends it
@@ -1109,8 +1109,8 @@ method uses, like all defaults for replacement methods, the
 <code>dataStorage</code> variable:</p>
 <div class="sourceCode" id="cb96"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Replace the backend's datastorage values</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">dataStorage</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"here"</span>, <span class="st">"here"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">dataStorage</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/chromData.html">dataStorage</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"here"</span>, <span class="st">"here"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/chromData.html">dataStorage</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] "here" "here"</span></span></code></pre>
 </div>
 <div class="section level4">
@@ -1215,7 +1215,7 @@ is:</p>
 <div class="sourceCode" id="cb108"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default implementation for `length()`</span></span>
 <span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"length"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu"><a href="../reference/ChromBackend.html">chromData</a></span><span class="op">(</span><span class="va">x</span>, columns <span class="op">=</span> <span class="st">"dataStorage"</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">x</span>, columns <span class="op">=</span> <span class="st">"dataStorage"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb109"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
@@ -1244,17 +1244,17 @@ implementation uses the <code><a href="https://rdrr.io/pkg/ProtGenerics/man/prot
 <h4 id="mslevel-mslevel-">
 <code>msLevel()</code>, <code>msLevel&lt;-</code><a class="anchor" aria-label="anchor" href="#mslevel-mslevel-"></a>
 </h4>
-<p>The <code><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">msLevel()</a></code> and <code>msLevel&lt;-</code> methods
+<p>The <code><a href="../reference/chromData.html">msLevel()</a></code> and <code>msLevel&lt;-</code> methods
 should allow extracting and setting the MS level for the individual
 chromatograms. MS levels are encoded as <code>integer</code>, thus,
-<code><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">msLevel()</a></code> must return an <code>integer</code> vector of
+<code><a href="../reference/chromData.html">msLevel()</a></code> must return an <code>integer</code> vector of
 length equal to the number of chromatograms of the backend and
 <code>msLevel&lt;-</code> should take/accept such a vector as input. The
 default implementations for both methods are shown below.</p>
 <div class="sourceCode" id="cb114"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default methods to get or set MS levels</span></span>
 <span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"msLevel"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="fu"><a href="../reference/ChromBackend.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"msLevel"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"msLevel"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="fu">setReplaceMethod</span><span class="op">(</span><span class="st">"msLevel"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">object</span><span class="op">$</span><span class="va">msLevel</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
@@ -1263,15 +1263,15 @@ default implementations for both methods are shown below.</p>
 <p>To test these we below replace the MS levels for our test data set
 and extract these values again.</p>
 <div class="sourceCode" id="cb115"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">msLevel</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">2L</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">msLevel</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/chromData.html">msLevel</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">2L</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/chromData.html">msLevel</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 1 2</span></span></code></pre>
 </div>
 <div class="section level4">
 <h4 id="mz-mz-">
 <code>mz()</code>, <code>mz&lt;-</code><a class="anchor" aria-label="anchor" href="#mz-mz-"></a>
 </h4>
-<p>The <code><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">mz()</a></code> and <code>mz&lt;-</code> methods should allow
+<p>The <code><a href="../reference/chromData.html">mz()</a></code> and <code>mz&lt;-</code> methods should allow
 to extract or set the m/z value for each chromatogram. The m/z value of
 a chromatogram is encoded as <code>numeric</code>, thus, the methods are
 expected to return or accept a <code>numeric</code> vector of length
@@ -1280,7 +1280,7 @@ shown below.</p>
 <div class="sourceCode" id="cb117"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default implementations to get or set m/z value(s)</span></span>
 <span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"mz"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="fu"><a href="../reference/ChromBackend.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"mz"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"mz"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="fu">setReplaceMethod</span><span class="op">(</span><span class="st">"mz"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">object</span><span class="op">$</span><span class="va">mz</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
@@ -1288,15 +1288,15 @@ shown below.</p>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>We below set and extract these <em>target</em> m/z values.</p>
 <div class="sourceCode" id="cb118"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">mz</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">314.3</span>, <span class="fl">312.5</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">mz</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/chromData.html">mz</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">314.3</span>, <span class="fl">312.5</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/chromData.html">mz</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 314.3 312.5</span></span></code></pre>
 </div>
 <div class="section level4">
 <h4 id="mzmax-mzmax-">
 <code>mzMax()</code>, <code>mzMax&lt;-</code><a class="anchor" aria-label="anchor" href="#mzmax-mzmax-"></a>
 </h4>
-<p>The <code><a href="../reference/ChromBackend.html">mzMax()</a></code> and <code>mzMax&lt;-</code> methods should
+<p>The <code><a href="../reference/chromData.html">mzMax()</a></code> and <code>mzMax&lt;-</code> methods should
 allow to extract or set the upper m/z boundary for each chromatogram.
 m/z values are encoded as <code>numeric</code>, thus, the methods are
 expected to return or accept a <code>numeric</code> vector of length
@@ -1305,7 +1305,7 @@ shown below.</p>
 <div class="sourceCode" id="cb120"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default implementations to get or set upper m/z limits</span></span>
 <span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"mzMax"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="fu"><a href="../reference/ChromBackend.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"mzMax"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"mzMax"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="fu">setReplaceMethod</span><span class="op">(</span><span class="st">"mzMax"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">object</span><span class="op">$</span><span class="va">mzMax</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
@@ -1314,15 +1314,15 @@ shown below.</p>
 <p>Testing these functions by replacing the upper m/z boundary with new
 values.</p>
 <div class="sourceCode" id="cb121"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/ChromBackend.html">mzMax</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">mz</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">+</span> <span class="fl">0.01</span></span>
-<span><span class="fu"><a href="../reference/ChromBackend.html">mzMax</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/chromData.html">mzMax</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/chromData.html">mz</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">+</span> <span class="fl">0.01</span></span>
+<span><span class="fu"><a href="../reference/chromData.html">mzMax</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 314.31 312.51</span></span></code></pre>
 </div>
 <div class="section level4">
 <h4 id="mzminmzmin-">
 <code>mzMin(),</code>mzMin&lt;-`<a class="anchor" aria-label="anchor" href="#mzminmzmin-"></a>
 </h4>
-<p>The <code><a href="../reference/ChromBackend.html">mzMin()</a></code> and <code>mzMin&lt;-</code> methods should
+<p>The <code><a href="../reference/chromData.html">mzMin()</a></code> and <code>mzMin&lt;-</code> methods should
 allow to extract or set the lower m/z boundary for each chromatogram.
 m/z values are encoded as <code>numeric</code>, thus, the methods are
 expected to return or accept a <code>numeric</code> vector of length
@@ -1331,7 +1331,7 @@ shown below.</p>
 <div class="sourceCode" id="cb123"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default methods to get or set the lower m/z boundary</span></span>
 <span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"mzMin"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="../reference/ChromBackend.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"mzMin"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"mzMin"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">setReplaceMethod</span><span class="op">(</span><span class="st">"mzMin"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
@@ -1341,15 +1341,15 @@ shown below.</p>
 <p>Testing these functions by replacing the lower m/z boundary with new
 values.</p>
 <div class="sourceCode" id="cb124"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/ChromBackend.html">mzMin</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">mz</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">-</span> <span class="fl">0.01</span></span>
-<span><span class="fu"><a href="../reference/ChromBackend.html">mzMin</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/chromData.html">mzMin</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/chromData.html">mz</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">-</span> <span class="fl">0.01</span></span>
+<span><span class="fu"><a href="../reference/chromData.html">mzMin</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 314.29 312.49</span></span></code></pre>
 </div>
 <div class="section level4">
 <h4 id="precursormz-precursormz-">
 <code>precursorMz()</code>, <code>precursorMz&lt;-</code><a class="anchor" aria-label="anchor" href="#precursormz-precursormz-"></a>
 </h4>
-<p>The <code><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">precursorMz()</a></code> and <code>precursorMz&lt;-</code>
+<p>The <code><a href="../reference/chromData.html">precursorMz()</a></code> and <code>precursorMz&lt;-</code>
 methods are expected to get or set the values for the precursor m/z of
 each chromatogram (if available). These are encoded as
 <code>numeric</code> (one value per chromatogram) - and if a value is
@@ -1358,7 +1358,7 @@ implementations are:</p>
 <div class="sourceCode" id="cb126"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default implementations to get or set the precursorMz chrom variable</span></span>
 <span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"precursorMz"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="fu"><a href="../reference/ChromBackend.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"precursorMz"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"precursorMz"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="fu">setReplaceMethod</span><span class="op">(</span><span class="st">"precursorMz"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">object</span><span class="op">$</span><span class="va">precursorMz</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
@@ -1367,8 +1367,8 @@ implementations are:</p>
 <p>Below we set and get the <code>precursorMz</code> chromatogram
 variable for our backend.</p>
 <div class="sourceCode" id="cb127"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">precursorMz</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA_real_</span>, <span class="fl">123.3</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">precursorMz</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/chromData.html">precursorMz</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">NA_real_</span>, <span class="fl">123.3</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/chromData.html">precursorMz</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1]    NA 123.3</span></span></code></pre>
 </div>
 <div class="section level4">
@@ -1381,7 +1381,7 @@ implementations are:</p>
 <div class="sourceCode" id="cb129"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default implementations for `precursorMzMax`</span></span>
 <span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"precursorMzMax"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="fu"><a href="../reference/ChromBackend.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"precursorMzMax"</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"precursorMzMax"</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="fu">setReplaceMethod</span><span class="op">(</span><span class="st">"precursorMzMax"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">object</span><span class="op">$</span><span class="va">precursorMzMax</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
@@ -1390,8 +1390,8 @@ implementations are:</p>
 <p>Below we test these functions by setting and extracting the values
 for this chromatogram variable.</p>
 <div class="sourceCode" id="cb130"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/ChromBackend.html">precursorMzMax</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">precursorMz</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">+</span> <span class="fl">0.1</span></span>
-<span><span class="fu"><a href="../reference/ChromBackend.html">precursorMzMax</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/chromData.html">precursorMzMax</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/chromData.html">precursorMz</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">+</span> <span class="fl">0.1</span></span>
+<span><span class="fu"><a href="../reference/chromData.html">precursorMzMax</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1]    NA 123.4</span></span></code></pre>
 </div>
 <div class="section level4">
@@ -1404,7 +1404,7 @@ implementations are:</p>
 <div class="sourceCode" id="cb132"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default implementations for `precursorMzMin`</span></span>
 <span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"precursorMzMin"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="fu"><a href="../reference/ChromBackend.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"precursorMzMin"</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"precursorMzMin"</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="fu">setReplaceMethod</span><span class="op">(</span><span class="st">"precursorMzMin"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">object</span><span class="op">$</span><span class="va">precursorMzMin</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
@@ -1413,8 +1413,8 @@ implementations are:</p>
 <p>Below we test these functions by setting and extracting the values
 for this chromatogram variable.</p>
 <div class="sourceCode" id="cb133"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/ChromBackend.html">precursorMzMin</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">precursorMz</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">-</span> <span class="fl">0.1</span></span>
-<span><span class="fu"><a href="../reference/ChromBackend.html">precursorMzMin</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/chromData.html">precursorMzMin</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/chromData.html">precursorMz</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">-</span> <span class="fl">0.1</span></span>
+<span><span class="fu"><a href="../reference/chromData.html">precursorMzMin</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1]    NA 123.2</span></span></code></pre>
 </div>
 <div class="section level4">
@@ -1427,7 +1427,7 @@ implementations are:</p>
 <div class="sourceCode" id="cb135"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default implementations for `productMz`</span></span>
 <span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"productMz"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="fu"><a href="../reference/ChromBackend.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"productMz"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"productMz"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="fu">setReplaceMethod</span><span class="op">(</span><span class="st">"productMz"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">object</span><span class="op">$</span><span class="va">productMz</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
@@ -1436,8 +1436,8 @@ implementations are:</p>
 <p>Below we test these functions by setting and extracting the values
 for this chromatogram variable.</p>
 <div class="sourceCode" id="cb136"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">productMz</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">123.2</span>, <span class="cn">NA_real_</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">productMz</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/chromData.html">productMz</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">123.2</span>, <span class="cn">NA_real_</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/chromData.html">productMz</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 123.2    NA</span></span></code></pre>
 </div>
 <div class="section level4">
@@ -1450,7 +1450,7 @@ implementations are:</p>
 <div class="sourceCode" id="cb138"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default implementations for `productMzMax`</span></span>
 <span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"productMzMax"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="fu"><a href="../reference/ChromBackend.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"productMzMax"</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"productMzMax"</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="fu">setReplaceMethod</span><span class="op">(</span><span class="st">"productMzMax"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">object</span><span class="op">$</span><span class="va">productMzMax</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
@@ -1459,8 +1459,8 @@ implementations are:</p>
 <p>Below we test these functions by setting and extracting the values
 for this chromatogram variable.</p>
 <div class="sourceCode" id="cb139"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/ChromBackend.html">productMzMax</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">productMz</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">+</span> <span class="fl">0.02</span></span>
-<span><span class="fu"><a href="../reference/ChromBackend.html">productMzMax</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/chromData.html">productMzMax</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/chromData.html">productMz</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">+</span> <span class="fl">0.02</span></span>
+<span><span class="fu"><a href="../reference/chromData.html">productMzMax</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 123.22     NA</span></span></code></pre>
 </div>
 <div class="section level4">
@@ -1473,7 +1473,7 @@ implementations are:</p>
 <div class="sourceCode" id="cb141"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default implementations for `productMzMin`</span></span>
 <span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"productMzMin"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="fu"><a href="../reference/ChromBackend.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"productMzMin"</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"productMzMin"</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="fu">setReplaceMethod</span><span class="op">(</span><span class="st">"productMzMin"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">object</span><span class="op">$</span><span class="va">productMzMin</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
@@ -1482,8 +1482,8 @@ implementations are:</p>
 <p>Below we test these functions by setting and extracting the values
 for this chromatogram variable.</p>
 <div class="sourceCode" id="cb142"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/ChromBackend.html">productMzMin</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">productMz</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">-</span> <span class="fl">0.2</span></span>
-<span><span class="fu"><a href="../reference/ChromBackend.html">productMzMin</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/chromData.html">productMzMin</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/chromData.html">productMz</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">-</span> <span class="fl">0.2</span></span>
+<span><span class="fu"><a href="../reference/chromData.html">productMzMin</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 123  NA</span></span></code></pre>
 </div>
 <div class="section level4">
@@ -1587,17 +1587,17 @@ uses the <code>[</code> method to subset/split the object.</p>
 <span><span class="co">## [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## other attached packages:</span></span>
-<span><span class="co">## [1] Chromatograms_0.2.0 ProtGenerics_1.38.0 BiocStyle_2.34.0   </span></span>
+<span><span class="co">## [1] Chromatograms_0.3.0 ProtGenerics_1.39.1 BiocStyle_2.34.0   </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## loaded via a namespace (and not attached):</span></span>
-<span><span class="co">##  [1] cli_3.6.3           knitr_1.48          rlang_1.1.4        </span></span>
-<span><span class="co">##  [4] xfun_0.49           textshaping_0.4.0   clue_0.3-65        </span></span>
+<span><span class="co">##  [1] cli_3.6.3           knitr_1.49          rlang_1.1.4        </span></span>
+<span><span class="co">##  [4] xfun_0.49           textshaping_0.4.1   clue_0.3-66        </span></span>
 <span><span class="co">##  [7] jsonlite_1.8.9      S4Vectors_0.44.0    htmltools_0.5.8.1  </span></span>
 <span><span class="co">## [10] stats4_4.4.2        ragg_1.3.3          sass_0.4.9         </span></span>
 <span><span class="co">## [13] rmarkdown_2.29      evaluate_1.0.1      jquerylib_0.1.4    </span></span>
-<span><span class="co">## [16] MASS_7.3-61         fastmap_1.2.0       IRanges_2.40.0     </span></span>
+<span><span class="co">## [16] MASS_7.3-64         fastmap_1.2.0       IRanges_2.40.1     </span></span>
 <span><span class="co">## [19] yaml_2.3.10         lifecycle_1.0.4     bookdown_0.41      </span></span>
-<span><span class="co">## [22] MsCoreUtils_1.18.0  BiocManager_1.30.25 cluster_2.1.6      </span></span>
+<span><span class="co">## [22] MsCoreUtils_1.18.0  BiocManager_1.30.25 cluster_2.1.8      </span></span>
 <span><span class="co">## [25] compiler_4.4.2      fs_1.6.5            htmlwidgets_1.6.4  </span></span>
 <span><span class="co">## [28] systemfonts_1.1.0   digest_0.6.37       R6_2.5.1           </span></span>
 <span><span class="co">## [31] bslib_0.8.0         tools_4.4.2         BiocGenerics_0.52.0</span></span>
