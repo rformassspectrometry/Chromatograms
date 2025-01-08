@@ -32,7 +32,7 @@
 #' The *chromatograms variables* information can be accessed using the
 #' `chromData()` function. it is also possible to access specific
 #' chromatograms variables using `$`. `chromData` can be accessed, replaced but
-#' also filtered/subsetted. Refer t the [chromData] documentation for more
+#' also filtered/subsetted. Refer to the [chromData] documentation for more
 #' details.
 #'
 #' The `Chromatograms` object is designed to contain chromatographic data of a
