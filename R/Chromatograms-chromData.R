@@ -53,10 +53,6 @@
 #' `chromData` can be accessed, replaced but also filtered/subsetted. Refer to
 #' the sections below for more details.
 #'
-#' @param object A [Chromatograms] object.
-#'
-#' @param x A [Chromatograms] object.
-#'
 #' @param columns A `character` vector of chromatograms variables to extract.
 #'
 #' @param drop A `logical` indicating whether to drop dimensions when extracting
@@ -76,12 +72,16 @@
 #'        ranges to filter the `object`. These paired values need to be in the
 #'        same order as the `variables` parameter (see below).
 #'
+#' @param object A [Chromatograms] object.
+#'
 #' @param value replacement value for `<-` methods. See individual
 #'        method description or expected data type.
 #'
 #' @param variables For `filterChromData()`: `character` vector with the names
 #'        of the chromatogram variables to filter for. The list of available
 #'        chromatogram variables can be obtained with `chromVariables()`.
+#'
+#' @param x A [Chromatograms] object.
 #'
 #' @section Chromatograms variables and accessor functions:
 #'
@@ -127,7 +127,7 @@
 #'
 #' - `filterChromData()`: Filters numerical chromatographic data variables
 #'   based on the provided numerical `ranges`. The method returns a
-#'   `ChromBackend` object containing only the chromatograms that match the
+#'   `Chromatograms` object containing only the chromatograms that match the
 #'   specified conditions. This function results in an object with fewer
 #'   chromatograms than the original.
 

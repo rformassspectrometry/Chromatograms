@@ -62,6 +62,9 @@
 #' @seealso [chromData] for a general description of the chromatographic
 #'          metadata available in the object, as well as how to access, replace
 #'          and subset them.
+#'          [peaksData] for a general description of the chromatographic peaks
+#'          data available in the object, as well as how to access, replace and
+#'          subset them.
 #'
 #' @examples
 #' ## create a Chromatograms object
@@ -98,8 +101,7 @@ setClass("Chromatograms",
          slots = c(
              backend = "ChromBackend",
              processingQueue = "list",
-             # processingQueueVariables = "character", # wait do we keep this ???
-             processing = "character",
+             processing = "character", # could we rename to processing history ?
              processingChunkSize = "numeric",
              version = "character"),
          prototype = prototype(version = "0.1",
@@ -107,13 +109,24 @@ setClass("Chromatograms",
          )
 
 setValidity("Chromatograms", function(object) {
+    msg <- character()
     if (!is(object@backend, "ChromBackend"))
-        return("backend must be a ChromBackend object")
+        msg <- ("backend must be a ChromBackend object")
     if (!is.numeric(object@processingChunkSize) || length(object@processingChunkSize) != 1)
-        return("processingChunkSize must be a numeric value")
-    #check the processing queue
-    return(TRUE)
+        msg <- c(msg, "processingChunkSize must be a numeric value")
+    msg <- c(msg, .valid_processing_queue(object@processingQueue))
+    if (length(msg)) msg
+    else TRUE
 })
+
+#' @rdname Chromatograms
+#' @importFrom methods new
+#' @export
+Chromatograms <- function(backend = ChromBackendMemory(),
+                          processingQueue = list(), ...) {
+    new("Chromatograms", backend = backend,
+        processingQueue = processingQueue, ...)
+}
 
 #' @rdname hidden_aliases
 #'
@@ -147,11 +160,3 @@ setMethod("show", "Chromatograms",
           })
 
 
-#' @rdname Chromatograms
-#' @importFrom methods new
-#' @export
-Chromatograms <- function(backend = ChromBackendMemory(),
-                         processingQueue = list(), ...) {
-    new("Chromatograms", backend = backend,
-        processingQueue = processingQueue, ...)
-}

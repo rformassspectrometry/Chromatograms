@@ -20,7 +20,8 @@ Authors@R: c(person(given = "Laurent", family = "Gatto",
 		    role = c("aut", "cre"),
 		    comment = c(ORCID = "0009-0007-5429-6846")))
 Depends:
-    ProtGenerics (>= 1.35.4),
+    BiocParallel,
+    ProtGenerics (>= 1.39.2),
     R (>= 4.2.0)
 Imports:
     methods,
@@ -44,9 +45,9 @@ Collate:
     'AllGenerics.R'
     'ChromBackend-functions.R'
     'ChromBackend.R'
-    'ChromBackendMemory-functions.R'
     'hidden_aliases.R'
     'helpers.R'
     'ChromBackendMemory.R'
     'Chromatograms.R'
     'Chromatograms-chromData.R'
+    'Chromatograms-peaksData.R'

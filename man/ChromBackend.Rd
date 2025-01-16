@@ -16,6 +16,7 @@
 \alias{peaksData<-,ChromBackend-method}
 \alias{[[,ChromBackend-method}
 \alias{[[<-,ChromBackend-method}
+\alias{backendBpparam,ChromBackend-method}
 \alias{backendInitialize,ChromBackend-method}
 \alias{backendParallelFactor,ChromBackend-method}
 \alias{backendMerge,list-method}
@@ -60,6 +61,7 @@
 \alias{rtime<-,ChromBackend-method}
 \alias{split,ChromBackend,ANY-method}
 \alias{filterChromData,ChromBackend-method}
+\alias{filterPeaksData,ChromBackend-method}
 \title{Chromatographic MS Data Backends}
 \usage{
 coreChromVariables()
@@ -85,6 +87,8 @@ corePeaksVariables()
 \S4method{[[}{ChromBackend}(x, i, j, ...)
 
 \S4method{[[}{ChromBackend}(x, i, j, ...) <- value
+
+\S4method{backendBpparam}{ChromBackend}(object, BPPARAM = bpparam())
 
 \S4method{backendInitialize}{ChromBackend}(object, ...)
 
@@ -179,6 +183,14 @@ corePeaksVariables()
   match = c("any", "all"),
   keep = TRUE
 )
+
+\S4method{filterPeaksData}{ChromBackend}(
+  object,
+  variables = character(),
+  ranges = numeric(),
+  match = c("any", "all"),
+  keep = TRUE
+)
 }
 \arguments{
 \item{x}{Object extending \code{ChromBackend}.}
@@ -205,6 +217,9 @@ method description or expected data type.}
 \item{columns}{For \code{chromData()} accessor: optional \code{character} with column
 names (chromatogram variables) that should be included in the
 returned \code{data.frame}. By default, all columns are returned.}
+
+\item{BPPARAM}{Parallel setup configuration. See \code{\link[BiocParallel:register]{BiocParallel::bpparam()}}
+for more information.}
 
 \item{f}{\code{factor} defining the grouping to split \code{x}. See \code{\link[=split]{split()}}.}
 
@@ -340,6 +355,24 @@ Parameters can be defined freely for each backend, depending on what is
 needed to initialize the backend.
 This method has to ensure to set the chromtogram variable \code{dataStorage}
 correctly.
+\item \code{backendBpparam()}: return the parallel processing setup supported by
+the backend class. This function can be used by any higher
+level function to evaluate whether the provided parallel processing
+setup (or the default one returned by \code{bpparam()}) is supported
+by the backend. Backends not supporting parallel processing (e.g.
+because they contain a connection to a database that can not be
+shared across processes) should extend this method to return only
+\code{SerialParam()} and hence disable parallel processing for (most)
+methods and functions. See also \code{backendParallelFactor()} for a
+function to provide a preferred splitting of the backend for parallel
+processing.
+\item \code{backendParallelFactor()}: returns a \code{factor} defining an optimal
+(preferred) way how the backend can be split for parallel processing
+used for all peak data accessor or data manipulation functions.
+The default implementation returns a factor of length 0 (\code{factor()})
+providing thus no default splitting. \code{backendParallelFactor()} for
+\code{ChromBackendMzR} on the other hand returns \code{factor(dataStorage(object))}
+hence suggesting to split the object by data file.
 \item \code{chromData()}, \verb{chromData<-}: gets or sets general chromatogram metadata
 (annotation). \code{chromData()} returns a \code{data.frame}, \verb{chromData<-} expects
 a \code{data.frame} with the same number of rows as there are chromatograms in

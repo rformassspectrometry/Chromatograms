@@ -46,6 +46,14 @@ setClass("ChromBackendMemory",
                                version = "0.1"))
 
 #' @rdname ChromBackendMemory
+#'
+#' @importFrom methods new
+#' @export ChromBackendMemory
+ChromBackendMemory <- function() {
+  new("ChromBackendMemory")
+}
+
+#' @rdname ChromBackendMemory
 setMethod("backendInitialize", "ChromBackendMemory",
           function(object,
                    chromData = fillCoreChromVariables(data.frame()),

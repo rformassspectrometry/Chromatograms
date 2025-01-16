@@ -103,6 +103,9 @@
 #' No NAs are allowed for the `rtime` values. These characteristics will be
 #' checked with the `validPeaksData()` function.
 #'
+#' @param BPPARAM Parallel setup configuration. See [BiocParallel::bpparam()]
+#'     for more information.
+#'
 #' @param columns For `chromData()` accessor: optional `character` with column
 #'     names (chromatogram variables) that should be included in the
 #'     returned `data.frame`. By default, all columns are returned.
@@ -161,6 +164,26 @@
 #'   needed to initialize the backend.
 #'   This method has to ensure to set the chromtogram variable `dataStorage`
 #'   correctly.
+#'
+#' - `backendBpparam()`: return the parallel processing setup supported by
+#'   the backend class. This function can be used by any higher
+#'   level function to evaluate whether the provided parallel processing
+#'   setup (or the default one returned by `bpparam()`) is supported
+#'   by the backend. Backends not supporting parallel processing (e.g.
+#'   because they contain a connection to a database that can not be
+#'   shared across processes) should extend this method to return only
+#'   `SerialParam()` and hence disable parallel processing for (most)
+#'   methods and functions. See also `backendParallelFactor()` for a
+#'   function to provide a preferred splitting of the backend for parallel
+#'   processing.
+#'
+#' - `backendParallelFactor()`: returns a `factor` defining an optimal
+#'   (preferred) way how the backend can be split for parallel processing
+#'   used for all peak data accessor or data manipulation functions.
+#'   The default implementation returns a factor of length 0 (`factor()`)
+#'   providing thus no default splitting. `backendParallelFactor()` for
+#'   `ChromBackendMzR` on the other hand returns `factor(dataStorage(object))`
+#'   hence suggesting to split the object by data file.
 #'
 #' - `chromData()`, `chromData<-`: gets or sets general chromatogram metadata
 #'   (annotation). `chromData()` returns a `data.frame`, `chromData<-` expects
@@ -452,6 +475,18 @@ setReplaceMethod("[[", "ChromBackend", function(x, i, j, ..., value) {
         stop("'j' is not supported.")
     do.call("$<-", list(x, i, value))
 })
+
+#' @importMethodsFrom ProtGenerics backendBpparam
+#'
+#' @exportMethod backendBpparam
+#'
+#' @rdname ChromBackend
+#'
+#' @export
+setMethod("backendBpparam", signature = "ChromBackend",
+          function(object, BPPARAM = bpparam()) {
+              BPPARAM
+          })
 
 #' @exportMethod backendInitialize
 #'
@@ -862,7 +897,7 @@ setMethod("filterChromData", "ChromBackend",
           function(object, variables = character(),
                    ranges = numeric(), match = c("any", "all"),
                    keep = TRUE) {
-              if (!length(chromVariables) || !length(ranges))
+              if (!length(variables) || !length(ranges))
                   return(object)
               if (!is.numeric(ranges))
                   stop("filterChromData only support filtering for numerical ",
@@ -884,8 +919,61 @@ setMethod("filterChromData", "ChromBackend",
                        "variable defined with parameter 'variables'.")
               query <- chromData(object, columns = variables)
               idx <- .filter_ranges(query, ranges, match)
+              if (!length(idx)) {
+                  if (keep) return(ChromBackendMemory()) ## i'm not sure that's okay, but what should we do if the filtering empties the object?
+                  else return(object)
+                  }
               if (keep) object <- object[idx]
               else object <- object[-idx]
               object
           })
+
+#' @exportMethod filterPeaksData
+#'
+#' @rdname ChromBackend
+#'
+#' @export
+setMethod("filterPeaksData", "ChromBackend",
+          function(object, variables = character(),
+                   ranges = numeric(), match = c("any", "all"),
+                   keep = TRUE) {
+              if (!length(ranges) || !length(variables))
+                  return(object)
+              if (!is.numeric(ranges))
+                    stop("filterPeaksData only support filtering for numerical ",
+                       "peak variables")
+              match <- match.arg(match)
+              if (is.character(variables)) {
+                  if (!all(variables %in% peaksVariables(object)))
+                      stop("One or more values passed with parameter ",
+                           "'variables' are not available as peaks variables in ",
+                           "object. Use the 'peaksVariables()' function to list ",
+                           "possible values.")
+              } else
+                  stop("The 'variables' parameter needs to be of type ",
+                       "'character'.")
+              if (length(variables) != length(ranges) / 2)
+                  stop("Length of 'ranges' needs to be twice the length of the ",
+                       "parameter 'variables' and define the lower and upper ",
+                       "bound for values of each peak variable defined with ",
+                       "parameter 'variables'.")
+              idx_list <- lapply(peaksData(object, columns = variables),
+                                 function(pd) {
+                  .filter_ranges(pd, ranges, match)
+              })
+              if (keep) {
+                  filtpd <- mapply(function(pd, idx) {
+                          pd[idx, , drop = FALSE]
+                  }, peaksData(object), idx_list, SIMPLIFY = FALSE)
+              } else {
+                  filtpd <- mapply(function(pd, idx) {
+                      if (idx == 0) return(pd) #need to ensure this behaves properly.
+                      pd[-idx, , drop = FALSE]
+                  }, peaksData(object), idx_list, SIMPLIFY = FALSE)
+              }
+              validPeaksData(filtpd)
+              peaksData(object) <- filtpd ## we need to make it work for ChromBackendMzR later.
+              object
+          })
+
 

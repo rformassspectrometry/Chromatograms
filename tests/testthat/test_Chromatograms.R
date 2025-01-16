@@ -14,6 +14,12 @@ test_that("Chromatograms works", {
     expect_true(c_full@processingChunkSize == Inf)
     expect_true(c_full@version == "0.1")
     expect_identical(c_full@processingQueue, list())
+
+    expect_equal(processingChunkSize(c_full), Inf)
+    c_chunk <- c_full
+    processingChunkSize(c_chunk) <- 2
+    expect_equal(processingChunkSize(c_chunk), 2)
+    expect_equal(levels(processingChunkFactor(c_chunk)), c("1", "2"))
 })
 
 test_that("show, Chromatograms works", {
