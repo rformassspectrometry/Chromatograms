@@ -1,6 +1,12 @@
-# Version 0.3.0
+# Version 0.4.0
 
-## Change in 0.3.0
+## Changes in 0.4.0
+- Addition of `peaksData()` and implementation of chunkwise (and therefore 
+  paralleled) processing of `Chromatograms` object. 
+- Addition of `addProcessing()`, `applyProcessing()`, `processingChunkFactor()`, 
+  and `processingChunkSize()`.
+
+## Changes in 0.3.0
 - Addition of `filterChromData()` method for `ChromBackend`.
 - Creation of the `Chromatograms` class and implementation of basic accessor 
   methods.
