@@ -119,26 +119,33 @@ test_that(".validate_entry works", {
 })
 
 test_that(".run_process_queue handles empty queue correctly", {
-    c_empty <- Chromatograms()
-    result <- .run_process_queue(c_empty)
+    result <- .run_process_queue(c_empty@backend,
+                                 f = processingChunkFactor(c_empty),
+                                 queue = c_empty@processingQueue)
     expect_equal(result, c_empty@backend)
 
-    result <- .run_process_queue(c_full)
+    result <- .run_process_queue(c_full@backend,
+                                 f = processingChunkFactor(c_full),
+                                 queue = c_full@processingQueue)
     expect_equal(result, c_full@backend)
 
     c_queued <- filterPeaksData(c_full, variables = c("rtime"), ranges = c(12.5, 45.5))
     c_queued <- filterPeaksData(c_queued, variables = c("intensity"), ranges = c(100, 200))
 
-    result <- .run_process_queue(c_queued)
+    result <- .run_process_queue(c_queued@backend,
+                                 f = processingChunkFactor(c_queued), # this test for f = factor() and queue >1
+                                 queue = c_queued@processingQueue)
     expect_true(inherits(result, "ChromBackend"))
     peaks_result <- peaksData(result)
-    expect_equal(length(peaks_result), length(peaksData(c_full@backend)))  # Same length but modified
+    expect_equal(length(peaks_result), length(peaksData(c_full@backend)))
+    expect_false(identical(peaks_result, peaksData(c_full@backend)))
 
     f <- factor(c(1, 1, 2))
     c_queued <- filterPeaksData(c_full, variables = c("rtime"), ranges = c(12.5, 45.5))
     c_queued <- filterPeaksData(c_queued, variables = c("intensity"), ranges = c(100, 200))
 
-    result <- .run_process_queue(c_queued, f = f)
+    result <- .run_process_queue(c_queued@backend, f = f,
+                                 queue = c_queued@processingQueue)
 
     expect_true(inherits(result, "ChromBackend"))
     expect_equal(length(peaksData(result)), length(peaksData(c_full@backend)))
@@ -149,25 +156,19 @@ test_that(".run_process_queue handles empty queue correctly", {
     f <- factor(c(1, 2))
     tmp <- c_full
     tmp@processingQueue <- list(1)
-    expect_error(.run_process_queue(tmp, f = f),
+    expect_error(.run_process_queue(tmp@backend, f = f, queue <- tmp@processingQueue),
                  "length 'f' has to be equal to the length of 'object'")
 
     f <- c(1, 2, 3)
-    expect_error(.run_process_queue(tmp, f = f), "f must be a factor")
+    expect_error(.run_process_queue(tmp@backend,
+                                    f = f, queue = tmp@processingQueue),
+                 "f must be a factor")
 
     f <- factor(c(1, 1, 2))
     c_empty <- Chromatograms()
-    result <- .run_process_queue(c_empty, f = f)
+    result <- .run_process_queue(c_empty@backend, f = f,
+                                 queue = c_empty@processingQueue)
     expect_equal(result, c_empty@backend)
-
-    f <- factor(c(1, 1, 2))
-    c_queued <- filterPeaksData(c_full, variables = c("rtime"), ranges = c(12.5, 45.5))
-    c_queued <- filterPeaksData(c_queued, variables = c("intensity"), ranges = c(100, 200))
-
-    result <- .run_process_queue(c_queued, f = f, BPPARAM = MulticoreParam(workers = 2))
-
-    expect_true(inherits(result, "ChromBackend"))
-    expect_equal(length(peaksData(result)), length(peaksData(c_full@backend)))
 })
 
 

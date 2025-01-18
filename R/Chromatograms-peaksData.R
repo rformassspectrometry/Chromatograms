@@ -1,6 +1,6 @@
 #' @include Chromatograms.R hidden_aliases.R
 
-#' @title Chromatographic peaks data.
+#' @title Chromatographic peaks data
 #'
 #' @name peaksData
 #'
@@ -18,7 +18,7 @@
 #' individual chromatograms (so called *chromatograms variables*).
 #'
 #' The *peaks data variables* information can be accessed using the
-#' `peaksData()` function. it is also possible to access specific
+#' `peaksData()` function. It is also possible to access specific
 #' peaks variables using `$`.
 #'
 #' `peaks` can be accessed, replaced but also filtered/subsetted. Refer to
@@ -32,12 +32,12 @@
 #'        returned `list` of `data.frame`. By default, all columns are returned.
 #'
 #' @param drop `logical(1)` default to `FALSE`. If `TRUE`, and one column is
-#'        called by the user, the method should  return a vector (or list of
-#'        vector for `peaksData()`) of the single column requested.
+#'        called by the user, the method returns a list of  vector of the
+#'        single column requested.
 #'
 #' @param f `factor` defining the grouping to split the `Chromatograms` object.
 #'
-#' @param FUN FOr `addProcessing()` A function to be added to the
+#' @param FUN For `addProcessing()` A function to be added to the
 #'        `Chromatograms` object's processing queue.
 #'
 #' @param keep For `filterPeaksData()`: `logical(1)`
@@ -47,7 +47,7 @@
 #' @param match For `filterPeaksData()` : `character(1) `
 #'        defining whether the condition has to match for all provided
 #'        `ranges` (`match = "all"`; the default), or for any of them
-#'        (`match = "any"`) for chromatogram data to be retained.
+#'        (`match = "any"`).
 #'
 #' @param ranges For `filterPeaksData()` : a `numeric`
 #'        vector of paired values (upper and lower boundary) that define the
@@ -66,27 +66,30 @@
 #' @param ... Additional arguments passed to the method.
 #'
 #'
-#' @section Filter peaks variables:
+#' @section Filter Peaks Variables:
 #'
 #' Functions that filter `Chromatograms` based on peaks variables
-#' (i.e, `peaksData` ) will remove peaks data that do not meet the
-#' specified conditions. This means that if a chromatogram is filtered out, its
-#' corresponding only the peaks variables pairs in the `peaksData` will be
-#' removed from the object. Moreover, to keep things effcient and all peaks data
-#' can get quite large, a processing queue is put in place, therefore the actual
-#' backend data stays the same until the processing queue is applied (i.e. by
-#' running `applyProcessing()`). When calling `peaksData()` the processing queue
-#' is applied in the output but the backend data is not replaced.
+#' (i.e., `peaksData`). These functions remove peaks data that do not meet the
+#' specified conditions. If a chromatogram is filtered, only the corresponding
+#' peaks variable pairs (i.e., rows) in the `peaksData` are removed, while the
+#' chromatogram itself remains in the object.
 #'
-#' The available functions to filter chromatogram data are:
+#' Since peaks data can be quite large, a processing queue is used to ensure
+#' efficiency. The backend data remains unchanged until the processing queue is
+#' applied (e.g., by running `applyProcessing()`). When calling `peaksData()`,
+#' the processing queue is applied to the output, but the backend data is not
+#' replaced.
 #'
-#' - `filterPeaksData()`: Filters numerical peaks data variables
-#'   based on the provided numerical `ranges`. The method returns the same input a
-#'   `Chromatograms` object but the filtering step is added to the processing
-#'   queue, which will then be applied if the user later request for access to
-#'   the `peaksData`. This function will *not* results in an object with
-#'   fewer chromatograms than the original, however the peaks data ("rtime" and
-#'   "intensity' data pair, for example) will be removed from the object.
+#' The available functions to filter chromatogram data include:
+#'
+#' - `filterPeaksData()`: Filters numerical peaks data variables based on the
+#'   specified numerical `ranges`. This method returns the same input
+#'   `Chromatograms` object, but the filtering step is added to the processing
+#'   queue. The filtered data will be reflected when the user accesses
+#'   `peaksData`. This function does *not* reduce the number of chromatograms
+#'   in the object, but it removes the specified peaks data (e.g., "rtime" and
+#'   "intensity" pairs) from the `peaksData`.
+
 #'
 #' @seealso [Chromatograms] for a general description of the `Chromatograms`
 #'          object, and [chromData] for accessing,substituting and filtering
@@ -106,9 +109,13 @@ setMethod("peaksData",
                    columns = peaksVariables(object),
                    f = processingChunkFactor(object),
                    BPPARAM = bpparam(), drop = FALSE, ...) {
-              if (length(object@processingQueue)) {
-                  object <- .run_process_queue(object, f = f, BPPARAM = BPPARAM)
-                  return(peaksData(object, columns = columns, drop = drop))
+              queue <- object@processingQueue
+              if (length(queue)) {
+                  bd <- .run_process_queue(object@backend,
+                                           queue = queue,
+                                           f = f,
+                                           BPPARAM = BPPARAM)
+                  return(peaksData(bd, columns = columns, drop = drop))
                   }
               peaksData(object@backend, columns = columns, drop = drop)
           }
@@ -133,7 +140,6 @@ setMethod("rtime", signature = "Chromatograms", function(object, ...)
 
 #' @rdname peaksData
 setReplaceMethod("rtime", signature = "Chromatograms", function(object, value) {
-    #something needs to happen before ? i don't think so
     rtime(object@backend) <- value
     object
 })
@@ -144,7 +150,6 @@ setMethod("intensity", signature = "Chromatograms", function(object, ...)
 
 #' @rdname peaksData
 setReplaceMethod("intensity", signature = "Chromatograms", function(object, value) {
-    #something needs to happen ? i don't think so
     intensity(object@backend) <- value
     object
 })
@@ -173,11 +178,13 @@ setMethod("applyProcessing", "Chromatograms",
                    BPPARAM = bpparam(), ...) {
     if (isReadOnly(object@backend))
        stop("Cannot apply processing to a read-only backend")
-    if (!length(object@processingQueue)) return (object)
-    object@backend  <- .run_process_queue(object, f = f, BPPARAM, ...)
+    queue <- object@processingQueue
+    if (!length(queue)) return (object)
+    object@backend  <- .run_process_queue(object@backend, queue = queue,
+                                          f = f, BPPARAM, ...)
     object@processing <- .logging(object@processing,
                                   "Applied processing queue with ",
-                                  length(object@processingQueue),
+                                  length(queue),
                                   " steps")
     object@processingQueue <- list()
     object
@@ -200,17 +207,20 @@ setMethod("addProcessing", "Chromatograms", function(object, FUN, ...) {
 })
 
 
-#' @title Parallel and chunk-wise processing of `Chromatograms` ## should it be renamed for peaksData specifically ?
+#' @title Parallel and chunk-wise processing of `Chromatograms`
 #'
 #' @rdname processingChunkSize
 #'
 #' @aliases processingChunkSize processingChunkSize<- processingChunkFactor
 #'
+#' @note This documentation is mostly a placeholder and will be updated when
+#' the chunkwise implementation is finalized.
+#'
 #' @description
 #'
 #' Many operations on `Chromatograms` objects, specifically those working with
 #' the actual peaks data (see [peaksData]), allow a chunk-wise processing in which
-#' the `Chromatograms` is splitted into smaller parts (chunks) that are
+#' the `Chromatograms` is split into smaller parts (chunks) that are
 #' iteratively processed. This enables parallel processing of the data (by
 #' data chunk) and also reduces the memory demand since only the peak data
 #' of the currently processed subset is loaded into memory and processed.

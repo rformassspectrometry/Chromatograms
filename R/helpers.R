@@ -84,24 +84,26 @@
 #' - `peaksData(Chromatograms())`
 #' - `applyProcessing()`
 #'
+#' It takes a backend and a preprocessingQueue and applies it. It returns
+#' then the backend. This function might need to be  refined later in case the
+#' backend is `readOnly == TRUE`.
+#'
 #' @importFrom BiocParallel bplapply SerialParam
 #' @noRd
-.run_process_queue <- function(object,
-                               f = processingChunkFactor(object),
+.run_process_queue <- function(object, queue, f = factor(),
                                BPPARAM = SerialParam()) {
-    queue <- object@processingQueue
-    if (!length(queue)) return(object@backend)
-    BPPARAM <- backendBpparam(object@backend, BPPARAM)
+    if (!length(queue)) return(object)
+    BPPARAM <- backendBpparam(object, BPPARAM)
     if (!length(f) || length(levels(f)) == 1) {
         for (i in seq_along(queue))
-            object@backend <- do.call(queue[[i]]@FUN, c(object@backend, queue[[i]]@ARGS))
-        return(object@backend )
+            object <- do.call(queue[[i]]@FUN, c(object, queue[[i]]@ARGS))
+        return(object)
     }
     if (!is(f, "factor")) stop("f must be a factor")
     if (length(f) != length(object))
         stop("length 'f' has to be equal to the length of 'object' (",
              length(object), ")")
-    processed_data <- bplapply(split(object@backend, f), function(x) {
+    processed_data <- bplapply(split(object, f), function(x) {
         for (i in seq_along(queue))
             x <- do.call(queue[[i]]@FUN, c(x, queue[[i]]@ARGS))
         x

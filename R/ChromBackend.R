@@ -131,7 +131,7 @@
 #'        (`match = "any"`) for chromatogram data to be retained.
 #'
 #' @param name For `$` and `$<-`: the name of the chromatogram variable to
-#'     return or set.
+#'        return or set.
 #'
 #' @param object Object extending `ChromBackend`.
 #'
@@ -141,7 +141,7 @@
 #'        same order as the `variables` parameter (see below).
 #'
 #'
-#' @param value replacement value for `<-` methods. See individual
+#' @param value Replacement value for `<-` methods. See individual
 #'        method description or expected data type.
 #'
 #' @param variables For `filterChromData()`: `character` vector with the names
@@ -165,7 +165,7 @@
 #'   This method has to ensure to set the chromtogram variable `dataStorage`
 #'   correctly.
 #'
-#' - `backendBpparam()`: return the parallel processing setup supported by
+#' - `backendBpparam()`: returns the parallel processing setup supported by
 #'   the backend class. This function can be used by any higher
 #'   level function to evaluate whether the provided parallel processing
 #'   setup (or the default one returned by `bpparam()`) is supported
@@ -220,7 +220,7 @@
 #'   Note that only writeable backends need to support this method.
 #'
 #' - `[`: subset the backend. Only subsetting by element (*row*/`i`) is
-#'   allowed.
+#'   allowed. This method should be implemented as to support empty integer.
 #'
 #' - `$`, `$<-`: access or set/add a single chromatogram variable (column) in
 #'   the backend.
@@ -919,18 +919,31 @@ setMethod("filterChromData", "ChromBackend",
                        "variable defined with parameter 'variables'.")
               query <- chromData(object, columns = variables)
               idx <- .filter_ranges(query, ranges, match)
-              if (!length(idx)) {
-                  if (keep) return(ChromBackendMemory()) ## i'm not sure that's okay, but what should we do if the filtering empties the object?
+              if (keep) return(object[idx])
+              else {
+                  if (length(idx)) return(object[-idx])
                   else return(object)
-                  }
-              if (keep) object <- object[idx]
-              else object <- object[-idx]
-              object
+              }
           })
 
 #' @exportMethod filterPeaksData
 #'
 #' @rdname ChromBackend
+#'
+#' @description
+#' Filter the peak data based on the provided ranges for the given variables.
+#'
+#' @note This function replaces the peaksData() of the input object. Therefore
+#' backend with `readOnly == TRUE` (i.e. ChromBackendmzR) will need to have a
+#' carefully implemented `peaksData(object) <-` method.
+#' First thought are to implement a way  to "cache" the results in a slot of
+#' the object (maybe an actual `@peaksData` slot or  a `cacheData` slot).
+#'
+#' The important things to be aware of are:
+#'  - This slot should only be used temporarily as to not overload the memory.
+#'  - Maybe inspiring on the `MsBackendCached` class and method.
+#'  - E.g. not storing the data but some sort of indices ?
+#'  - Storing the data in a  temporary file and reading it back when needed ?
 #'
 #' @export
 setMethod("filterPeaksData", "ChromBackend",
@@ -957,22 +970,14 @@ setMethod("filterPeaksData", "ChromBackend",
                        "parameter 'variables' and define the lower and upper ",
                        "bound for values of each peak variable defined with ",
                        "parameter 'variables'.")
-              idx_list <- lapply(peaksData(object, columns = variables),
-                                 function(pd) {
-                  .filter_ranges(pd, ranges, match)
+              if (keep) sel_fun <- function(z, idx) z[idx, , drop = FALSE]
+              else sel_fun <- function(z, idx) {
+                  if (idx == 0) return(z) # check this
+                  else return(z[-idx, , drop = FALSE]) }
+              peaksData(object) <- lapply(peaksData(object), function(pd) {
+                  sel_fun(pd, .filter_ranges(pd[, variables, drop = FALSE],
+                                             ranges, match))
               })
-              if (keep) {
-                  filtpd <- mapply(function(pd, idx) {
-                          pd[idx, , drop = FALSE]
-                  }, peaksData(object), idx_list, SIMPLIFY = FALSE)
-              } else {
-                  filtpd <- mapply(function(pd, idx) {
-                      if (idx == 0) return(pd) #need to ensure this behaves properly.
-                      pd[-idx, , drop = FALSE]
-                  }, peaksData(object), idx_list, SIMPLIFY = FALSE)
-              }
-              validPeaksData(filtpd)
-              peaksData(object) <- filtpd ## we need to make it work for ChromBackendMzR later.
               object
           })
 

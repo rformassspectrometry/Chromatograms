@@ -209,7 +209,7 @@ requested.}
 \item{name}{For \code{$} and \verb{$<-}: the name of the chromatogram variable to
 return or set.}
 
-\item{value}{replacement value for \verb{<-} methods. See individual
+\item{value}{Replacement value for \verb{<-} methods. See individual
 method description or expected data type.}
 
 \item{object}{Object extending \code{ChromBackend}.}
@@ -265,6 +265,23 @@ initialized with a \code{data.frame} of chromatographic data via the
 \code{chromData} parameter and a \code{list} of \code{data.frame} entries for peaks data
 using the \code{peaksData} parameter. These data can be accessed with the
 \code{chromData()} and \code{peaksData()} functions.
+}
+
+Filter the peak data based on the provided ranges for the given variables.
+}
+\note{
+This function replaces the peaksData() of the input object. Therefore
+backend with \code{readOnly == TRUE} (i.e. ChromBackendmzR) will need to have a
+carefully implemented \verb{peaksData(object) <-} method.
+First thought are to implement a way  to "cache" the results in a slot of
+the object (maybe an actual \verb{@peaksData} slot or  a \code{cacheData} slot).
+
+The important things to be aware of are:
+\itemize{
+\item This slot should only be used temporarily as to not overload the memory.
+\item Maybe inspiring on the \code{MsBackendCached} class and method.
+\item E.g. not storing the data but some sort of indices ?
+\item Storing the data in a  temporary file and reading it back when needed ?
 }
 }
 \section{Core chromatogram variables}{
@@ -355,7 +372,7 @@ Parameters can be defined freely for each backend, depending on what is
 needed to initialize the backend.
 This method has to ensure to set the chromtogram variable \code{dataStorage}
 correctly.
-\item \code{backendBpparam()}: return the parallel processing setup supported by
+\item \code{backendBpparam()}: returns the parallel processing setup supported by
 the backend class. This function can be used by any higher
 level function to evaluate whether the provided parallel processing
 setup (or the default one returned by \code{bpparam()}) is supported
@@ -405,7 +422,7 @@ All existing peaks data are expected to be replaced with these new values.
 The length of the \code{list} has to match the number of chromatogram of \code{object}.
 Note that only writeable backends need to support this method.
 \item \code{[}: subset the backend. Only subsetting by element (\emph{row}/\code{i}) is
-allowed.
+allowed. This method should be implemented as to support empty integer.
 \item \code{$}, \verb{$<-}: access or set/add a single chromatogram variable (column) in
 the backend.
 \item \code{backendMerge()}: merges (combines) \code{ChromBackend} objects into a single

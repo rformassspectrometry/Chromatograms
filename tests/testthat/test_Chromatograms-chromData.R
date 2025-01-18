@@ -170,6 +170,7 @@ test_that("filterChromData handles various edge cases", {
     res <- filterChromData(be_cd, variables = c("mz"), ranges = c(134, 150),
                            match = "any", keep = FALSE)
     expect_equal(nrow(chromData(res)), 2)
+
     res <- filterChromData(be_cd, variables = c("mz"), ranges = c(120, 130), match = "any")
     expect_equal(nrow(chromData(res)), 1)
 })

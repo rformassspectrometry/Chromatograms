@@ -7,7 +7,7 @@
 \alias{processingChunkFactor}
 \alias{processingChunkSize<-,Chromatograms-method}
 \alias{processingChunkFactor,Chromatograms-method}
-\title{Parallel and chunk-wise processing of \code{Chromatograms} ## should it be renamed for peaksData specifically ?}
+\title{Parallel and chunk-wise processing of \code{Chromatograms}}
 \usage{
 \S4method{processingChunkSize}{Chromatograms}(object, ...)
 
@@ -36,7 +36,7 @@ no splitting is defined.
 \description{
 Many operations on \code{Chromatograms} objects, specifically those working with
 the actual peaks data (see \link{peaksData}), allow a chunk-wise processing in which
-the \code{Chromatograms} is splitted into smaller parts (chunks) that are
+the \code{Chromatograms} is split into smaller parts (chunks) that are
 iteratively processed. This enables parallel processing of the data (by
 data chunk) and also reduces the memory demand since only the peak data
 of the currently processed subset is loaded into memory and processed.
@@ -79,6 +79,9 @@ performed.
 }
 }
 \note{
+This documentation is mostly a placeholder and will be updated when
+the chunkwise implementation is finalized.
+
 Some backends might not support parallel processing at all.
 For these, the \code{backendBpparam()} function will always return a
 \code{SerialParam()} independently on how parallel processing was defined.

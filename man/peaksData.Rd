@@ -15,7 +15,7 @@
 \alias{filterPeaksData,Chromatograms-method}
 \alias{applyProcessing,Chromatograms-method}
 \alias{addProcessing,Chromatograms-method}
-\title{Chromatographic peaks data.}
+\title{Chromatographic peaks data}
 \usage{
 \S4method{peaksData}{Chromatograms}(
   object,
@@ -68,8 +68,8 @@ returned \code{list} of \code{data.frame}. By default, all columns are returned.
 for more information.}
 
 \item{drop}{\code{logical(1)} default to \code{FALSE}. If \code{TRUE}, and one column is
-called by the user, the method should  return a vector (or list of
-vector for \code{peaksData()}) of the single column requested.}
+called by the user, the method returns a list of  vector of the
+single column requested.}
 
 \item{...}{Additional arguments passed to the method.}
 
@@ -88,13 +88,13 @@ same order as the \code{variables} parameter (see below).}
 \item{match}{For \code{filterPeaksData()} : \code{character(1) }
 defining whether the condition has to match for all provided
 \code{ranges} (\code{match = "all"}; the default), or for any of them
-(\code{match = "any"}) for chromatogram data to be retained.}
+(\code{match = "any"}).}
 
 \item{keep}{For \code{filterPeaksData()}: \code{logical(1)}
 defining whether to keep (\code{keep = TRUE}) or remove (\code{keep = FALSE})
 the chromatogram data that match the condition.}
 
-\item{FUN}{FOr \code{addProcessing()} A function to be added to the
+\item{FUN}{For \code{addProcessing()} A function to be added to the
 \code{Chromatograms} object's processing queue.}
 }
 \description{
@@ -105,34 +105,36 @@ as \emph{peaks data variables} in the context of \code{Chromatograms}) and metad
 individual chromatograms (so called \emph{chromatograms variables}).
 
 The \emph{peaks data variables} information can be accessed using the
-\code{peaksData()} function. it is also possible to access specific
+\code{peaksData()} function. It is also possible to access specific
 peaks variables using \code{$}.
 
 \code{peaks} can be accessed, replaced but also filtered/subsetted. Refer to
 the sections below for more details.
 }
-\section{Filter peaks variables}{
+\section{Filter Peaks Variables}{
 
 
 Functions that filter \code{Chromatograms} based on peaks variables
-(i.e, \code{peaksData} ) will remove peaks data that do not meet the
-specified conditions. This means that if a chromatogram is filtered out, its
-corresponding only the peaks variables pairs in the \code{peaksData} will be
-removed from the object. Moreover, to keep things effcient and all peaks data
-can get quite large, a processing queue is put in place, therefore the actual
-backend data stays the same until the processing queue is applied (i.e. by
-running \code{applyProcessing()}). When calling \code{peaksData()} the processing queue
-is applied in the output but the backend data is not replaced.
+(i.e., \code{peaksData}). These functions remove peaks data that do not meet the
+specified conditions. If a chromatogram is filtered, only the corresponding
+peaks variable pairs (i.e., rows) in the \code{peaksData} are removed, while the
+chromatogram itself remains in the object.
 
-The available functions to filter chromatogram data are:
+Since peaks data can be quite large, a processing queue is used to ensure
+efficiency. The backend data remains unchanged until the processing queue is
+applied (e.g., by running \code{applyProcessing()}). When calling \code{peaksData()},
+the processing queue is applied to the output, but the backend data is not
+replaced.
+
+The available functions to filter chromatogram data include:
 \itemize{
-\item \code{filterPeaksData()}: Filters numerical peaks data variables
-based on the provided numerical \code{ranges}. The method returns the same input a
-\code{Chromatograms} object but the filtering step is added to the processing
-queue, which will then be applied if the user later request for access to
-the \code{peaksData}. This function will \emph{not} results in an object with
-fewer chromatograms than the original, however the peaks data ("rtime" and
-"intensity' data pair, for example) will be removed from the object.
+\item \code{filterPeaksData()}: Filters numerical peaks data variables based on the
+specified numerical \code{ranges}. This method returns the same input
+\code{Chromatograms} object, but the filtering step is added to the processing
+queue. The filtered data will be reflected when the user accesses
+\code{peaksData}. This function does \emph{not} reduce the number of chromatograms
+in the object, but it removes the specified peaks data (e.g., "rtime" and
+"intensity" pairs) from the \code{peaksData}.
 }
 }
 

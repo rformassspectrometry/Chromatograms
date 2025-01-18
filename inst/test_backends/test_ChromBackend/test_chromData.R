@@ -231,6 +231,11 @@ test_that("[ works", {
     be12 <- be[1:2]
     expect_equal(nrow(chromData(be12)), 2)
     expect_equal(chromData(be12)$chromIndex, c(1, 2))
+
+    # Handles empty integer
+    be0 <- be[integer()]
+    expect_equal(nrow(chromData(be0)), 0)
+    expect_equal(be0, be_empty)
 })
 
 test_that("[[ works", {

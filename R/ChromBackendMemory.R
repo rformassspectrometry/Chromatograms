@@ -172,6 +172,7 @@ setMethod("show", "ChromBackendMemory", function(object){
 #' @importMethodsFrom S4Vectors [ [<-
 #' @rdname hidden_aliases
 setMethod("[", "ChromBackendMemory", function(x, i, j, ..., drop = FALSE) {
+  if (!length(i)) return (ChromBackendMemory())
   i <- i2index(i, length = length(x))
   x@chromData <- x@chromData[i, ]
   x@peaksData <- x@peaksData[i]
