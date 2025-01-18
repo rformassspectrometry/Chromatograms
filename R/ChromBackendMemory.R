@@ -46,6 +46,14 @@ setClass("ChromBackendMemory",
                                version = "0.1"))
 
 #' @rdname ChromBackendMemory
+#'
+#' @importFrom methods new
+#' @export ChromBackendMemory
+ChromBackendMemory <- function() {
+  new("ChromBackendMemory")
+}
+
+#' @rdname ChromBackendMemory
 setMethod("backendInitialize", "ChromBackendMemory",
           function(object,
                    chromData = fillCoreChromVariables(data.frame()),
@@ -164,6 +172,7 @@ setMethod("show", "ChromBackendMemory", function(object){
 #' @importMethodsFrom S4Vectors [ [<-
 #' @rdname hidden_aliases
 setMethod("[", "ChromBackendMemory", function(x, i, j, ..., drop = FALSE) {
+  if (!length(i)) return (ChromBackendMemory())
   i <- i2index(i, length = length(x))
   x@chromData <- x@chromData[i, ]
   x@peaksData <- x@peaksData[i]

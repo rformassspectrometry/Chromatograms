@@ -3,7 +3,7 @@
 
 #' @note
 #' Used for:
-#' - backendMerge for ChromBackendMemory, I actually do not know how to make it
+#' - `backendMerge()` for ChromBackendMemory, I actually do not know how to make it
 #' so that it applies to other future backend. I guess this is something to
 #' think about.
 #'
@@ -46,7 +46,7 @@
 #'
 #' @note:
 #' used in:
-#' - `ValidPeaksData()`
+#' - `validPeaksData()`
 #' @noRd
 .check_column_order_and_types <- function(df, expected_cols, expected_types) {
     if (!identical(colnames(df)[1:2], expected_cols))
@@ -66,7 +66,7 @@
 #'
 #' @note:
 #' used in:
-#' - `ValidPeaksData()`
+#' - `validPeaksData()`
 #' @noRd
 .check_rtime <- function(df) {
     if (nrow(df) == 0) return(NULL)
@@ -79,11 +79,43 @@
     return(NULL)
 }
 
+#' Function to apply the processing queue to the backend, return a peaksData.
+#' Used in:
+#' - `peaksData(Chromatograms())`
+#' - `applyProcessing()`
+#'
+#' It takes a backend and a preprocessingQueue and applies it. It returns
+#' then the backend. This function might need to be  refined later in case the
+#' backend is `readOnly == TRUE`.
+#'
+#' @importFrom BiocParallel bplapply SerialParam
+#' @noRd
+.run_process_queue <- function(object, queue, f = factor(),
+                               BPPARAM = SerialParam()) {
+    if (!length(queue)) return(object)
+    BPPARAM <- backendBpparam(object, BPPARAM)
+    if (!length(f) || length(levels(f)) == 1) {
+        for (i in seq_along(queue))
+            object <- do.call(queue[[i]]@FUN, c(object, queue[[i]]@ARGS))
+        return(object)
+    }
+    if (!is(f, "factor")) stop("f must be a factor")
+    if (length(f) != length(object))
+        stop("length 'f' has to be equal to the length of 'object' (",
+             length(object), ")")
+    processed_data <- bplapply(split(object, f), function(x) {
+        for (i in seq_along(queue))
+            x <- do.call(queue[[i]]@FUN, c(x, queue[[i]]@ARGS))
+        x
+    }, BPPARAM = BPPARAM)
+    backendMerge(processed_data)
+}
+
 #' Function to validate each peaksData entry
 #'
 #' @note:
 #' used in:
-#' - `ValidPeaksData()`
+#' - `validPeaksData()`
 #' @noRd
 .validate_entry <- function(df, i, expected_cols, expected_types) {
     msgs <- NULL
@@ -97,21 +129,50 @@
     return(msgs)
 }
 
+#' Function to validate the processingQueue slot of a Chromatograms object
+#'
+#' Used in:
+#' - `validObject(Chromatograms())`
+#' @importFrom MsCoreUtils vapply1l
+#' @noRd
+.valid_processing_queue <- function(x) {
+    if (length(x) && !all(vapply1l(x, inherits, "ProcessingStep")))
+        return("'processingQueue' should only contain ProcessingStep objects.")
+    NULL
+}
+
 #' function to loop through  query column and check if within corresponding
 #' ranges. Return an index of the corresponding matches.
 #' Used in:
-#' - `filterPeaksData()`
+#' - `filterPeaksData()`: looped through the list of data.frame
 #' - `filterChromData()`
+#' @importFrom MsCoreUtils between
 #' @noRd
-.filter_ranges <- function(query, ranges, match){
+.filter_ranges <- function(query, ranges, match) {
     nc <- ncol(query)
+    nr <- nrow(query)
+    if (length(ranges) != 2 * nc)
+        stop("Length of 'ranges' needs to be twice the length of the ",
+             "parameter 'query'")
+
+    # Compute within_ranges for each column of the query
     within_ranges <- vapply(seq_len(nc), function(i) {
-        pairs <-  c(ranges[2*i - 1], ranges[2*i])
+        pairs <- c(ranges[2 * i - 1], ranges[2 * i])
         between(query[[i]], pairs)
     }, logical(nrow(query)))
-    if (match == "all")
-        idx <- which(rowSums(within_ranges, na.rm = FALSE) == nc)
-    else
-        idx <- which(rowSums(within_ranges, na.rm = FALSE) > 0)
-    idx
+
+    if (match == "all") {
+        if (nr == 1) return(as.integer(all(within_ranges)))
+        return(which(rowSums(within_ranges) == nc))
+    }
+    if (nr == 1) return(as.integer(any(within_ranges)))
+    return(which(rowSums(within_ranges) > 0))
+}
+
+
+#' Used in:
+#' - `filterPeaksData()`
+#' @noRd
+.logging <- function(x, ...) {
+    c(x, paste0(..., " [", date(), "]"))
 }

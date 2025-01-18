@@ -83,6 +83,8 @@ test_that("[ works", {
     expect_equal(length(peaksData(be1)), 1)
     be12 <- be[1:2]
     expect_equal(length(peaksData(be12)), 2)
+    be0 <- be[integer()]
+    expect_equal(nrow(peaksData(be0)[[1]]), 0)
 })
 
 

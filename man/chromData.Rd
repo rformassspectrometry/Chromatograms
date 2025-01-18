@@ -234,7 +234,7 @@ The available functions to filter chromatogram data are:
 \itemize{
 \item \code{filterChromData()}: Filters numerical chromatographic data variables
 based on the provided numerical \code{ranges}. The method returns a
-\code{ChromBackend} object containing only the chromatograms that match the
+\code{Chromatograms} object containing only the chromatograms that match the
 specified conditions. This function results in an object with fewer
 chromatograms than the original.
 }
