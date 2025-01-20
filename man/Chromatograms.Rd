@@ -41,7 +41,7 @@ it is possible to add arbitrary additional chromatograms variables to a
 The \emph{chromatograms variables} information can be accessed using the
 \code{chromData()} function. it is also possible to access specific
 chromatograms variables using \code{$}. \code{chromData} can be accessed, replaced but
-also filtered/subsetted. Refer t the \link{chromData} documentation for more
+also filtered/subsetted. Refer to the \link{chromData} documentation for more
 details.
 
 The \code{Chromatograms} object is designed to contain chromatographic data of a
@@ -66,4 +66,7 @@ chroms <- Chromatograms(backend = ChromBackendMemory())
 \link{chromData} for a general description of the chromatographic
 metadata available in the object, as well as how to access, replace
 and subset them.
+\link{peaksData} for a general description of the chromatographic peaks
+data available in the object, as well as how to access, replace and
+subset them.
 }

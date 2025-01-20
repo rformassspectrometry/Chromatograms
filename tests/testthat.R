@@ -20,6 +20,7 @@ be_empty <- new("ChromBackendMemory")
 be_cd <- backendInitialize(be_empty, chromData = cdata)
 be <- backendInitialize(be_empty, chromData = cdata, peaksData = pdata)
 
+
 ## Run tests with the unit test suite defined in the Chromatograms package to
 ## ensure compliance with the definitions of the ChromBackend interface/class.
 test_suite <- system.file("test_backends", "test_ChromBackend",
