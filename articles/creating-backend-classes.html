@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">Chromatograms</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.3.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.0</span>
       </span>
     </div>
 
@@ -101,7 +101,7 @@ document.addEventListener("DOMContentLoaded", function() {
 });
 </script><p><strong>Package</strong>: <em><a href="https://bioconductor.org/packages/3.20/Chromatograms" class="external-link">Chromatograms</a></em><br><strong>Authors</strong>: Laurent Gatto [aut] (<a href="https://orcid.org/0000-0002-1520-2268" class="external-link uri">https://orcid.org/0000-0002-1520-2268</a>), Johannes Rainer
 [aut] (<a href="https://orcid.org/0000-0002-6977-7147" class="external-link uri">https://orcid.org/0000-0002-6977-7147</a>), Philippine
-Louail [aut, cre] (<a href="https://orcid.org/0009-0007-5429-6846" class="external-link uri">https://orcid.org/0009-0007-5429-6846</a>)<br><strong>Compiled</strong>: Wed Jan 8 12:37:48 2025</p>
+Louail [aut, cre] (<a href="https://orcid.org/0009-0007-5429-6846" class="external-link uri">https://orcid.org/0009-0007-5429-6846</a>)<br><strong>Compiled</strong>: Mon Jan 20 13:56:48 2025</p>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
@@ -564,13 +564,13 @@ variables.</p>
 <h4 id="peaksvariables">
 <code>peaksVariables()</code><a class="anchor" aria-label="anchor" href="#peaksvariables"></a>
 </h4>
-<p>The <code><a href="https://rdrr.io/pkg/ProtGenerics/man/peaksData.html" class="external-link">peaksVariables()</a></code> function is supposed to provide the
+<p>The <code><a href="../reference/peaksData.html">peaksVariables()</a></code> function is supposed to provide the
 names of the available <em>peaks variables</em>. If additional peaks
 variables would be available, these could also be listed by the
-<code><a href="https://rdrr.io/pkg/ProtGenerics/man/peaksData.html" class="external-link">peaksVariables()</a></code> method. There is a default implementation
+<code><a href="../reference/peaksData.html">peaksVariables()</a></code> method. There is a default implementation
 for <code>peaksVaraibles()</code> that will return the core peaks
 variables. However if a backend class defines additional peaks
-variables, the <code><a href="https://rdrr.io/pkg/ProtGenerics/man/peaksData.html" class="external-link">peaksVariables()</a></code> method should be
+variables, the <code><a href="../reference/peaksData.html">peaksVariables()</a></code> method should be
 implemented to return the names of these additional variables as
 well.</p>
 <div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
@@ -579,14 +579,14 @@ well.</p>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>We can now see what peaks variables are present in our object:</p>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/peaksData.html" class="external-link">peaksVariables</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/peaksData.html">peaksVariables</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] "rtime"     "intensity"</span></span></code></pre>
 </div>
 <div class="section level4">
 <h4 id="peaksdata">
 <code>peaksData()</code><a class="anchor" aria-label="anchor" href="#peaksdata"></a>
 </h4>
-<p>The <code><a href="https://rdrr.io/pkg/ProtGenerics/man/peaksData.html" class="external-link">peaksData()</a></code> method extracts the chromatographic data
+<p>The <code><a href="../reference/peaksData.html">peaksData()</a></code> method extracts the chromatographic data
 (<em>peaks</em>), i.e., the chromatograms’ retention time and intensity
 values. This data is returned as a <code>list</code> of
 <code>data.frame</code>, with one array per chromatogram with columns
@@ -603,14 +603,14 @@ listed by the <code><a href="../reference/ChromBackend.html">corePeaksVariables(
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/ChromBackend.html">corePeaksVariables</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##     rtime intensity </span></span>
 <span><span class="co">## "numeric" "numeric"</span></span></code></pre>
-<p>Below we implement the <code><a href="https://rdrr.io/pkg/ProtGenerics/man/peaksData.html" class="external-link">peaksData()</a></code> method for our
+<p>Below we implement the <code><a href="../reference/peaksData.html">peaksData()</a></code> method for our
 backend.</p>
 <div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' method to extract the full chromatographic data as list of arrays</span></span>
 <span><span class="kw">setMethod</span><span class="op">(</span></span>
 <span>    <span class="st">"peaksData"</span>, <span class="st">"ChromBackendTest"</span>,</span>
-<span>    <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">columns</span> <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/peaksData.html" class="external-link">peaksVariables</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>, <span class="va">drop</span> <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> </span>
-<span>      <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">columns</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/peaksData.html" class="external-link">peaksVariables</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">columns</span> <span class="op">=</span> <span class="fu"><a href="../reference/peaksData.html">peaksVariables</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>, <span class="va">drop</span> <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> </span>
+<span>      <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">columns</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="../reference/peaksData.html">peaksVariables</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span>        <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"Some of the requested peaks variables are not available"</span><span class="op">)</span></span>
 <span>      <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">object</span><span class="op">@</span><span class="va">peaksData</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">[</span>, <span class="va">columns</span>, drop <span class="op">=</span> <span class="va">drop</span><span class="op">]</span><span class="op">)</span></span>
 <span>      <span class="va">res</span></span>
@@ -619,7 +619,7 @@ backend.</p>
 backend.</p>
 <div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Extract the *peaks* data (i.e. intensity and retention times)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/peaksData.html" class="external-link">peaksData</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/peaksData.html">peaksData</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [[1]]</span></span>
 <span><span class="co">##   rtime intensity</span></span>
 <span><span class="co">## 1  12.4     123.3</span></span>
@@ -631,7 +631,7 @@ backend.</p>
 <span><span class="co">##   rtime intensity</span></span>
 <span><span class="co">## 1  45.1     100.0</span></span>
 <span><span class="co">## 2  46.2      80.1</span></span></code></pre>
-<p>Since the <code><a href="https://rdrr.io/pkg/ProtGenerics/man/peaksData.html" class="external-link">peaksData()</a></code> method is the main function used
+<p>Since the <code><a href="../reference/peaksData.html">peaksData()</a></code> method is the main function used
 by a <code>Chromatograms</code> to retrieve data from the backend (and
 further process the values), this method should be implemented in an
 efficient way.</p>
@@ -710,8 +710,8 @@ available and should throw an error otherwise.</p>
 <span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"$"</span>, <span class="st">"ChromBackendTest"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">name</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="va">name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">union</a></span><span class="op">(</span><span class="fu"><a href="../reference/chromData.html">chromVariables</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="../reference/ChromBackend.html">coreChromVariables</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">x</span>, columns <span class="op">=</span> <span class="va">name</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span>  <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/peaksData.html" class="external-link">peaksVariables</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
-<span>    <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/peaksData.html" class="external-link">peaksData</a></span><span class="op">(</span><span class="va">x</span>, columns <span class="op">=</span> <span class="va">name</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>  <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="../reference/peaksData.html">peaksVariables</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/peaksData.html">peaksData</a></span><span class="op">(</span><span class="va">x</span>, columns <span class="op">=</span> <span class="va">name</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span>  <span class="kw">else</span> <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"The requested variable '"</span>, <span class="va">name</span>, <span class="st">"' is not available"</span><span class="op">)</span></span>
 <span>  <span class="va">res</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
@@ -849,7 +849,7 @@ variables have the correct data type.</p>
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span> <span class="op">!=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"length of 'value' needs to match the number of chromatograms "</span>,</span>
 <span>         <span class="st">"in object."</span><span class="op">)</span></span>
-<span>  <span class="kw">if</span> <span class="op">(</span><span class="va">name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/peaksData.html" class="external-link">peaksVariables</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="kw">if</span> <span class="op">(</span><span class="va">name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="../reference/peaksData.html">peaksVariables</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">is.list</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span><span class="op">)</span></span>
 <span>      <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"The value for peaksData should be a list"</span><span class="op">)</span></span>
 <span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
@@ -926,10 +926,10 @@ allow).</p>
 <span></span>
 <span><span class="va">be_2</span> <span class="op">&lt;-</span> <span class="va">be</span></span>
 <span><span class="co">#' Assign this peaks data to one of our test backends</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/peaksData.html" class="external-link">peaksData</a></span><span class="op">(</span><span class="va">be_2</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">tmp</span></span>
+<span><span class="fu"><a href="../reference/peaksData.html">peaksData</a></span><span class="op">(</span><span class="va">be_2</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">tmp</span></span>
 <span></span>
 <span><span class="co">#' Evaluate that we properly added the peaks data</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/peaksData.html" class="external-link">peaksData</a></span><span class="op">(</span><span class="va">be_2</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/peaksData.html">peaksData</a></span><span class="op">(</span><span class="va">be_2</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [[1]]</span></span>
 <span><span class="co">##   rtime intensity</span></span>
 <span><span class="co">## 1  12.3     200.0</span></span>
@@ -1122,13 +1122,13 @@ allow to extract or set the intensity values of the individual
 chromatograms represented by the backend. The default for the
 <code><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">intensity()</a></code> function, which is expected to return a
 <code>list</code> of <code>numeric</code> values with the intensity
-values of each chromatogram, uses the <code><a href="https://rdrr.io/pkg/ProtGenerics/man/peaksData.html" class="external-link">peaksData()</a></code>
+values of each chromatogram, uses the <code><a href="../reference/peaksData.html">peaksData()</a></code>
 method:</p>
 <div class="sourceCode" id="cb98"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default method to extract intensity values</span></span>
 <span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"intensity"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>        <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/peaksData.html" class="external-link">peaksData</a></span><span class="op">(</span><span class="va">object</span>, column <span class="op">=</span> <span class="st">"intensity"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>        <span class="fu"><a href="../reference/peaksData.html">peaksData</a></span><span class="op">(</span><span class="va">object</span>, column <span class="op">=</span> <span class="st">"intensity"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span>    <span class="op">}</span> <span class="kw">else</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>The default replacement method for intensity values uses the
@@ -1136,7 +1136,7 @@ method:</p>
 <div class="sourceCode" id="cb99"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default implementation of the replacement method for intensity values</span></span>
 <span><span class="fu">setReplaceMethod</span><span class="op">(</span><span class="st">"intensity"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="va">pd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/peaksData.html" class="external-link">peaksData</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
+<span>    <span class="va">pd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/peaksData.html">peaksData</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
 <span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">is.list</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span> <span class="op">||</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">pd</span><span class="op">)</span> <span class="op">!=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span><span class="op">)</span></span>
 <span>        <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"'value' should be a list of the same length as 'object'"</span><span class="op">)</span></span>
 <span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">pd</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
@@ -1146,7 +1146,7 @@ method:</p>
 <span>                       <span class="va">i</span>, <span class="st">"'"</span><span class="op">)</span><span class="op">)</span></span>
 <span>        <span class="op">}</span></span>
 <span>    <span class="op">}</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/peaksData.html" class="external-link">peaksData</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">pd</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="fu"><a href="../reference/peaksData.html">peaksData</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">pd</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="op">{</span></span>
 <span>        <span class="va">pd</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">intensity</span> <span class="op">&lt;-</span> <span class="va">value</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span></span>
 <span>        <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">pd</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
 <span>    <span class="op">}</span><span class="op">)</span></span>
@@ -1501,12 +1501,12 @@ below.</p>
 <code class="sourceCode R"><span><span class="co">#' Default methods for `rtime()` and `rtime&lt;-`</span></span>
 <span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"rtime"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span>    </span>
 <span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>      <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/peaksData.html" class="external-link">peaksData</a></span><span class="op">(</span><span class="va">object</span>, column <span class="op">=</span> <span class="st">"rtime"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>      <span class="fu"><a href="../reference/peaksData.html">peaksData</a></span><span class="op">(</span><span class="va">object</span>, column <span class="op">=</span> <span class="st">"rtime"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span>  <span class="op">}</span> <span class="kw">else</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">setReplaceMethod</span><span class="op">(</span><span class="st">"rtime"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="va">pd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/peaksData.html" class="external-link">peaksData</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
+<span>    <span class="va">pd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/peaksData.html">peaksData</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
 <span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">is.list</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span> <span class="op">||</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">pd</span><span class="op">)</span> <span class="op">!=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span><span class="op">)</span></span>
 <span>        <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"'value' should be a list of the same length as 'object'"</span><span class="op">)</span></span>
 <span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">pd</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
@@ -1515,7 +1515,7 @@ below.</p>
 <span>            <span class="st">"the number of rows in 'the rtime of chromatogram: "</span>, <span class="va">i</span>, <span class="st">"'"</span><span class="op">)</span><span class="op">)</span></span>
 <span>        <span class="op">}</span></span>
 <span>    <span class="op">}</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/peaksData.html" class="external-link">peaksData</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">pd</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="fu"><a href="../reference/peaksData.html">peaksData</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">pd</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="op">{</span></span>
 <span>        <span class="va">pd</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="va">rtime</span> <span class="op">&lt;-</span> <span class="va">value</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span></span>
 <span>        <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">pd</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
 <span>    <span class="op">}</span><span class="op">)</span></span>
@@ -1587,21 +1587,23 @@ uses the <code>[</code> method to subset/split the object.</p>
 <span><span class="co">## [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## other attached packages:</span></span>
-<span><span class="co">## [1] Chromatograms_0.3.0 ProtGenerics_1.39.1 BiocStyle_2.34.0   </span></span>
+<span><span class="co">## [1] Chromatograms_0.4.0 ProtGenerics_1.39.2 BiocParallel_1.40.0</span></span>
+<span><span class="co">## [4] BiocStyle_2.34.0   </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## loaded via a namespace (and not attached):</span></span>
-<span><span class="co">##  [1] cli_3.6.3           knitr_1.49          rlang_1.1.4        </span></span>
-<span><span class="co">##  [4] xfun_0.49           textshaping_0.4.1   clue_0.3-66        </span></span>
+<span><span class="co">##  [1] cli_3.6.3           knitr_1.49          rlang_1.1.5        </span></span>
+<span><span class="co">##  [4] xfun_0.50           textshaping_0.4.1   clue_0.3-66        </span></span>
 <span><span class="co">##  [7] jsonlite_1.8.9      S4Vectors_0.44.0    htmltools_0.5.8.1  </span></span>
 <span><span class="co">## [10] stats4_4.4.2        ragg_1.3.3          sass_0.4.9         </span></span>
-<span><span class="co">## [13] rmarkdown_2.29      evaluate_1.0.1      jquerylib_0.1.4    </span></span>
+<span><span class="co">## [13] rmarkdown_2.29      evaluate_1.0.3      jquerylib_0.1.4    </span></span>
 <span><span class="co">## [16] MASS_7.3-64         fastmap_1.2.0       IRanges_2.40.1     </span></span>
-<span><span class="co">## [19] yaml_2.3.10         lifecycle_1.0.4     bookdown_0.41      </span></span>
+<span><span class="co">## [19] yaml_2.3.10         lifecycle_1.0.4     bookdown_0.42      </span></span>
 <span><span class="co">## [22] MsCoreUtils_1.18.0  BiocManager_1.30.25 cluster_2.1.8      </span></span>
-<span><span class="co">## [25] compiler_4.4.2      fs_1.6.5            htmlwidgets_1.6.4  </span></span>
-<span><span class="co">## [28] systemfonts_1.1.0   digest_0.6.37       R6_2.5.1           </span></span>
-<span><span class="co">## [31] bslib_0.8.0         tools_4.4.2         BiocGenerics_0.52.0</span></span>
-<span><span class="co">## [34] pkgdown_2.1.1.9000  cachem_1.1.0        desc_1.4.3</span></span></code></pre>
+<span><span class="co">## [25] compiler_4.4.2      codetools_0.2-20    fs_1.6.5           </span></span>
+<span><span class="co">## [28] htmlwidgets_1.6.4   systemfonts_1.2.0   digest_0.6.37      </span></span>
+<span><span class="co">## [31] R6_2.5.1            parallel_4.4.2      bslib_0.8.0        </span></span>
+<span><span class="co">## [34] tools_4.4.2         BiocGenerics_0.52.0 pkgdown_2.1.1.9000 </span></span>
+<span><span class="co">## [37] cachem_1.1.0        desc_1.4.3</span></span></code></pre>
 </div>
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
