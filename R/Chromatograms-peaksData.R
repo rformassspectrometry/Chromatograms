@@ -86,7 +86,7 @@
 #'   in the object, but it removes the specified peaks data (e.g., "rtime" and
 #'   "intensity" pairs) from the `peaksData`.
 #'
-#' In the case of a read-only backend, (such as the [ChrombackendMzR]), the
+#' In the case of a read-only backend, (such as the [ChromBackendMzR]), the
 #' replacement of the peaks data is not possible. The peaks data can be
 #' filtered, but the filtered data will not be saved in the backend. This means
 #' the original mzml files will not be affected by computations performed on

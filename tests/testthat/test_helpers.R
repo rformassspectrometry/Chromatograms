@@ -111,7 +111,7 @@ test_that(".validate_entry works", {
                  "Entry 1: all 'peaksData' entries should be of class 'data.frame'")
 })
 
-test_that(".run_process_queuem ChromBackendMemory work", {
+test_that(".run_process_queue ChromBackendMemory work", {
     result <- .run_process_queue(c_empty@backend,
                                  f = processingChunkFactor(c_empty),
                                  queue = c_empty@processingQueue)
