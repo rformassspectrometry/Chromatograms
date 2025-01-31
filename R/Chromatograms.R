@@ -185,7 +185,7 @@ setMethod(
             stop(class(backend), " does not support 'setBackend'")
         if (!length(f) || length(levels(f)) == 1 || !length(object))
             bd_new <- backendInitialize(backend, peaksData = peaksData(object),
-                                    chromData = chromData(object), ...)
+                                    chromData = chromData(object))
         else {
             bd_new <- bplapply(
                 split(object@backend, f = f),
@@ -199,9 +199,10 @@ setMethod(
             bd_new <- backendMerge(bd_new)
         }
         object@backend <- bd_new
-        object@processingQueue <- .logging(object@processing,
+        object@processing <- .logging(object@processing,
                                            "Switch backend from ",
                                            backend_class, " to ",
                                            class(object@backend))
+        object
         })
 

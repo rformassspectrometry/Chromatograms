@@ -19,7 +19,7 @@
 \alias{isReadOnly,ChromBackendMemory-method}
 \alias{show,ChromBackendMemory-method}
 \alias{supportsSetBackend,ChromBackendMemory-method}
-\alias{[,ChromBackendMemory,ANY,ANY,ANY-method}
+\alias{[,ChromBackendMemory-method}
 \alias{$,ChromBackendMemory-method}
 \alias{$<-,ChromBackendMemory-method}
 \alias{show,ChromBackendMzR-method}
@@ -29,7 +29,7 @@
 \alias{peaksData<-,ChromBackendMzR-method}
 \alias{chromData<-,ChromBackendMzR-method}
 \alias{supportsSetBackend,ChromBackendMzR-method}
-\alias{[,ChromBackendMzR,ANY,ANY,ANY-method}
+\alias{[,ChromBackendMzR-method}
 \alias{show,Chromatograms-method}
 \title{Fill data frame with columns for missing core chrom variables}
 \usage{
@@ -61,7 +61,7 @@ validPeaksData(x = list(), error = TRUE)
 
 \S4method{supportsSetBackend}{ChromBackendMemory}(object, ...)
 
-\S4method{[}{ChromBackendMemory,ANY,ANY,ANY}(x, i, j, ..., drop = FALSE)
+\S4method{[}{ChromBackendMemory}(x, i, j, ..., drop = FALSE)
 
 \S4method{$}{ChromBackendMemory}(x, name)
 
@@ -87,7 +87,7 @@ validPeaksData(x = list(), error = TRUE)
 
 \S4method{supportsSetBackend}{ChromBackendMzR}(object, ...)
 
-\S4method{[}{ChromBackendMzR,ANY,ANY,ANY}(x, i, j, ..., drop = FALSE)
+\S4method{[}{ChromBackendMzR}(x, i, j, ..., drop = FALSE)
 
 \S4method{show}{Chromatograms}(object)
 }

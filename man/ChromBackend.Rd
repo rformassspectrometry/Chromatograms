@@ -9,7 +9,6 @@
 \alias{ChromBackendMzR-class}
 \alias{[,ChromBackend-method}
 \alias{[[,ChromBackend-method}
-\alias{[,ChromBackend,ANY,ANY,ANY-method}
 \alias{$,ChromBackend-method}
 \alias{$<-,ChromBackend-method}
 \alias{backendMerge,ChromBackend-method}
@@ -69,7 +68,7 @@ coreChromVariables()
 
 corePeaksVariables()
 
-\S4method{[}{ChromBackend,ANY,ANY,ANY}(x, i, j, ..., drop = FALSE)
+\S4method{[}{ChromBackend}(x, i, j, ..., drop = FALSE)
 
 \S4method{$}{ChromBackend}(x, name)
 

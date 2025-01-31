@@ -39,3 +39,23 @@ test_that("show, Chromatograms - ChromBackendMzR works", {
     expect_output(show(res), "4 processing step")
 })
 
+
+test_that("setBackend works correctly", {
+    c_mzr_new <- setBackend(c_mzr, backend = ChromBackendMemory())
+    expect_s4_class(c_mzr_new@backend, "ChromBackendMemory")
+    expect_identical(chromData(c_mzr_new), chromData(c_mzr))
+    expect_identical(peaksData(c_mzr_new), peaksData(c_mzr))
+    expect_identical(c_mzr_new@backend@peaksData, peaksData(c_mzr))
+
+    processingChunkSize(c_mzr) <- 100
+    f <- processingChunkFactor(c_mzr)
+    expect_true(length(levels(f)) > 1)
+    c_mzr_new <- setBackend(c_mzr, backend = ChromBackendMemory(), f = f)
+    expect_s4_class(c_mzr_new@backend, "ChromBackendMemory")
+    expect_identical(chromData(c_mzr_new), chromData(c_mzr))
+    expect_identical(peaksData(c_mzr_new), peaksData(c_mzr))
+    expect_identical(c_mzr_new@backend@peaksData, peaksData(c_mzr))
+
+    expect_error(setBackend(c_mzr, backend = ChromBackendMzR()),
+                 "does not support")
+})

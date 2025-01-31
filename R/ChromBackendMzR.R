@@ -67,12 +67,10 @@ ChromBackendMzR <- function() {
 setMethod("backendInitialize", "ChromBackendMzR",
           function(object, files = character(), BPPARAM = bpparam(),
                    ...) {
-              if (!length(files))
-                  stop("Parameter 'files' is mandatory for 'ChromBackendMzR'")
+              if (!length(files)) return(object)
               if (!is.character(files))
                   stop("Parameter 'files' must be a character vector of file ",
                        "paths")
-              if (!length(files)) return(object)
               files <- normalizePath(files, mustWork = FALSE)
               chromData <- do.call(rbindFill,
                                    bplapply(files,
@@ -147,7 +145,7 @@ setReplaceMethod("chromData", "ChromBackendMzR", function(object, value) {
     message("Please keep in mind the 'ChromBackendMzR' backend is read-only.",
             " The chromData slot will be modified but the changes will not
             affect the local mzML files.")
-    callNextMethod() # should there be extra check for storage and index ? idk i guess we should expect dev to know not to screw up with that.
+    callNextMethod() # should there be extra check for storage and chromIndex ?
 })
 
 #' @rdname hidden_aliases

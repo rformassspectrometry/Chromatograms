@@ -66,6 +66,7 @@ test_that("ChromBackend methods throw errors", {
     expect_error(filterPeaksData(dm, ranges = c(1, 2),
                                  variables = c("intensity", "rtime")),
                  "needs to be twice")
+    expect_false(supportsSetBackend(dm))
 
 })
 

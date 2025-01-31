@@ -7,6 +7,7 @@
 test_that("ChromBackendMemory function works", {
     expect_true(is.function(ChromBackendMemory))
     expect_true(is(ChromBackendMemory(), "ChromBackendMemory"))
+    expect_true(supportsSetBackend(ChromBackendMemory()))
 })
 
 test_that("backendInitialize, ChromBackendMemory works", {
@@ -170,6 +171,14 @@ test_that("filterChromData works", {
     expect_equal(nrow(chromData(res)), 2)
     expect_equal(chromData(res)$mz, c(112.2, 134.4))
     expect_equal(chromData(res)$chromIndex, c(1,3))
+
+    res <- filterChromData(be,
+                           variables = c("mz"),
+                           ranges = c(999, 1000), # No matching range
+                           match = "any",
+                           keep = FALSE)
+
+    expect_identical(res, be)
 })
 
 

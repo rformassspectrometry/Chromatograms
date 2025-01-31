@@ -173,8 +173,10 @@ setMethod("filterPeaksData",
                                       variables = variables, ranges = ranges,
                                       match = match, keep = keep)
               object@processing <- .logging(
-                  object@processing, "Filter: remove peaks ") #improve details of message
+                  object@processing, "Filter: remove peaks based ",
+                  "on the varaibles: " , paste(variables, collapse = ", "),
+                  "the ranges: ", paste(ranges, collapse = ", "),
+                  "and the match condition: ", match)
               object
           })
-
 

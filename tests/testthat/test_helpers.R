@@ -51,6 +51,22 @@ test_that(".filter_ranges helper function works correctly", {
     expect_equal(res, 2)
     res <- .filter_ranges(query, ranges, match = "all")
     expect_equal(res, integer(0))
+
+    # Single row edge case
+    query_single <- data.frame(mz = 125.0, chromIndex = 2L)
+    ranges <- c(120, 130, 1, 3)
+    res <- .filter_ranges(query_single, ranges, match = "all")
+    expect_equal(res, 1)
+    res <- .filter_ranges(query_single, ranges, match = "any")
+    expect_equal(res, 1)
+
+    # Edge case: empty query
+    query_empty <- data.frame(mz = numeric(), chromIndex = integer())
+    ranges <- c(100, 200, 1, 3)
+    res <- .filter_ranges(query_empty, ranges, match = "all")
+    expect_equal(res, integer(0))
+    res <- .filter_ranges(query_empty, ranges, match = "any")
+    expect_equal(res, integer(0))
 })
 
 test_that(".check_column_order_and_types works", {
@@ -218,4 +234,16 @@ test_that(".run_processing_queue, ChromBackendMzr work", {
     expect_false(c_queued@backend@inMemory)
     expect_identical(result3, result4)
 
+})
+
+test_that(".valid_processing_queue works correctly", {
+    expect_null(.valid_processing_queue(list()))
+    valid_queue <- list(new("ProcessingStep"))
+    expect_null(.valid_processing_queue(valid_queue))
+
+    invalid_queue <- list("not_a_processing_step")
+    expect_error(
+        .valid_processing_queue(invalid_queue),
+        "'processingQueue' should only contain ProcessingStep objects."
+    )
 })

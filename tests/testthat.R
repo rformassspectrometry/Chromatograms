@@ -16,12 +16,9 @@ be_mzr <- be
 c_mzr <- Chromatograms(be)
 
 ### Test ChrombackendMemory
-# A data.frame with chromatogram variables.
 cdata <- data.frame(msLevel = c(1L, 1L, 1L),
                     mz = c(112.2, 123.3, 134.4),
                     chromIndex = c(1L, 2L, 3L))
-
-# Retention time and intensity values for each chromatogram.
 pdata <- list(
     data.frame(rtime = c(12.4, 12.8, 13.2, 14.6),
                intensity = c(123.3, 153.6, 2354.3, 243.4)),
