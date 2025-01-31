@@ -7,6 +7,8 @@ NULL
 #'
 #' @name ChromBackendMemory
 #'
+#' @aliases [,ChromBackendMemory-method
+#'
 #' @description
 #'`ChromBackendMemory`: This backend stores chromatographic data directly
 #' in memory, making it ideal for small datasets or testing. It can be
@@ -28,6 +30,8 @@ NULL
 #'     empty), a default `list` of empty `data.frame` with the core peaks
 #'     variables will be created. The length of the list should match the number
 #'     of chromatograms in the `chromData` parameter.
+#'
+#' @param ... Additional parameters to be passed.
 #'
 #'
 #' @author Philippine Louail
@@ -57,14 +61,14 @@ ChromBackendMemory <- function() {
 setMethod("backendInitialize", "ChromBackendMemory",
           function(object,
                    chromData = fillCoreChromVariables(data.frame()),
-                   peaksData = list(.EMPTY_PEAKS_DATA)) {
+                   peaksData = list(.EMPTY_PEAKS_DATA), ...) {
             if (!is(chromData, "data.frame"))
               stop("'chromData' needs to be a 'data.frame' with the general",
                    " chromatogram variables")
             n_cd <- nrow(chromData)
             if (n_cd) {
-              if (is.null(chromData$dataStorage))
-                chromData$dataStorage <- "<memory>"
+              if (is.null(chromData$dataOrigin))
+                chromData$dataOrigin <- NA_character_
               validChromData(chromData)
               chromData <- chromData[, !vapply(chromData,
                                                      function(x) all(is.na(x)),
@@ -96,7 +100,7 @@ setMethod("backendMerge", "ChromBackendMemory", function(object, ...) {
 
 #' @rdname hidden_aliases
 #' @description This method returns the chromatographic data stored in the
-#' backend. If not specified otherwise it will return all defined column in the
+#' backend. If not specified otherwise it will return all defined columns in the
 #' chromData slot as well as dding the coreChromVariables missing with NA
 #' values.
 setMethod("chromData", "ChromBackendMemory",
@@ -129,11 +133,12 @@ setMethod("chromVariables", "ChromBackendMemory", function(object) {
 #' @rdname hidden_aliases
 setMethod("peaksData", "ChromBackendMemory",
           function(object, columns = peaksVariables(object), drop = FALSE) {
-            if (!all(columns %in% peaksVariables(object)))
-              stop("Some of the requested peaks variables are not available")
-            res <- lapply(object@peaksData, function(x) x[, columns,
-                                                          drop = drop])
-            res
+            if (!any(peaksVariables(object) %in% columns))
+              stop("Some of the requested peaks variables are not",
+                   " available")
+            if (all(peaksVariables(object) %in% columns))
+              return(object@peaksData)
+            lapply(object@peaksData, function(x) x[, columns, drop = drop])
           })
 
 #' @rdname hidden_aliases
@@ -152,14 +157,19 @@ setMethod("peaksVariables", "ChromBackendMemory", function(object) {
   union(names(object@peaksData[[1]]), names(corePeaksVariables()))
 })
 
+#' @rdname hidden_aliases
+#' @export
+setMethod("isReadOnly", "ChromBackendMemory", function(object) FALSE)
+
 #' @importFrom utils capture.output
 #' @rdname hidden_aliases
 setMethod("show", "ChromBackendMemory", function(object){
   cpd <- object@chromData
   cat(class(object), "with", nrow(cpd), "chromatograms\n")
   if (nrow(cpd)) {
-    cpd <- cpd[, c("chromIndex", "msLevel", "mz")]
-    txt <- capture.output(print(cpd))
+    cpd <- fillCoreChromVariables(cpd)
+    cpd <- cpd[, c("chromIndex", "msLevel", "mz"), drop = FALSE]
+    txt <- capture.output(print(head(cpd)))
     cat(txt, sep = "\n")
     cp_cols <- object@chromData[,
                                 !(colnames(object@chromData) %in% colnames(cpd))]
@@ -167,6 +177,10 @@ setMethod("show", "ChromBackendMemory", function(object){
     cat("...", ncol(object@peaksData[[1]]), "peaksData variables\n")
   }
 })
+
+#' @rdname hidden_aliases
+#' @export
+setMethod("supportsSetBackend", "ChromBackendMemory", function(object, ...) TRUE)
 
 #' @importFrom MsCoreUtils i2index
 #' @importMethodsFrom S4Vectors [ [<-
@@ -197,12 +211,9 @@ setReplaceMethod("$", "ChromBackendMemory", function(x, name, value) {
   if (name %in% peaksVariables(x)) {
     if (!is.list(value))
       stop("The value for peaksData should be a list")
-    for (i in seq_along(value))
-      x@peaksData[[i]][[name]] <- value[[i]]
-    validPeaksData(x@peaksData)
+    for (i in seq_along(value)) peaksData(x)[[i]][[name]] <- value[[i]]
     } else {
-    x@chromData[, name] <- value
-    validChromData(x@chromData)
+    chromData(x)[, name] <- value
     }
   x
 })

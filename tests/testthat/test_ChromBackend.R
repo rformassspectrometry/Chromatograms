@@ -25,8 +25,6 @@ test_that("ChromBackend methods throw errors", {
     expect_error(collisionEnergy(dm) <- 1, "Not implemented for ")
     expect_error(dataOrigin(dm), "Not implemented for ")
     expect_error(dataOrigin(dm) <- "a", "Not implemented for ")
-    expect_error(dataStorage(dm), "Not implemented for ")
-    expect_error(dataStorage(dm) <- "a", "Not implemented for ")
     expect_error(msLevel(dm), "Not implemented for ")
     expect_error(msLevel(dm) <- 1, "Not implemented for ")
     expect_error(mz(dm), "Not implemented for ")

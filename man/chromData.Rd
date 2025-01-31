@@ -6,7 +6,6 @@
 \alias{chromIndex}
 \alias{collisionEnergy}
 \alias{dataOrigin}
-\alias{dataStorage}
 \alias{mz}
 \alias{mzMin}
 \alias{mzMax}
@@ -23,7 +22,6 @@
 \alias{chromIndex<-}
 \alias{collisionEnergy<-}
 \alias{dataOrigin<-}
-\alias{dataStorage<-}
 \alias{mz<-}
 \alias{mzMin<-}
 \alias{mzMax<-}
@@ -43,8 +41,6 @@
 \alias{collisionEnergy<-,Chromatograms-method}
 \alias{dataOrigin,Chromatograms-method}
 \alias{dataOrigin<-,Chromatograms-method}
-\alias{dataStorage,Chromatograms-method}
-\alias{dataStorage<-,Chromatograms-method}
 \alias{msLevel,Chromatograms-method}
 \alias{msLevel<-,Chromatograms-method}
 \alias{mz,Chromatograms-method}
@@ -86,10 +82,6 @@
 \S4method{dataOrigin}{Chromatograms}(object)
 
 \S4method{dataOrigin}{Chromatograms}(object) <- value
-
-\S4method{dataStorage}{Chromatograms}(object)
-
-\S4method{dataStorage}{Chromatograms}(object) <- value
 
 \S4method{msLevel}{Chromatograms}(object)
 
@@ -197,8 +189,7 @@ a specific function named after the variables names:
 original source file (e.g. \emph{mzML} file).
 \item \code{collisionEnergy}: for SRM data, \code{numeric} with the collision energy of
 the precursor.
-\item \code{dataOrigin}: optional \code{character} with the origin of a chromatogram.
-\item \code{dataStorage}: \code{character} defining where the data is (currently) stored.
+\item \code{dataOrigin}: optional \code{character} with the origin of the data.
 \item \code{msLevel}: \code{integer} defining the MS level of the data.
 \item \code{mz}: optional \code{numeric} with the (target) m/z value for the
 chromatographic data.

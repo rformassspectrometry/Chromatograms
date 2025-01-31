@@ -4,7 +4,6 @@
 \alias{peaksData}
 \alias{peaksVariables}
 \alias{filterPeaksData}
-\alias{applyProcessing}
 \alias{peaksData,Chromatograms-method}
 \alias{peaksData<-,Chromatograms-method}
 \alias{peaksVariables,Chromatograms-method}
@@ -13,8 +12,6 @@
 \alias{intensity,Chromatograms-method}
 \alias{intensity<-,Chromatograms-method}
 \alias{filterPeaksData,Chromatograms-method}
-\alias{applyProcessing,Chromatograms-method}
-\alias{addProcessing,Chromatograms-method}
 \title{Chromatographic peaks data}
 \usage{
 \S4method{peaksData}{Chromatograms}(
@@ -45,15 +42,6 @@
   match = c("any", "all"),
   keep = TRUE
 )
-
-\S4method{applyProcessing}{Chromatograms}(
-  object,
-  f = processingChunkFactor(object),
-  BPPARAM = bpparam(),
-  ...
-)
-
-\S4method{addProcessing}{Chromatograms}(object, FUN, ...)
 }
 \arguments{
 \item{object}{A \link{Chromatograms} object.}
@@ -93,9 +81,6 @@ defining whether the condition has to match for all provided
 \item{keep}{For \code{filterPeaksData()}: \code{logical(1)}
 defining whether to keep (\code{keep = TRUE}) or remove (\code{keep = FALSE})
 the chromatogram data that match the condition.}
-
-\item{FUN}{For \code{addProcessing()} A function to be added to the
-\code{Chromatograms} object's processing queue.}
 }
 \description{
 As explained in the \code{\link{Chromatograms}} class documentation, the \code{Chromatograms}
@@ -110,6 +95,10 @@ peaks variables using \code{$}.
 
 \code{peaks} can be accessed, replaced but also filtered/subsetted. Refer to
 the sections below for more details.
+}
+\note{
+readOnly backend cannot be replace in the chromatograms method BUT can
+in the backend method.
 }
 \section{Filter Peaks Variables}{
 
@@ -136,12 +125,20 @@ queue. The filtered data will be reflected when the user accesses
 in the object, but it removes the specified peaks data (e.g., "rtime" and
 "intensity" pairs) from the \code{peaksData}.
 }
+
+In the case of a read-only backend, (such as the \link{ChrombackendMzR}), the
+replacement of the peaks data is not possible. The peaks data can be
+filtered, but the filtered data will not be saved in the backend. This means
+the original mzml files will not be affected by computations performed on
+the \link{Chromatograms}.
 }
 
 \seealso{
 \link{Chromatograms} for a general description of the \code{Chromatograms}
 object, and \link{chromData} for accessing,substituting and filtering
-chromatographic variables.
+chromatographic variables. For more information on the queuing
+of precessing and parallelization for larger dataset processing
+see \link{processingQueue}.
 }
 \author{
 Philippine Louail

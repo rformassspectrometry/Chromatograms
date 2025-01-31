@@ -32,14 +32,6 @@ test_that("Chromatograms, dataOrigin, dataOrigin<- works", {
     expect_equal(dataOrigin(res), c("source1", "source2", "source3"))
 })
 
-test_that("Chromatograms, dataStorage, dataStorage<- works", {
-    res <- c_full
-    chromData(res)$dataStorage <- c("disk", "memory", "disk")
-    expect_equal(dataStorage(res), c("disk", "memory", "disk"))
-    dataStorage(res) <- c("memory", "memory", "disk")
-    expect_equal(dataStorage(res), c("memory", "memory", "disk"))
-})
-
 test_that("Chromatograms, msLevel, msLevel<- works", {
     res <- c_full
     expect_equal(msLevel(res), c(1L, 1L, 1L))

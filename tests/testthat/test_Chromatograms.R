@@ -1,5 +1,4 @@
 
-
 test_that("Chromatograms works", {
     ## empty object
     expect_true(is(c_empty@backend, "ChromBackendMemory"))
@@ -22,14 +21,21 @@ test_that("Chromatograms works", {
     expect_equal(levels(processingChunkFactor(c_chunk)), c("1", "2"))
 })
 
-test_that("show, Chromatograms works", {
+test_that("show, Chromatograms - ChromBackendMemory works", {
     expect_output(show(c_full), "ChromBackendMemory")
     res <- c_full
     res@processing <- c("a", "b", "c", "d")
     expect_output(show(res), "1 more processings")
     res@processingQueue <- list("a", "b", "c", "d")
     expect_output(show(res), "4 processing step")
-    show(res)
+})
 
+test_that("show, Chromatograms - ChromBackendMzR works", {
+    expect_output(show(c_mzr), "ChromBackendMzR")
+    res <- c_mzr
+    res@processing <- c("a", "b", "c", "d")
+    expect_output(show(res), "1 more processings")
+    res@processingQueue <- list("a", "b", "c", "d")
+    expect_output(show(res), "4 processing step")
 })
 

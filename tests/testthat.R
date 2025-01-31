@@ -1,6 +1,21 @@
 library("testthat")
 library("Chromatograms")
 
+### Test ChrombackendMzR
+# fetch files
+MRM_file <- system.file("proteomics", "MRM-standmix-5.mzML.gz",
+                        package = "msdata")
+be_empty <- ChromBackendMzR()
+be <- backendInitialize(be_empty, files = MRM_file, BPPARAM = SerialParam())
+
+test_suite <- system.file("test_backends", "test_ChromBackend",
+                          package = "Chromatograms")
+test_dir(test_suite, stop_on_failure = TRUE) #pass
+
+be_mzr <- be
+c_mzr <- Chromatograms(be)
+
+### Test ChrombackendMemory
 # A data.frame with chromatogram variables.
 cdata <- data.frame(msLevel = c(1L, 1L, 1L),
                     mz = c(112.2, 123.3, 134.4),
@@ -19,15 +34,12 @@ pdata <- list(
 be_empty <- new("ChromBackendMemory")
 be_cd <- backendInitialize(be_empty, chromData = cdata)
 be <- backendInitialize(be_empty, chromData = cdata, peaksData = pdata)
-
-
-## Run tests with the unit test suite defined in the Chromatograms package to
-## ensure compliance with the definitions of the ChromBackend interface/class.
-test_suite <- system.file("test_backends", "test_ChromBackend",
-                          package = "Chromatograms")
 test_dir(test_suite, stop_on_failure = TRUE)
 
 c_empty <- Chromatograms()
 c_full <- Chromatograms(be)
 
 test_check("Chromatograms")
+
+
+

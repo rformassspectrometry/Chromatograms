@@ -3,9 +3,18 @@
 \name{Chromatograms}
 \alias{Chromatograms}
 \alias{Chromatograms-class}
+\alias{setBackend,Chromatograms,ChromBackend-method}
 \title{The Chromatograms class to manage and access chromatographic data}
 \usage{
 Chromatograms(backend = ChromBackendMemory(), processingQueue = list(), ...)
+
+\S4method{setBackend}{Chromatograms,ChromBackend}(
+  object,
+  backend,
+  f = processingChunkFactor(object),
+  BPPARAM = bpparam(),
+  ...
+)
 }
 \arguments{
 \item{backend}{\link{ChromBackend} object providing the raw data for the
@@ -17,6 +26,13 @@ processes the chromatograms data. The processing steps are applied in
 the order they are listed in the \code{processingQueue}.}
 
 \item{...}{Additional arguments.}
+
+\item{object}{A \link{Chromatograms} object.}
+
+\item{f}{\code{factor} defining the grouping to split the \code{Chromatograms} object.}
+
+\item{BPPARAM}{Parallel setup configuration. See \code{\link[BiocParallel:register]{BiocParallel::bpparam()}}
+for more information.}
 }
 \description{
 The \code{Chromatograms} class encapsules chromatographic data and related metadata.
@@ -69,4 +85,7 @@ and subset them.
 \link{peaksData} for a general description of the chromatographic peaks
 data available in the object, as well as how to access, replace and
 subset them.
+\link{processingQueue} for more information on the queuing
+of precessing and parallelization for larger dataset processing
+see .
 }

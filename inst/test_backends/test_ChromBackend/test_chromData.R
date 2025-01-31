@@ -19,13 +19,6 @@ test_that("chromData() output is valid", {
     expect_true(is.null(validChromData(chromData(be))))
 })
 
-test_that("backend removes NA columns", {
-    chromData <- chromData(be)
-    chromData$NAcol <- NA
-    be2 <- backendInitialize(be, chromData)
-    expect_false("NAcol" %in% names(be2@chromData))
-})
-
 test_that("chromVariables", {
     res <- chromVariables(be)
     expect_type(res, "character")
@@ -65,18 +58,6 @@ test_that("dataOrigin", {
         vals <- sample(c("file", "database", "network"), length(be), replace = TRUE)
         dataOrigin(tmp) <- vals
         expect_equal(dataOrigin(tmp), vals)
-    }
-})
-
-test_that("dataStorage", {
-    res <- dataStorage(be)
-    expect_type(res, "character")
-    expect_identical(length(res), length(be))
-    if (!isReadOnly(be)) {
-        tmp <- be
-        vals <- sample(c("file", "database", "network"), length(be), replace = TRUE)
-        dataStorage(tmp) <- vals
-        expect_equal(dataStorage(tmp), vals)
     }
 })
 
@@ -242,7 +223,10 @@ test_that("[[ works", {
     expect_error(be[["doesnt_exist"]], "The requested variable")
     expect_error(be[["msLevel", "no"]], "is not supported")
     expect_equal(be[["msLevel"]], msLevel(be))
-    be2 <- be
-    be2[["msLevel"]] <- c(1L,2L,3L)
-    expect_false(all(be2[["msLevel"]] == msLevel(be)))
+    if (!isReadOnly(be)) {
+        be2 <- be
+        be2[["msLevel"]] <- c(1L,2L,3L)
+        expect_false(all(be2[["msLevel"]] == msLevel(be)))
+    }
 })
+

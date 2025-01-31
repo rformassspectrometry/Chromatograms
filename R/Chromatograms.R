@@ -45,9 +45,16 @@
 #' `Chromatograms` objects can be created using the `Chromatograms()`
 #' construction function.
 #'
+#' @param BPPARAM Parallel setup configuration. See [BiocParallel::bpparam()]
+#'        for more information.
+#'
 #' @param backend [ChromBackend] object providing the raw data for the
 #'       `Chromatograms` object.
 #'
+#' @param f `factor` defining the grouping to split the `Chromatograms` object.
+#'
+#' @param object A [Chromatograms] object.
+
 #' @param processingQueue [list] a list of processing steps to be applied to the
 #'        chromatograms data. Each element in the list is a function that
 #'        processes the chromatograms data. The processing steps are applied in
@@ -65,6 +72,9 @@
 #'          [peaksData] for a general description of the chromatographic peaks
 #'          data available in the object, as well as how to access, replace and
 #'          subset them.
+#'          [processingQueue] for more information on the queuing
+#'          of precessing and parallelization for larger dataset processing
+#'          see .
 #'
 #' @examples
 #' ## create a Chromatograms object
@@ -159,4 +169,39 @@ setMethod("show", "Chromatograms",
               }
           })
 
+#' @rdname Chromatograms
+#'
+#' @importMethodsFrom ProtGenerics setBackend
+#'
+#' @exportMethod setBackend
+setMethod(
+    "setBackend", c("Chromatograms", "ChromBackend"),
+    function(object, backend, f = processingChunkFactor(object),
+             BPPARAM = bpparam(), ...) {
+        backend_class <- class(object@backend)
+        BPPARAM <- backendBpparam(object@backend, BPPARAM)
+        BPPARAM <- backendBpparam(backend, BPPARAM)# wut
+        if (!supportsSetBackend(backend))
+            stop(class(backend), " does not support 'setBackend'")
+        if (!length(f) || length(levels(f)) == 1 || !length(object))
+            bd_new <- backendInitialize(backend, peaksData = peaksData(object),
+                                    chromData = chromData(object), ...)
+        else {
+            bd_new <- bplapply(
+                split(object@backend, f = f),
+                function(z, ...) {
+                    backendInitialize(backend,
+                                      peaksData = peaksData(z),
+                                      chromData = chromData(z),
+                                      ...,
+                                      BPPARAM = SerialParam())
+                }, ..., BPPARAM = BPPARAM)
+            bd_new <- backendMerge(bd_new)
+        }
+        object@backend <- bd_new
+        object@processingQueue <- .logging(object@processing,
+                                           "Switch backend from ",
+                                           backend_class, " to ",
+                                           class(object@backend))
+        })
 

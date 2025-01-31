@@ -11,7 +11,6 @@ coreChromVariables <- function() .CORE_CHROM_VARIABLES
     chromIndex = "integer",
     collisionEnergy = "numeric",
     dataOrigin = "character",
-    dataStorage = "character",
     msLevel = "integer",
     mz = "numeric",
     mzMin = "numeric",
@@ -91,7 +90,6 @@ fillCoreChromVariables <- function(x = data.frame()) {
 #' @export
 #' @rdname hidden_aliases
 validChromData <- function(x = data.frame(), error = TRUE) {
-    msg <- .valid_chrom_backend_data_storage(x$dataStorage)
     cn <- intersect(colnames(x), names(.CORE_CHROM_VARIABLES))
     msg <- unlist(lapply(cn, function(z) {
         if (!is(x[, z], .CORE_CHROM_VARIABLES[z]))
