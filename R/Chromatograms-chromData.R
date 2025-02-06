@@ -131,6 +131,11 @@
 #'
 #' @seealso [Chromatograms] for a general description of the `Chromatograms`
 #'          object.
+#'          [peaksData] for a general description of the chromatographic peaks
+#'          data available in the object, as well as how to access, replace and
+#'          subset them.
+#'          [processingQueue] for more information on the queuing
+#'          of processings and parallelization for larger dataset processing.
 #' @md
 #'
 #' @author Philippine Louail

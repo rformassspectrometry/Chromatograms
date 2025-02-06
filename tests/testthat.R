@@ -1,5 +1,5 @@
-library("testthat")
-library("Chromatograms")
+library(testthat)
+library(Chromatograms)
 
 ### Test ChrombackendMzR
 # fetch files

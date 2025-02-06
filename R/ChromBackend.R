@@ -34,6 +34,10 @@
 #'   using the `peaksData` parameter. These data can be accessed with the
 #'   `chromData()` and `peaksData()` functions.
 #'
+#' - `ChromBackendMzR`: The `ChromBackendMzR` inherits all slots and methods
+#'   from the base `ChromBackendMemory` backend, providing additional
+#'   functionality for reading chromatographic data from mzML files.
+#'
 #'
 #' @section Core chromatogram variables:
 #'

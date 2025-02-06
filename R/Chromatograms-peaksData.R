@@ -10,76 +10,72 @@
 #'
 #' @description
 #'
-#' As explained in the [`Chromatograms`] class documentation, the `Chromatograms`
-#' object is a container for chromatogram data that includes chromatographic
+#' As explained in the [Chromatograms] class documentation, the `Chromatograms`
+#' object is a container for chromatographic data that includes chromatographic
 #' peaks data (*retention time* and related intensity values, also referred to
 #' as *peaks data variables* in the context of `Chromatograms`) and metadata of
 #' individual chromatograms (so called *chromatograms variables*).
 #'
 #' The *peaks data variables* information can be accessed using the
-#' `peaksData()` function. It is also possible to access specific
-#' peaks variables using `$`.
+#' `peaksData()` function. It is also possible to access specific peaks
+#' variables using `$`.
 #'
-#' `peaks` can be accessed, replaced but also filtered/subsetted. Refer to
-#' the sections below for more details.
+#' The peaks data can be accessed, replaced but also filtered/subsetted. Refer
+#' to the sections below for more details.
 #'
 #' @param BPPARAM Parallel setup configuration. See [BiocParallel::bpparam()]
 #'        for more information.
 #'
-#' @param columns For `peaksData()` accessor: optional `character` with column
+#' @param columns For `peaksData()`: optional `character` with column
 #'        names (peaks variables) that should be included in the
 #'        returned `list` of `data.frame`. By default, all columns are returned.
+#'        Available variables can be found by calling `peaksVariables()` on the
+#'        object.
 #'
-#' @param drop `logical(1)` default to `FALSE`. If `TRUE`, and one column is
-#'        called by the user, the method returns a list of  vector of the
-#'        single column requested.
+#' @param drop `logical(1)` For `peaksData()`, default to `FALSE`. If `TRUE`,
+#'        and one column is called by the user, the method returns a list of
+#'        vector of the single column requested.
 #'
 #' @param f `factor` defining the grouping to split the `Chromatograms` object.
 #'
-#' @param keep For `filterPeaksData()`: `logical(1)`
-#'        defining whether to keep (`keep = TRUE`) or remove (`keep = FALSE`)
-#'        the chromatogram data that match the condition.
+#' @param keep For `filterPeaksData()`: `logical(1)` defining whether to
+#'        keep (`keep = TRUE`) or remove (`keep = FALSE`) the chromatographic
+#'        peaks data that match the condition.
 #'
-#' @param match For `filterPeaksData()` : `character(1) `
-#'        defining whether the condition has to match for all provided
-#'        `ranges` (`match = "all"`; the default), or for any of them
-#'        (`match = "any"`).
+#' @param match For `filterPeaksData()` : `character(1) ` defining whether the
+#'        condition has to match for all provided `ranges` (`match = "all"`;
+#'        the default), or for any of them (`match = "any"`).
 #'
-#' @param ranges For `filterPeaksData()` : a `numeric`
-#'        vector of paired values (upper and lower boundary) that define the
-#'        ranges to filter the `object`. These paired values need to be in the
-#'        same order as the `variables` parameter (see below).
+#' @param ranges For `filterPeaksData()` : a `numeric` vector of paired values
+#'        (upper and lower boundary) that define the ranges to filter the
+#'        `object`. These paired values need to be in the same order as the
+#'        `variables` parameter (see below).
 #'
 #' @param object A [Chromatograms] object.
 #'
 #' @param value For `rtime()` and `intensity()`: `numeric` vector with the
-#'        values to replace the current values.
+#'        values to replace the current values. The length of the vector must
+#'        match the number of peaks data pairs in the `Chromatograms` object.
 #'
 #' @param variables For `filterPeaksData()`: `character` vector with the names
-#'        of the chromatogram variables to filter for. The list of available
-#'        chromatogram variables can be obtained with `peaksVariables()`.
+#'        of the peaks data variables to filter for. The list of available
+#'        peaks data variables can be obtained with `peaksVariables()`.
 #'
 #' @param ... Additional arguments passed to the method.
 #'
 #'
 #' @section Filter Peaks Variables:
 #'
-#' Functions that filter `Chromatograms` based on peaks variables
-#' (i.e., `peaksData`). These functions remove peaks data that do not meet the
-#' specified conditions. If a chromatogram is filtered, only the corresponding
-#' peaks variable pairs (i.e., rows) in the `peaksData` are removed, while the
-#' chromatogram itself remains in the object.
+#' Functions that filter a `Chromatograms`'s peaks data (i.e., `peaksData`).
+#' These functions remove peaks data that do not meet the
+#' specified conditions. If a chromatogram in a `Chromatograms` object is
+#' filtered, only the corresponding peaks variable pairs (i.e., rows) in the
+#' `peaksData` are removed, while the chromatogram itself remains in the object.
 #'
-#' Since peaks data can be quite large, a processing queue is used to ensure
-#' efficiency. The backend data remains unchanged until the processing queue is
-#' applied (e.g., by running `applyProcessing()`). When calling `peaksData()`,
-#' the processing queue is applied to the output, but the backend data is not
-#' replaced.
-#'
-#' The available functions to filter chromatogram data include:
+#' The available functions to filter chromatographic peaks data include:
 #'
 #' - `filterPeaksData()`: Filters numerical peaks data variables based on the
-#'   specified numerical `ranges`. This method returns the same input
+#'   specified numerical `ranges` parameter. This method returns the same input
 #'   `Chromatograms` object, but the filtering step is added to the processing
 #'   queue. The filtered data will be reflected when the user accesses
 #'   `peaksData`. This function does *not* reduce the number of chromatograms
@@ -96,7 +92,7 @@
 #' @seealso [Chromatograms] for a general description of the `Chromatograms`
 #'          object, and [chromData] for accessing,substituting and filtering
 #'          chromatographic variables. For more information on the queuing
-#'          of precessing and parallelization for larger dataset processing
+#'          of processings and parallelization for larger dataset processing
 #'          see [processingQueue].
 #'
 #' @md
@@ -125,7 +121,7 @@ setMethod("peaksData",
           })
 
 #' @rdname peaksData
-#' @note readOnly backend cannot be replace in the chromatograms method BUT can
+#' @note read-only backend cannot be replaced in the chromatograms method BUT can
 #' in the backend method.
 setReplaceMethod("peaksData", signature = "Chromatograms",
                  function(object, value) {

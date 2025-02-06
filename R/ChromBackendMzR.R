@@ -3,44 +3,38 @@
 #' @include ChromBackend.R
 NULL
 
-#' @title Chromatographic data backend for reading mzML files.
-#'
-#' @aliases [,ChromBackendMzR-method
+#' @title Chromatographic Data Backend for Reading mzML Files
 #'
 #' @name ChromBackendMzR
 #'
 #' @description
 #' The `ChromBackendMzR` inherits all slots and methods from the base
-#' `ChromBackendMemory` backend, providing additional functionality for
-#' reading chromatographic data from mzML files.
+#' `ChromBackendMemory` backend, providing additional functionality for reading
+#' chromatographic data from mzML files.
 #'
-#' Contrarily to the `ChromBackendMemory` backend, the `ChromBackendMzR` backend
-#' should have the *dataOrigin* chromatographic variables populated with the
-#' file path of the mzML file from which the chromatographic data was read.
+#' Unlike the `ChromBackendMemory` backend, the `ChromBackendMzR` backend should
+#' have the *dataOrigin* chromatographic variables populated with the file path
+#' of the mzML file from which the chromatographic data was read.
 #'
-#' It should be noted that the `ChromBackendMzR` backend is read-only, and does
-#' not support direct modification of chromatographic data. However, it does
-#' support `peaksData` slot replacement, which will modify the `peaksData` slot but
-#' not the local mzML files. This is the  signaled by the "inMemory" being set
-#' to TRUE.
+#' Note that the `ChromBackendMzR` backend is read-only and does not support
+#' direct modification of chromatographic data. However, it does support
+#' `peaksData` slot replacement, which will modify the `peaksData` slot but not
+#' the local mzML files. This is indicated by the "inMemory" slot being set to
+#' TRUE.
 #'
-#' Lastly, implementing functionalities with the `ChromBackendMzR` backend
-#' should be simplified as much as possible and reuse the methods already
-#' implemented for `ChromBackendMemory` when possible.
+#' Implementing functionalities with the `ChromBackendMzR` backend should be
+#' simplified as much as possible and reuse the methods already implemented for
+#' `ChromBackendMemory` when possible.
 #'
 #' @param BPPARAM Parallel setup configuration. See [BiocParallel::bpparam()]
 #'        for more information.
-#'
 #' @param files A character vector of file paths to mzML files.
-#'
 #' @param object A `ChromBackendMzR` object.
-#'
 #' @param ... Additional parameters to be passed.
 #'
 #' @author Philippine Louail
 #'
 #' @exportClass ChromBackendMzR
-#
 NULL
 
 #' @noRd
@@ -65,8 +59,7 @@ ChromBackendMzR <- function() {
 #' @importFrom MsCoreUtils rbindFill
 #' @export
 setMethod("backendInitialize", "ChromBackendMzR",
-          function(object, files = character(), BPPARAM = bpparam(),
-                   ...) {
+          function(object, files = character(), BPPARAM = bpparam(), ...) {
               if (!length(files)) return(object)
               if (!is.character(files))
                   stop("Parameter 'files' must be a character vector of file ",
@@ -76,7 +69,7 @@ setMethod("backendInitialize", "ChromBackendMzR",
                                    bplapply(files,
                                             FUN = function(fl) {
                                                 cbind(.mzR_format_chromData(fl))
-                                                }, BPPARAM = BPPARAM))
+                                            }, BPPARAM = BPPARAM))
               object <- callNextMethod(object, chromData = chromData, ...)
               object
           })
@@ -97,12 +90,10 @@ setMethod("show", "ChromBackendMzR", function(object) {
 })
 
 #' @rdname hidden_aliases
-#'
 #' @importMethodsFrom ProtGenerics backendParallelFactor
 setMethod("backendParallelFactor", "ChromBackendMzR", function(object, ...) {
     factor(dataOrigin(object), levels = unique(dataOrigin(object)))
-    })
-
+})
 
 #' @rdname hidden_aliases
 #' @export
@@ -110,31 +101,30 @@ setMethod("isReadOnly", "ChromBackendMzR", function(object) TRUE)
 
 #' @rdname hidden_aliases
 #' @importFrom BiocParallel bplapply
-setMethod("peaksData",
-          "ChromBackendMzR",
+setMethod("peaksData", "ChromBackendMzR",
           function(object, columns = peaksVariables(object), drop = FALSE,
                    BPPARAM = SerialParam(), ...) {
               if (object@inMemory || !length(object)) return(callNextMethod())
               pv <- peaksVariables(object)
               if (!any(columns %in% pv))
                   stop("Some of the requested peaks variables are not",
-                             " available")
+                       " available")
               ret <- all(pv %in% columns)
               pd <- bplapply(split(object, f = dataOrigin(object)),
                              function(ob) {
-                  chr <-.get_chrom_data(fl = unique(dataOrigin(ob)),
-                                        idx = chromIndex(ob))
-                  if (ret) chr
-                  else lapply(chr, `[`, , columns, drop = drop)
-              }, BPPARAM = BPPARAM)
+                                 chr <- .get_chrom_data(fl = unique(dataOrigin(ob)),
+                                                        idx = chromIndex(ob))
+                                 if (ret) chr
+                                 else lapply(chr, `[`, , columns, drop = drop)
+                             }, BPPARAM = BPPARAM)
               unlist(pd, recursive = FALSE, use.names = FALSE)
           })
 
 #' @rdname hidden_aliases
 setReplaceMethod("peaksData", "ChromBackendMzR", function(object, value) {
     message("Please keep in mind the 'ChromBackendMzR' backend is read-only.",
-            " The peaksData slot will be modified but the changes will not
-            affect the local mzML files.")
+            " The peaksData slot will be modified but the changes will not",
+            " affect the local mzML files.")
     object <- callNextMethod()
     object@inMemory <- TRUE
     object
@@ -143,9 +133,9 @@ setReplaceMethod("peaksData", "ChromBackendMzR", function(object, value) {
 #' @rdname hidden_aliases
 setReplaceMethod("chromData", "ChromBackendMzR", function(object, value) {
     message("Please keep in mind the 'ChromBackendMzR' backend is read-only.",
-            " The chromData slot will be modified but the changes will not
-            affect the local mzML files.")
-    callNextMethod() # should there be extra check for storage and chromIndex ?
+            " The chromData slot will be modified but the changes will not",
+            " affect the local mzML files.")
+    callNextMethod() # should there be extra check for storage and chromIndex?
 })
 
 #' @rdname hidden_aliases

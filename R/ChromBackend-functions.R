@@ -23,7 +23,7 @@ coreChromVariables <- function() .CORE_CHROM_VARIABLES
     productMzMax = "numeric"
     )
 
-#' @title Fill data frame with columns for missing core chrom variables
+#' @title Fill data.frame with columns for missing core chromatogram variables.
 #'
 #' @description
 #'
@@ -79,7 +79,7 @@ fillCoreChromVariables <- function(x = data.frame()) {
 #'
 #' @return
 #'
-#' If core variables have all the correct data type: an empty character.
+#' If the core variables have all the correct data type: an empty character.
 #' If one or more core variables (columns) have the wrong data type the
 #' function either throws an error (with `error = TRUE`) or returns a
 #' `character` specifying which variables/columns don't have the correct

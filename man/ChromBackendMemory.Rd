@@ -2,7 +2,6 @@
 % Please edit documentation in R/ChromBackendMemory.R
 \name{ChromBackendMemory}
 \alias{ChromBackendMemory}
-\alias{[,ChromBackendMemory-method}
 \alias{backendInitialize,ChromBackendMemory-method}
 \title{Improved in-memory Chromatographic data backend}
 \usage{

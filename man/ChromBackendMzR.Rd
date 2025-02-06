@@ -2,9 +2,8 @@
 % Please edit documentation in R/ChromBackendMzR.R
 \name{ChromBackendMzR}
 \alias{ChromBackendMzR}
-\alias{[,ChromBackendMzR-method}
 \alias{backendInitialize,ChromBackendMzR-method}
-\title{Chromatographic data backend for reading mzML files.}
+\title{Chromatographic Data Backend for Reading mzML Files}
 \usage{
 ChromBackendMzR()
 
@@ -22,22 +21,22 @@ for more information.}
 }
 \description{
 The \code{ChromBackendMzR} inherits all slots and methods from the base
-\code{ChromBackendMemory} backend, providing additional functionality for
-reading chromatographic data from mzML files.
+\code{ChromBackendMemory} backend, providing additional functionality for reading
+chromatographic data from mzML files.
 
-Contrarily to the \code{ChromBackendMemory} backend, the \code{ChromBackendMzR} backend
-should have the \emph{dataOrigin} chromatographic variables populated with the
-file path of the mzML file from which the chromatographic data was read.
+Unlike the \code{ChromBackendMemory} backend, the \code{ChromBackendMzR} backend should
+have the \emph{dataOrigin} chromatographic variables populated with the file path
+of the mzML file from which the chromatographic data was read.
 
-It should be noted that the \code{ChromBackendMzR} backend is read-only, and does
-not support direct modification of chromatographic data. However, it does
-support \code{peaksData} slot replacement, which will modify the \code{peaksData} slot but
-not the local mzML files. This is the  signaled by the "inMemory" being set
-to TRUE.
+Note that the \code{ChromBackendMzR} backend is read-only and does not support
+direct modification of chromatographic data. However, it does support
+\code{peaksData} slot replacement, which will modify the \code{peaksData} slot but not
+the local mzML files. This is indicated by the "inMemory" slot being set to
+TRUE.
 
-Lastly, implementing functionalities with the \code{ChromBackendMzR} backend
-should be simplified as much as possible and reuse the methods already
-implemented for \code{ChromBackendMemory} when possible.
+Implementing functionalities with the \code{ChromBackendMzR} backend should be
+simplified as much as possible and reuse the methods already implemented for
+\code{ChromBackendMemory} when possible.
 }
 \author{
 Philippine Louail

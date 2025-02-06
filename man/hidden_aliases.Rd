@@ -31,7 +31,7 @@
 \alias{supportsSetBackend,ChromBackendMzR-method}
 \alias{[,ChromBackendMzR-method}
 \alias{show,Chromatograms-method}
-\title{Fill data frame with columns for missing core chrom variables}
+\title{Fill data.frame with columns for missing core chromatogram variables.}
 \usage{
 reset(object, ...)
 
@@ -103,7 +103,7 @@ if one or more columns don't have the correct data type.}
 input data frame \code{x} with missing core variables added (with the
 correct data type).
 
-If core variables have all the correct data type: an empty character.
+If the core variables have all the correct data type: an empty character.
 If one or more core variables (columns) have the wrong data type the
 function either throws an error (with \code{error = TRUE}) or returns a
 \code{character} specifying which variables/columns don't have the correct

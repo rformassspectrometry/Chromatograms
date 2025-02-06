@@ -234,6 +234,11 @@ chromatograms than the original.
 \seealso{
 \link{Chromatograms} for a general description of the \code{Chromatograms}
 object.
+\link{peaksData} for a general description of the chromatographic peaks
+data available in the object, as well as how to access, replace and
+subset them.
+\link{processingQueue} for more information on the queuing
+of processings and parallelization for larger dataset processing.
 }
 \author{
 Philippine Louail

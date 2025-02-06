@@ -7,7 +7,7 @@
 \alias{processingChunkSize,Chromatograms-method}
 \alias{processingChunkSize<-,Chromatograms-method}
 \alias{processingChunkFactor,Chromatograms-method}
-\title{Queuing processing \code{Chromatograms} objects for parallel processing}
+\title{Efficiently processing \code{Chromatograms} objects.}
 \usage{
 \S4method{applyProcessing}{Chromatograms}(
   object,
@@ -34,92 +34,94 @@ for more information.}
 
 \item{...}{Additional arguments passed to the methods.}
 
-\item{FUN}{For \code{addProcessing()} A function to be added to the
+\item{FUN}{For \code{addProcessing()}, a function to be added to the
 \code{Chromatograms} object's processing queue.}
 
 \item{value}{\code{integer(1)} defining the chunk size.}
 
 \item{chunkSize}{\code{integer(1)} for \code{processingChunkFactor} defining the chunk
-size. The defualt will be the value stored in the \code{Chromatograms}
-object's \code{processingChunkSize} slot.}
+size. The default is the value stored in the \code{Chromatograms} object's
+\code{processingChunkSize} slot.}
 }
 \value{
 \code{processingChunkSize()} returns the currently defined processing
 chunk size (or \code{Inf} if it is not defined). \code{processingChunkFactor()}
-returns a \code{factor} defining the chunks into which \code{object} will be split
-for (parallel) chunk-wise processing or a \code{factor} of length 0 if
-no splitting is defined.
+returns a \code{factor} defining the chunks into which \code{object} will be
+split for (parallel) chunk-wise processing or a \code{factor} of length 0
+if no splitting is defined.
 }
 \description{
-The \code{processingQueue} of a Chromatograms is a list of processing steps that
-are stored within the object and only applied when needed.
-This was created so that the data can be processed in a single step and is very useful for larger datasets.
-This is even more true as this processing queue will call function that can
-be applied on the data in a chunk-wise manner. This allows for parallel processing
-of the data and reduces the memory demand.
+The \code{processingQueue} of a \code{Chromatograms} object is a list of processing
+steps (i.e., functions) that are stored within the object and applied only
+when needed. This design allows data to be processed in a single step,
+which is particularly useful for larger datasets. The processing queue
+enables functions to be applied in a chunk-wise manner, facilitating
+parallel processing and reducing memory demand.
+
+Since the peaks data can be quite large, a processing queue is used to ensure
+efficiency. Generally, the processing queue is applied either temporarily
+when calling \code{peaksData()} or permanently when calling \code{applyProcessing()}.
+As explained below the processing efficiency can be further improved by
+enabling chunk-wise processing.
 }
 \note{
-Some backends might not support parallel processing at all.
-For these, the \code{backendBpparam()} function will always return a
-\code{SerialParam()} independently on how parallel processing was defined.
+Some backends might not support parallel processing. For these, the
+\code{backendBpparam()} function will always return a \code{SerialParam()} regardless
+of how parallel processing was defined.
 }
 \section{Apply Processing}{
 
 
 The \code{applyProcessing()} function applies the processing queue to the backend
 and returns the updated \code{Chromatograms} object. The processing queue is a
-list of processing steps that are applied to the chromatograms data. Each
-element in the list is a function that processes the chromatograms data.
-The user will need to set the backend to a non-read-only backend to apply
-processing to the peaks data. This can be done by using the \code{setBackend()}
-function.
+list of processing steps applied to the chromatograms data. Each element in
+the list is a function that processes the chromatograms data. To apply
+processing to the peaks data, the backend must be set to a non-read-only
+backend using the \code{setBackend()} function.
 }
 
-\section{Parallel and chunk-wise processing of \code{Chromatograms}}{
+\section{Parallel and Chunk-wise Processing of \code{Chromatograms}}{
 
 
-Many operations on \code{Chromatograms} objects, specifically those working with
-the actual peaks data (see \link{peaksData}), allow a chunk-wise processing in which
-the \code{Chromatograms} is split into smaller parts (chunks) that are
-iteratively processed. This enables parallel processing of the data (by
-data chunk) and also reduces the memory demand since only the peak data
-of the currently processed subset is loaded into memory and processed.
-This chunk-wise processing, which is by default disabled, can be enabled
-by setting the processing chunk size of a \code{Chromatograms} with the
-\code{processingChunkSize()} function to a value which is smaller than the
-length of the \code{Chromatograms} object. Setting \code{processingChunkSize(chr) <- 1000}
-will cause any data manipulation operation on the \code{chr}, such as
-\code{filterPeaksData()}, to be performed eventually in parallel for
-sets of 1000 chromatograms in each iteration.
+Many operations on \code{Chromatograms} objects, especially those involving the
+actual peaks data (see \link{peaksData}), support chunk-wise processing. This
+involves splitting the \code{Chromatograms} into smaller parts (chunks) that are
+processed iteratively. This enables parallel processing by data chunk and
+reduces memory demand since only the peak data of the currently processed
+subset is loaded into memory. Chunk-wise processing, which is disabled by
+default, can be enabled by setting the processing chunk size of a
+\code{Chromatograms} object using the \code{processingChunkSize()} function to a value
+smaller than the length of the \code{Chromatograms} object. For example, setting
+\code{processingChunkSize(chr) <- 1000} will cause any data manipulation operation
+on \code{chr}, such as \code{filterPeaksData()}, to be performed in parallel for sets
+of 1000 chromatograms in each iteration.
 
-Such chunk-wise processing is specifically useful for \code{Chromatograms} objects
-using an \emph{on-disk} backend or for very large experiments. For small data
-sets or \code{Chromatograms} using an in-memory backend, a direct processing might
-however be more efficient. Setting the chunk size to \code{Inf} will disable
-the chunk-wise processing.
+Chunk-wise processing is particularly useful for \code{Chromatograms} objects
+using an \emph{on-disk} backend or for very large experiments. For small datasets
+or \code{Chromatograms} using an in-memory backend, direct processing might be
+more efficient. Setting the chunk size to \code{Inf} will disable chunk-wise
+processing.
 
-For some backends a certain type of splitting and chunk-wise processing
-might be preferable. The \code{ChromBackendMzR} backend for example needs to load
-the MS data from the original (mzML) files, hence chunk-wise processing
-on a per-file basis would be ideal. The \code{\link[=backendParallelFactor]{backendParallelFactor()}} function
-for \code{ChromBackend} allows backends to suggest a preferred splitting of the
-data by returning a \code{factor} defining the respective data chunks. The
-\code{ChromBackendMzR} returns for example a \code{factor} based on the \emph{dataOrigin}
-chromatograms variable. A \code{factor} of length 0 is returned if no particular
-preferred splitting should be performed. The suggested chunk definition
-will be used if no finite \code{processingChunkSize()} is defined. Setting
-the \code{processingChunkSize} overrides \code{backendParallelFactor}.
+Some backends may prefer a specific type of splitting and chunk-wise
+processing. For example, the \code{ChromBackendMzR} backend needs to load MS data
+from the original (mzML) files, so chunk-wise processing on a per-file basis
+is ideal. The \code{\link[=backendParallelFactor]{backendParallelFactor()}} function for \code{ChromBackend} allows
+backends to suggest a preferred data chunking by returning a \code{factor}
+defining the respective data chunks. The \code{ChromBackendMzR} returns a \code{factor}
+based on the \emph{dataOrigin} chromatograms variable. A \code{factor} of length 0 is
+returned if no particular preferred splitting is needed. The suggested chunk
+definition will be used if no finite \code{processingChunkSize()} is defined.
+Setting the \code{processingChunkSize} overrides \code{backendParallelFactor}.
 
 Functions to configure parallel or chunk-wise processing:
 \itemize{
-\item \code{processingChunkSize()}: allows to get or set the size of the chunks for
-parallel processing or chunk-wise processing of a \code{Chromatograms} in general.
-With a value of \code{Inf} (the default) no chunk-wise processing will be
-performed.
-\item \code{processingChunkFactor()}: returns a \code{factor} defining the chunks into
-which a \code{Chromatograms} will be split for chunk-wise (parallel) processing.
-A \code{factor} of length 0 indicates that no chunk-wise processing will be
-performed.
+\item \code{processingChunkSize()}: Gets or sets the size of the chunks for parallel
+or chunk-wise processing of a \code{Chromatograms} object. With a value of
+\code{Inf} (the default), no chunk-wise processing will be performed.
+\item \code{processingChunkFactor()}: Returns a \code{factor} defining the chunks into
+which a \code{Chromatograms} object will be split for chunk-wise (parallel)
+processing. A \code{factor} of length 0 indicates that no chunk-wise processing
+will be performed.
 }
 }
 

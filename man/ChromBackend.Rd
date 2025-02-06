@@ -263,6 +263,9 @@ initialized with a \code{data.frame} of chromatographic data via the
 \code{chromData} parameter and a \code{list} of \code{data.frame} entries for peaks data
 using the \code{peaksData} parameter. These data can be accessed with the
 \code{chromData()} and \code{peaksData()} functions.
+\item \code{ChromBackendMzR}: The \code{ChromBackendMzR} inherits all slots and methods
+from the base \code{ChromBackendMemory} backend, providing additional
+functionality for reading chromatographic data from mzML files.
 }
 
 Filter the peak data based on the provided ranges for the given variables.
