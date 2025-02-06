@@ -80,7 +80,7 @@ corePeaksVariables()
 
 \S4method{chromData}{ChromBackend}(object) <- value
 
-\S4method{peaksData}{ChromBackend}(object, columns = c("rtime", "intensity"), drop = FALSE)
+\S4method{peaksData}{ChromBackend}(object, columns = c("rtime", "intensity"), drop = FALSE, ...)
 
 \S4method{peaksData}{ChromBackend}(object) <- value
 

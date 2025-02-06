@@ -442,7 +442,7 @@ setReplaceMethod("chromData", "ChromBackend",
 #'
 #' @rdname ChromBackend
 setMethod("peaksData", "ChromBackend",
-    function(object, columns = c("rtime", "intensity"), drop = FALSE) {
+    function(object, columns = c("rtime", "intensity"), drop = FALSE,...) {
         stop("Not implemented for ", class(object), ".")
     })
 

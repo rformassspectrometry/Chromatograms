@@ -27,8 +27,7 @@ Imports:
     methods,
     S4Vectors,
     MsCoreUtils (>= 1.7.5),
-    IRanges,
-    knitr
+    IRanges
 Suggests:
     msdata (>= 0.19.3),
     roxygen2,
