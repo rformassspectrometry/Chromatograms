@@ -27,13 +27,16 @@ Imports:
     methods,
     S4Vectors,
     MsCoreUtils (>= 1.7.5),
-    IRanges
+    IRanges,
+    knitr
 Suggests:
+    msdata (>= 0.19.3),
+    roxygen2,
+    BiocStyle (>= 2.5.19),
     testthat,
     knitr (>= 1.1.0),
     rmarkdown,
-    mzR,
-    BiocStyle
+    mzR
 License: Artistic-2.0
 Encoding: UTF-8
 VignetteBuilder: knitr
