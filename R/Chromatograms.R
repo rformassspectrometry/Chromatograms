@@ -66,11 +66,18 @@
 #'
 #' @param f `factor` defining the grouping to split the `Chromatograms` object.
 #'
+#' @param name A `character` string specifying the name of the variable to
+#'        access.
+#'
 #' @param object A [Chromatograms] object.
-
+#'
 #' @param processingQueue [list] a list of processing steps (i.e. functions) to
 #'        be applied to the chromatographic data. The processing steps are
 #'        applied in the order they are listed in the `processingQueue`.
+#'
+#' @param value The value to replace the variable with.
+#'
+#' @param x A [Chromatograms] object.
 #'
 #' @param ... Additional arguments.
 #'
