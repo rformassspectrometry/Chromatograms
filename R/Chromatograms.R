@@ -194,7 +194,7 @@ setMethod("show", "Chromatograms",
 setMethod(
     "setBackend", c("Chromatograms", "ChromBackend"),
     function(object, backend, f = processingChunkFactor(object),
-             BPPARAM = bpparam(), ...) {
+             BPPARAM = SerialParam(), ...) {
         backend_class <- class(object@backend)
         BPPARAM <- backendBpparam(object@backend, BPPARAM)
         BPPARAM <- backendBpparam(backend, BPPARAM)# what
@@ -210,7 +210,6 @@ setMethod(
                     backendInitialize(backend,
                                       peaksData = peaksData(z),
                                       chromData = chromData(z),
-                                      ...,
                                       BPPARAM = SerialParam())
                 }, ..., BPPARAM = BPPARAM)
             bd_new <- backendMerge(bd_new)
@@ -222,3 +221,16 @@ setMethod(
                                            class(object@backend))
         object
         })
+
+#' @rdname Chromatograms
+#' @export
+setMethod("$", signature = "Chromatograms", function(x, name) {
+    x@backend[[name]]
+})
+
+#' @rdname Chromatograms
+#' @export
+setReplaceMethod("$", signature = "Chromatograms", function(x, name, value) {
+    x@backend[[name]] <- value
+    x
+})

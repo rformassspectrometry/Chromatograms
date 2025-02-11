@@ -4,6 +4,8 @@
 \alias{Chromatograms}
 \alias{Chromatograms-class}
 \alias{setBackend,Chromatograms,ChromBackend-method}
+\alias{$,Chromatograms-method}
+\alias{$<-,Chromatograms-method}
 \title{The Chromatograms class to manage and access chromatographic data}
 \usage{
 Chromatograms(backend = ChromBackendMemory(), processingQueue = list(), ...)
@@ -12,9 +14,13 @@ Chromatograms(backend = ChromBackendMemory(), processingQueue = list(), ...)
   object,
   backend,
   f = processingChunkFactor(object),
-  BPPARAM = bpparam(),
+  BPPARAM = SerialParam(),
   ...
 )
+
+\S4method{$}{Chromatograms}(x, name)
+
+\S4method{$}{Chromatograms}(x, name) <- value
 }
 \arguments{
 \item{backend}{\link{ChromBackend} object providing the raw data for the

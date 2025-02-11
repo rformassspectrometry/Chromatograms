@@ -7,8 +7,6 @@ NULL
 #'
 #' @name ChromBackendMemory
 #'
-#' @aliases [,ChromBackendMemory-method
-#'
 #' @description
 #'`ChromBackendMemory`: This backend stores chromatographic data directly
 #' in memory, making it ideal for small datasets or testing. It can be
@@ -132,7 +130,8 @@ setMethod("chromVariables", "ChromBackendMemory", function(object) {
 
 #' @rdname hidden_aliases
 setMethod("peaksData", "ChromBackendMemory",
-          function(object, columns = peaksVariables(object), drop = FALSE) {
+          function(object, columns = peaksVariables(object),
+                   drop = FALSE, ...) {
             if (!any(peaksVariables(object) %in% columns))
               stop("Some of the requested peaks variables are not",
                    " available")

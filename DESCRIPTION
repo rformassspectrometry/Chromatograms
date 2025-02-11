@@ -45,7 +45,7 @@ biocViews: Infrastructure, Proteomics, MassSpectrometry, Metabolomics
 Roxygen: list(markdown=TRUE)
 RoxygenNote: 7.3.2
 Remotes: 
-    jorainer/mzR@chrompeaks
+    jorainer/mzR@jomain
 Collate:
     'AllGenerics.R'
     'ChromBackend-functions.R'

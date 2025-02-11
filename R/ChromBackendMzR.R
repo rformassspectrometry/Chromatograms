@@ -143,7 +143,8 @@ setReplaceMethod("chromData", "ChromBackendMzR", function(object, value) {
 setMethod("supportsSetBackend", "ChromBackendMzR", function(object, ...) FALSE)
 
 #' @rdname hidden_aliases
-setMethod("[", "ChromBackendMzR", function(x, i, j, ..., drop = FALSE) {
+#' @importMethodsFrom S4Vectors [ [<-
+setMethod("[", "ChromBackendMzR", function(x, i, j, ...) {
     if (!length(i)) return (ChromBackendMzR())
     callNextMethod()
 })
