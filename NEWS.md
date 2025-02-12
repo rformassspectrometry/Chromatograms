@@ -1,4 +1,10 @@
-# Version 0.4.0
+# Version 0.5.0
+
+## Changes in 0.5.0 
+
+- Addition of `ChromBackendMzR` and its respective methods.
+- Addition of the Chromatograms vignette, which provides an overview of the
+  object and related functionalities.
 
 ## Changes in 0.4.0
 - Addition of `peaksData()` and implementation of chunkwise (and therefore 

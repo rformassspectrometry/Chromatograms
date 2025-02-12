@@ -955,7 +955,7 @@ setMethod("filterPeaksData", "ChromBackend",
               else sel_fun <- function(z, idx) {
                   if (!length(idx)) return(z) # check this
                   else return(z[-idx, , drop = FALSE]) }
-              peaksData(object) <- lapply(peaksData(object), function(pd) { #ok so here lies alll the issues
+              peaksData(object) <- lapply(peaksData(object), function(pd) {
                   sel_fun(pd, .filter_ranges(pd[, variables, drop = FALSE],
                                              ranges, match))
               })

@@ -38,6 +38,13 @@ applied in the order they are listed in the \code{processingQueue}.}
 
 \item{BPPARAM}{Parallel setup configuration. See \code{\link[BiocParallel:register]{BiocParallel::bpparam()}}
 for more information.}
+
+\item{x}{A \link{Chromatograms} object.}
+
+\item{name}{A \code{character} string specifying the name of the variable to
+access.}
+
+\item{value}{The value to replace the variable with.}
 }
 \description{
 The \code{Chromatograms} class encapsules chromatographic data and related

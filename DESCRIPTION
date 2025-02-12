@@ -1,6 +1,6 @@
 Package: Chromatograms
 Title: Infrastructure for Chromatographic Mass Spectrometry Data
-Version: 0.4.0
+Version: 0.5.0
 Description: The Chromatograms packages defines a efficient infrastructure
    for storing and handling of chromatographic mass spectrometry data. It
    provides different implementations of *backends* to store and represent the
@@ -44,8 +44,6 @@ URL: https://github.com/RforMassSpectrometry/Chromatograms
 biocViews: Infrastructure, Proteomics, MassSpectrometry, Metabolomics
 Roxygen: list(markdown=TRUE)
 RoxygenNote: 7.3.2
-Remotes: 
-    jorainer/mzR@jomain
 Collate:
     'AllGenerics.R'
     'ChromBackend-functions.R'
