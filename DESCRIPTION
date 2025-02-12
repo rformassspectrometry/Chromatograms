@@ -35,7 +35,7 @@ Suggests:
     testthat,
     knitr (>= 1.1.0),
     rmarkdown,
-    mzR
+    mzR (>= 2.41.4)
 License: Artistic-2.0
 Encoding: UTF-8
 VignetteBuilder: knitr
