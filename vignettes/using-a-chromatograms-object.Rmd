@@ -451,9 +451,11 @@ the `ChrombackendMzR` to an in-memory backend such as `ChromBackendMemory`.
 
 ```{r}
 print(object.size(chr_mzr), units = "Mb")
-chr_mzr <- setBackend(chr_mzr, ChromBackendMemory())
+chr_mzr <- setBackend(chr_mzr, ChromBackendMemory(), BPPARAM = SerialParam())
 
 chr_mzr
+
+chr_mzr@backend@peaksData[[1]] |> head() # data is now in memory
 ```
 
 With the call the full peak data was imported from the original mzML files into
