@@ -79,7 +79,6 @@
 #' @noRd
 .run_process_queue <- function(object, queue, f = factor(),
                                BPPARAM = SerialParam()) {
-    if (!length(queue)) return(object) # this is  already  checked before I think i could remove it
     BPPARAM <- backendBpparam(object, BPPARAM)
     if (!length(f) || length(levels(f)) == 1) {
         for (i in seq_along(queue))

@@ -98,10 +98,6 @@ variables using \code{$}.
 The peaks data can be accessed, replaced but also filtered/subsetted. Refer
 to the sections below for more details.
 }
-\note{
-read-only backend cannot be replaced in the chromatograms method BUT can
-in the backend method.
-}
 \section{Filter Peaks Variables}{
 
 

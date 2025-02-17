@@ -59,3 +59,16 @@ test_that("setBackend works correctly", {
     expect_error(setBackend(c_mzr, backend = ChromBackendMzR()),
                  "does not support")
 })
+
+test_that("$ works correctly", {
+    expect_identical(msLevel(c_full), c_full$msLevel)
+    expect_identical(chromIndex(c_mzr), c_mzr$chromIndex)
+    expect_identical(intensity(c_full), c_full$intensity)
+    expect_identical(intensity(c_mzr), c_mzr$intensity)
+    tmp <- c_full
+    tmp$msLevel <- c(2L, 2L, 3L )
+    expect_identical(msLevel(tmp), c(2L, 2L, 3L))
+    tmp$intensity <- lapply(tmp$intensity, function(x) x + 10)
+    expect_false(identical(intensity(tmp), intensity(c_full)))
+})
+

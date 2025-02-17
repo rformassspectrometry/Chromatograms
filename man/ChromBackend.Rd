@@ -200,9 +200,9 @@ corePeaksVariables()
 \item{...}{Additional arguments.}
 
 \item{drop}{For \code{chromData()} and \code{peaksData()}: \code{logical(1)} default to
-\code{FALSE}. If \code{TRUE}, and one column is called by the user, the method
-should return a vector (or list of vector for \code{peaksData()}) of the
-single column requested.}
+\code{FALSE}. If \code{TRUE}, and one column is requested by the user, the
+method should return a vector (or list of vector for \code{peaksData()})
+of the single column requested.}
 
 \item{name}{For \code{$} and \verb{$<-}: the name of the chromatogram variable to
 return or set.}
@@ -391,7 +391,7 @@ a \code{data.frame} with the same number of rows as there are chromatograms in
 replacement method \verb{chromData<-} (unless some internal caching mechanism
 could be used). \code{chromData()} should be implemented with the parameter
 \code{drop} set to \code{FALSE} as default. With \code{drop = FALSE} the method should
-return a \code{data.frame} even if only one column is called. If \code{drop = TRUE}
+return a \code{data.frame} even if one column is requested. If \code{drop = TRUE}
 is specified, the output will be a vector of the single column requested.
 New backends should be implemented such as if empty, the method returns a
 \code{data.frame} with 0 rows and the columns defined by \code{chromVariables()}.
@@ -407,7 +407,7 @@ variables should be returned in each array. As default (minimum) columns
 \code{"rtime"} and \code{"intensity"} have to be provided. \code{peaksData()} should be
 implemented with the parameter \code{drop} set to \code{FALSE} as default.  With
 \code{drop = FALSE} the method should return a \code{data.frame} even if only one
-column is called. If \code{drop = TRUE}  is specified, the output will be a
+column is requested. If \code{drop = TRUE}  is specified, the output will be a
 vector of the single column requested.
 \item \verb{peaksData<-} replaces the peak data (retention time and intensity values)
 of the backend. This method expects a \code{list} of two-dimensional arrays
@@ -519,10 +519,10 @@ parameter \code{f}). The default method for \code{ChromBackend} uses
 necessarily need to implement this method.
 \item \code{supportsSetBackend()}: whether a \code{ChromBackend} supports the
 \code{Chromatograms} \code{setBackend()} function. The default function will
-take the \code{peaksData()} and \code{chromData()} of the user's backend and set it
-to the new backend. If the backend does not support this function, it should
-return \code{FALSE}. Therefore both backend in question should have a adequate
-\code{peaksData()} and \code{chromData()} method as well as their respective
+take the \code{peaksData()} and \code{chromData()} of the user's backend and pass it
+to the new backend. If the backend does not support this function, it
+should return \code{FALSE}. Therefore both backend in question should have a
+adequate \code{peaksData()} and \code{chromData()} method as well as their respective
 replacement method.
 }
 }

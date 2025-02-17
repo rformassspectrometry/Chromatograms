@@ -204,7 +204,7 @@ setMethod(
              BPPARAM = SerialParam(), ...) {
         backend_class <- class(object@backend)
         BPPARAM <- backendBpparam(object@backend, BPPARAM)
-        BPPARAM <- backendBpparam(backend, BPPARAM)# what
+        BPPARAM <- backendBpparam(backend, BPPARAM)
         if (!supportsSetBackend(backend))
             stop(class(backend), " does not support 'setBackend'")
         if (!length(f) || length(levels(f)) == 1 || !length(object))

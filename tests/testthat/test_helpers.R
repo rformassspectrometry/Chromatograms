@@ -27,11 +27,13 @@ test_that(".df_combine works as expected", {
 
 
 test_that(".filter_ranges helper function works correctly", {
-    query <- data.frame(mz = c(112.2, 123.3, 134.4), chromIndex = c(1L, 2L, 3L))
+    query <- data.frame(mz = c(112.2, 123.3, 134.4),
+                        chromIndex = c(1L, 2L, 3L))
     ranges <- numeric()
     expect_error(.filter_ranges(query, ranges, match = "any"), "needs to be")
     ranges <- c(1, 2, 3)
-    expect_error(.filter_ranges(query, ranges, match = "any"), "Length of 'ranges'")
+    expect_error(.filter_ranges(query, ranges, match = "any"),
+                 "Length of 'ranges'")
 
     # All ranges match (full data retained)
     ranges <- c(100, 200, 1, 3)
@@ -138,11 +140,14 @@ test_that(".run_process_queue ChromBackendMemory work", {
                                  queue = c_full@processingQueue)
     expect_equal(result, c_full@backend)
 
-    c_queued <- filterPeaksData(c_full, variables = c("rtime"), ranges = c(12.5, 45.5))
-    c_queued <- filterPeaksData(c_queued, variables = c("intensity"), ranges = c(100, 200))
+    c_queued <- filterPeaksData(c_full, variables = c("rtime"),
+                                ranges = c(12.5, 45.5))
+    c_queued <- filterPeaksData(c_queued, variables = c("intensity"),
+                                ranges = c(100, 200))
 
+    # this test for f = factor() and queue >1
     result <- .run_process_queue(c_queued@backend,
-                                 f = processingChunkFactor(c_queued), # this test for f = factor() and queue >1
+                                 f = processingChunkFactor(c_queued),
                                  queue = c_queued@processingQueue)
     expect_true(inherits(result, "ChromBackend"))
     peaks_result <- peaksData(result)
@@ -150,8 +155,10 @@ test_that(".run_process_queue ChromBackendMemory work", {
     expect_false(identical(peaks_result, peaksData(c_full@backend)))
 
     f <- factor(c(1, 1, 2))
-    c_queued <- filterPeaksData(c_full, variables = c("rtime"), ranges = c(12.5, 45.5))
-    c_queued <- filterPeaksData(c_queued, variables = c("intensity"), ranges = c(100, 200))
+    c_queued <- filterPeaksData(c_full, variables = c("rtime"),
+                                ranges = c(12.5, 45.5))
+    c_queued <- filterPeaksData(c_queued, variables = c("intensity"),
+                                ranges = c(100, 200))
 
     result <- .run_process_queue(c_queued@backend, f = f,
                                  queue = c_queued@processingQueue)
@@ -165,19 +172,14 @@ test_that(".run_process_queue ChromBackendMemory work", {
     f <- factor(c(1, 2))
     tmp <- c_full
     tmp@processingQueue <- list(1)
-    expect_error(.run_process_queue(tmp@backend, f = f, queue <- tmp@processingQueue),
+    expect_error(.run_process_queue(tmp@backend, f = f,
+                                    queue = tmp@processingQueue),
                  "length 'f' has to be equal to the length of 'object'")
 
     f <- c(1, 2, 3)
     expect_error(.run_process_queue(tmp@backend,
                                     f = f, queue = tmp@processingQueue),
                  "f must be a factor")
-
-    f <- factor(c(1, 1, 2))
-    c_empty <- Chromatograms()
-    result <- .run_process_queue(c_empty@backend, f = f,
-                                 queue = c_empty@processingQueue)
-    expect_equal(result, c_empty@backend)
 })
 
 test_that(".run_processing_queue, ChromBackendMzr work", {
@@ -193,7 +195,8 @@ test_that(".run_processing_queue, ChromBackendMzr work", {
     expect_false(c_queued@backend@inMemory)
 
     expect_true(inherits(result1, "ChromBackendMzR"))
-    expect_false(identical(lengths(rtime(result1)), lengths(rtime(c_mzr@backend))))
+    expect_false(identical(lengths(rtime(result1)),
+                           lengths(rtime(c_mzr@backend))))
     expect_equal(length(peaksData(result1)), length(peaksData(c_mzr@backend)))
 
     ## with levels(factor) > 1 and queue == 1
@@ -203,7 +206,8 @@ test_that(".run_processing_queue, ChromBackendMzr work", {
                                  queue = c_queued@processingQueue)
     expect_true(inherits(result2, "ChromBackendMzR"))
     expect_equal(length(peaksData(result2)), length(peaksData(c_mzr@backend)))
-    expect_false(identical(lengths(rtime(result2)), lengths(rtime(c_mzr@backend))))
+    expect_false(identical(lengths(rtime(result2)),
+                           lengths(rtime(c_mzr@backend))))
     expect_true(result2@inMemory)
     expect_false(c_queued@backend@inMemory)
     expect_identical(result1, result2)
@@ -217,8 +221,9 @@ test_that(".run_processing_queue, ChromBackendMzr work", {
                                  queue = c_queued@processingQueue)
 
     expect_true(inherits(result3, "ChromBackendMzR"))
-    expect_equal(length(peaksData(result3)), length(peaksData(c_mzr@backend))) # wait actually not sure
-    expect_false(identical(lengths(rtime(result3)), lengths(rtime(c_mzr@backend))))
+    expect_equal(length(peaksData(result3)), length(peaksData(c_mzr@backend)))
+    expect_false(identical(lengths(rtime(result3)),
+                           lengths(rtime(c_mzr@backend))))
     expect_true(result3@inMemory)
     expect_false(c_queued@backend@inMemory)
 
@@ -228,8 +233,10 @@ test_that(".run_processing_queue, ChromBackendMzr work", {
     result4 <- .run_process_queue(c_queued@backend, f = f,
                                  queue = c_queued@processingQueue)
     expect_true(inherits(result4, "ChromBackendMzR"))
-    expect_equal(length(peaksData(result4)), length(peaksData(c_mzr@backend)))
-    expect_false(identical(lengths(rtime(result4)), lengths(rtime(c_mzr@backend))))
+    expect_equal(length(peaksData(result4)),
+                 length(peaksData(c_mzr@backend)))
+    expect_false(identical(lengths(rtime(result4)),
+                           lengths(rtime(c_mzr@backend))))
     expect_true(result4@inMemory)
     expect_false(c_queued@backend@inMemory)
     expect_identical(result3, result4)

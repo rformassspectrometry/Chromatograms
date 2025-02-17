@@ -135,7 +135,7 @@ setMethod("peaksData", "ChromBackendMemory",
             if (!any(peaksVariables(object) %in% columns))
               stop("Some of the requested peaks variables are not",
                    " available")
-            if (all(peaksVariables(object) %in% columns))
+            if (identical(as.vector(peaksVariables(object)), as.vector(columns)))
               return(object@peaksData)
             lapply(object@peaksData, function(x) x[, columns, drop = drop])
           })

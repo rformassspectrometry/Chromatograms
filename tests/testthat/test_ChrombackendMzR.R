@@ -25,7 +25,7 @@ test_that("show method for ChromBackendMzR works correctly", {
     expect_output(show(be_mzr), "mz")
     tmp <- be_mzr
     tmp@inMemory <- TRUE
-    expect_output(show(tmp), "Data is in memory in the peaksData slots")
+    expect_output(show(tmp), "Peaks data is cached in memory")
 
 })
 test_that("replacement method works", {
@@ -46,7 +46,6 @@ test_that("replacement method works", {
 test_that("backendParallelFactor works", {
     expect_equal(levels(backendParallelFactor(be_mzr)), unique(dataOrigin(be_mzr)))
 })
-
 
 test_that("error message work", {
     expect_error(peaksData(be_mzr, columns = "notacolumn"),

@@ -70,9 +70,8 @@ setMethod("backendInitialize", "ChromBackendMzR",
                                             FUN = function(fl) {
                                                 cbind(.mzR_format_chromData(fl))
                                             }, BPPARAM = BPPARAM))
-              object <- callNextMethod(object, chromData = chromData, ...)
-              object
-          })
+              callNextMethod(object, chromData = chromData, ...)
+              })
 
 #' @rdname hidden_aliases
 #' @importFrom utils head
@@ -86,7 +85,7 @@ setMethod("show", "ChromBackendMzR", function(object) {
             "\n", sep = "")
         if (length(fls) > 3) cat(" ...", length(fls) - 3, "more files\n")
     }
-    if (object@inMemory) cat("\nData is in memory in the peaksData slots\n")
+    if (object@inMemory) cat("\nPeaks data is cached in memory\n")
 })
 
 #' @rdname hidden_aliases
@@ -110,6 +109,8 @@ setMethod("peaksData", "ChromBackendMzR",
                   stop("Some of the requested peaks variables are not",
                        " available")
               ret <- all(pv %in% columns)
+              f <- factor(dataOrigin(object),
+                          levels = unique(dataOrigin(object)))
               pd <- bplapply(split(object, f = dataOrigin(object)),
                              function(ob) {
                                  chr <- .get_chrom_data(fl = unique(dataOrigin(ob)),
@@ -117,7 +118,7 @@ setMethod("peaksData", "ChromBackendMzR",
                                  if (ret) chr
                                  else lapply(chr, `[`, , columns, drop = drop)
                              }, BPPARAM = BPPARAM)
-              unlist(pd, recursive = FALSE, use.names = FALSE)
+              unsplit(pd, f = f)
           })
 
 #' @rdname hidden_aliases

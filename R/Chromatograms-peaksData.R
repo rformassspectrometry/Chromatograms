@@ -121,8 +121,6 @@ setMethod("peaksData",
           })
 
 #' @rdname peaksData
-#' @note read-only backend cannot be replaced in the chromatograms method BUT can
-#' in the backend method.
 setReplaceMethod("peaksData", signature = "Chromatograms",
                  function(object, value) {
     if (isReadOnly(object@backend))

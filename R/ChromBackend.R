@@ -117,9 +117,9 @@
 #'        returned `data.frame`. By default, all columns are returned.
 #'
 #' @param drop For `chromData()` and `peaksData()`: `logical(1)` default to
-#'        `FALSE`. If `TRUE`, and one column is called by the user, the method
-#'        should return a vector (or list of vector for `peaksData()`) of the
-#'        single column requested.
+#'        `FALSE`. If `TRUE`, and one column is requested by the user, the
+#'        method should return a vector (or list of vector for `peaksData()`)
+#'        of the single column requested.
 #'
 #' @param f `factor` defining the grouping to split `x`. See [split()].
 #'
@@ -198,7 +198,7 @@
 #'   replacement method `chromData<-` (unless some internal caching mechanism
 #'   could be used). `chromData()` should be implemented with the parameter
 #'   `drop` set to `FALSE` as default. With `drop = FALSE` the method should
-#'   return a `data.frame` even if only one column is called. If `drop = TRUE`
+#'   return a `data.frame` even if one column is requested. If `drop = TRUE`
 #'   is specified, the output will be a vector of the single column requested.
 #'   New backends should be implemented such as if empty, the method returns a
 #'   `data.frame` with 0 rows and the columns defined by `chromVariables()`.
@@ -215,7 +215,7 @@
 #'   `"rtime"` and `"intensity"` have to be provided. `peaksData()` should be
 #'   implemented with the parameter `drop` set to `FALSE` as default.  With
 #'   `drop = FALSE` the method should return a `data.frame` even if only one
-#'   column is called. If `drop = TRUE`  is specified, the output will be a
+#'   column is requested. If `drop = TRUE`  is specified, the output will be a
 #'   vector of the single column requested.
 #'
 #' - `peaksData<-` replaces the peak data (retention time and intensity values)
@@ -353,10 +353,10 @@
 #'
 #' - `supportsSetBackend()`: whether a `ChromBackend` supports the
 #'   `Chromatograms` `setBackend()` function. The default function will
-#'   take the `peaksData()` and `chromData()` of the user's backend and set it
-#'   to the new backend. If the backend does not support this function, it should
-#'   return `FALSE`. Therefore both backend in question should have a adequate
-#'   `peaksData()` and `chromData()` method as well as their respective
+#'   take the `peaksData()` and `chromData()` of the user's backend and pass it
+#'   to the new backend. If the backend does not support this function, it
+#'   should return `FALSE`. Therefore both backend in question should have a
+#'   adequate `peaksData()` and `chromData()` method as well as their respective
 #'   replacement method.
 #'
 #' @section Implementation notes:
