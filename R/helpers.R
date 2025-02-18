@@ -29,19 +29,6 @@
     res
 }
 
-#' Helper function that checks if the `dataStorage` of a `Chromatogram` object
-#' contains any `NA` values.
-#'
-#' @note
-#' Used in:
-#' - `validChromData()`
-#' @noRd
-.valid_chrom_backend_data_storage <- function(x) {
-    if (anyNA(x))
-        return("'NA' values in dataStorage are not allowed.")
-    NULL
-}
-
 #' Helper function to check the order and data types of columns
 #'
 #' @note:
@@ -92,7 +79,6 @@
 #' @noRd
 .run_process_queue <- function(object, queue, f = factor(),
                                BPPARAM = SerialParam()) {
-    if (!length(queue)) return(object)
     BPPARAM <- backendBpparam(object, BPPARAM)
     if (!length(f) || length(levels(f)) == 1) {
         for (i in seq_along(queue))
@@ -137,7 +123,7 @@
 #' @noRd
 .valid_processing_queue <- function(x) {
     if (length(x) && !all(vapply1l(x, inherits, "ProcessingStep")))
-        return("'processingQueue' should only contain ProcessingStep objects.")
+        stop("'processingQueue' should only contain ProcessingStep objects.")
     NULL
 }
 
@@ -169,10 +155,45 @@
     return(which(rowSums(within_ranges) > 0))
 }
 
-
 #' Used in:
 #' - `filterPeaksData()`
 #' @noRd
 .logging <- function(x, ...) {
     c(x, paste0(..., " [", date(), "]"))
+}
+
+#' Used In:
+#' - `ChromBackendMzR()`
+#' @noRd
+.check_mzR_package <- function() {
+        if (!requireNamespace("mzR", quietly = TRUE))
+            stop("The use of 'ChromBackendMzR' requires package 'mzR'. ",
+                 "Install it using 'BiocManager::install(\"mzR\")'")
+}
+
+#' Used In:
+#' - `backendInitialize()` for `ChromBackendMzR` class
+#' Helper function to format chromatographic data from mzR files.
+#' @noRd
+.mzR_format_chromData <- function(file) {
+    .check_mzR_package()
+    msd <- mzR::openMSfile(file)
+    on.exit(mzR::close(msd))
+    tmp <- mzR::chromatogramHeader(msd)
+    colnames(tmp)[colnames(tmp) == "chromatogramIndex"] <- "chromIndex"
+    colnames(tmp)[colnames(tmp) == "precursorCollisionEnergy"] <- "collisionEnergy"
+    colnames(tmp)[colnames(tmp) == "productIsolationWindowTargetMZ"] <- "productMz"
+    colnames(tmp)[colnames(tmp) == "precursorIsolationWindowTargetMZ"] <- "precursorMz"
+    tmp$dataOrigin <- file
+    tmp
+}
+
+#' Used In:
+#' - `peaksData()` for `ChromBackendMzR` class
+#' @noRd
+.get_chrom_data <- function(fl, idx) {
+    .check_mzR_package()
+    msd <- mzR::openMSfile(fl)
+    on.exit(mzR::close(msd))
+    mzR::chromatogram(msd, idx, drop = FALSE)
 }

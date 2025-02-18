@@ -8,7 +8,7 @@ vignette: >
     %\VignetteEngine{knitr::rmarkdown}
     %\VignetteEncoding{UTF-8}
     %\VignettePackage{Chromatograms}
-    %\VignetteDepends{Chromatograms,BiocStyle,S4Vectors,IRanges}
+    %\VignetteDepends{Chromatograms,BiocStyle}
 ---
 
 ```{r style, echo = FALSE, results = 'asis', message=FALSE}
@@ -70,10 +70,8 @@ General conventions for chromatographic MS data of a `Chromatograms` are:
   set of chromatogram variables **must** be provided by each backend (even if
   their values are empty). These *core chromatogram variables* are listed (along
   with their expected data type) by the `coreChromVariables()` function.
-- `dataStorage` and `dataOrigin` are two special variables that define
-  for each chromatogram where the data is (currently) stored and from where the
-  data derived, respectively. Both are expected to be of
-  type`character`. Missing values for `dataStorage` are not allowed.
+- `dataOrigin` defines for each chromatogram where the data is from expected to
+  be of type`character`. Missing values should be `NA_character_`
 - `ChromBackend` implementations can also represent purely *read-only* data
   resources. In this case only data accessor methods need to be implemented but
   not data replacement methods (i.e. `<-` methods that would allow to add or set
@@ -269,10 +267,8 @@ setMethod(
             stop("'chromData' needs to be a 'data.frame' with the general",
                  "chromatogram variables")
         ## Defining dataStorage and dataOrigin, if not available
-        if (is.null(chromData$dataStorage))
-            chromData$dataStorage <- "<memory>"
         if (is.null(chromData$dataOrigin))
-            chromData$dataOrigin <- "<user provided>"
+            chromData$dataOrigin <- NA_character_
         ## Validate the provided data
         validChromData(chromData)
         validPeaksData(peaksData)
@@ -283,10 +279,9 @@ setMethod(
     })
 ```
 
-In addition to adding the data to object, the function also defined the
-`dataStorage` and `dataOrigin` spectra variables. The purpose of these two
-variables is to provide some information on where the data is currently stored
-(*in memory* as in our example) and from where the data is originating.
+In addition to adding the data to object, the function also define the
+`dataOrigin` chromatographic variables. This variable is expected to provide
+information on where the data is originating.
 
 We can now create an instance of our backend class and fill it with data. We
 thus first define our MS data and pass this to the `backendInitialize()` method.
@@ -898,55 +893,6 @@ For our backend we can change the values of the `dataOrigin` variable:
 #' Replace the backend's dataOrigin values
 dataOrigin(be) <- rep("from somewhere", 2)
 dataOrigin(be)
-```
-
-
-### `dataStorage()`, `dataStorage<-`
-
-Similarly, the `dataStorage()` and `dataStorage<-` methods should allow to get
-or set the data storage chromatogram variable. Values of the `dataStorage`
-chromatogram variable are expected to be of type `character` and for each
-chromatogram in a backend one value needs to be defined (which can not be
-`NA_character`). The default implementation for `dataStorage()` uses, like most
-access methods, the `chromData()` function:
-
-```{r, eval = FALSE}
-#' Default implementation to access dataStorage
-setMethod("dataStorage", "ChromBackend", function(object) {
-    chromData(object, columns = "dataStorage", drop = TRUE)
-})
-```
-
-Below we use this method to access the values of the `dataStorage` chromatogram
-variable.
-
-```{r}
-#' Access the dataStorage values
-dataStorage(be)
-```
-
-Note that this variable is supposed to provide information on the location where
-the data is stored and hence for some type of backends it might not be possible
-or advised to let the user change its values. For such backends a
-`dataStorage<-` replacement method should be implemented specifically that
-throws an error if values are replaced with eventually invalid values. The
-default implementation for this method uses, like all defaults for replacement
-methods, the `$<-` method:
-
-```{r}
-#' Default implementation of the `dataStorage<-` replacement method
-setReplaceMethod("dataStorage", "ChromBackend", function(object, value) {
-  object$dataStorage <- value
-  object
-})
-```
-
-For our backend we can change the values of the `dataStorage` variable:
-
-```{r}
-#' Replace the backend's datastorage values
-dataStorage(be) <- c("here", "here")
-dataStorage(be)
 ```
 
 

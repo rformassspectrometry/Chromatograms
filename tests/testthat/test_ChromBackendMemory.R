@@ -2,11 +2,12 @@
 #' - backendInitialize, ChromBackendMemory works
 #' - backendMerge
 #' - show
-#' rest is through the generic testing in inst/
+#' rest is through the generic testing in inst
 
 test_that("ChromBackendMemory function works", {
     expect_true(is.function(ChromBackendMemory))
     expect_true(is(ChromBackendMemory(), "ChromBackendMemory"))
+    expect_true(supportsSetBackend(ChromBackendMemory()))
 })
 
 test_that("backendInitialize, ChromBackendMemory works", {
@@ -31,10 +32,9 @@ test_that("backendInitialize, ChromBackendMemory works", {
     expect_true(is(be_cd, "ChromBackendMemory"))
     expect_true(is(be_cd@chromData, "data.frame"))
     expect_true(nrow(be_cd@chromData) == nrow(cdata))
-    expect_true(all(names(be_cd@chromData) %in% c(names(cdata), "dataStorage", "dataOrigin")))
+    expect_true(all(names(be_cd@chromData) %in% c(names(cdata), "dataOrigin")))
     expect_true(is.null(validChromData(be_cd@chromData)))
-    expect_true(all(be_cd@chromData$dataStorage == "<memory>"))
-    expect_true(all(be_cd@chromData$dataOrigin == "<user provided>"))
+    expect_true(all(be_cd@chromData$dataOrigin == NA_character_))
 
     expect_true(is(be_cd@peaksData, "list"))
     expect_true(length(be_cd@peaksData) == nrow(be_cd@chromData))
@@ -47,7 +47,7 @@ test_that("backendInitialize, ChromBackendMemory works", {
     expect_true(is(be, "ChromBackendMemory"))
     expect_true(is(be@chromData, "data.frame"))
     expect_true(nrow(be@chromData) == nrow(cdata))
-    expect_true(all(names(be@chromData) %in% c(names(cdata), "dataStorage", "dataOrigin")))
+    expect_true(all(names(be@chromData) %in% c(names(cdata), "dataOrigin")))
     expect_true(is.null(validChromData(be@chromData)))
 
     expect_true(is(be@peaksData, "list"))
@@ -56,6 +56,13 @@ test_that("backendInitialize, ChromBackendMemory works", {
     expect_true(all(vapply(be@peaksData, is.data.frame, logical(1))))
     expect_true(all(names(be@peaksData[[1]]) %in% names(.CORE_PEAKS_VARIABLES)))
     expect_true(is.null(unlist(validPeaksData(be@peaksData))))
+})
+
+test_that("backend removes NA columns", {
+    chromData <- chromData(be)
+    chromData$NAcol <- NA
+    be2 <- backendInitialize(be, chromData)
+    expect_false("NAcol" %in% names(be2@chromData))
 })
 
 test_that("backendMerge, ChromBackendMemory works", {
@@ -86,7 +93,6 @@ test_that("peaksData", {
     expect_error(peaksData(be, "not a column"), "variables are not")
     expect_error(peaksData(be) <- list(), " elements")
     expect_error(peaksData(be) <- matrix(), "is expected to be a list")
-
 })
 
 test_that("$<-,ChromBackendMemory works", {
@@ -165,6 +171,14 @@ test_that("filterChromData works", {
     expect_equal(nrow(chromData(res)), 2)
     expect_equal(chromData(res)$mz, c(112.2, 134.4))
     expect_equal(chromData(res)$chromIndex, c(1,3))
+
+    res <- filterChromData(be,
+                           variables = c("mz"),
+                           ranges = c(999, 1000), # No matching range
+                           match = "any",
+                           keep = FALSE)
+
+    expect_identical(res, be)
 })
 
 

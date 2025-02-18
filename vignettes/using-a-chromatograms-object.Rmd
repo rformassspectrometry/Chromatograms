@@ -1,0 +1,474 @@
+---
+title: "Using and understanding a Chromatograms object"
+output:
+    BiocStyle::html_document:
+        toc_float: true
+vignette: >
+    %\VignetteIndexEntry{Using and understanding a Chromatograms object}
+    %\VignetteEngine{knitr::rmarkdown}
+    %\VignetteEncoding{UTF-8}
+    %\VignettePackage{Chromatograms}
+    %\VignetteDepends{Chromatograms,BiocStyle,mzR,msdata}
+---
+
+```{r style, echo = FALSE, results = 'asis', message=FALSE}
+BiocStyle::markdown()
+```
+
+**Package**: `r Biocpkg("Chromatograms")`<br />
+**Authors**: `r packageDescription("Chromatograms")[["Author"]]`<br />
+**Last modified:** `r file.info("using-a-chromatograms-object.Rmd")$mtime`<br /> 
+**Compiled**: `r date()`
+
+```{r, echo = FALSE, message = FALSE}
+library(Chromatograms)
+library(BiocStyle)
+register(SerialParam())
+```
+
+
+# Introduction
+
+The *Chromatograms* package provides a scalable and flexible infrastructure to
+represent, retrieve, and handle chromatographic data. The `Chromatograms`
+object offers a standardized interface to access and manipulate chromatographic
+data while supporting various ways to store and retrieve this data through the
+concept of exchangeable *backends*. This vignette provides general examples 
+and descriptions for the *Chromatograms* package.
+
+Contributions to this vignette (content or correction of typos) or requests for
+additional details and information are highly welcome, ideally *via* pull
+requests or *issues* on the package's [github repository](https://github.com/RforMassSpectrometry/Chromatograms).
+
+
+# Installation
+
+The package can be installed with the *BiocManager* package. To install
+*BiocManager*, use `install.packages("BiocManager")`, and after that, use
+`BiocManager::install("RformassSpectrometry/Chromatograms")` to install
+*Chromatograms*.
+
+# The Chromatograms object
+
+The `Chromatograms` object is a container for chromatographic data, which
+includes peaks data (*retention time* and related intensity values, also\
+referred to as *peaks data variables* in the context of `Chromatograms`) and
+metadata of individual chromatograms (so-called *chromatogram variables*). 
+While a core set of chromatogram variables (the `coreChromatogramsVariables()`) 
+and peaks data variables (the `corePeaksVariables()`) are guaranteed to be 
+provided by a `Chromatograms`, it is possible to add arbitrary variables to 
+a `Chromatograms` object.
+
+The `Chromatograms` object is designed to contain chromatographic data for a 
+(large) set of chromatograms. The data is organized *linearly* and can be
+thought of as a list of chromatograms, where each element in the 
+`Chromatograms` is one chromatogram.
+
+## Available backends
+
+Backends allow to use different *backends* to store chromatographic data while
+providing *via* the `Chromatograms` class a unified interface to use that data.
+The `Chromatograms` package defines a
+set of example backends but any object extending the base `ChromBackend` class
+could be used instead. The default backends are:
+
+- `ChromBackendMemory`: the *default* backend to store data in memory. Due to
+  its design the `ChromBackendMemory` provides fast access to the peaks data and 
+  metadata. Since all data is kept in memory, this backend has a relatively 
+  large memory footprint (depending on the data) and is thus not
+  suggested for very large experiments.
+
+- `ChromBackendMzR`: this backend keeps only the chromatographic metadata
+  variables in memory and relies on the `r Biocpkg("mzR")` package to read 
+  chromatographic peaks (retention time and intensity values) from the 
+  original mzML files on-demand.
+
+
+## Chromatographic peaks data
+
+The *peaks data variables* information in the `Chromatograms` object can be 
+accessed using the `peaksData()` function.
+`peaksData` can be accessed, replaced, and also filtered/subsetted.
+
+The *core peaks data variables* all have their own accessors and are as follows:
+
+- `rtime`: A `numeric` vector containing retention time values.
+- `intensity`: A `numeric` vector containing intensity values.
+
+## Chromatograms metadata 
+
+The metadata of individual chromatograms (so called *chromatograms variables*), 
+can be accessed using the `chromData()` function. The `chromData` can
+be accessed, replaced, and filtered.
+
+The *core chromatogram variables* all have their own accessor methods, and it 
+is guaranteed that a value is returned by them (or `NA` if the information is 
+not available). 
+
+The core variables and their data types are (alphabetically ordered):
+
+- `chromIndex`: an `integer` with the index of the chromatogram in the original 
+  source file (e.g., *mzML* file).
+- `collisionEnergy`: for SRM data, `numeric` with the collision energy of the 
+  precursor.
+- `dataOrigin`: optional `character` with the origin of a chromatogram.
+- `storageLocation`: `character` defining where the data is (currently) stored.
+- `msLevel`: `integer` defining the MS level of the data.
+- `mz`: optional `numeric` with the (target) m/z value for the chromatographic
+  data.
+- `mzMin`: optional `numeric` with the lower m/z value of the m/z range in case
+   the data (e.g., an extracted ion chromatogram EIC) was extracted from a 
+  `Chromtagorams` object.
+- `mzMax`: optional `numeric` with the upper m/z value of the m/z range.
+- `precursorMz`: for SRM data, `numeric` with the target m/z of the precursor 
+  (parent).
+- `precursorMzMin`: for SRM data, optional `numeric` with the lower m/z of the
+  precursor's isolation window.
+- `precursorMzMax`: for SRM data, optional `numeric` with the upper m/z of the 
+  precursor's isolation window.
+- `productMz`: for SRM data, `numeric` with the target m/z of the product ion.
+- `productMzMin`: for SRM data, optional `numeric` with the lower m/z of the
+  product's isolation window.
+- `productMzMax`: for SRM data, optional `numeric` with the upper m/z of the
+  product's isolation window.
+
+For details on the individual variables and their getter/setter functions, see 
+the help for `Chromatograms` (`?Chromatograms`). Also, note that these 
+variables are suggested but not required to characterize a chromatogram.
+
+## Creating `Chromatograms` objects
+
+The simplest way to create a `Chromatograms` object is by defining a backend of 
+choice, which mainly depends on what type of data you have, and passing that to
+the `Chromatograms` constructor function. Below we create such an object for a 
+set of 2 chromatograms, providing their metadata through a data.frame with the 
+MS level, m/z, and chromatogram index columns, and peaks data. The metadata
+includes the MS level, m/z, and chromatogram index, while the peaks data 
+includes the retention time and intensity in a list of data.frames.
+
+```{r}
+# A data.frame with chromatogram variables.
+cdata <- data.frame(msLevel = c(1L, 1L),
+                    mz = c(112.2, 123.3),
+                    chromIndex = c(1L, 2L)) 
+
+# Retention time and intensity values for each chromatogram.
+pdata <- list(
+  data.frame(rtime = c(11, 12.4, 12.8, 13.2, 14.6, 15.1, 16.5),
+       intensity = c(50.5, 123.3, 153.6, 2354.3, 243.4, 123.4, 83.2)),
+  data.frame(rtime = c(45.1, 46.2, 53, 54.2, 55.3, 56.4, 57.5),
+       intensity = c(100, 180.1, 300.45, 1400, 1200.3, 300.2, 150.1))
+)
+
+# Create and initialize the backend
+be <- backendInitialize(ChromBackendMemory(),
+                        chromData = cdata, peaksData = pdata)
+
+# Create Chromatograms object 
+chr <- Chromatograms(be)
+chr
+```
+
+Alternatively, it is possible to import chromatograhic data from mass 
+spectrometry raw files in mzML/mzXML or CDF format. Below, we create a 
+`Chromatograms` object from an mzML file and define to use a `ChromBackendMzR`
+backend to *store* the data (note that this requires the `r Biocpkg("mzR")` 
+package to be installed). This backend, specifically designed for raw LC-MS data, 
+keeps only a subset of chromatogram variables in memory while reading the
+retention time and intensity values from the original data files only on demand.
+See section [Backends](#backends) for more details on backends and their 
+properties.
+
+```{r}
+MRM_file <- system.file("proteomics", "MRM-standmix-5.mzML.gz",
+                        package = "msdata")
+
+be <- backendInitialize(ChromBackendMzR(), files = MRM_file, 
+                        BPPARAM = SerialParam())
+
+chr_mzr <- Chromatograms(be)
+```
+
+The `Chromatograms` object `chr_mzr` now contains the chromatograms from the 
+mzML file `MRM_file`. The chromatograms can be accessed and manipulated using 
+the `Chromatograms` object's methods and functions.
+
+Basic information about the `Chromatograms` object can be accessed using 
+functions such as `length()`, which tell us how many chromatograms are 
+contained in the object: 
+
+```{r}
+length(chr)
+length(chr_mzr)
+```
+
+
+# Access data from a Chromatograms object
+
+The `Chromatograms` object provides a set of methods to access and manipulate
+the chromatographic data. The following sections describe how to do such things 
+on the peaks data and related metadata.
+
+
+## peaksData
+
+The main function to access the full or a part of the peaks data is 
+`peaksData()` (imaginative right), This function returns a list of data.frames,
+where each data.frame contains the retention time and intensity values for one 
+chromatogram. It is used such as below:
+
+```{r}
+peaksData(chr)
+```
+
+Specific peaks variables can be accessed by either precising the `"columns"`
+parameter in `peaksData()` or using `$`. 
+
+```{r}
+peaksData(chr, columns = c("rtime"), drop = TRUE)
+
+chr$rtime
+
+chr@backend$rtime
+
+```
+
+The methods above also allows to replace the peaks data. It can either be the 
+full peaks data: 
+
+```{r}
+peaksData(chr) <- list(data.frame(rtime = c(1, 2, 3, 4, 5, 6, 7),
+                                  intensity = c(1, 2, 3, 4, 5, 6, 7)),
+                       data.frame(rtime = c(1, 2, 3, 4, 5, 6, 7),
+                                  intensity = c(1, 2, 3, 4, 5, 6, 7)))
+```
+
+Or for specific variables:
+
+```{r}
+chr$rtime <- list(c(8, 9, 10, 11, 12, 13, 14),
+                  c(8, 9, 10, 11, 12, 13, 14))
+```
+
+The peak data can be therefore accessed, replaced but also filtered/subsetted.
+The filtering can be done using the `filterPeaksData()` function. This function
+filters numerical peaks data variables based on the specified numerical ranges 
+parameter. This function does not reduce the number of chromatograms in the 
+object, but it removes the specified peaks data (e.g., "rtime" and "intensity"
+pairs) from the peaksData.
+
+```{r}
+chr_filt <- filterPeaksData(chr, variables = "rtime", ranges = c(12, 15))
+
+length(chr_filt)
+
+length(rtime(chr_filt))
+```
+
+As you can see the number of chromatograms in the `Chromatograms` object is not
+reduced, but the peaks data is filtered/reduced.
+
+## chromData
+
+The main function to access the full chromatographic metadata is `chromData()`. 
+This function returns the metadata of the chromatograms stored in the
+`Chromatograms` object. It can be used as follows:
+
+```{r}
+chromData(chr)
+```
+
+Specific chromatogram variables can be accessed by either precising the 
+`"columns"` parameter in `chromData()` or using `$`.
+
+```{r}
+chromData(chr, columns = c("msLevel"))
+
+chr$chromIndex
+```
+
+The metadata can be replaced using the same methods as for the peaks data.
+
+```{r}
+chr$msLevel <- c(2L, 2L)
+
+chromData(chr)
+```
+
+extra columns can also be added by the user using the `$` operator.
+
+```{r}
+chr$extra <- c("extra1", "extra2")
+chromData(chr)
+```
+
+As for the peaks data, the filtering can be done using the `filterChromData()` 
+function. This function filters the chromatogram variables based on the 
+specified ranges parameter.
+However, contrarily to the peaks data, the filtering *does* reduces the number 
+of chromatograms in the object.
+
+```{r}
+chr_filt <- filterChromData(chr, variables = "chromIndex", ranges = c(1,2), 
+                            keep = TRUE)
+
+length(chr_filt)
+length(chr)
+```
+
+The number of chromatograms in the `Chromatograms` object is reduced.
+
+# Lazy Processing and Parallelization
+
+The `Chromatograms` object is designed to be scalable and flexible. It is
+therefore possible to perform processing in a lazy manner, i.e., only when
+the data is needed, and in a parallelized way.
+
+## Processing queue
+
+Some functions, such as those that require reading large amounts of data
+from source files, are deferred and executed only when the data is needed.
+For example, when `filterPeaksData()` is applied, it initially returns the
+same `Chromatograms` object as the input, but the filtering step is stored
+in the processing queue of the object. Later, when `peaksData` is accessed,
+all stacked operations are performed, and the updated data is returned.
+
+This approach is particularly important for backends that do not store
+data in memory, such as `ChromBackendMzR`. It ensures that data is read
+from the source file only when required, reducing memory usage. However,
+loading and processing data in smaller chunks can further minimize memory
+demands, allowing efficient handling of large datasets.
+
+It is possible to add also custom functions to the processing queue of the 
+object. Such a function can be applicable to both the peaks data and the
+chromatogram metadata. Below we demonstrate how to add a custom function to
+the processing queue of a `Chromatograms` object. Below we define a function 
+that divides the intensities of each peak by a value which can
+be passed with argument `y`.
+
+```{r define-function}
+## Define a function that takes the backend as an input, divides the intensity
+## by parameter y and returns it. Note that ... is required in
+## the function's definition.
+divide_intensities <- function(x, y, ...) {
+    intensity(x) <- lapply(intensity(x), `/`, y) 
+    x
+}
+
+## Add the function to the procesing queue
+chr_2 <- addProcessing(chr, divide_intensities, y = 2)
+chr_2
+```
+
+Object `chr_2` has now 2 processing steps in its lazy evaluation queue. Calling
+`intensity()` on this object will now return intensities that are half of the
+intensities of the original objects `chr`.
+
+```{r custom-processing}
+intensity(chr_2) 
+intensity(chr)
+```
+
+Finally, for `Chromatograms` that use a *writeable* backend, such as the
+`ChromBackendMemory` it is possible to apply the processing queue to the peak 
+data and write that back to the data storage with the `applyProcessing()`
+function. Below we use this to make all data manipulations on peak data of 
+the `sps_rep` object persistent.
+
+```{r applyProcessing}
+length(chr_2@processingQueue)
+
+chr_2 <- applyProcessing(chr_2)
+length(chr_2@processingQueue)
+chr_2
+```
+
+Before `applyProcessing()` the lazy evaluation queue contained 2 processing
+steps, which were then applied to the peak data and *written* to the data
+storage. Note that calling `reset()` **after** `applyProcessing()` can no longer
+*restore* the data.
+
+
+## Parallelization
+
+The functions are designed to run in multiple chunks (i.e., pieces) of the
+object simultaneously, enabling parallelization. This is achieved using
+the `BiocParallel` package. For `ChromBackendMzR`, data is automatically
+split and processed by files.
+
+For other backends, chunk-wise processing can be enabled by setting the
+`processingChunkSize` of a `Chromatograms` object, which defines the
+number of chromatograms for which peak data should be loaded and processed
+in each iteration. The `processingChunkFactor()` function can be used to
+evaluate how the data will be split. Below, we use this function to assess
+how chunk-wise processing would be performed with two `Chromatograms`
+objects:
+
+```{r}
+processingChunkFactor(chr)
+```
+
+For the `Chromatograms` with the in-memory backend an empty `factor()` is 
+returned, thus, no chunk-wise processing will be performed. We next evaluate
+whether the `Chromatograms` with the `ChromBackendMzR` on-disk backend would
+use chunk-wise processing.
+
+```{r}
+processingChunkFactor(chr_mzr)
+```
+
+Here the factor would on  yl be of length 1, meaning that all chromatograms
+will be processed in one go. however the length would be higher if more than 
+one file is used. As this data is quite big (`r length(chr_mzr)` 
+chromatograms), we can set the `processingChunkSize` to 10 to process the data
+in chunks of 10 chromatograms.
+
+```{r}
+processingChunkSize(chr_mzr) <- 10
+
+processingChunkFactor(chr_mzr) |> table()
+```
+
+The `Chromatograms` with the `ChromBackendMzR` backend would now split the data
+in about equally sized arbitrary chunks and no longer by original data file. 
+`processingChunkSize` thus overrides any splitting suggested by the backend.
+
+While chunk-wise processing reduces the memory demand of operations, the 
+splitting and merging of the data and results can negatively impact 
+performance. Thus, small data sets or `Chromatograms` with in-memory backends 
+willgenerally not benefit from this type of processing. For computationally
+intense operation on the other hand, chunk-wise processing has the advantage, 
+that chunks can (and will) be processed in parallel (depending on the parallel
+processing setup).
+
+# Changing backend type 
+
+In the previous sections we learned already that a `Chromatograms` object can use
+different backends for the actual data handling. It is also possible to
+change the backend of a `Chromatograms` to a different one with the 
+`setBackend()` function. As of now it is only possible to change 
+the `ChrombackendMzR` to an in-memory backend such as `ChromBackendMemory`.
+
+```{r}
+print(object.size(chr_mzr), units = "Mb")
+chr_mzr <- setBackend(chr_mzr, ChromBackendMemory(), BPPARAM = SerialParam())
+
+chr_mzr
+
+chr_mzr@backend@peaksData[[1]] |> head() # data is now in memory
+```
+
+With the call the full peak data was imported from the original mzML files into
+the object. This has obviously an impact on the object's size, which is now much
+larger than before.
+
+```{r}
+print(object.size(chr_mzr), units = "Mb")
+```
+
+# Session information
+
+```{r si}
+sessionInfo()
+```
+

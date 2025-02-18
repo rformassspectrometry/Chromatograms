@@ -4,7 +4,9 @@
 #'
 #' @aliases ChromBackend-class
 #' @aliases ChromBackendMemory-class
+#' @aliases ChromBackendMzR-class
 #' @aliases [,ChromBackend-method
+#' @aliases [[,ChromBackend-method
 #'
 #' @description
 #'
@@ -32,6 +34,10 @@
 #'   using the `peaksData` parameter. These data can be accessed with the
 #'   `chromData()` and `peaksData()` functions.
 #'
+#' - `ChromBackendMzR`: The `ChromBackendMzR` inherits all slots and methods
+#'   from the base `ChromBackendMemory` backend, providing additional
+#'   functionality for reading chromatographic data from mzML files.
+#'
 #'
 #' @section Core chromatogram variables:
 #'
@@ -55,7 +61,7 @@
 #' - `collisionEnergy`: for SRM data, `numeric` with the collision energy of
 #'   the precursor.
 #' - `dataOrigin`: optional `character` with the origin of a chromatogram.
-#' - `dataStorage`: `character` defining where the data is (currently) stored.
+#' - `dataOrigin`: `character` defining where the data is (currently) stored.
 #' - `msLevel`: `integer` defining the MS level of the data.
 #' - `mz`: optional `numeric` with the (target) m/z value for the
 #'   chromatographic data.
@@ -104,16 +110,16 @@
 #' checked with the `validPeaksData()` function.
 #'
 #' @param BPPARAM Parallel setup configuration. See [BiocParallel::bpparam()]
-#'     for more information.
+#'        for more information.
 #'
 #' @param columns For `chromData()` accessor: optional `character` with column
-#'     names (chromatogram variables) that should be included in the
-#'     returned `data.frame`. By default, all columns are returned.
+#'        names (chromatogram variables) that should be included in the
+#'        returned `data.frame`. By default, all columns are returned.
 #'
 #' @param drop For `chromData()` and `peaksData()`: `logical(1)` default to
-#' `FALSE`. If `TRUE`, and one column is called by the user, the method should
-#' return a vector (or list of vector for `peaksData()`) of the single column
-#' requested.
+#'        `FALSE`. If `TRUE`, and one column is requested by the user, the
+#'        method should return a vector (or list of vector for `peaksData()`)
+#'        of the single column requested.
 #'
 #' @param f `factor` defining the grouping to split `x`. See [split()].
 #'
@@ -162,7 +168,7 @@
 #'   backend class and should prepare the backend.
 #'   Parameters can be defined freely for each backend, depending on what is
 #'   needed to initialize the backend.
-#'   This method has to ensure to set the chromtogram variable `dataStorage`
+#'   This method has to ensure to set the chromatogram variable `dataOrigin`
 #'   correctly.
 #'
 #' - `backendBpparam()`: returns the parallel processing setup supported by
@@ -182,7 +188,7 @@
 #'   used for all peak data accessor or data manipulation functions.
 #'   The default implementation returns a factor of length 0 (`factor()`)
 #'   providing thus no default splitting. `backendParallelFactor()` for
-#'   `ChromBackendMzR` on the other hand returns `factor(dataStorage(object))`
+#'   `ChromBackendMzR` on the other hand returns `factor(dataOrigin(object))`
 #'   hence suggesting to split the object by data file.
 #'
 #' - `chromData()`, `chromData<-`: gets or sets general chromatogram metadata
@@ -192,7 +198,7 @@
 #'   replacement method `chromData<-` (unless some internal caching mechanism
 #'   could be used). `chromData()` should be implemented with the parameter
 #'   `drop` set to `FALSE` as default. With `drop = FALSE` the method should
-#'   return a `data.frame` even if only one column is called. If `drop = TRUE`
+#'   return a `data.frame` even if one column is requested. If `drop = TRUE`
 #'   is specified, the output will be a vector of the single column requested.
 #'   New backends should be implemented such as if empty, the method returns a
 #'   `data.frame` with 0 rows and the columns defined by `chromVariables()`.
@@ -209,7 +215,7 @@
 #'   `"rtime"` and `"intensity"` have to be provided. `peaksData()` should be
 #'   implemented with the parameter `drop` set to `FALSE` as default.  With
 #'   `drop = FALSE` the method should return a `data.frame` even if only one
-#'   column is called. If `drop = TRUE`  is specified, the output will be a
+#'   column is requested. If `drop = TRUE`  is specified, the output will be a
 #'   vector of the single column requested.
 #'
 #' - `peaksData<-` replaces the peak data (retention time and intensity values)
@@ -257,12 +263,6 @@
 #'   `dataOrigin()` returns a `character` of length equal to the number of
 #'   chromatograms, `dataOrigin<-` expects a `character` of length equal
 #'   `length(object)`.
-#'
-#' - `dataStorage()`, `dataStorage<-`: gets or sets the *data storage* variable.
-#'   `dataStorage()` returns a `character` of length equal to the number of
-#'   chromatograms in `object`, `dataStorage<- ` expects a `character` of
-#'   length equal `length(object)`. Note that missing values (`NA_character_`)
-#'   are not supported for `dataStorage()`.
 #'
 #' - `filterChromData()`: filters any numerical chromatographic data variables
 #'   based on the provided numerical `ranges`. The method should return a
@@ -351,6 +351,14 @@
 #'   [split.default()], thus backends extending `ChromBackend` don't
 #'   necessarily need to implement this method.
 #'
+#' - `supportsSetBackend()`: whether a `ChromBackend` supports the
+#'   `Chromatograms` `setBackend()` function. The default function will
+#'   take the `peaksData()` and `chromData()` of the user's backend and pass it
+#'   to the new backend. If the backend does not support this function, it
+#'   should return `FALSE`. Therefore both backend in question should have a
+#'   adequate `peaksData()` and `chromData()` method as well as their respective
+#'   replacement method.
+#'
 #' @section Implementation notes:
 #'
 #' Backends extending `ChromBackend` **must** implement all of its methods
@@ -434,7 +442,7 @@ setReplaceMethod("chromData", "ChromBackend",
 #'
 #' @rdname ChromBackend
 setMethod("peaksData", "ChromBackend",
-    function(object, columns = c("rtime", "intensity"), drop = FALSE) {
+    function(object, columns = c("rtime", "intensity"), drop = FALSE,...) {
         stop("Not implemented for ", class(object), ".")
     })
 
@@ -578,25 +586,6 @@ setReplaceMethod("dataOrigin", "ChromBackend", function(object, value) {
     object
 })
 
-#' @exportMethod dataStorage
-#'
-#' @importMethodsFrom ProtGenerics dataStorage
-#'
-#' @rdname ChromBackend
-setMethod("dataStorage", "ChromBackend", function(object) {
-    chromData(object, columns = "dataStorage", drop = TRUE)
-})
-
-#' @exportMethod dataStorage<-
-#'
-#' @importMethodsFrom ProtGenerics dataStorage<-
-#'
-#' @rdname ChromBackend
-setReplaceMethod("dataStorage", "ChromBackend", function(object, value) {
-    object$dataStorage <- value
-    object
-})
-
 #' @exportMethod intensity
 #'
 #' @importMethodsFrom ProtGenerics intensity
@@ -604,7 +593,7 @@ setReplaceMethod("dataStorage", "ChromBackend", function(object, value) {
 #' @rdname ChromBackend
 setMethod("intensity", "ChromBackend", function(object) {
     if (length(object)) {
-        peaksData(object, column = "intensity", drop = TRUE)
+        peaksData(object, columns = "intensity", drop = TRUE)
     } else list()
 })
 
@@ -650,7 +639,7 @@ setMethod("isReadOnly", "ChromBackend", function(object) FALSE)
 #'
 #' @rdname ChromBackend
 setMethod("length", "ChromBackend", function(x) {
-    nrow(chromData(x, columns = "dataStorage"))
+    nrow(chromData(x, columns = "dataOrigin"))
 })
 
 #' @exportMethod lengths
@@ -849,7 +838,7 @@ setMethod("reset", "ChromBackend", function(object) {
 #' @rdname ChromBackend
 setMethod("rtime", "ChromBackend", function(object) {
     if (length(object)) {
-        peaksData(object, column = "rtime", drop = TRUE)
+        peaksData(object, columns = "rtime", drop = TRUE)
     } else list()
 })
 
@@ -936,14 +925,6 @@ setMethod("filterChromData", "ChromBackend",
 #' @note This function replaces the peaksData() of the input object. Therefore
 #' backend with `readOnly == TRUE` (i.e. ChromBackendmzR) will need to have a
 #' carefully implemented `peaksData(object) <-` method.
-#' First thought are to implement a way  to "cache" the results in a slot of
-#' the object (maybe an actual `@peaksData` slot or  a `cacheData` slot).
-#'
-#' The important things to be aware of are:
-#'  - This slot should only be used temporarily as to not overload the memory.
-#'  - Maybe inspiring on the `MsBackendCached` class and method.
-#'  - E.g. not storing the data but some sort of indices ?
-#'  - Storing the data in a  temporary file and reading it back when needed ?
 #'
 #' @export
 setMethod("filterPeaksData", "ChromBackend",
@@ -981,4 +962,13 @@ setMethod("filterPeaksData", "ChromBackend",
               object
           })
 
-
+#' @importMethodsFrom ProtGenerics supportsSetBackend
+#'
+#' @exportMethod supportsSetBackend
+#'
+#' @rdname ChromBackend
+#' @note
+#' I don't know if I want to base is on the isReadOnly() output..
+#' I think it depends more on how the backend is implemented. we can discuss this.
+#' @export
+setMethod("supportsSetBackend", "ChromBackend", function(object, ...) FALSE)

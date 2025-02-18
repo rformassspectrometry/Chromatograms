@@ -10,7 +10,8 @@ ChromBackendMemory()
 \S4method{backendInitialize}{ChromBackendMemory}(
   object,
   chromData = fillCoreChromVariables(data.frame()),
-  peaksData = list(.EMPTY_PEAKS_DATA)
+  peaksData = list(.EMPTY_PEAKS_DATA),
+  ...
 )
 }
 \arguments{
@@ -26,6 +27,8 @@ a \code{list} of \code{data.frame} with the peaks data. If not provided (or if
 empty), a default \code{list} of empty \code{data.frame} with the core peaks
 variables will be created. The length of the list should match the number
 of chromatograms in the \code{chromData} parameter.}
+
+\item{...}{Additional parameters to be passed.}
 }
 \description{
 \code{ChromBackendMemory}: This backend stores chromatographic data directly

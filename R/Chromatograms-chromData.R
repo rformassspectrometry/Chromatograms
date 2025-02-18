@@ -9,7 +9,6 @@
 #' @aliases chromIndex
 #' @aliases collisionEnergy
 #' @aliases dataOrigin
-#' @aliases dataStorage
 #' @aliases mz
 #' @aliases mzMin
 #' @aliases mzMax
@@ -26,7 +25,6 @@
 #' @aliases chromIndex<-
 #' @aliases collisionEnergy<-
 #' @aliases dataOrigin<-
-#' @aliases dataStorage<-
 #' @aliases mz<-
 #' @aliases mzMin<-
 #' @aliases mzMax<-
@@ -93,8 +91,7 @@
 #'   original source file (e.g. *mzML* file).
 #' - `collisionEnergy`: for SRM data, `numeric` with the collision energy of
 #'   the precursor.
-#' - `dataOrigin`: optional `character` with the origin of a chromatogram.
-#' - `dataStorage`: `character` defining where the data is (currently) stored.
+#' - `dataOrigin`: optional `character` with the origin of the data.
 #' - `msLevel`: `integer` defining the MS level of the data.
 #' - `mz`: optional `numeric` with the (target) m/z value for the
 #'   chromatographic data.
@@ -134,6 +131,11 @@
 #'
 #' @seealso [Chromatograms] for a general description of the `Chromatograms`
 #'          object.
+#'          [peaksData] for a general description of the chromatographic peaks
+#'          data available in the object, as well as how to access, replace and
+#'          subset them.
+#'          [processingQueue] for more information on the queuing
+#'          of processings and parallelization for larger dataset processing.
 #' @md
 #'
 #' @author Philippine Louail
@@ -183,16 +185,6 @@ setMethod("dataOrigin", "Chromatograms", function(object)
 #' @rdname chromData
 setReplaceMethod("dataOrigin", "Chromatograms", function(object, value) {
     dataOrigin(object@backend) <- value
-    object
-})
-
-#' @rdname chromData
-setMethod("dataStorage", "Chromatograms", function(object)
-    dataStorage(object@backend))
-
-#' @rdname chromData
-setReplaceMethod("dataStorage", "Chromatograms", function(object, value) {
-    dataStorage(object@backend) <- value
     object
 })
 

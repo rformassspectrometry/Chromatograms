@@ -1,6 +1,6 @@
 Package: Chromatograms
 Title: Infrastructure for Chromatographic Mass Spectrometry Data
-Version: 0.4.0
+Version: 0.5.0
 Description: The Chromatograms packages defines a efficient infrastructure
    for storing and handling of chromatographic mass spectrometry data. It
    provides different implementations of *backends* to store and represent the
@@ -29,10 +29,13 @@ Imports:
     MsCoreUtils (>= 1.7.5),
     IRanges
 Suggests:
+    msdata (>= 0.19.3),
+    roxygen2,
+    BiocStyle (>= 2.5.19),
     testthat,
     knitr (>= 1.1.0),
     rmarkdown,
-    BiocStyle
+    mzR (>= 2.41.4)
 License: Artistic-2.0
 Encoding: UTF-8
 VignetteBuilder: knitr
@@ -48,6 +51,8 @@ Collate:
     'hidden_aliases.R'
     'helpers.R'
     'ChromBackendMemory.R'
+    'ChromBackendMzR.R'
     'Chromatograms.R'
     'Chromatograms-chromData.R'
     'Chromatograms-peaksData.R'
+    'Chromatograms-processingQueue.R'

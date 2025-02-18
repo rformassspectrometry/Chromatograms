@@ -29,6 +29,8 @@ test_that("peaksVariables", {
 test_that("intensity", {
     res <- intensity(be)
     expect_true(is.list(res) || is(res, "list"))
+    expect_true(all(vapply(res, is.numeric, logical(1))))
+    expect_false(all(vapply(res, is.data.frame, logical(1))))
     expect_identical(length(res), length(be))
     if (!isReadOnly(be)) {
         tmp <- be
@@ -52,6 +54,8 @@ test_that("intensity", {
 test_that("rtime", {
     res <- rtime(be)
     expect_true(is.list(res) || is(res, "list"))
+    expect_true(all(vapply(res, is.numeric, logical(1))))
+    expect_false(all(vapply(res, is.data.frame, logical(1))))
     expect_identical(length(res), length(be))
     if (!isReadOnly(be)) {
         tmp <- be

@@ -32,14 +32,6 @@ test_that("Chromatograms, dataOrigin, dataOrigin<- works", {
     expect_equal(dataOrigin(res), c("source1", "source2", "source3"))
 })
 
-test_that("Chromatograms, dataStorage, dataStorage<- works", {
-    res <- c_full
-    chromData(res)$dataStorage <- c("disk", "memory", "disk")
-    expect_equal(dataStorage(res), c("disk", "memory", "disk"))
-    dataStorage(res) <- c("memory", "memory", "disk")
-    expect_equal(dataStorage(res), c("memory", "memory", "disk"))
-})
-
 test_that("Chromatograms, msLevel, msLevel<- works", {
     res <- c_full
     expect_equal(msLevel(res), c(1L, 1L, 1L))
@@ -126,53 +118,55 @@ test_that("Chromatograms, productMzMax, productMzMax<- works", {
 
 test_that("filterChromData handles various edge cases", {
     expect_identical(
-        filterChromData(be_cd, variables = c("mz"), ranges = numeric(),
+        filterChromData(c_full, variables = c("mz"), ranges = numeric(),
                         match = "any"),
-        be_cd
+        c_full
     )
-    res <- filterChromData(be_cd, variables = c("mz"), ranges = c(100, 200),
+    res <- filterChromData(c_full, variables = c("mz"), ranges = c(100, 200),
                            match = "all")
-    expect_identical(res, be_cd)
+    expect_identical(res, c_full)
 
-    res <- filterChromData(be_cd, variables = c("mz"), ranges = c(500, 600),
+    res <- filterChromData(c_full, variables = c("mz"), ranges = c(500, 600),
                            match = "any")
     expect_equal(nrow(chromData(res)), 0)
     expect_error(
-        filterChromData(be_cd, variables = c("mz", "chromIndex"),
+        filterChromData(c_full, variables = c("mz", "chromIndex"),
                         ranges = c(100, 200), match = "any"),
         "be twice the length of the "
     )
     expect_error(
-        filterChromData(be_cd, variables = c("mz"),
+        filterChromData(c_full, variables = c("mz"),
                         ranges = c("a", "b"), match = "any"),
         "filterChromData only support filtering for numerical"
     )
     expect_error(
-        filterChromData(be_cd, variables = c("nonExistentVar"),
+        filterChromData(c_full, variables = c("nonExistentVar"),
                         ranges = c(100, 200), match = "any"),
         " not available"
     )
     res <- filterChromData(c_empty, variables = c("mz"),
                            ranges = c(100, 200), match = "any")
     expect_equal(nrow(chromData(res)), 0)
-    res <- filterChromData(be_cd, variables = c("mz", "chromIndex"),
+    res <- filterChromData(c_full, variables = c("mz", "chromIndex"),
                            ranges = c(134, 150, 1, 2), match = "any")
     expect_true(nrow(chromData(res)) > 0)
-    res <- filterChromData(be_cd, variables = c("mz", "chromIndex"),
+    res <- filterChromData(c_full, variables = c("mz", "chromIndex"),
                            ranges = c(134, 150, 1, 2), match = "all")
-    expect_true(nrow(chromData(res)) <= nrow(chromData(be_cd)))
-    res <- filterChromData(be_cd, variables = c("mz", "chromIndex"),
+    expect_true(nrow(chromData(res)) <= nrow(chromData(c_full)))
+    res <- filterChromData(c_full, variables = c("mz", "chromIndex"),
                            ranges = c(100, 200, 1, 3), match = "any")
     expect_equal(nrow(chromData(res)), 3)
-    res <- filterChromData(be_cd, variables = c("mz", "chromIndex"),
+    res <- filterChromData(c_full, variables = c("mz", "chromIndex"),
                            ranges = c(500, 600, 10, 20), match = "all")
     expect_equal(nrow(chromData(res)), 0)
-    res <- filterChromData(be_cd, variables = c("mz"), ranges = c(134, 150),
+    res <- filterChromData(c_full, variables = c("mz"), ranges = c(134, 150),
                            match = "any", keep = FALSE)
     expect_equal(nrow(chromData(res)), 2)
 
-    res <- filterChromData(be_cd, variables = c("mz"), ranges = c(120, 130), match = "any")
+    res <- filterChromData(c_full, variables = c("mz"), ranges = c(120, 130),
+                           match = "any")
     expect_equal(nrow(chromData(res)), 1)
+
 })
 
 

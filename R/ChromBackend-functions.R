@@ -11,7 +11,6 @@ coreChromVariables <- function() .CORE_CHROM_VARIABLES
     chromIndex = "integer",
     collisionEnergy = "numeric",
     dataOrigin = "character",
-    dataStorage = "character",
     msLevel = "integer",
     mz = "numeric",
     mzMin = "numeric",
@@ -24,7 +23,7 @@ coreChromVariables <- function() .CORE_CHROM_VARIABLES
     productMzMax = "numeric"
     )
 
-#' @title Fill data frame with columns for missing core chrom variables
+#' @title Fill data.frame with columns for missing core chromatogram variables.
 #'
 #' @description
 #'
@@ -80,7 +79,7 @@ fillCoreChromVariables <- function(x = data.frame()) {
 #'
 #' @return
 #'
-#' If core variables have all the correct data type: an empty character.
+#' If the core variables have all the correct data type: an empty character.
 #' If one or more core variables (columns) have the wrong data type the
 #' function either throws an error (with `error = TRUE`) or returns a
 #' `character` specifying which variables/columns don't have the correct
@@ -91,7 +90,6 @@ fillCoreChromVariables <- function(x = data.frame()) {
 #' @export
 #' @rdname hidden_aliases
 validChromData <- function(x = data.frame(), error = TRUE) {
-    msg <- .valid_chrom_backend_data_storage(x$dataStorage)
     cn <- intersect(colnames(x), names(.CORE_CHROM_VARIABLES))
     msg <- unlist(lapply(cn, function(z) {
         if (!is(x[, z], .CORE_CHROM_VARIABLES[z]))

@@ -27,11 +27,13 @@ test_that(".df_combine works as expected", {
 
 
 test_that(".filter_ranges helper function works correctly", {
-    query <- data.frame(mz = c(112.2, 123.3, 134.4), chromIndex = c(1L, 2L, 3L))
+    query <- data.frame(mz = c(112.2, 123.3, 134.4),
+                        chromIndex = c(1L, 2L, 3L))
     ranges <- numeric()
     expect_error(.filter_ranges(query, ranges, match = "any"), "needs to be")
     ranges <- c(1, 2, 3)
-    expect_error(.filter_ranges(query, ranges, match = "any"), "Length of 'ranges'")
+    expect_error(.filter_ranges(query, ranges, match = "any"),
+                 "Length of 'ranges'")
 
     # All ranges match (full data retained)
     ranges <- c(100, 200, 1, 3)
@@ -51,13 +53,22 @@ test_that(".filter_ranges helper function works correctly", {
     expect_equal(res, 2)
     res <- .filter_ranges(query, ranges, match = "all")
     expect_equal(res, integer(0))
-})
 
+    # Single row edge case
+    query_single <- data.frame(mz = 125.0, chromIndex = 2L)
+    ranges <- c(120, 130, 1, 3)
+    res <- .filter_ranges(query_single, ranges, match = "all")
+    expect_equal(res, 1)
+    res <- .filter_ranges(query_single, ranges, match = "any")
+    expect_equal(res, 1)
 
-test_that(".valid_chrom_backend_data_storage works", {
-    expect_match(.valid_chrom_backend_data_storage(c("a", NA)), "not allowed")
-    expect_null(.valid_chrom_backend_data_storage(character()))
-    expect_null(.valid_chrom_backend_data_storage("b"))
+    # Edge case: empty query
+    query_empty <- data.frame(mz = numeric(), chromIndex = integer())
+    ranges <- c(100, 200, 1, 3)
+    res <- .filter_ranges(query_empty, ranges, match = "all")
+    expect_equal(res, integer(0))
+    res <- .filter_ranges(query_empty, ranges, match = "any")
+    expect_equal(res, integer(0))
 })
 
 test_that(".check_column_order_and_types works", {
@@ -118,7 +129,7 @@ test_that(".validate_entry works", {
                  "Entry 1: all 'peaksData' entries should be of class 'data.frame'")
 })
 
-test_that(".run_process_queue handles empty queue correctly", {
+test_that(".run_process_queue ChromBackendMemory work", {
     result <- .run_process_queue(c_empty@backend,
                                  f = processingChunkFactor(c_empty),
                                  queue = c_empty@processingQueue)
@@ -129,11 +140,14 @@ test_that(".run_process_queue handles empty queue correctly", {
                                  queue = c_full@processingQueue)
     expect_equal(result, c_full@backend)
 
-    c_queued <- filterPeaksData(c_full, variables = c("rtime"), ranges = c(12.5, 45.5))
-    c_queued <- filterPeaksData(c_queued, variables = c("intensity"), ranges = c(100, 200))
+    c_queued <- filterPeaksData(c_full, variables = c("rtime"),
+                                ranges = c(12.5, 45.5))
+    c_queued <- filterPeaksData(c_queued, variables = c("intensity"),
+                                ranges = c(100, 200))
 
+    # this test for f = factor() and queue >1
     result <- .run_process_queue(c_queued@backend,
-                                 f = processingChunkFactor(c_queued), # this test for f = factor() and queue >1
+                                 f = processingChunkFactor(c_queued),
                                  queue = c_queued@processingQueue)
     expect_true(inherits(result, "ChromBackend"))
     peaks_result <- peaksData(result)
@@ -141,8 +155,10 @@ test_that(".run_process_queue handles empty queue correctly", {
     expect_false(identical(peaks_result, peaksData(c_full@backend)))
 
     f <- factor(c(1, 1, 2))
-    c_queued <- filterPeaksData(c_full, variables = c("rtime"), ranges = c(12.5, 45.5))
-    c_queued <- filterPeaksData(c_queued, variables = c("intensity"), ranges = c(100, 200))
+    c_queued <- filterPeaksData(c_full, variables = c("rtime"),
+                                ranges = c(12.5, 45.5))
+    c_queued <- filterPeaksData(c_queued, variables = c("intensity"),
+                                ranges = c(100, 200))
 
     result <- .run_process_queue(c_queued@backend, f = f,
                                  queue = c_queued@processingQueue)
@@ -156,19 +172,85 @@ test_that(".run_process_queue handles empty queue correctly", {
     f <- factor(c(1, 2))
     tmp <- c_full
     tmp@processingQueue <- list(1)
-    expect_error(.run_process_queue(tmp@backend, f = f, queue <- tmp@processingQueue),
+    expect_error(.run_process_queue(tmp@backend, f = f,
+                                    queue = tmp@processingQueue),
                  "length 'f' has to be equal to the length of 'object'")
 
     f <- c(1, 2, 3)
     expect_error(.run_process_queue(tmp@backend,
                                     f = f, queue = tmp@processingQueue),
                  "f must be a factor")
-
-    f <- factor(c(1, 1, 2))
-    c_empty <- Chromatograms()
-    result <- .run_process_queue(c_empty@backend, f = f,
-                                 queue = c_empty@processingQueue)
-    expect_equal(result, c_empty@backend)
 })
 
+test_that(".run_processing_queue, ChromBackendMzr work", {
+    ## without factor and queue == 1
+    c_queued  <- filterPeaksData(c_mzr, variables = c("rtime"),
+                                 ranges = c(12.5, 25.5), keep = FALSE)
 
+    result1 <- .run_process_queue(c_queued@backend,
+                                 f = processingChunkFactor(c_queued),
+                                 queue = c_queued@processingQueue)
+
+    expect_true(result1@inMemory)
+    expect_false(c_queued@backend@inMemory)
+
+    expect_true(inherits(result1, "ChromBackendMzR"))
+    expect_false(identical(lengths(rtime(result1)),
+                           lengths(rtime(c_mzr@backend))))
+    expect_equal(length(peaksData(result1)), length(peaksData(c_mzr@backend)))
+
+    ## with levels(factor) > 1 and queue == 1
+    processingChunkSize(c_queued) <- 100
+    f <- processingChunkFactor(c_queued) # > 1
+    result2 <- .run_process_queue(c_queued@backend, f = f,
+                                 queue = c_queued@processingQueue)
+    expect_true(inherits(result2, "ChromBackendMzR"))
+    expect_equal(length(peaksData(result2)), length(peaksData(c_mzr@backend)))
+    expect_false(identical(lengths(rtime(result2)),
+                           lengths(rtime(c_mzr@backend))))
+    expect_true(result2@inMemory)
+    expect_false(c_queued@backend@inMemory)
+    expect_identical(result1, result2)
+
+
+    ## without factor and queue > 1
+    c_queued <- filterPeaksData(c_queued, variables = c("intensity"),
+                                ranges = c(45, 50))
+    result3 <- .run_process_queue(c_queued@backend,
+                                 f = factor(),
+                                 queue = c_queued@processingQueue)
+
+    expect_true(inherits(result3, "ChromBackendMzR"))
+    expect_equal(length(peaksData(result3)), length(peaksData(c_mzr@backend)))
+    expect_false(identical(lengths(rtime(result3)),
+                           lengths(rtime(c_mzr@backend))))
+    expect_true(result3@inMemory)
+    expect_false(c_queued@backend@inMemory)
+
+
+    ## with factor and queue > 1
+    f <- processingChunkFactor(c_queued)
+    result4 <- .run_process_queue(c_queued@backend, f = f,
+                                 queue = c_queued@processingQueue)
+    expect_true(inherits(result4, "ChromBackendMzR"))
+    expect_equal(length(peaksData(result4)),
+                 length(peaksData(c_mzr@backend)))
+    expect_false(identical(lengths(rtime(result4)),
+                           lengths(rtime(c_mzr@backend))))
+    expect_true(result4@inMemory)
+    expect_false(c_queued@backend@inMemory)
+    expect_identical(result3, result4)
+
+})
+
+test_that(".valid_processing_queue works correctly", {
+    expect_null(.valid_processing_queue(list()))
+    valid_queue <- list(new("ProcessingStep"))
+    expect_null(.valid_processing_queue(valid_queue))
+
+    invalid_queue <- list("not_a_processing_step")
+    expect_error(
+        .valid_processing_queue(invalid_queue),
+        "'processingQueue' should only contain ProcessingStep objects."
+    )
+})

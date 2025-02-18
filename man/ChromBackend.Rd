@@ -6,7 +6,9 @@
 \alias{ChromBackend}
 \alias{ChromBackend-class}
 \alias{ChromBackendMemory-class}
+\alias{ChromBackendMzR-class}
 \alias{[,ChromBackend-method}
+\alias{[[,ChromBackend-method}
 \alias{$,ChromBackend-method}
 \alias{$<-,ChromBackend-method}
 \alias{backendMerge,ChromBackend-method}
@@ -14,7 +16,6 @@
 \alias{chromData<-,ChromBackend-method}
 \alias{peaksData,ChromBackend-method}
 \alias{peaksData<-,ChromBackend-method}
-\alias{[[,ChromBackend-method}
 \alias{[[<-,ChromBackend-method}
 \alias{backendBpparam,ChromBackend-method}
 \alias{backendInitialize,ChromBackend-method}
@@ -27,8 +28,6 @@
 \alias{collisionEnergy<-,ChromBackend-method}
 \alias{dataOrigin,ChromBackend-method}
 \alias{dataOrigin<-,ChromBackend-method}
-\alias{dataStorage,ChromBackend-method}
-\alias{dataStorage<-,ChromBackend-method}
 \alias{intensity,ChromBackend-method}
 \alias{intensity<-,ChromBackend-method}
 \alias{isEmpty,ChromBackend-method}
@@ -62,6 +61,7 @@
 \alias{split,ChromBackend,ANY-method}
 \alias{filterChromData,ChromBackend-method}
 \alias{filterPeaksData,ChromBackend-method}
+\alias{supportsSetBackend,ChromBackend-method}
 \title{Chromatographic MS Data Backends}
 \usage{
 coreChromVariables()
@@ -80,7 +80,7 @@ corePeaksVariables()
 
 \S4method{chromData}{ChromBackend}(object) <- value
 
-\S4method{peaksData}{ChromBackend}(object, columns = c("rtime", "intensity"), drop = FALSE)
+\S4method{peaksData}{ChromBackend}(object, columns = c("rtime", "intensity"), drop = FALSE, ...)
 
 \S4method{peaksData}{ChromBackend}(object) <- value
 
@@ -109,10 +109,6 @@ corePeaksVariables()
 \S4method{dataOrigin}{ChromBackend}(object)
 
 \S4method{dataOrigin}{ChromBackend}(object) <- value
-
-\S4method{dataStorage}{ChromBackend}(object)
-
-\S4method{dataStorage}{ChromBackend}(object) <- value
 
 \S4method{intensity}{ChromBackend}(object)
 
@@ -191,6 +187,8 @@ corePeaksVariables()
   match = c("any", "all"),
   keep = TRUE
 )
+
+\S4method{supportsSetBackend}{ChromBackend}(object, ...)
 }
 \arguments{
 \item{x}{Object extending \code{ChromBackend}.}
@@ -202,9 +200,9 @@ corePeaksVariables()
 \item{...}{Additional arguments.}
 
 \item{drop}{For \code{chromData()} and \code{peaksData()}: \code{logical(1)} default to
-\code{FALSE}. If \code{TRUE}, and one column is called by the user, the method should
-return a vector (or list of vector for \code{peaksData()}) of the single column
-requested.}
+\code{FALSE}. If \code{TRUE}, and one column is requested by the user, the
+method should return a vector (or list of vector for \code{peaksData()})
+of the single column requested.}
 
 \item{name}{For \code{$} and \verb{$<-}: the name of the chromatogram variable to
 return or set.}
@@ -265,6 +263,9 @@ initialized with a \code{data.frame} of chromatographic data via the
 \code{chromData} parameter and a \code{list} of \code{data.frame} entries for peaks data
 using the \code{peaksData} parameter. These data can be accessed with the
 \code{chromData()} and \code{peaksData()} functions.
+\item \code{ChromBackendMzR}: The \code{ChromBackendMzR} inherits all slots and methods
+from the base \code{ChromBackendMemory} backend, providing additional
+functionality for reading chromatographic data from mzML files.
 }
 
 Filter the peak data based on the provided ranges for the given variables.
@@ -273,16 +274,9 @@ Filter the peak data based on the provided ranges for the given variables.
 This function replaces the peaksData() of the input object. Therefore
 backend with \code{readOnly == TRUE} (i.e. ChromBackendmzR) will need to have a
 carefully implemented \verb{peaksData(object) <-} method.
-First thought are to implement a way  to "cache" the results in a slot of
-the object (maybe an actual \verb{@peaksData} slot or  a \code{cacheData} slot).
 
-The important things to be aware of are:
-\itemize{
-\item This slot should only be used temporarily as to not overload the memory.
-\item Maybe inspiring on the \code{MsBackendCached} class and method.
-\item E.g. not storing the data but some sort of indices ?
-\item Storing the data in a  temporary file and reading it back when needed ?
-}
+I don't know if I want to base is on the isReadOnly() output..
+I think it depends more on how the backend is implemented. we can discuss this.
 }
 \section{Core chromatogram variables}{
 
@@ -307,7 +301,7 @@ original source file (e.g. \emph{mzML} file).
 \item \code{collisionEnergy}: for SRM data, \code{numeric} with the collision energy of
 the precursor.
 \item \code{dataOrigin}: optional \code{character} with the origin of a chromatogram.
-\item \code{dataStorage}: \code{character} defining where the data is (currently) stored.
+\item \code{dataOrigin}: \code{character} defining where the data is (currently) stored.
 \item \code{msLevel}: \code{integer} defining the MS level of the data.
 \item \code{mz}: optional \code{numeric} with the (target) m/z value for the
 chromatographic data.
@@ -370,7 +364,7 @@ supposed to be called right after creating an instance of the
 backend class and should prepare the backend.
 Parameters can be defined freely for each backend, depending on what is
 needed to initialize the backend.
-This method has to ensure to set the chromtogram variable \code{dataStorage}
+This method has to ensure to set the chromatogram variable \code{dataOrigin}
 correctly.
 \item \code{backendBpparam()}: returns the parallel processing setup supported by
 the backend class. This function can be used by any higher
@@ -388,7 +382,7 @@ processing.
 used for all peak data accessor or data manipulation functions.
 The default implementation returns a factor of length 0 (\code{factor()})
 providing thus no default splitting. \code{backendParallelFactor()} for
-\code{ChromBackendMzR} on the other hand returns \code{factor(dataStorage(object))}
+\code{ChromBackendMzR} on the other hand returns \code{factor(dataOrigin(object))}
 hence suggesting to split the object by data file.
 \item \code{chromData()}, \verb{chromData<-}: gets or sets general chromatogram metadata
 (annotation). \code{chromData()} returns a \code{data.frame}, \verb{chromData<-} expects
@@ -397,7 +391,7 @@ a \code{data.frame} with the same number of rows as there are chromatograms in
 replacement method \verb{chromData<-} (unless some internal caching mechanism
 could be used). \code{chromData()} should be implemented with the parameter
 \code{drop} set to \code{FALSE} as default. With \code{drop = FALSE} the method should
-return a \code{data.frame} even if only one column is called. If \code{drop = TRUE}
+return a \code{data.frame} even if one column is requested. If \code{drop = TRUE}
 is specified, the output will be a vector of the single column requested.
 New backends should be implemented such as if empty, the method returns a
 \code{data.frame} with 0 rows and the columns defined by \code{chromVariables()}.
@@ -413,7 +407,7 @@ variables should be returned in each array. As default (minimum) columns
 \code{"rtime"} and \code{"intensity"} have to be provided. \code{peaksData()} should be
 implemented with the parameter \code{drop} set to \code{FALSE} as default.  With
 \code{drop = FALSE} the method should return a \code{data.frame} even if only one
-column is called. If \code{drop = TRUE}  is specified, the output will be a
+column is requested. If \code{drop = TRUE}  is specified, the output will be a
 vector of the single column requested.
 \item \verb{peaksData<-} replaces the peak data (retention time and intensity values)
 of the backend. This method expects a \code{list} of two-dimensional arrays
@@ -455,11 +449,6 @@ of length equal to the number of chromatograms in \code{object}.
 \code{dataOrigin()} returns a \code{character} of length equal to the number of
 chromatograms, \verb{dataOrigin<-} expects a \code{character} of length equal
 \code{length(object)}.
-\item \code{dataStorage()}, \verb{dataStorage<-}: gets or sets the \emph{data storage} variable.
-\code{dataStorage()} returns a \code{character} of length equal to the number of
-chromatograms in \code{object}, \verb{dataStorage<- } expects a \code{character} of
-length equal \code{length(object)}. Note that missing values (\code{NA_character_})
-are not supported for \code{dataStorage()}.
 \item \code{filterChromData()}: filters any numerical chromatographic data variables
 based on the provided numerical \code{ranges}. The method should return a
 \code{ChromBackend} object with the chromatograms that match the condition. This
@@ -528,6 +517,13 @@ this method.
 parameter \code{f}). The default method for \code{ChromBackend} uses
 \code{\link[=split.default]{split.default()}}, thus backends extending \code{ChromBackend} don't
 necessarily need to implement this method.
+\item \code{supportsSetBackend()}: whether a \code{ChromBackend} supports the
+\code{Chromatograms} \code{setBackend()} function. The default function will
+take the \code{peaksData()} and \code{chromData()} of the user's backend and pass it
+to the new backend. If the backend does not support this function, it
+should return \code{FALSE}. Therefore both backend in question should have a
+adequate \code{peaksData()} and \code{chromData()} method as well as their respective
+replacement method.
 }
 }
 
