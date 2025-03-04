@@ -1,5 +1,3 @@
-## test backendInitialize
-
 test_that("ChromBackendMzR works", {
     expect_true(isReadOnly(be_mzr))
     expect_false(be_mzr@inMemory)
@@ -26,8 +24,8 @@ test_that("show method for ChromBackendMzR works correctly", {
     tmp <- be_mzr
     tmp@inMemory <- TRUE
     expect_output(show(tmp), "Peaks data is cached in memory")
-
 })
+
 test_that("replacement method works", {
     tmp <- be_mzr
     peaksData(tmp)[[1]] <- peaksData(be_mzr)[[1]] + 1
@@ -51,5 +49,4 @@ test_that("error message work", {
     expect_error(peaksData(be_mzr, columns = "notacolumn"),
                  "requested peaks variables")
     })
-
 

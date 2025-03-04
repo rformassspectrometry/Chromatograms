@@ -5,8 +5,12 @@
 #' @aliases ChromBackend-class
 #' @aliases ChromBackendMemory-class
 #' @aliases ChromBackendMzR-class
+#' @aliases ChromBackendSpectra-class
 #' @aliases [,ChromBackend-method
 #' @aliases [[,ChromBackend-method
+#' @aliases [[<-,ChromBackend-method
+#' @aliases extractByIndex
+#' @aliases factorize
 #'
 #' @description
 #'
@@ -205,6 +209,17 @@
 #'   By default, the function *should* return at minimum the coreChromVariables,
 #'   even if NAs.
 #'
+#' - `extractByIndex()`: function to subset a backend to selected elements
+#'   defined by the provided index. Similar to `[`, this method should allow
+#'   extracting (or to subset) the data in any order. In contrast to `[`,
+#'   however, `i` is expected to be an `integer` (while `[` should also
+#'   support `logical` and eventually `character`). While being apparently
+#'   redundant to `[`, this methods avoids package namespace errors/problems
+#'   that can result in implementations of `[` being not found by R (which
+#'   can happen sometimes in parallel processing using the
+#'   [BiocParallel::SnowParam()]). This method is used internally to
+#'   extract/subset its backend. Implementation of this method is mandatory.
+#'
 #' - `peaksData()`: returns a `list` of `data.frame` with the data
 #'   (e.g. retention time - intensity pairs) from each chromatogram. The length
 #'   of the `list` is equal to the number of chromatograms in `object`. For an
@@ -387,14 +402,6 @@ setClass("ChromBackend",
              version = "character"),
          prototype = prototype(readonly = FALSE, version = "0.1"))
 
-#' @importMethodsFrom S4Vectors [ [<-
-#' @exportMethod [
-#'
-#' @rdname ChromBackend
-setMethod("[", "ChromBackend", function(x, i, j, ..., drop = FALSE) {
-    stop("Not implemented for ", class(x), ".")
-})
-
 #' @importMethodsFrom S4Vectors $ $<-
 #'
 #' @exportMethod $
@@ -436,6 +443,13 @@ setReplaceMethod("chromData", "ChromBackend",
     stop("Not implemented for ", class(object), ".")
 })
 
+#' @exportMethod factorize
+#'
+#' @rdname ChromBackend
+setMethod("factorize", "ChromBackend", function(object, ...) {
+    stop("Not implemented for ", class(object), ".")
+})
+
 #' @exportMethod peaksData
 #'
 #' @importMethodsFrom ProtGenerics peaksData
@@ -457,6 +471,13 @@ setReplaceMethod("peaksData", "ChromBackend", function(object, value) {
 
 ################################################################################
 ## Methods with default implementations below.
+
+#' @exportMethod [
+#' @rdname ChromBackend
+#' @export
+setMethod("[", "ChromBackend", function(x, i, j, ..., drop = FALSE) {
+    extractByIndex(x, i2index(i, length = length(x)))
+})
 
 #' @rdname ChromBackend
 #'
@@ -583,6 +604,23 @@ setMethod("dataOrigin", "ChromBackend", function(object) {
 #' @rdname ChromBackend
 setReplaceMethod("dataOrigin", "ChromBackend", function(object, value) {
     object$dataOrigin <- value
+    object
+})
+
+#' @rdname ChromBackend
+#' @importFrom methods existsMethod
+#' @importMethodsFrom ProtGenerics extractByIndex
+#' @exportMethod extractByIndex
+setMethod("extractByIndex", c("ChromBackend", "ANY"), function(object, i) {
+    if (existsMethod("[", class(object)[1L]))
+        object[i = i]
+    else stop("'extractByIndex' not implemented for ", class(object)[1L], ".")
+})
+
+#' @rdname ChromBackend
+#'
+#' @export
+setMethod("extractByIndex", c("ChromBackend", "missing"), function(object, i) {
     object
 })
 

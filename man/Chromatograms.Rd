@@ -3,12 +3,30 @@
 \name{Chromatograms}
 \alias{Chromatograms}
 \alias{Chromatograms-class}
+\alias{[,Chromatograms-method}
+\alias{[<-,Chromatograms-method}
+\alias{[[,Chromatograms-method}
+\alias{[[<-,Chromatograms-method}
+\alias{Chromatograms,ChromBackendOrMissing-method}
+\alias{Chromatograms,Spectra-method}
 \alias{setBackend,Chromatograms,ChromBackend-method}
 \alias{$,Chromatograms-method}
 \alias{$<-,Chromatograms-method}
+\alias{[,Chromatograms,ANY,ANY-method}
+\alias{[[,Chromatograms,ANY,ANY-method}
+\alias{[[<-,Chromatograms,ANY,ANY,ANY-method}
+\alias{factorize,Chromatograms-method}
 \title{The Chromatograms class to manage and access chromatographic data}
 \usage{
-Chromatograms(backend = ChromBackendMemory(), processingQueue = list(), ...)
+\S4method{Chromatograms}{ChromBackendOrMissing}(object = ChromBackendMemory(), processingQueue = list(), ...)
+
+\S4method{Chromatograms}{Spectra}(
+  object,
+  summarize.method = c("sum", "max"),
+  chromData = data.frame(),
+  factorize.by = c("msLevel", "dataOrigin"),
+  ...
+)
 
 \S4method{setBackend}{Chromatograms,ChromBackend}(
   object,
@@ -21,10 +39,17 @@ Chromatograms(backend = ChromBackendMemory(), processingQueue = list(), ...)
 \S4method{$}{Chromatograms}(x, name)
 
 \S4method{$}{Chromatograms}(x, name) <- value
+
+\S4method{[}{Chromatograms,ANY,ANY}(x, i, j, ..., drop = FALSE)
+
+\S4method{[[}{Chromatograms,ANY,ANY}(x, i, j, ...)
+
+\S4method{[[}{Chromatograms,ANY,ANY,ANY}(x, i, j, ...) <- value
+
+\S4method{factorize}{Chromatograms}(object, factorize.by = c("msLevel", "dataOrigin"), ...)
 }
 \arguments{
-\item{backend}{\link{ChromBackend} object providing the raw data for the
-\code{Chromatograms} object.}
+\item{object}{A \link{Chromatograms} object.}
 
 \item{processingQueue}{\link{list} a list of processing steps (i.e. functions) to
 be applied to the chromatographic data. The processing steps are
@@ -32,7 +57,22 @@ applied in the order they are listed in the \code{processingQueue}.}
 
 \item{...}{Additional arguments.}
 
-\item{object}{A \link{Chromatograms} object.}
+\item{summarize.method}{For Chromatograms created with a \code{Spectra} object:
+A \code{character} vector with the name of the function to be used to
+summaries the spectra data intensity. The available methods are "sum"
+and "max". The default is "sum".}
+
+\item{chromData}{For \code{Chromatograms()} build from a \code{Spectra} object backend,
+a \code{data.frame} with the chromatographic data. If not provided
+(or if empty), a default \code{data.frame} with the core chromatographic
+variables will be created.}
+
+\item{factorize.by}{A \code{character} vector with the names of the variables in
+the \code{Spectra} object and the \code{chromData} slot that should be used
+to factorize the \code{Spectra} object data to generate the chromatographic data.}
+
+\item{backend}{\link{ChromBackend} object providing the raw data for the
+\code{Chromatograms} object.}
 
 \item{f}{\code{factor} defining the grouping to split the \code{Chromatograms} object.}
 
@@ -45,6 +85,12 @@ for more information.}
 access.}
 
 \item{value}{The value to replace the variable with.}
+
+\item{i}{For \code{[}: \code{integer}, \code{logical} or \code{character} to subset the object.}
+
+\item{j}{For \code{[} and \code{[[}: ignored.}
+
+\item{drop}{For \code{[}: \code{logical(1)} default to \code{FALSE}.}
 }
 \description{
 The \code{Chromatograms} class encapsules chromatographic data and related
@@ -114,7 +160,7 @@ the data and reduces the memory demand. To read more about the
 
 \examples{
 ## Create a Chromatograms object
-chroms <- Chromatograms(backend = ChromBackendMemory())
+chroms <- Chromatograms(ChromBackendMemory())
 
 }
 \seealso{

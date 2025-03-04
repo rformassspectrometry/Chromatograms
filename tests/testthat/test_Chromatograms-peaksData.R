@@ -27,7 +27,7 @@ test_that("peaksData, Chromatograms, ChrombackendMemory works as expected", {
     expect_false(identical(peaksData(c_queued), peaksData(c_queued2)))
     })
 
-test_that("peaksData, Chromatogram, ChromBackendMzR works as expected", { #is that really necessary ?
+test_that("peaksData, Chromatogram, ChromBackendMzR works as expected", {
     peaks <- peaksData(c_mzr)
     backend_peaks <- peaksData(c_mzr@backend)
     expect_equal(peaks, backend_peaks)

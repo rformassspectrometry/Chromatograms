@@ -74,7 +74,6 @@ setMethod("backendInitialize", "ChromBackendMzR",
               })
 
 #' @rdname hidden_aliases
-#' @importFrom utils head
 #' @export
 setMethod("show", "ChromBackendMzR", function(object) {
     callNextMethod()
@@ -111,9 +110,9 @@ setMethod("peaksData", "ChromBackendMzR",
               ret <- all(pv %in% columns)
               f <- factor(dataOrigin(object),
                           levels = unique(dataOrigin(object)))
-              pd <- bplapply(split(object, f = dataOrigin(object)),
+              pd <- bplapply(split(object, f = dataOrigin(object)), #should not this be f = f ?
                              function(ob) {
-                                 chr <- .get_chrom_data(fl = unique(dataOrigin(ob)),
+                                 chr <- .get_chrom_data(fl = unique(dataOrigin(ob)), # maybe here use levels(f), to prevent extracting origin again
                                                         idx = chromIndex(ob))
                                  if (ret) chr
                                  else lapply(chr, `[`, , columns, drop = drop)

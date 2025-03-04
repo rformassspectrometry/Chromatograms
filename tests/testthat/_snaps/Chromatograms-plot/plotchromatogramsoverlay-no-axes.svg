@@ -1,0 +1,37 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<svg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' class='svglite' data-engine-version='2.0' width='720.00pt' height='576.00pt' viewBox='0 0 720.00 576.00'>
+<defs>
+  <style type='text/css'><![CDATA[
+    .svglite line, .svglite polyline, .svglite polygon, .svglite path, .svglite rect, .svglite circle {
+      fill: none;
+      stroke: #000000;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-miterlimit: 10.00;
+    }
+  ]]></style>
+</defs>
+<rect width='100%' height='100%' style='stroke: none; fill: #FFFFFF;'/>
+<defs>
+  <clipPath id='cpMC4wMHw3MjAuMDB8MC4wMHw1NzYuMDA='>
+    <rect x='0.00' y='0.00' width='720.00' height='576.00' />
+  </clipPath>
+</defs>
+<g clip-path='url(#cpMC4wMHw3MjAuMDB8MC4wMHw1NzYuMDA=)'>
+<text x='374.40' y='34.48' text-anchor='middle' style='font-size: 14.40px; font-weight: bold; font-family: sans;' textLength='112.07px' lengthAdjust='spacingAndGlyphs'>3 chromatograms</text>
+<text x='374.40' y='557.28' text-anchor='middle' style='font-size: 12.00px; font-family: sans;' textLength='44.00px' lengthAdjust='spacingAndGlyphs'>rtime (s)</text>
+<text transform='translate(12.96,280.80) rotate(-90)' text-anchor='middle' style='font-size: 12.00px; font-family: sans;' textLength='44.03px' lengthAdjust='spacingAndGlyphs'>intensity</text>
+</g>
+<defs>
+  <clipPath id='cpNTkuMDR8Njg5Ljc2fDU5LjA0fDUwMi41Ng=='>
+    <rect x='59.04' y='59.04' width='630.72' height='443.52' />
+  </clipPath>
+</defs>
+<g clip-path='url(#cpNTkuMDR8Njg5Ljc2fDU5LjA0fDUwMi41Ng==)'>
+<line x1='89.44' y1='452.14' x2='96.09' y2='82.67' style='stroke-width: 0.75; stroke: #000000; stroke-opacity: 0.50;' />
+<line x1='96.69' y1='82.65' x2='119.94' y2='436.49' style='stroke-width: 0.75; stroke: #000000; stroke-opacity: 0.50;' />
+<line x1='654.48' y1='469.98' x2='659.32' y2='470.87' style='stroke-width: 0.75; stroke: #000000; stroke-opacity: 0.50;' />
+<line x1='89.44' y1='452.14' x2='96.09' y2='82.67' style='stroke-width: 0.75; stroke: #000000; stroke-opacity: 0.50;' />
+<line x1='96.69' y1='82.65' x2='119.94' y2='436.49' style='stroke-width: 0.75; stroke: #000000; stroke-opacity: 0.50;' />
+</g>
+</svg>

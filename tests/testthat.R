@@ -1,5 +1,19 @@
 library(testthat)
 library(Chromatograms)
+library(Spectra)
+library(MsBackendMetaboLights)
+
+### Test ChromBackendSpectra
+be <- backendInitialize(MsBackendMetaboLights(), mtblsId = "MTBLS39",
+                        filePattern = c("63B.cdf"))
+s <- Spectra(be)
+be_empty <- new("ChromBackendSpectra")
+be<- backendInitialize(be_empty, s)
+test_suite <- system.file("test_backends", "test_ChromBackend",
+                          package = "Chromatograms")
+test_dir(test_suite, stop_on_failure = TRUE)
+be_sp <- be
+c_sp <- Chromatograms(be)
 
 ### Test ChrombackendMzR
 # fetch files
@@ -10,7 +24,7 @@ be <- backendInitialize(be_empty, files = MRM_file, BPPARAM = SerialParam())
 
 test_suite <- system.file("test_backends", "test_ChromBackend",
                           package = "Chromatograms")
-test_dir(test_suite, stop_on_failure = TRUE) #pass
+test_dir(test_suite, stop_on_failure = TRUE)
 
 be_mzr <- be
 c_mzr <- Chromatograms(be)
@@ -37,6 +51,4 @@ c_empty <- Chromatograms()
 c_full <- Chromatograms(be)
 
 test_check("Chromatograms")
-
-
 

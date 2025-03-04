@@ -127,7 +127,7 @@
 #'   `Chromatograms` object containing only the chromatograms that match the
 #'   specified conditions. This function results in an object with fewer
 #'   chromatograms than the original.
-
+#'
 #'
 #' @seealso [Chromatograms] for a general description of the `Chromatograms`
 #'          object.
