@@ -58,9 +58,11 @@
   </clipPath>
 </defs>
 <g clip-path='url(#cpNDkuMDB8MzM0LjkwfDQ5LjAwfDIyNy4wNA==)'>
-<line x1='65.56' y1='211.55' x2='101.75' y2='209.96' style='stroke-width: 0.75; stroke: #000000; stroke-opacity: 0.50;' />
-<line x1='109.50' y1='203.99' x2='154.07' y2='61.30' style='stroke-width: 0.75; stroke: #000000; stroke-opacity: 0.50;' />
-<line x1='160.35' y1='59.54' x2='319.82' y2='199.47' style='stroke-width: 0.75; stroke: #000000; stroke-opacity: 0.50;' />
+<polyline points='59.59,211.82 107.72,209.70 155.85,55.60 324.31,203.41 ' style='stroke-width: 0.75; stroke: #000000; stroke-opacity: 0.50;' />
+<circle cx='59.59' cy='211.82' r='2.24' style='stroke-width: 0.75; stroke: #000000; stroke-opacity: 0.50;' />
+<circle cx='107.72' cy='209.70' r='2.24' style='stroke-width: 0.75; stroke: #000000; stroke-opacity: 0.50;' />
+<circle cx='155.85' cy='55.60' r='2.24' style='stroke-width: 0.75; stroke: #000000; stroke-opacity: 0.50;' />
+<circle cx='324.31' cy='203.41' r='2.24' style='stroke-width: 0.75; stroke: #000000; stroke-opacity: 0.50;' />
 </g>
 <defs>
   <clipPath id='cpNDA5LjAwfDY5NC45MHw0OS4wMHwyMjcuMDQ='>
@@ -109,7 +111,9 @@
 <text transform='translate(370.76,138.02) rotate(-90)' text-anchor='middle' style='font-size: 9.96px; font-family: sans;' textLength='36.54px' lengthAdjust='spacingAndGlyphs'>intensity</text>
 </g>
 <g clip-path='url(#cpNDA5LjAwfDY5NC45MHw0OS4wMHwyMjcuMDQ=)'>
-<line x1='425.52' y1='56.33' x2='678.38' y2='87.67' style='stroke-width: 0.75; stroke: #000000; stroke-opacity: 0.50;' />
+<polyline points='419.59,55.60 684.31,88.40 ' style='stroke-width: 0.75; stroke: #000000; stroke-opacity: 0.50;' />
+<circle cx='419.59' cy='55.60' r='2.24' style='stroke-width: 0.75; stroke: #000000; stroke-opacity: 0.50;' />
+<circle cx='684.31' cy='88.40' r='2.24' style='stroke-width: 0.75; stroke: #000000; stroke-opacity: 0.50;' />
 </g>
 <defs>
   <clipPath id='cpNDkuMDB8MzM0LjkwfDMzNy4wMHw1MTUuMDQ='>
@@ -154,8 +158,10 @@
 <text transform='translate(10.76,426.02) rotate(-90)' text-anchor='middle' style='font-size: 9.96px; font-family: sans;' textLength='36.54px' lengthAdjust='spacingAndGlyphs'>intensity</text>
 </g>
 <g clip-path='url(#cpNDkuMDB8MzM0LjkwfDMzNy4wMHw1MTUuMDQ=)'>
-<line x1='65.56' y1='499.55' x2='101.75' y2='497.96' style='stroke-width: 0.75; stroke: #000000; stroke-opacity: 0.50;' />
-<line x1='109.50' y1='491.99' x2='154.07' y2='349.30' style='stroke-width: 0.75; stroke: #000000; stroke-opacity: 0.50;' />
-<line x1='160.35' y1='347.54' x2='319.82' y2='487.47' style='stroke-width: 0.75; stroke: #000000; stroke-opacity: 0.50;' />
+<polyline points='59.59,499.82 107.72,497.70 155.85,343.60 324.31,491.41 ' style='stroke-width: 0.75; stroke: #000000; stroke-opacity: 0.50;' />
+<circle cx='59.59' cy='499.82' r='2.24' style='stroke-width: 0.75; stroke: #000000; stroke-opacity: 0.50;' />
+<circle cx='107.72' cy='497.70' r='2.24' style='stroke-width: 0.75; stroke: #000000; stroke-opacity: 0.50;' />
+<circle cx='155.85' cy='343.60' r='2.24' style='stroke-width: 0.75; stroke: #000000; stroke-opacity: 0.50;' />
+<circle cx='324.31' cy='491.41' r='2.24' style='stroke-width: 0.75; stroke: #000000; stroke-opacity: 0.50;' />
 </g>
 </svg>

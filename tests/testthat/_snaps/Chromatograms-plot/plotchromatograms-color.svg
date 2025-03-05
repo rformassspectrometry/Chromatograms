@@ -56,9 +56,11 @@
   </clipPath>
 </defs>
 <g clip-path='url(#cpNTkuMDR8Njg5Ljc2fDU5LjA0fDIxNC41Ng==)'>
-<line x1='89.60' y1='201.13' x2='181.38' y2='199.53' style='stroke-width: 0.75; stroke: #00FF00;' />
-<line x1='193.04' y1='193.75' x2='290.30' y2='70.45' style='stroke-width: 0.75; stroke: #00FF00;' />
-<line x1='301.56' y1='67.16' x2='659.60' y2='191.55' style='stroke-width: 0.75; stroke: #00FF00;' />
+<polyline points='82.40,201.26 188.58,199.41 294.76,64.80 666.40,193.91 ' style='stroke-width: 0.75; stroke: #00FF00;' />
+<circle cx='82.40' cy='201.26' r='2.70' style='stroke-width: 0.75; stroke: #00FF00;' />
+<circle cx='188.58' cy='199.41' r='2.70' style='stroke-width: 0.75; stroke: #00FF00;' />
+<circle cx='294.76' cy='64.80' r='2.70' style='stroke-width: 0.75; stroke: #00FF00;' />
+<circle cx='666.40' cy='193.91' r='2.70' style='stroke-width: 0.75; stroke: #00FF00;' />
 </g>
 <defs>
   <clipPath id='cpNTkuMDR8Njg5Ljc2fDM0Ny4wNHw1MDIuNTY='>
@@ -107,6 +109,8 @@
 <text transform='translate(12.96,424.80) rotate(-90)' text-anchor='middle' style='font-size: 12.00px; font-family: sans;' textLength='44.03px' lengthAdjust='spacingAndGlyphs'>intensity</text>
 </g>
 <g clip-path='url(#cpNTkuMDR8Njg5Ljc2fDM0Ny4wNHw1MDIuNTY=)'>
-<line x1='89.59' y1='353.15' x2='659.21' y2='381.10' style='stroke-width: 0.75; stroke: #0000FF;' />
+<polyline points='82.40,352.80 666.40,381.46 ' style='stroke-width: 0.75; stroke: #0000FF;' />
+<circle cx='82.40' cy='352.80' r='2.70' style='stroke-width: 0.75; stroke: #0000FF;' />
+<circle cx='666.40' cy='381.46' r='2.70' style='stroke-width: 0.75; stroke: #0000FF;' />
 </g>
 </svg>
