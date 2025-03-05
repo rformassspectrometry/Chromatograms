@@ -3,7 +3,7 @@
 ## Changes in 0.6.0
 
 - Addition of `ChromBackendSpectra` class and its respective methods.
-- Addtion of `plotChromatograms()` and `plotChromatogramsOverlay()` functions.
+- Addition of `plotChromatograms()` and `plotChromatogramsOverlay()` functions.
 - Addition of the `extractByIndex` implementation in the backends.
 
 ## Changes in 0.5.0 

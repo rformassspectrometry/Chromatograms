@@ -109,7 +109,9 @@ write .mzml files (which we do not have for chromatographic data).
 
 
 \code{Chromatograms} objects can be created using the \code{Chromatograms()}
-construction function.
+construction function. Either by providing a \code{ChromBackend} object or by
+providing a \code{Spectra} object. The \code{Spectra} object will be used to generate
+a \code{Chromatograms} object with a backend of class \code{\link{ChromBackendSpectra}}.
 }
 
 \section{Data stored in a \code{Chromatograms} object}{

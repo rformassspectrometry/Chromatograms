@@ -42,6 +42,9 @@
 #'   from the base `ChromBackendMemory` backend, providing additional
 #'   functionality for reading chromatographic data from mzML files.
 #'
+#' - `ChromBackendSpectra`: The `ChromBackendSpectra` inherits all slots and
+#'   methods from the base `ChromBackendMemory` backend, providing additional
+#'   functionality for reading chromatographic data from `Spectra` objects.
 #'
 #' @section Core chromatogram variables:
 #'

@@ -83,7 +83,9 @@ could be used instead. The default backends are:
   variables in memory and relies on the `r Biocpkg("mzR")` package to read 
   chromatographic peaks (retention time and intensity values) from the 
   original mzML files on-demand.
-
+  
+- `ChromBackendSpectra`: this backend is used to generate chromatographic data
+  from a `Spectra` object. I can be use to vcreate TIC, BPC or EICs. 
 
 ## Chromatographic peaks data
 
@@ -469,14 +471,39 @@ print(object.size(chr_mzr), units = "Mb")
 ```
 
 
-# Plotting chromatograms
+# Plotting chromatograms from a Spectra object
+
+For this purpose let's create a Chromatogram object from public spectral data.
+
+```{r}
+library(MsBackendMetaboLights)
+be <- backendInitialize(MsBackendMetaboLights(), mtblsId = "MTBLS39",
+                        filePattern = c("63B.cdf"))
+chr_s <- Chromatograms(Spectra(be))
+```
+
+We now have a `Chromatograms` object `chr_s` with a `ChromBackendSpectra` 
+backend. one chromatogram was generated per file. 
+
+```{r}
+chr_s
+```
+
+Now, let's say we want to plot specific area of the chromatograms. 
+
+```{r}
+chr_s$rtmin <- 125
+chr_s$rtmax <- 180
+chr_s$mzmin <- 100
+chr_s$mzmax <- 100.5
+```
 
 The `Chromatograms` object provides a set of functions to plot the chromatograms
 and their peaks data. The `plotChromatograms()` function can be used to plot each 
 single chromatograms into its own plot. 
 
 ```{r}
-plotChromatograms(chr, col = c("green", "red", "blue"))
+plotChromatograms(chr_s, col = c("green", "red", "blue"))
 ```
 
 On the overhand if the users wants to easily compare the chromatograms, the
@@ -484,7 +511,7 @@ On the overhand if the users wants to easily compare the chromatograms, the
 into one plot.
 
 ```{r}
-plotChromatogramsOverlay(chr, col = c("green", "red", "blue"))
+plotChromatogramsOverlay(chr_s, col = c("green", "red", "blue"))
 ```
 
 # Session information

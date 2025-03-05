@@ -281,6 +281,9 @@ using the \code{peaksData} parameter. These data can be accessed with the
 \item \code{ChromBackendMzR}: The \code{ChromBackendMzR} inherits all slots and methods
 from the base \code{ChromBackendMemory} backend, providing additional
 functionality for reading chromatographic data from mzML files.
+\item \code{ChromBackendSpectra}: The \code{ChromBackendSpectra} inherits all slots and
+methods from the base \code{ChromBackendMemory} backend, providing additional
+functionality for reading chromatographic data from \code{Spectra} objects.
 }
 
 Filter the peak data based on the provided ranges for the given variables.

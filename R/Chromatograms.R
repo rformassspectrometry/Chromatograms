@@ -21,7 +21,9 @@ NULL
 #' @section Creation of objects:
 #'
 #' `Chromatograms` objects can be created using the `Chromatograms()`
-#' construction function.
+#' construction function. Either by providing a `ChromBackend` object or by
+#' providing a `Spectra` object. The `Spectra` object will be used to generate
+#' a `Chromatograms` object with a backend of class [`ChromBackendSpectra`].
 #'
 #' @section Data stored in a `Chromatograms` object:
 #'

@@ -83,7 +83,8 @@ NULL
 #' @importFrom grDevices n2mfrow
 #' @export
 plotChromatograms <- function(x, xlab = "rtime (s)", ylab = "intensity",
-                              type = "c",
+                              type = "o",
+                              pch = 20, cex = 0.6, lwd = 1.5,
                               xlim = numeric(), ylim = numeric(),
                               main = character(), col = "#00000080",
                               asp = 1, ...) {
@@ -108,7 +109,9 @@ plotChromatograms <- function(x, xlab = "rtime (s)", ylab = "intensity",
 #' @rdname plotChromatograms
 #' @export
 plotChromatogramsOverlay <- function(x, xlab = "rtime (s)", ylab = "intensity",
-                                     type = "c", xlim = numeric(),
+                                     type = "o",
+                                     pch = 20, cex = 0.6, lwd = 1.5,
+                                     xlim = numeric(),
                                      ylim = numeric(),
                                      main = paste(length(x), "chromatograms"),
                                      col = "#00000080",
