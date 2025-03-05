@@ -492,10 +492,10 @@ chr_s
 Now, let's say we want to plot specific area of the chromatograms. 
 
 ```{r}
-chr_s$rtmin <- 125
-chr_s$rtmax <- 180
-chr_s$mzmin <- 100
-chr_s$mzmax <- 100.5
+chromData(chr_s)$rtmin <- 125
+chromData(chr_s)$rtmax <- 180
+chromData(chr_s)$mzmin <- 100
+chromData(chr_s)$mzmax <- 100.5
 ```
 
 The `Chromatograms` object provides a set of functions to plot the chromatograms
