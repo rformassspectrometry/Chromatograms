@@ -12,7 +12,7 @@
 \alias{setBackend,Chromatograms,ChromBackend-method}
 \alias{$,Chromatograms-method}
 \alias{$<-,Chromatograms-method}
-\alias{[,Chromatograms,ANY,ANY-method}
+\alias{[,Chromatograms,ANY,ANY,ANY-method}
 \alias{[[,Chromatograms,ANY,ANY-method}
 \alias{[[<-,Chromatograms,ANY,ANY,ANY-method}
 \alias{factorize,Chromatograms-method}
@@ -40,7 +40,7 @@
 
 \S4method{$}{Chromatograms}(x, name) <- value
 
-\S4method{[}{Chromatograms,ANY,ANY}(x, i, j, ..., drop = FALSE)
+\S4method{[}{Chromatograms,ANY,ANY,ANY}(x, i, j, ..., drop = FALSE)
 
 \S4method{[[}{Chromatograms,ANY,ANY}(x, i, j, ...)
 

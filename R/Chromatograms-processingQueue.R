@@ -49,13 +49,14 @@
 #' Some backends may prefer a specific type of splitting and chunk-wise
 #' processing. For example, the `ChromBackendMzR` backend needs to load MS data
 #' from the original (mzML) files, so chunk-wise processing on a per-file basis
-#' is ideal. The [backendParallelFactor()] function for `ChromBackend` allows
-#' backends to suggest a preferred data chunking by returning a `factor`
-#' defining the respective data chunks. The `ChromBackendMzR` returns a `factor`
-#' based on the *dataOrigin* chromatograms variable. A `factor` of length 0 is
-#' returned if no particular preferred splitting is needed. The suggested chunk
-#' definition will be used if no finite `processingChunkSize()` is defined.
-#' Setting the `processingChunkSize` overrides `backendParallelFactor`.
+#' is ideal. The [Chromatograms::backendParallelFactor()] function for
+#' `ChromBackend` allows backends to suggest a preferred data chunking by
+#' returning a `factor` defining the respective data chunks. The
+#' `ChromBackendMzR` returns a `factor` based on the *dataOrigin*
+#' chromatograms variable. A `factor` of length 0 is returned if no particular
+#' preferred splitting is needed. The suggested chunk definition will be used
+#' if no finite `processingChunkSize()` is defined. Setting the
+#' `processingChunkSize` overrides `backendParallelFactor`.
 #'
 #' Functions to configure parallel or chunk-wise processing:
 #' - `processingChunkSize()`: Gets or sets the size of the chunks for parallel
@@ -73,14 +74,20 @@
 #'
 #' @param BPPARAM Parallel setup configuration. See [BiocParallel::bpparam()]
 #'        for more information.
+#'
 #' @param chunkSize `integer(1)` for `processingChunkFactor` defining the chunk
 #'        size. The default is the value stored in the `Chromatograms` object's
 #'        `processingChunkSize` slot.
+#'
 #' @param f `factor` defining the grouping to split the `Chromatograms` object.
+#'
 #' @param FUN For `addProcessing()`, a function to be added to the
 #'        `Chromatograms` object's processing queue.
+#'
 #' @param object A `Chromatograms` object.
+#'
 #' @param value `integer(1)` defining the chunk size.
+#'
 #' @param ... Additional arguments passed to the methods.
 #'
 #' @return `processingChunkSize()` returns the currently defined processing
@@ -142,6 +149,7 @@ setReplaceMethod("processingChunkSize", signature = "Chromatograms",
                  })
 
 #' @rdname processingQueue
+#' @importMethodsFrom ProtGenerics backendParallelFactor
 #' @export
 setMethod("processingChunkFactor", signature = "Chromatograms",
           function(object, chunkSize = processingChunkSize(object), ...) {

@@ -105,13 +105,14 @@ processing.
 Some backends may prefer a specific type of splitting and chunk-wise
 processing. For example, the \code{ChromBackendMzR} backend needs to load MS data
 from the original (mzML) files, so chunk-wise processing on a per-file basis
-is ideal. The \code{\link[=backendParallelFactor]{backendParallelFactor()}} function for \code{ChromBackend} allows
-backends to suggest a preferred data chunking by returning a \code{factor}
-defining the respective data chunks. The \code{ChromBackendMzR} returns a \code{factor}
-based on the \emph{dataOrigin} chromatograms variable. A \code{factor} of length 0 is
-returned if no particular preferred splitting is needed. The suggested chunk
-definition will be used if no finite \code{processingChunkSize()} is defined.
-Setting the \code{processingChunkSize} overrides \code{backendParallelFactor}.
+is ideal. The \code{\link[=backendParallelFactor]{backendParallelFactor()}} function for
+\code{ChromBackend} allows backends to suggest a preferred data chunking by
+returning a \code{factor} defining the respective data chunks. The
+\code{ChromBackendMzR} returns a \code{factor} based on the \emph{dataOrigin}
+chromatograms variable. A \code{factor} of length 0 is returned if no particular
+preferred splitting is needed. The suggested chunk definition will be used
+if no finite \code{processingChunkSize()} is defined. Setting the
+\code{processingChunkSize} overrides \code{backendParallelFactor}.
 
 Functions to configure parallel or chunk-wise processing:
 \itemize{

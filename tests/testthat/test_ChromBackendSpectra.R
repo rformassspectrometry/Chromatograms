@@ -1,5 +1,5 @@
 test_that("ChromBackendSpectra works", {
-    expect_true(isReadOnly(be_sp)) # will prob change
+    expect_true(isReadOnly(be_sp))
     expect_false(be_sp@inMemory)
     expect_false(identical(peaksData(be_sp), be_sp@peaksData))
     expect_true(identical(length(peaksData(be_sp)), length((be_sp@peaksData))))
@@ -35,7 +35,7 @@ test_that("backendInitialize works", {
                                 chromData = df,
                                 factorize.by = c("msLevel", "dataOrigin"))
     df$chromSpectraIndex <- chromSpectraIndex(bd_tmp)
-    expect_identical(chromData(bd_tmp), df)
+    expect_identical(bd_tmp@chromData, df)
 })
 
 test_that("show method for ChromBackendSpectra works correctly", {
@@ -85,7 +85,7 @@ test_that("factorize() works", {
     idx_after <- chromSpectraIndex(tmp)
     expect_false(identical(idx_before, idx_after))
     expect_identical(levels(chromSpectraIndex(tmp)),
-                     levels(be_sp@spectra$chromSpectraIndex))
+                     levels(tmp@spectra$chromSpectraIndex))
 })
 
 test_that("chromSpectraIndex works", {

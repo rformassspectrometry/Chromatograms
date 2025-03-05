@@ -120,8 +120,9 @@ setMethod("backendInitialize", "ChromBackendSpectra",
                       stop("All 'factorize.by' variables must exist in ",
                            "'chromData'.")
                   object <- callNextMethod(object, chromData = chromData)
-                  factorize(object, factorize.by)
-                  chromData$chromIndex <- seq_len(nrow(chromData))
+                  object <- factorize(object, factorize.by)
+                  if (all(is.na(object$chromIndex)))
+                    object$chromIndex <- seq_len(nrow(chromData))
                   object@spectra <- spectra
                   return(object)
                   #I have an issue here if the user provide a chromData but
@@ -176,8 +177,8 @@ setMethod("factorize", "ChromBackendSpectra",
               if (!all(factorize.by %in% Spectra::spectraVariables(object@spectra)))
                   stop("All 'factorize.by' variables must be in the ",
                        "Spectra object.")
-              object@chromData$chromSpectraIndex <- do.call(
-                  paste, c(object@chromData[, factorize.by], sep = "_"))
+              object@chromData$chromSpectraIndex <- factor(do.call(
+                  paste, c(object@chromData[, factorize.by], sep = "_")))
               object@spectra$chromSpectraIndex <- factor(
                   do.call(
                       paste,

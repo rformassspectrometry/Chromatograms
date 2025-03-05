@@ -351,12 +351,12 @@
 #'   a `numeric` of length equal to the number of chromatograms.
 #'
 #' - `rtime()`: gets the retention times from the chromatograms. returns a
-#'   [NumericList()] of `numeric` vectors (retention times for each
+#'   `list` of `numeric` vectors (retention times for each
 #'   chromatogram). The length of the returned list is equal to the number of
 #'   chromatograms in `object`.
 #'
-#' - `rtime<-`: replaces the retention times. `value` has to be a `list` (or
-#'   [NumericList()]) of length equal to the number of chromatograms and the
+#' - `rtime<-`: replaces the retention times. `value` has to be a `list` of
+#'   length equal to the number of chromatograms and the
 #'   number of values within each list element identical to the number of
 #'   data pairs in each chromatogram. Note that just writeable backends support
 #'   this method.
@@ -384,8 +384,6 @@
 #' @author Johannes Rainer, Philippine Louail
 #'
 #' @md
-#'
-#' @importFrom IRanges NumericList
 #'
 #' @exportClass ChromBackend
 #'

@@ -21,7 +21,7 @@
 \alias{factorize,ChromBackend-method}
 \alias{peaksData,ChromBackend-method}
 \alias{peaksData<-,ChromBackend-method}
-\alias{[,ChromBackend,ANY,ANY-method}
+\alias{[,ChromBackend,ANY,ANY,ANY-method}
 \alias{[[,ChromBackend,ANY,ANY-method}
 \alias{[[<-,ChromBackend,ANY,ANY,ANY-method}
 \alias{backendBpparam,ChromBackend-method}
@@ -93,7 +93,7 @@ corePeaksVariables()
 
 \S4method{peaksData}{ChromBackend}(object) <- value
 
-\S4method{[}{ChromBackend,ANY,ANY}(x, i, j, ..., drop = FALSE)
+\S4method{[}{ChromBackend,ANY,ANY,ANY}(x, i, j, ..., drop = FALSE)
 
 \S4method{[[}{ChromBackend,ANY,ANY}(x, i, j, ...)
 
@@ -530,11 +530,11 @@ product (for SRM data). \code{productMz()} returns a \code{numeric} of length
 equal to the number of chromatograms in \code{object}. \verb{productMz<-} expects
 a \code{numeric} of length equal to the number of chromatograms.
 \item \code{rtime()}: gets the retention times from the chromatograms. returns a
-\code{\link[=NumericList]{NumericList()}} of \code{numeric} vectors (retention times for each
+\code{list} of \code{numeric} vectors (retention times for each
 chromatogram). The length of the returned list is equal to the number of
 chromatograms in \code{object}.
-\item \verb{rtime<-}: replaces the retention times. \code{value} has to be a \code{list} (or
-\code{\link[=NumericList]{NumericList()}}) of length equal to the number of chromatograms and the
+\item \verb{rtime<-}: replaces the retention times. \code{value} has to be a \code{list} of
+length equal to the number of chromatograms and the
 number of values within each list element identical to the number of
 data pairs in each chromatogram. Note that just writeable backends support
 this method.

@@ -26,8 +26,7 @@ Depends:
 Imports:
     methods,
     S4Vectors,
-    MsCoreUtils (>= 1.7.5),
-    IRanges
+    MsCoreUtils (>= 1.7.5)
 Suggests:
     msdata (>= 0.19.3),
     roxygen2,
@@ -37,7 +36,8 @@ Suggests:
     rmarkdown,
     mzR (>= 2.41.4),
     Spectra, 
-    MsBackendMetaboLights
+    MsBackendMetaboLights,
+    vdiffr
 License: Artistic-2.0
 Encoding: UTF-8
 VignetteBuilder: knitr
