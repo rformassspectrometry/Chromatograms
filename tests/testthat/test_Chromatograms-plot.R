@@ -39,7 +39,7 @@ test_that("plotChromatograms works", {
 
     vdiffr::expect_doppelganger(
         "plotChromatograms-asp05",
-        function() plotChromatograms(c_full, asp = 1/2)
+        function() plotChromatograms(c_full, asp = 1 / 2)
     )
 
     vdiffr::expect_doppelganger(
@@ -69,10 +69,10 @@ test_that("plotChromatogramsOverlay works", {
         function() plotChromatogramsOverlay(c_full, main = "Overlay Test")
     )
 
-        vdiffr::expect_doppelganger(
-            "plotChromatogramsOverlay-one-sample",
-            function() plotChromatogramsOverlay(c_full[1], col = c("red"))
-        )
+    vdiffr::expect_doppelganger(
+        "plotChromatogramsOverlay-one-sample",
+        function() plotChromatogramsOverlay(c_full[1], col = c("red"))
+    )
 })
 
 test_that(".plot_single_chromatogram works", {
@@ -83,8 +83,12 @@ test_that(".plot_single_chromatogram works", {
 
     vdiffr::expect_doppelganger(
         "plot_single_chromatogram-xlim",
-        function() .plot_single_chromatogram(c_full[1], xlim = c(10, 50),
-                                             ylim = c(0, 3000))
+        function() {
+            .plot_single_chromatogram(c_full[1],
+                xlim = c(10, 50),
+                ylim = c(0, 3000)
+            )
+        }
     )
 
     vdiffr::expect_doppelganger(

@@ -17,16 +17,17 @@ ChromBackendMemory()
 \arguments{
 \item{object}{A \code{ChromBackendMemory} object.}
 
-\item{chromData}{For \code{backendInitialize()} of a \code{ChromBackendMemory} backend,
-a \code{data.frame} with the chromatographic data. If not provided
-(or if empty), a default \code{data.frame} with the core chromatographic
-variables will be created.}
+\item{chromData}{For \code{backendInitialize()} of a \code{ChromBackendMemory}
+backend, a \code{data.frame} with the chromatographic data. If not
+provided (or if empty), a default \code{data.frame} with the core
+chromatographicvariables will be created.}
 
-\item{peaksData}{For \code{backendInitialize()} of a \code{ChromBackendMemory} backend,
-a \code{list} of \code{data.frame} with the peaks data. If not provided (or if
-empty), a default \code{list} of empty \code{data.frame} with the core peaks
-variables will be created. The length of the list should match the number
-of chromatograms in the \code{chromData} parameter.}
+\item{peaksData}{For \code{backendInitialize()} of a \code{ChromBackendMemory}
+backend, a \code{list} of \code{data.frame} with the peaks data. If not
+provided (or if empty), a default \code{list} of empty \code{data.frame} with
+the core peaks variables will be created. The length of the list
+should match the number of chromatograms in the \code{chromData}
+parameter.}
 
 \item{...}{Additional parameters to be passed.}
 }
@@ -37,6 +38,38 @@ initialized with a \code{data.frame} of chromatographic data via the \code{chrom
 parameter and a \code{list} of \code{data.frame} entries for peaks data using the
 \code{peaksData} parameter. These data can be accessed with the \code{chromData()} and
 \code{peaksData()} functions.
+}
+\examples{
+
+## Create a ChromBackendMemory object
+cbm <- ChromBackendMemory()
+
+## Initialize the ChromBackendMemory object with a data.frame of
+## chromatographic data  and a list of data.frame of peaks data
+cdata <- data.frame(
+    msLevel = c(1L, 1L, 1L),
+    mz = c(112.2, 123.3, 134.4),
+    chromIndex = c(1L, 2L, 3L)
+)
+
+pdata <- list(
+    data.frame(
+        rtime = c(12.4, 12.8, 13.2, 14.6),
+        intensity = c(123.3, 153.6, 2354.3, 243.4)
+    ),
+    data.frame(
+        rtime = c(45.1, 46.2),
+        intensity = c(100, 80.1)
+    ),
+    data.frame(
+        rtime = c(12.4, 12.8, 13.2, 14.6),
+        intensity = c(123.3, 153.6, 2354.3, 243.4)
+    )
+)
+
+cbm <- backendInitialize(cbm, chromData = cdata, peaksData = pdata)
+cbm
+
 }
 \author{
 Philippine Louail

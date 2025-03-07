@@ -118,55 +118,78 @@ test_that("Chromatograms, productMzMax, productMzMax<- works", {
 
 test_that("filterChromData handles various edge cases", {
     expect_identical(
-        filterChromData(c_full, variables = c("mz"), ranges = numeric(),
-                        match = "any"),
+        filterChromData(c_full,
+            variables = c("mz"), ranges = numeric(),
+            match = "any"
+        ),
         c_full
     )
-    res <- filterChromData(c_full, variables = c("mz"), ranges = c(100, 200),
-                           match = "all")
+    res <- filterChromData(c_full,
+        variables = c("mz"), ranges = c(100, 200),
+        match = "all"
+    )
     expect_identical(res, c_full)
 
-    res <- filterChromData(c_full, variables = c("mz"), ranges = c(500, 600),
-                           match = "any")
+    res <- filterChromData(c_full,
+        variables = c("mz"), ranges = c(500, 600),
+        match = "any"
+    )
     expect_equal(nrow(chromData(res)), 0)
     expect_error(
-        filterChromData(c_full, variables = c("mz", "chromIndex"),
-                        ranges = c(100, 200), match = "any"),
+        filterChromData(c_full,
+            variables = c("mz", "chromIndex"),
+            ranges = c(100, 200), match = "any"
+        ),
         "be twice the length of the "
     )
     expect_error(
-        filterChromData(c_full, variables = c("mz"),
-                        ranges = c("a", "b"), match = "any"),
+        filterChromData(c_full,
+            variables = c("mz"),
+            ranges = c("a", "b"), match = "any"
+        ),
         "filterChromData only support filtering for numerical"
     )
     expect_error(
-        filterChromData(c_full, variables = c("nonExistentVar"),
-                        ranges = c(100, 200), match = "any"),
+        filterChromData(c_full,
+            variables = c("nonExistentVar"),
+            ranges = c(100, 200), match = "any"
+        ),
         " not available"
     )
-    res <- filterChromData(c_empty, variables = c("mz"),
-                           ranges = c(100, 200), match = "any")
+    res <- filterChromData(c_empty,
+        variables = c("mz"),
+        ranges = c(100, 200), match = "any"
+    )
     expect_equal(nrow(chromData(res)), 0)
-    res <- filterChromData(c_full, variables = c("mz", "chromIndex"),
-                           ranges = c(134, 150, 1, 2), match = "any")
+    res <- filterChromData(c_full,
+        variables = c("mz", "chromIndex"),
+        ranges = c(134, 150, 1, 2), match = "any"
+    )
     expect_true(nrow(chromData(res)) > 0)
-    res <- filterChromData(c_full, variables = c("mz", "chromIndex"),
-                           ranges = c(134, 150, 1, 2), match = "all")
+    res <- filterChromData(c_full,
+        variables = c("mz", "chromIndex"),
+        ranges = c(134, 150, 1, 2), match = "all"
+    )
     expect_true(nrow(chromData(res)) <= nrow(chromData(c_full)))
-    res <- filterChromData(c_full, variables = c("mz", "chromIndex"),
-                           ranges = c(100, 200, 1, 3), match = "any")
+    res <- filterChromData(c_full,
+        variables = c("mz", "chromIndex"),
+        ranges = c(100, 200, 1, 3), match = "any"
+    )
     expect_equal(nrow(chromData(res)), 3)
-    res <- filterChromData(c_full, variables = c("mz", "chromIndex"),
-                           ranges = c(500, 600, 10, 20), match = "all")
+    res <- filterChromData(c_full,
+        variables = c("mz", "chromIndex"),
+        ranges = c(500, 600, 10, 20), match = "all"
+    )
     expect_equal(nrow(chromData(res)), 0)
-    res <- filterChromData(c_full, variables = c("mz"), ranges = c(134, 150),
-                           match = "any", keep = FALSE)
+    res <- filterChromData(c_full,
+        variables = c("mz"), ranges = c(134, 150),
+        match = "any", keep = FALSE
+    )
     expect_equal(nrow(chromData(res)), 2)
 
-    res <- filterChromData(c_full, variables = c("mz"), ranges = c(120, 130),
-                           match = "any")
+    res <- filterChromData(c_full,
+        variables = c("mz"), ranges = c(120, 130),
+        match = "any"
+    )
     expect_equal(nrow(chromData(res)), 1)
-
 })
-
-

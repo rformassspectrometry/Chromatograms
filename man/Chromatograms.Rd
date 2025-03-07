@@ -12,6 +12,9 @@
 \alias{setBackend,Chromatograms,ChromBackend-method}
 \alias{$,Chromatograms-method}
 \alias{$<-,Chromatograms-method}
+\alias{[,Chromatograms,ANY,ANY-method}
+\alias{[[,Chromatograms,ANY,ANY-method}
+\alias{[[<-,Chromatograms,ANY,ANY,ANY-method}
 \alias{factorize,Chromatograms-method}
 \title{The Chromatograms class to manage and access chromatographic data}
 \usage{
@@ -37,11 +40,11 @@
 
 \S4method{$}{Chromatograms}(x, name) <- value
 
-\S4method{[}{Chromatograms}(x, i, j, ..., drop = FALSE)
+\S4method{[}{Chromatograms,ANY,ANY}(x, i, j, ..., drop = FALSE)
 
-\S4method{[[}{Chromatograms}(x, i, j, ...)
+\S4method{[[}{Chromatograms,ANY,ANY}(x, i, j, ...)
 
-\S4method{[[}{Chromatograms}(x, i, j, ...) <- value
+\S4method{[[}{Chromatograms,ANY,ANY,ANY}(x, i, j, ...) <- value
 
 \S4method{factorize}{Chromatograms}(object, factorize.by = c("msLevel", "dataOrigin"), ...)
 }
@@ -66,7 +69,8 @@ variables will be created.}
 
 \item{factorize.by}{A \code{character} vector with the names of the variables in
 the \code{Spectra} object and the \code{chromData} slot that should be used
-to factorize the \code{Spectra} object data to generate the chromatographic data.}
+to factorize the \code{Spectra} object data to generate the
+chromatographic data.}
 
 \item{backend}{\link{ChromBackend} object providing the raw data for the
 \code{Chromatograms} object.}
@@ -138,8 +142,8 @@ details.
 The \emph{peaks data variables} information in the \code{Chromatograms} object can be
 accessed using the \code{peaksData()} function. Specific peaks variables can be
 accessed by either precising the \code{"columns"} parameter in \code{peaksData()} or
-using \code{$}. \code{peaksData} can be accessed, replaced but also filtered/subsetted.
-Refer to the \link{peaksData} documentation for more details.
+using \code{$}. \code{peaksData} can be accessed, replaced but also
+filtered/subsetted. Refer to the \link{peaksData} documentation for more details.
 }
 
 \section{Processing of \code{Chromatograms} objects}{
@@ -150,16 +154,44 @@ the object either directly or by using the \code{processingQueue} mechanism. The
 \code{processingQueue} is a list of processing steps that are stored within the
 object and only applied when needed. This was created so that the data can be
 processed in a single step and is very useful for larger datasets. This is
-even more true as this processing queue will call function that can be applied
-on the data in a chunk-wise manner. This allows for parallel processing of
-the data and reduces the memory demand. To read more about the
+even more true as this processing queue will call function that can be
+applied on the data in a chunk-wise manner. This allows for parallel
+processing of the data and reduces the memory demand. To read more about the
 \code{processingQueue}, and how to parallelize your processes, see the
 \link{processingQueue} documentation.
 }
 
 \examples{
-## Create a Chromatograms object
-chroms <- Chromatograms(ChromBackendMemory())
+
+library(MsBackendMetaboLights)
+library(Spectra)
+
+## Create a Chromatograms object from a Spectra object.
+be <- backendInitialize(MsBackendMetaboLights(),
+    mtblsId = "MTBLS39",
+    filePattern = c("63B.cdf")
+)
+s <- Spectra(be)
+be <- backendInitialize(new("ChromBackendSpectra"), s)
+chr <- Chromatograms(be)
+
+## Subset
+chr[1:2]
+
+## access a specific variables
+chr[["msLevel"]]
+chr$msLevel
+
+## Replace data of a specific variable
+chr$msLevel <- c(2L, 2L, 2L)
+
+## Can re factorize the data
+chr <- factorize(chr)
+
+## Can also change the backend into memory
+chr <- setBackend(chr, ChromBackendMemory())
+
+chr
 
 }
 \seealso{

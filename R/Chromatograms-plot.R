@@ -39,6 +39,15 @@
 #' @param asp `numeric(1)` the aspect ratio of the plot, i.e. the ratio of
 #'        the y-axis to the x-axis. Defaults to 1.
 #'
+#' @param pch `numeric(1)` specifying the symbol to be used for the peaks.
+#'        Defaults to 20, a filled circle. See [points()] for details.
+#'
+#' @param cex `numeric(1)` specifying the character expansion factor for the
+#'        peaks. Defaults to 0.6.
+#'
+#' @param lwd `numeric(1)` specifying the line width for the peaks. Defaults to
+#'        1.5.
+#'
 #' @param frame.plot `logical(1)` whether a box should be drawn around the
 #'        plotting area.
 #'
@@ -51,20 +60,29 @@
 #' @examples
 #'
 #' ## Create a Chromatograms object
-#' cdata <- data.frame(msLevel = c(1L, 1L, 1L),
-#'                     mz = c(112.2, 123.3, 134.4),
-#'                     chromIndex = c(1L, 2L, 3L))
+#' cdata <- data.frame(
+#'     msLevel = c(1L, 1L, 1L),
+#'     mz = c(112.2, 123.3, 134.4),
+#'     chromIndex = c(1L, 2L, 3L)
+#' )
 #' pdata <- list(
-#'   data.frame(rtime = c(12.4, 12.8, 13.2, 14.6),
-#'              intensity = c(123.3, 153.6, 2354.3, 243.4)),
-#'   data.frame(rtime = c(45.1, 46.2),
-#'              intensity = c(100, 80.1)),
-#'   data.frame(rtime = c(12.4, 12.8, 13.2, 14.6),
-#'              intensity = c(123.3, 153.6, 2354.3, 243.4))
+#'     data.frame(
+#'         rtime = c(12.4, 12.8, 13.2, 14.6),
+#'         intensity = c(123.3, 153.6, 2354.3, 243.4)
+#'     ),
+#'     data.frame(
+#'         rtime = c(45.1, 46.2),
+#'         intensity = c(100, 80.1)
+#'     ),
+#'     data.frame(
+#'         rtime = c(12.4, 12.8, 13.2, 14.6),
+#'         intensity = c(123.3, 153.6, 2354.3, 243.4)
+#'     )
 #' )
 #' chr <- backendInitialize(ChromBackendMemory(),
-#'                         chromData = cdata,
-#'                         peaksData = pdata) |> Chromatograms()
+#'     chromData = cdata,
+#'     peaksData = pdata
+#' ) |> Chromatograms()
 #'
 #' ## Plot one chromatogram
 #' plotChromatograms(chr[1])
@@ -75,6 +93,9 @@
 #' ## Define a color for each peak in each chromatogram
 #' plotChromatograms(chr[1:2], col = c("green", "blue"))
 #'
+#' ## Overlay all chromatograms
+#' plotChromatogramsOverlay(chr[1:2], col = c("green", "blue"))
+#'
 NULL
 
 
@@ -83,48 +104,61 @@ NULL
 #' @importFrom grDevices n2mfrow
 #' @export
 plotChromatograms <- function(x, xlab = "rtime (s)", ylab = "intensity",
-                              type = "o",
-                              pch = 20, cex = 0.6, lwd = 1.5,
-                              xlim = numeric(), ylim = numeric(),
-                              main = character(), col = "#00000080",
-                              asp = 1, ...) {
-    if (!length(main))
-        main <- paste0( "m/z: ", round(mz(x), 1)) #maybe range is better
+    type = "o",
+    pch = 20, cex = 0.6, lwd = 1.5,
+    xlim = numeric(), ylim = numeric(),
+    main = character(), col = "#00000080",
+    asp = 1, ...) {
+    if (!length(main)) {
+        main <- paste0("m/z: ", round(mz(x), 1))
+    } # maybe range is better
     nsp <- length(x)
-    if (nsp == 1)
+    if (nsp == 1) {
         col <- list(col)
-    if (length(col) != nsp)
+    }
+    if (length(col) != nsp) {
         col <- rep(col[1], nsp)
-    if (length(main) != nsp)
+    }
+    if (length(main) != nsp) {
         main <- rep(main[1], nsp)
-    if (nsp > 1)
+    }
+    if (nsp > 1) {
         par(mfrow = n2mfrow(nsp, asp = asp))
-    for (i in seq_len(nsp))
-        .plot_single_chromatogram(x[i], xlab = xlab, ylab = ylab, type = type,
-                                  xlim = xlim, ylim = ylim, main = main[i],
-                                  col = col[[i]],
-                                  ...)
+    }
+    for (i in seq_len(nsp)) {
+        .plot_single_chromatogram(x[i],
+            xlab = xlab, ylab = ylab, type = type,
+            xlim = xlim, ylim = ylim, main = main[i],
+            col = col[[i]], pch = pch, cex = cex,
+            lwd = lwd, ...
+        )
+    }
 }
 
 #' @rdname plotChromatograms
 #' @export
-plotChromatogramsOverlay <- function(x, xlab = "rtime (s)", ylab = "intensity",
-                                     type = "o",
-                                     pch = 20, cex = 0.6, lwd = 1.5,
-                                     xlim = numeric(),
-                                     ylim = numeric(),
-                                     main = paste(length(x), "chromatograms"),
-                                     col = "#00000080",
-                                     axes = TRUE, frame.plot = axes, ...) {
+plotChromatogramsOverlay <- function(x,
+    xlab = "rtime (s)", ylab = "intensity",
+    type = "o",
+    pch = 20, cex = 0.6, lwd = 1.5,
+    xlim = numeric(),
+    ylim = numeric(),
+    main = paste(length(x), "chromatograms"),
+    col = "#00000080",
+    axes = TRUE, frame.plot = axes, ...) {
     nsp <- length(x)
-    if (nsp == 1)
+    if (nsp == 1) {
         col <- list(col)
-    if (length(col) != nsp)
+    }
+    if (length(col) != nsp) {
         col <- rep(col[1], nsp)
-    if (!length(xlim))
+    }
+    if (!length(xlim)) {
         xlim <- range(unlist(rtime(x)), na.rm = TRUE)
-    if (!length(ylim))
+    }
+    if (!length(ylim)) {
         ylim <- c(0, max(unlist(intensity(x)), na.rm = TRUE))
+    }
     dev.hold()
     on.exit(dev.flush())
     plot.new()
@@ -133,10 +167,16 @@ plotChromatogramsOverlay <- function(x, xlab = "rtime (s)", ylab = "intensity",
         axis(side = 1, ...)
         axis(side = 2, ...)
     }
-    if (frame.plot)
+    if (frame.plot) {
         box(...)
+    }
     title(main = main, xlab = xlab, ylab = ylab, ...)
-    for (i in seq_len(nsp))
-        .plot_single_chromatogram(x[i], add = TRUE, type = type, col = col[[i]],
-                                  ...)
+    for (i in seq_len(nsp)) {
+        .plot_single_chromatogram(x[i],
+            add = TRUE, type = type,
+            col = col[[i]], pch = pch, cex = cex,
+            lwd = lwd,
+            ...
+        )
+    }
 }

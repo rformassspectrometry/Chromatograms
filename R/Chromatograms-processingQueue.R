@@ -10,11 +10,11 @@
 #' enables functions to be applied in a chunk-wise manner, facilitating
 #' parallel processing and reducing memory demand.
 #'
-#' Since the peaks data can be quite large, a processing queue is used to ensure
-#' efficiency. Generally, the processing queue is applied either temporarily
-#' when calling `peaksData()` or permanently when calling `applyProcessing()`.
-#' As explained below the processing efficiency can be further improved by
-#' enabling chunk-wise processing.
+#' Since the peaks data can be quite large, a processing queue is used to
+#' ensure efficiency. Generally, the processing queue is applied either
+#' temporarily when calling `peaksData()` or permanently when calling
+#' `applyProcessing()`. As explained below the processing efficiency can be
+#' further improved by enabling chunk-wise processing.
 #'
 #' @section Apply Processing:
 #'
@@ -36,9 +36,9 @@
 #' default, can be enabled by setting the processing chunk size of a
 #' `Chromatograms` object using the `processingChunkSize()` function to a value
 #' smaller than the length of the `Chromatograms` object. For example, setting
-#' `processingChunkSize(chr) <- 1000` will cause any data manipulation operation
-#' on `chr`, such as `filterPeaksData()`, to be performed in parallel for sets
-#' of 1000 chromatograms in each iteration.
+#' `processingChunkSize(chr) <- 1000` will cause any data manipulation
+#' operation on `chr`, such as `filterPeaksData()`, to be performed in parallel
+#' for sets of 1000 chromatograms in each iteration.
 #'
 #' Chunk-wise processing is particularly useful for `Chromatograms` objects
 #' using an *on-disk* backend or for very large experiments. For small datasets
@@ -100,65 +100,127 @@
 #'
 #' @importMethodsFrom ProtGenerics processingChunkSize processingChunkSize<-
 #'   processingChunkFactor
+#'
+#' @examples
+#' # Create a Chromatograms object
+#' cdata <- data.frame(
+#'     msLevel = c(1L, 1L, 1L),
+#'     mz = c(112.2, 123.3, 134.4),
+#'     chromIndex = c(1L, 2L, 3L)
+#' )
+#'
+#' pdata <- list(
+#'     data.frame(
+#'         rtime = c(12.4, 12.8, 13.2, 14.6),
+#'         intensity = c(123.3, 153.6, 2354.3, 243.4)
+#'     ),
+#'     data.frame(
+#'         rtime = c(45.1, 46.2),
+#'         intensity = c(100, 80.1)
+#'     ),
+#'     data.frame(
+#'         rtime = c(12.4, 12.8, 13.2, 14.6),
+#'         intensity = c(123.3, 153.6, 2354.3, 243.4)
+#'     )
+#' )
+#'
+#' be <- backendInitialize(new("ChromBackendMemory"),
+#'     chromData = cdata,
+#'     peaksData = pdata
+#' )
+#'
+#' chr <- Chromatograms(be)
+#'
+#' divide_intensities <- function(x, y, ...) {
+#'     intensity(x) <- lapply(intensity(x), `/`, y)
+#'     x
+#' }
+#'
+#' ## Add the function to the procesing queue
+#' chr <- addProcessing(chr, divide_intensities, y = 2)
+#' chr
+#'
+#' # Apply the processing queue
+#' chr <- applyProcessing(chr)
+#'
 NULL
 
 #' @rdname processingQueue
 #' @importMethodsFrom ProtGenerics applyProcessing
 #' @export
-setMethod("applyProcessing", "Chromatograms",
-          function(object, f = processingChunkFactor(object),
-                   BPPARAM = bpparam(), ...) {
-              if (isReadOnly(object@backend))
-                  stop("Cannot apply processing to a read-only backend")
-              queue <- object@processingQueue
-              if (!length(queue)) return (object)
-              object@backend  <- .run_process_queue(object@backend, queue = queue,
-                                                    f = f, BPPARAM, ...)
-              object@processing <- .logging(object@processing,
-                                            "Applied processing queue with ",
-                                            length(queue),
-                                            " steps")
-              object@processingQueue <- list()
-              object
-          })
+setMethod(
+    "applyProcessing", "Chromatograms",
+    function(object, f = processingChunkFactor(object),
+    BPPARAM = bpparam(), ...) {
+        if (isReadOnly(object@backend)) {
+            stop("Cannot apply processing to a read-only backend")
+        }
+        queue <- object@processingQueue
+        if (!length(queue)) {
+            return(object)
+        }
+        object@backend <- .run_process_queue(object@backend,
+            queue = queue,
+            f = f, BPPARAM, ...
+        )
+        object@processing <- .logging(
+            object@processing,
+            "Applied processing queue with ",
+            length(queue),
+            " steps"
+        )
+        object@processingQueue <- list()
+        object
+    }
+)
 
 #' @importFrom ProtGenerics ProcessingStep
 #' @importMethodsFrom ProtGenerics addProcessing
 #' @importClassesFrom ProtGenerics ProcessingStep
 #' @rdname processingQueue
 setMethod("addProcessing", "Chromatograms", function(object, FUN, ...) {
-    if (missing(FUN))
+    if (missing(FUN)) {
         return(object)
-    object@processingQueue <- c(object@processingQueue,
-                                list(ProcessingStep(FUN, ARGS = list(...))))
+    }
+    object@processingQueue <- c(
+        object@processingQueue,
+        list(ProcessingStep(FUN, ARGS = list(...)))
+    )
     validObject(object)
     object
 })
 
 #' @rdname processingQueue
 #' @export
-setMethod("processingChunkSize", signature = "Chromatograms",
-          function(object, ...) object@processingChunkSize)
+setMethod("processingChunkSize",
+    signature = "Chromatograms",
+    function(object, ...) object@processingChunkSize
+)
 
 #' @rdname processingQueue
 #' @export
-setReplaceMethod("processingChunkSize", signature = "Chromatograms",
-                 function(object, value) {
-                     object@processingChunkSize <- value
-                     object
-                 })
+setReplaceMethod("processingChunkSize",
+    signature = "Chromatograms",
+    function(object, value) {
+        object@processingChunkSize <- value
+        object
+    }
+)
 
 #' @rdname processingQueue
 #' @importMethodsFrom ProtGenerics backendParallelFactor
 #' @export
-setMethod("processingChunkFactor", signature = "Chromatograms",
-          function(object, chunkSize = processingChunkSize(object), ...) {
-              lx <- length(object)
-              if (is.finite(chunkSize) && chunkSize < lx) {
-                  fres <- as.factor(rep(1:ceiling(lx / chunkSize),
-                                        each = chunkSize)[seq_len(lx)])
-                  return(fres)
-              }
-              else backendParallelFactor(object@backend)
-          })
-
+setMethod("processingChunkFactor",
+    signature = "Chromatograms",
+    function(object, chunkSize = processingChunkSize(object), ...) {
+        lx <- length(object)
+        if (is.finite(chunkSize) && chunkSize < lx) {
+            fres <- as.factor(rep(seq_len(ceiling(lx / chunkSize)),
+                each = chunkSize
+            )[seq_len(lx)])
+            return(fres)
+        } else {
+            backendParallelFactor(object@backend)
+        }
+    }
+)

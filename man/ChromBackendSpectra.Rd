@@ -25,7 +25,8 @@ chromSpectraIndex(object)
 \item{spectra}{A \code{Spectra} object.}
 
 \item{factorize.by}{A \code{character} vector of variables for grouping \code{Spectra}
-data into chromatographic data. Default: \code{c("msLevel", "dataOrigin")}.
+data into chromatographic data.
+Default: \code{c("msLevel", "dataOrigin")}.
 If \code{chromData} is provided, it must contain these columns.}
 
 \item{summarize.method}{A \code{character} string specifying intensity summary:
@@ -35,7 +36,8 @@ If \code{chromData} is provided, it must contain these columns.}
 \code{backendInitialize()}. If missing, a default is generated. Columns
 like \code{rtmin}, \code{rtmax}, \code{mzmin}, and \code{mzmax} must be provided and not
 contain \code{NA} values. Use \code{-Inf/Inf} for unspecified values. The
-\code{"dataOrigin"} column must match the \code{Spectra} object's \code{"dataOrigin"}.}
+\code{"dataOrigin"} column must match the \code{Spectra} object's
+\code{"dataOrigin"}.}
 
 \item{...}{Additional parameters.}
 }
@@ -77,6 +79,31 @@ method must be called to update \code{chromSpectraIndex}.
 \note{
 Does it needs to be a generic and implemented for ChromBackend ? It's very
 specific for this backend, also I would NOT allow replacement of it.
+}
+\examples{
+library(Spectra)
+library(MsBackendMetaboLights)
+
+## Get Spectra data from MetaboLights
+be <- backendInitialize(MsBackendMetaboLights(),
+    mtblsId = "MTBLS39",
+    filePattern = c("63B.cdf")
+)
+s <- Spectra(be)
+
+## Initialize ChromBackendSpectra
+be_empty <- new("ChromBackendSpectra")
+be <- backendInitialize(be_empty, s)
+
+## replace the msLevel data
+msLevel(be) <- c(1L, 2L, 3L)
+
+## re-factorize the data
+be <- factorize(be)
+
+## Look at the index between chromatographic data and spectra
+chromSpectraIndex(be)
+
 }
 \author{
 Philippine Louail, Johannes Rainer.

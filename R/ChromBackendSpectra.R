@@ -44,10 +44,12 @@ NULL
 #'        `backendInitialize()`. If missing, a default is generated. Columns
 #'        like `rtmin`, `rtmax`, `mzmin`, and `mzmax` must be provided and not
 #'        contain `NA` values. Use `-Inf/Inf` for unspecified values. The
-#'        `"dataOrigin"` column must match the `Spectra` object's `"dataOrigin"`.
+#'        `"dataOrigin"` column must match the `Spectra` object's
+#'         `"dataOrigin"`.
 #'
 #' @param factorize.by A `character` vector of variables for grouping `Spectra`
-#'        data into chromatographic data. Default: `c("msLevel", "dataOrigin")`.
+#'        data into chromatographic data.
+#'        Default: `c("msLevel", "dataOrigin")`.
 #'        If `chromData` is provided, it must contain these columns.
 #'
 #' @param object A `ChromBackendSpectra` object.
@@ -62,6 +64,31 @@ NULL
 #' @author Philippine Louail, Johannes Rainer.
 #'
 #' @exportClass ChromBackendSpectra
+#'
+#' @examples
+#' library(Spectra)
+#' library(MsBackendMetaboLights)
+#'
+#' ## Get Spectra data from MetaboLights
+#' be <- backendInitialize(MsBackendMetaboLights(),
+#'     mtblsId = "MTBLS39",
+#'     filePattern = c("63B.cdf")
+#' )
+#' s <- Spectra(be)
+#'
+#' ## Initialize ChromBackendSpectra
+#' be_empty <- new("ChromBackendSpectra")
+#' be <- backendInitialize(be_empty, s)
+#'
+#' ## replace the msLevel data
+#' msLevel(be) <- c(1L, 2L, 3L)
+#'
+#' ## re-factorize the data
+#' be <- factorize(be)
+#'
+#' ## Look at the index between chromatographic data and spectra
+#' chromSpectraIndex(be)
+#'
 NULL
 
 
@@ -96,59 +123,58 @@ ChromBackendSpectra <- function() {
 #' @rdname ChromBackendSpectra
 #' @importFrom methods callNextMethod
 #' @importFrom MsCoreUtils rbindFill sumi maxi
-setMethod("backendInitialize", "ChromBackendSpectra",
-          function(object, spectra = Spectra::Spectra(),
-                   factorize.by = c("msLevel" , "dataOrigin"),
-                   summarize.method = c("sum", "max"),
-                   chromData = data.frame(),
-                   ...) {
-              summarize.method <- match.arg(summarize.method)
-              if (!summarize.method %in% c("sum", "max"))
-                  stop("Invalid 'summarize.method' argument. Must be 'sum' or ",
-                       "'max'.")
-              object@summaryFun <- if (summarize.method == "sum") sumi else maxi
-              if (!is(spectra, "Spectra"))
-                  stop("'spectra' must be a 'Spectra' object.")
-              if (!length(spectra)) return(object)
-              if (!all(factorize.by %in% Spectra::spectraVariables(spectra)))
-                  stop("All 'factorize.by' variables must exist in 'spectra'.")
-              if (!is.data.frame(chromData))
-                  stop("'chromData' must be a 'data.frame'.")
-
-              if (nrow(chromData) > 0) {
-                  if (!all(factorize.by %in% colnames(chromData)))
-                      stop("All 'factorize.by' variables must exist in ",
-                           "'chromData'.")
-                  object <- callNextMethod(object, chromData = chromData)
-                  object <- factorize(object, factorize.by)
-                  if (all(is.na(object$chromIndex)))
-                    object$chromIndex <- seq_len(nrow(chromData))
-                  object@spectra <- spectra
-                  return(object)
-                  #I have an issue here if the user provide a chromData but
-                  # no rtmin/rtmax, these are not corevariables so they are not
-                  # automatically added. and for mzmin mzmax evenif the columns
-                  # are automaticall created,
-                  # the code later WILL FAIL if the input is NA.
-                  # Not sure how to handle that..
-              }
-
-              f <- factor(
-                  do.call(
-                      paste,
-                      c(as.list(Spectra::spectraData(spectra)[, factorize.by]),
-                        sep = "_")))
-              spectra$chromSpectraIndex <- f
-              full_sp <- do.call(rbindFill,
-                                 lapply(split(spectra, f),
-                                        .spectra_format_chromData))
-              full_sp$chromIndex <- seq_len(nrow(full_sp))
-              full_sp$chromSpectraIndex <- levels(f)
-              rownames(full_sp) <- NULL
-              object@spectra <- spectra
-              callNextMethod(object, chromData = full_sp)
-              }
-          )
+setMethod(
+    "backendInitialize", "ChromBackendSpectra",
+    function(object, spectra = Spectra::Spectra(),
+    factorize.by = c("msLevel", "dataOrigin"),
+    summarize.method = c("sum", "max"),
+    chromData = data.frame(),
+    ...) {
+        summarize.method <- match.arg(summarize.method)
+        if (!summarize.method %in% c("sum", "max"))
+            stop("Invalid 'summarize.method' argument. Must be ",
+                "'sum' or 'max'.")
+        object@summaryFun <- if (summarize.method == "sum") sumi else maxi
+        if (!is(spectra, "Spectra"))
+            stop("'spectra' must be a 'Spectra' object.")
+        if (!length(spectra)) return(object)
+        if (!all(factorize.by %in% Spectra::spectraVariables(spectra)))
+            stop("All 'factorize.by' variables must exist in 'spectra'.")
+        if (!is.data.frame(chromData))
+            stop("'chromData' must be a 'data.frame'.")
+        if (nrow(chromData) > 0) {
+            if (!all(factorize.by %in% colnames(chromData)))
+                stop("All 'factorize.by' variables must exist in ",
+                    "'chromData'.")
+            object <- callNextMethod(object, chromData = chromData)
+            object <- factorize(object, factorize.by)
+            if (all(is.na(object$chromIndex)))
+                object$chromIndex <- seq_len(nrow(chromData))
+            object@spectra <- spectra
+            return(object)
+            # I have an issue here if the user provide a chromData but
+            # no rtmin/rtmax, these are not corevariables so they are not
+            # automatically added. and for mzmin mzmax evenif the columns
+            # are automaticall created,
+            # the code later WILL FAIL if the input is NA.
+            # Not sure how to handle that..
+        }
+        f <- factor(
+            do.call(paste,
+                c(as.list(Spectra::spectraData(spectra)[, factorize.by]),
+                    sep = "_"))
+            )
+        spectra$chromSpectraIndex <- f
+        full_sp <- do.call(
+            rbindFill, lapply( split(spectra, f), .spectra_format_chromData)
+            )
+        full_sp$chromIndex <- seq_len(nrow(full_sp))
+        full_sp$chromSpectraIndex <- levels(f)
+        rownames(full_sp) <- NULL
+        object@spectra <- spectra
+        callNextMethod(object, chromData = full_sp)
+    }
+)
 
 #' @rdname hidden_aliases
 #' @importFrom methods callNextMethod
@@ -164,67 +190,92 @@ setMethod("show", "ChromBackendSpectra", function(object) {
 #' specific for this backend, also I would NOT allow replacement of it.
 #' @export
 chromSpectraIndex <- function(object) {
-    if (!is(object, "ChromBackendSpectra"))
+    if (!is(object, "ChromBackendSpectra")) {
         stop("The object must be a 'ChromBackendSpectra' object.")
+    }
     chromData(object, columns = "chromSpectraIndex", drop = TRUE)
 }
 
 #' @rdname hidden_aliases
-setMethod("factorize", "ChromBackendSpectra",
-          function(object, factorize.by = c("msLevel", "dataOrigin"),...) {
-              if (!all(factorize.by %in% chromVariables(object)))
-                  stop("All 'factorize.by' variables must be in chromData.")
-              if (!all(factorize.by %in% Spectra::spectraVariables(object@spectra)))
-                  stop("All 'factorize.by' variables must be in the ",
-                       "Spectra object.")
-              object@chromData$chromSpectraIndex <- factor(do.call(
-                  paste, c(object@chromData[, factorize.by], sep = "_")))
-              object@spectra$chromSpectraIndex <- factor(
-                  do.call(
-                      paste,
-                      c(as.list(Spectra::spectraData(object@spectra)[, factorize.by]),
-                        sep = "_")),
-                  levels = levels(chromSpectraIndex(object)))
-              object
-          })
+setMethod(
+    "factorize", "ChromBackendSpectra",
+    function(object, factorize.by = c("msLevel", "dataOrigin"), ...) {
+        if (!all(factorize.by %in% chromVariables(object)))
+            stop("All 'factorize.by' variables must be in chromData.")
+        if (!all(factorize.by %in%
+            Spectra::spectraVariables(object@spectra)))
+            stop("All 'factorize.by' variables must be in the ",
+                "Spectra object.")
+        object@chromData$chromSpectraIndex <- factor(do.call(
+            paste, c(object@chromData[, factorize.by], sep = "_")))
+        object@spectra$chromSpectraIndex <- factor(
+            do.call(
+                paste, c(as.list(
+                        Spectra::spectraData(object@spectra)[, factorize.by]),
+                        sep = "_" )
+                ), levels = levels(chromSpectraIndex(object))
+            )
+        object
+    }
+)
 
 #' @rdname hidden_aliases
 #' @importMethodsFrom ProtGenerics backendParallelFactor
-setMethod("backendParallelFactor", "ChromBackendSpectra", function(object, ...) {
-    factor(chromSpectraIndex(object), levels = unique(chromSpectraIndex(object))) # now sure about that.
-})
+setMethod(
+    "backendParallelFactor",
+    "ChromBackendSpectra", function(object, ...) {
+        factor(chromSpectraIndex(object),
+            levels = unique(chromSpectraIndex(object))
+        ) # now sure about that.
+    }
+)
 
 #' @rdname hidden_aliases
 #' @export
 setMethod("isReadOnly", "ChromBackendSpectra", function(object) TRUE)
 
 #' @rdname hidden_aliases
-setMethod("peaksData", "ChromBackendSpectra",
-          function(object, columns = peaksVariables(object),
-                   drop = FALSE, ...) {
-              if (object@inMemory || !length(object)) return(callNextMethod())
-              ## Ensure chromSpectraIndex only contains relevant levels needed
-              valid_levels <- chromSpectraIndex(object)
-              if (!all(levels(object@spectra$chromSpectraIndex) %in% valid_levels))
-                  object@spectra$chromSpectraIndex <- factor(object@spectra$chromSpectraIndex,
-                                                             levels = valid_levels)
-
-              ## Process peaks data
-              pd <- mapply(.process_peaks_data,
-                           cd = split(chromData(object), valid_levels),
-                           s = split(object@spectra, object@spectra$chromSpectraIndex),
-                           MoreArgs = list(columns = columns,
-                                           fun = object@summaryFun,
-                                           drop = drop),
-                           SIMPLIFY = FALSE)
-              unlist(pd, use.names = FALSE, recursive = FALSE)
-          })
+setMethod(
+    "peaksData", "ChromBackendSpectra",
+    function(object, columns = peaksVariables(object),
+    drop = FALSE, ...) {
+        if (object@inMemory || !length(object)) {
+            return(callNextMethod())
+        }
+        ## Ensure chromSpectraIndex only contains relevant levels needed
+        valid_levels <- chromSpectraIndex(object)
+        if (!all(levels(object@spectra$chromSpectraIndex) %in%
+            valid_levels)) {
+            object@spectra$chromSpectraIndex <- factor(
+                object@spectra$chromSpectraIndex,
+                levels = valid_levels
+            )
+        }
+        ## Process peaks data
+        pd <- mapply(.process_peaks_data,
+            cd = split(chromData(object), valid_levels),
+            s = split(
+                object@spectra,
+                object@spectra$chromSpectraIndex
+            ),
+            MoreArgs = list(
+                columns = columns,
+                fun = object@summaryFun,
+                drop = drop
+            ),
+            SIMPLIFY = FALSE
+        )
+        unlist(pd, use.names = FALSE, recursive = FALSE)
+    }
+)
 
 
 #' @rdname hidden_aliases
 setReplaceMethod("peaksData", "ChromBackendSpectra", function(object, value) {
-    message("The `peaksData` slot will be modified but the changes will not",
-            " affect the Spectra object.")
+    message(
+        "The `peaksData` slot will be modified but the changes will not",
+        " affect the Spectra object."
+    )
     object <- callNextMethod()
     object@inMemory <- TRUE
     object
@@ -232,23 +283,28 @@ setReplaceMethod("peaksData", "ChromBackendSpectra", function(object, value) {
 
 #' @rdname hidden_aliases
 setReplaceMethod("chromData", "ChromBackendSpectra", function(object, value) {
-    message("Please keep in mind the 'ChromBackendSpectra' backend is read-only.",
-            " The chromData slot will be modified but the changes will not",
-            " affect the Spectra object. You will need to run `factorize()` to",
-            " update the 'chromSpectraIndex' column.")
+    message(
+        "Please keep in mind the 'ChromBackendSpectra' backend ",
+        "is read-only. The chromData slot will be modified but the ",
+        "changes will not affect the Spectra object. You will need to ",
+        "run `factorize()` to update the 'chromSpectraIndex' column."
+    )
     callNextMethod()
 })
 
 #' @rdname hidden_aliases
 #' @export
-setMethod("supportsSetBackend", "ChromBackendSpectra",
-          function(object, ...) FALSE)
+setMethod(
+    "supportsSetBackend", "ChromBackendSpectra",
+    function(object, ...) FALSE
+)
 
 #' @rdname hidden_aliases
 #' @importMethodsFrom S4Vectors [ [[
 #' @export
 setMethod("[", "ChromBackendSpectra", function(x, i, j, ...) {
-    if (!length(i)) return (ChromBackendSpectra())
+    if (!length(i)) {
+        return(ChromBackendSpectra())
+    }
     callNextMethod()
 })
-

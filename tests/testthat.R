@@ -4,13 +4,16 @@ library(Spectra)
 library(MsBackendMetaboLights)
 
 ### Test ChromBackendSpectra
-be <- backendInitialize(MsBackendMetaboLights(), mtblsId = "MTBLS39",
-                        filePattern = c("63B.cdf"))
+be <- backendInitialize(MsBackendMetaboLights(),
+    mtblsId = "MTBLS39",
+    filePattern = c("63B.cdf")
+)
 s <- Spectra(be)
 be_empty <- new("ChromBackendSpectra")
-be<- backendInitialize(be_empty, s)
+be <- backendInitialize(be_empty, s)
 test_suite <- system.file("test_backends", "test_ChromBackend",
-                          package = "Chromatograms")
+    package = "Chromatograms"
+)
 test_dir(test_suite, stop_on_failure = TRUE)
 be_sp <- be
 c_sp <- Chromatograms(be)
@@ -18,28 +21,38 @@ c_sp <- Chromatograms(be)
 ### Test ChrombackendMzR
 # fetch files
 MRM_file <- system.file("proteomics", "MRM-standmix-5.mzML.gz",
-                        package = "msdata")
+    package = "msdata"
+)
 be_empty <- ChromBackendMzR()
 be <- backendInitialize(be_empty, files = MRM_file, BPPARAM = SerialParam())
 
 test_suite <- system.file("test_backends", "test_ChromBackend",
-                          package = "Chromatograms")
+    package = "Chromatograms"
+)
 test_dir(test_suite, stop_on_failure = TRUE)
 
 be_mzr <- be
 c_mzr <- Chromatograms(be)
 
 ### Test ChrombackendMemory
-cdata <- data.frame(msLevel = c(1L, 1L, 1L),
-                    mz = c(112.2, 123.3, 134.4),
-                    chromIndex = c(1L, 2L, 3L))
+cdata <- data.frame(
+    msLevel = c(1L, 1L, 1L),
+    mz = c(112.2, 123.3, 134.4),
+    chromIndex = c(1L, 2L, 3L)
+)
 pdata <- list(
-    data.frame(rtime = c(12.4, 12.8, 13.2, 14.6),
-               intensity = c(123.3, 153.6, 2354.3, 243.4)),
-    data.frame(rtime = c(45.1, 46.2),
-               intensity = c(100, 80.1)),
-    data.frame(rtime = c(12.4, 12.8, 13.2, 14.6),
-               intensity = c(123.3, 153.6, 2354.3, 243.4))
+    data.frame(
+        rtime = c(12.4, 12.8, 13.2, 14.6),
+        intensity = c(123.3, 153.6, 2354.3, 243.4)
+    ),
+    data.frame(
+        rtime = c(45.1, 46.2),
+        intensity = c(100, 80.1)
+    ),
+    data.frame(
+        rtime = c(12.4, 12.8, 13.2, 14.6),
+        intensity = c(123.3, 153.6, 2354.3, 243.4)
+    )
 )
 
 be_empty <- new("ChromBackendMemory")
@@ -51,4 +64,3 @@ c_empty <- Chromatograms()
 c_full <- Chromatograms(be)
 
 test_check("Chromatograms")
-

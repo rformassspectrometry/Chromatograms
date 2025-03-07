@@ -1,6 +1,7 @@
 test_that("ChromBackend methods throw errors", {
     setClass("DummyBackend",
-             contains = "ChromBackend")
+        contains = "ChromBackend"
+    )
     dm <- new("DummyBackend")
 
     expect_error(dm[1], "Not implemented for ")
@@ -46,7 +47,7 @@ test_that("ChromBackend methods throw errors", {
     expect_error(productMzMin(dm), "Not implemented for ")
     expect_error(productMzMin(dm) <- 1, "Not implemented for ")
     expect_error(rtime(dm), "Not implemented for ")
-    expect_error(rtime(dm) <- c(1,1,1), "Not implemented for ")
+    expect_error(rtime(dm) <- c(1, 1, 1), "Not implemented for ")
     expect_error(factorize(dm), "Not implemented for ")
     expect_error(extractByIndex(dm, 1), "not implemented for ")
 
@@ -60,18 +61,25 @@ test_that("ChromBackend methods throw errors", {
     expect_error(dm[[123]] <- 123, "is supposed to be a character")
     expect_error(dm[["character", "character2"]] <- 123, "is not supported")
     expect_identical(filterPeaksData(dm, ranges = c()), dm)
-    expect_identical(filterPeaksData(dm, ranges = c(1,2), variables = c()), dm)
-    expect_error(filterPeaksData(dm, ranges = c("a","3"), variables = c("a")),
-                 "only support")
-    expect_error(filterPeaksData(dm, ranges = c(1,2), variables = c("a")),
-                 "One or more")
-    expect_error(filterPeaksData(dm, ranges = c(1,2), variables = c(33)),
-                 "needs to be of type")
-    expect_error(filterPeaksData(dm, ranges = c(1, 2),
-                                 variables = c("intensity", "rtime")),
-                 "needs to be twice")
+    expect_identical(filterPeaksData(dm, ranges = c(1, 2), variables = c()), dm)
+    expect_error(
+        filterPeaksData(dm, ranges = c("a", "3"), variables = c("a")),
+        "only support"
+    )
+    expect_error(
+        filterPeaksData(dm, ranges = c(1, 2), variables = c("a")),
+        "One or more"
+    )
+    expect_error(
+        filterPeaksData(dm, ranges = c(1, 2), variables = c(33)),
+        "needs to be of type"
+    )
+    expect_error(
+        filterPeaksData(dm,
+            ranges = c(1, 2),
+            variables = c("intensity", "rtime")
+        ),
+        "needs to be twice"
+    )
     expect_false(supportsSetBackend(dm))
-
 })
-
-

@@ -51,8 +51,8 @@ NULL
 #' The *peaks data variables* information in the `Chromatograms` object can be
 #' accessed using the `peaksData()` function. Specific peaks variables can be
 #' accessed by either precising the `"columns"` parameter in `peaksData()` or
-#' using `$`. `peaksData` can be accessed, replaced but also filtered/subsetted.
-#' Refer to the [peaksData] documentation for more details.
+#' using `$`. `peaksData` can be accessed, replaced but also
+#' filtered/subsetted. Refer to the [peaksData] documentation for more details.
 #'
 #' @section Processing of `Chromatograms` objects:
 #'
@@ -61,9 +61,9 @@ NULL
 #' `processingQueue` is a list of processing steps that are stored within the
 #' object and only applied when needed. This was created so that the data can be
 #' processed in a single step and is very useful for larger datasets. This is
-#' even more true as this processing queue will call function that can be applied
-#' on the data in a chunk-wise manner. This allows for parallel processing of
-#' the data and reduces the memory demand. To read more about the
+#' even more true as this processing queue will call function that can be
+#' applied on the data in a chunk-wise manner. This allows for parallel
+#' processing of the data and reduces the memory demand. To read more about the
 #' `processingQueue`, and how to parallelize your processes, see the
 #' [processingQueue] documentation.
 #'
@@ -84,7 +84,8 @@ NULL
 #'
 #' @param factorize.by A `character` vector with the names of the variables in
 #'        the `Spectra` object and the `chromData` slot that should be used
-#'        to factorize the `Spectra` object data to generate the chromatographic data.
+#'        to factorize the `Spectra` object data to generate the
+#'        chromatographic data.
 #'
 #' @param i For `[`: `integer`, `logical` or `character` to subset the object.
 #'
@@ -124,8 +125,36 @@ NULL
 #'          processings and parallelization for larger dataset.
 #'
 #' @examples
-#' ## Create a Chromatograms object
-#' chroms <- Chromatograms(ChromBackendMemory())
+#'
+#' library(MsBackendMetaboLights)
+#' library(Spectra)
+#'
+#' ## Create a Chromatograms object from a Spectra object.
+#' be <- backendInitialize(MsBackendMetaboLights(),
+#'     mtblsId = "MTBLS39",
+#'     filePattern = c("63B.cdf")
+#' )
+#' s <- Spectra(be)
+#' be <- backendInitialize(new("ChromBackendSpectra"), s)
+#' chr <- Chromatograms(be)
+#'
+#' ## Subset
+#' chr[1:2]
+#'
+#' ## access a specific variables
+#' chr[["msLevel"]]
+#' chr$msLevel
+#'
+#' ## Replace data of a specific variable
+#' chr$msLevel <- c(2L, 2L, 2L)
+#'
+#' ## Can re factorize the data
+#' chr <- factorize(chr)
+#'
+#' ## Can also change the backend into memory
+#' chr <- setBackend(chr, ChromBackendMemory())
+#'
+#' chr
 #'
 NULL
 
@@ -156,55 +185,74 @@ setClassUnion("ChromBackendOrMissing", c("ChromBackend", "missing"))
 #'
 #' @noRd
 setClass("Chromatograms",
-         slots = c(
-             backend = "ChromBackend",
-             processingQueue = "list",
-             processing = "character",
-             processingChunkSize = "numeric",
-             version = "character"),
-         prototype = prototype(version = "0.1",
-                               processingChunkSize = Inf,
-                               processingQueue = list(),
-                               processing = character())
-         )
+    slots = c(
+        backend = "ChromBackend",
+        processingQueue = "list",
+        processing = "character",
+        processingChunkSize = "numeric",
+        version = "character"
+    ),
+    prototype = prototype(
+        version = "0.1",
+        processingChunkSize = Inf,
+        processingQueue = list(),
+        processing = character()
+    )
+)
 
 setValidity("Chromatograms", function(object) {
     msg <- character()
-    if (!is(object@backend, "ChromBackend"))
+    if (!is(object@backend, "ChromBackend")) {
         msg <- ("backend must be a ChromBackend object")
+    }
     if (!is.numeric(object@processingChunkSize) ||
-        length(object@processingChunkSize) != 1)
+        length(object@processingChunkSize) != 1) {
         msg <- c(msg, "processingChunkSize must be a numeric value")
+    }
     msg <- c(msg, .valid_processing_queue(object@processingQueue))
-    if (length(msg)) msg
-    else TRUE
+    if (length(msg)) {
+        msg
+    } else {
+        TRUE
+    }
 })
 
 #' @rdname Chromatograms
 #' @export
-setMethod("Chromatograms", "ChromBackendOrMissing",
-          function(object = ChromBackendMemory(),
-                   processingQueue = list(), ...) {
-              if (missing(object))
-                  object <- ChromBackendMemory()
-              new("Chromatograms", backend = object,
-                  processingQueue = processingQueue, ...)
-          })
+setMethod(
+    "Chromatograms", "ChromBackendOrMissing",
+    function(object = ChromBackendMemory(),
+    processingQueue = list(), ...) {
+        if (missing(object)) {
+            object <- ChromBackendMemory()
+        }
+        new("Chromatograms",
+            backend = object,
+            processingQueue = processingQueue, ...
+        )
+    }
+)
 
 #' @rdname Chromatograms
 #' @importFrom methods new
 #' @export
-setMethod("Chromatograms", "Spectra",
-          function(object, summarize.method = c("sum", "max"),
-                   chromData = data.frame(),
-                   factorize.by = c("msLevel", "dataOrigin"), ...){
-              bd <- backendInitialize(ChromBackendSpectra(), spectra = object,
-                                      factorize.by = factorize.by,
-                                      chromData = chromData,
-                                      summarize.method = summarize.method)
-              new("Chromatograms", backend = bd,
-                  processingQueue = list(), ...)
-          })
+setMethod(
+    "Chromatograms", "Spectra",
+    function(object, summarize.method = c("sum", "max"),
+    chromData = data.frame(),
+    factorize.by = c("msLevel", "dataOrigin"), ...) {
+        bd <- backendInitialize(ChromBackendSpectra(),
+            spectra = object,
+            factorize.by = factorize.by,
+            chromData = chromData,
+            summarize.method = summarize.method
+        )
+        new("Chromatograms",
+            backend = bd,
+            processingQueue = list(), ...
+        )
+    }
+)
 
 
 #' @rdname hidden_aliases
@@ -214,29 +262,39 @@ setMethod("Chromatograms", "Spectra",
 #' @importFrom utils capture.output
 #'
 #' @exportMethod show
-setMethod("show", "Chromatograms",
-          function(object) {
-              cat("Chromatographic data (", class(object)[1L], ") with ",
-                  length(object@backend), " chromatograms in a ",
-                  class(object@backend), " backend:\n", sep = "")
-              if (length(object@backend)) {
-                  txt <- capture.output(show(object@backend))
-                  cat(txt[-1], sep = "\n")
-              }
-              if (length(object@processingQueue))
-                  cat("Lazy evaluation queue:", length(object@processingQueue),
-                      "processing step(s)\n")
-              lp <- length(object@processing)
-              if (lp) {
-                  lps <- object@processing
-                  if (lp > 3) {
-                      lps <- lps[1:3]
-                      lps <- c(lps, paste0("...", lp - 3, " more processings. ",
-                                           "Use 'processingLog' to list all."))
-                  }
-                  cat("Processing:\n", paste(lps, collapse="\n "), "\n")
-              }
-          })
+setMethod(
+    "show", "Chromatograms",
+    function(object) {
+        cat("Chromatographic data (", class(object)[1L], ") with ",
+            length(object@backend), " chromatograms in a ",
+            class(object@backend), " backend:\n",
+            sep = ""
+        )
+        if (length(object@backend)) {
+            txt <- capture.output(show(object@backend))
+            cat(txt[-1], sep = "\n")
+        }
+        if (length(object@processingQueue)) {
+            cat(
+                "Lazy evaluation queue:", length(object@processingQueue),
+                "processing step(s)\n"
+            )
+        }
+        lp <- length(object@processing)
+        if (lp) {
+            lps <- object@processing
+            if (lp > 3) {
+                lps <- lps[seq_len(3)]
+                lps <- c(lps, paste0(
+                    "...", lp - 3,
+                    " more processings. ",
+                    "Use 'processingLog' to list all."
+                ))
+            }
+            cat("Processing:\n", paste(lps, collapse = "\n "), "\n")
+        }
+    }
+)
 
 #' @rdname Chromatograms
 #'
@@ -252,33 +310,42 @@ setMethod("show", "Chromatograms",
 setMethod(
     "setBackend", c("Chromatograms", "ChromBackend"),
     function(object, backend, f = processingChunkFactor(object),
-             BPPARAM = SerialParam(), ...) {
+    BPPARAM = SerialParam(), ...) {
         backend_class <- class(object@backend)
         BPPARAM <- backendBpparam(object@backend, BPPARAM)
         BPPARAM <- backendBpparam(backend, BPPARAM)
-        if (!supportsSetBackend(backend))
+        if (!supportsSetBackend(backend)) {
             stop(class(backend), " does not support 'setBackend'")
-        if (!length(f) || length(levels(f)) == 1 || !length(object))
-            bd_new <- backendInitialize(backend, peaksData = peaksData(object),
-                                    chromData = chromData(object))
-        else {
+        }
+        if (!length(f) || length(levels(f)) == 1 || !length(object)) {
+            bd_new <- backendInitialize(backend,
+                peaksData = peaksData(object),
+                chromData = chromData(object)
+            )
+        } else {
             bd_new <- bplapply(
                 split(object@backend, f = f),
                 function(z, ...) {
                     backendInitialize(backend,
-                                      peaksData = peaksData(z),
-                                      chromData = chromData(z),
-                                      BPPARAM = SerialParam())
-                }, ..., BPPARAM = BPPARAM)
+                        peaksData = peaksData(z),
+                        chromData = chromData(z),
+                        BPPARAM = SerialParam()
+                    )
+                }, ...,
+                BPPARAM = BPPARAM
+            )
             bd_new <- backendMerge(bd_new)
         }
         object@backend <- bd_new
-        object@processing <- .logging(object@processing,
-                                           "Switch backend from ",
-                                           backend_class, " to ",
-                                           class(object@backend))
+        object@processing <- .logging(
+            object@processing,
+            "Switch backend from ",
+            backend_class, " to ",
+            class(object@backend)
+        )
         object
-        })
+    }
+)
 
 #' @rdname Chromatograms
 #' @export
@@ -299,48 +366,63 @@ setReplaceMethod("$", signature = "Chromatograms", function(x, name, value) {
 #' @importFrom MsCoreUtils i2index
 #' @export
 setMethod("[", "Chromatograms", function(x, i, j, ..., drop = FALSE) {
-    if (!missing(j))
+    if (!missing(j)) {
         stop("Subsetting 'Chromatograms' by columns is not (yet) supported")
-    if (missing(i))
+    }
+    if (missing(i)) {
         return(x)
+    }
     slot(x, "backend", check = FALSE) <- extractByIndex(
-        x@backend, i2index(i, length(x)))
+        x@backend, i2index(i, length(x))
+    )
     x
 })
 
 #' @rdname Chromatograms
 #' @export
 setMethod("[[", "Chromatograms", function(x, i, j, ...) {
-    if (!is.character(i))
-        stop("'i' is supposed to be a character defining the chromatogram or ",
-             "peak variable to access.")
-    if (!missing(j))
+    if (!is.character(i)) {
+        stop(
+            "'i' is supposed to be a character defining the chromatogram or ",
+            "peak variable to access."
+        )
+    }
+    if (!missing(j)) {
         stop("'j' is not supported.")
-    if (!(i %in% peaksVariables(x)) && !(i %in% chromVariables(x)))
+    }
+    if (!(i %in% peaksVariables(x)) && !(i %in% chromVariables(x))) {
         stop("No variable '", i, "' available")
-    else
+    } else {
         do.call("[[", list(x@backend, i))
+    }
 })
 
 #' @rdname Chromatograms
 #'
 #' @export
 setReplaceMethod("[[", "Chromatograms", function(x, i, j, ..., value) {
-    if (!is.character(i))
-        stop("'i' is supposed to be a character defining the chromatogram ",
-             "or peak variable to replace or create.")
-    if (!(i %in% peaksVariables(x)) && !(i %in% chromVariables(x)))
+    if (!is.character(i)) {
+        stop(
+            "'i' is supposed to be a character defining the chromatogram ",
+            "or peak variable to replace or create."
+        )
+    }
+    if (!(i %in% peaksVariables(x)) && !(i %in% chromVariables(x))) {
         stop("No variable '", i, "' available")
-    if (!missing(j))
+    }
+    if (!missing(j)) {
         stop("'j' is not supported.")
+    }
     x@backend <- do.call("[[<-", list(x@backend, i = i, value = value))
     x
 })
 
 #' @rdname Chromatograms
 #' @export
-setMethod("factorize", "Chromatograms",
-          function(object,factorize.by = c("msLevel", "dataOrigin"),...) {
-    object@backend <- factorize(object@backend, ...)
-    object
-})
+setMethod(
+    "factorize", "Chromatograms",
+    function(object, factorize.by = c("msLevel", "dataOrigin"), ...) {
+        object@backend <- factorize(object@backend, ...)
+        object
+    }
+)

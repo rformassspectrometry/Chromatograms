@@ -100,79 +100,142 @@
 #' @importFrom BiocParallel SerialParam bpparam
 #'
 #' @author Philippine Louail
+#'
+#' @examples
+#'
+#' # Create a Chromatograms object
+#' cdata <- data.frame(
+#'     msLevel = c(1L, 1L, 1L),
+#'     mz = c(112.2, 123.3, 134.4),
+#'     chromIndex = c(1L, 2L, 3L)
+#' )
+#'
+#' pdata <- list(
+#'     data.frame(
+#'         rtime = c(12.4, 12.8, 13.2, 14.6),
+#'         intensity = c(123.3, 153.6, 2354.3, 243.4)
+#'     ),
+#'     data.frame(
+#'         rtime = c(45.1, 46.2),
+#'         intensity = c(100, 80.1)
+#'     ),
+#'     data.frame(
+#'         rtime = c(12.4, 12.8, 13.2, 14.6),
+#'         intensity = c(123.3, 153.6, 2354.3, 243.4)
+#'     )
+#' )
+#'
+#' be <- backendInitialize(new("ChromBackendMemory"),
+#'     chromData = cdata,
+#'     peaksData = pdata
+#' )
+#'
+#' chr <- Chromatograms(be)
+#'
+#' # Access peaks data
+#' peaksData(chr)
+#'
+#' # Access specific peaks data variables
+#' peaksData(chr, columns = "rtime")
+#' rtime(chr)
+#'
+#' # Replace peaks data
+#' rtime(chr)[[1]] <- c(1, 2, 3, 4)
+#'
+#' # Filter peaks data
+#' filterPeaksData(chr, variables = "rtime", ranges = c(12.5, 13.5))
+#'
 NULL
 
 #' @rdname peaksData
 #' @importFrom MsCoreUtils between
 #' @export
 setMethod("peaksData",
-          signature = "Chromatograms",
-          function(object,
-                   columns = peaksVariables(object),
-                   f = processingChunkFactor(object),
-                   BPPARAM = bpparam(), drop = FALSE, ...) {
-              queue <- object@processingQueue
-              if (length(queue)) {
-                  bd <- .run_process_queue(object@backend,
-                                           queue = queue,
-                                           f = f,
-                                           BPPARAM = BPPARAM)
-                  return(peaksData(bd, columns = columns, drop = drop))
-                  }
-              peaksData(object@backend, columns = columns, drop = drop)
-          })
+    signature = "Chromatograms",
+    function(object,
+    columns = peaksVariables(object),
+    f = processingChunkFactor(object),
+    BPPARAM = bpparam(), drop = FALSE, ...) {
+        queue <- object@processingQueue
+        if (length(queue)) {
+            bd <- .run_process_queue(object@backend,
+                queue = queue,
+                f = f,
+                BPPARAM = BPPARAM
+            )
+            return(peaksData(bd, columns = columns, drop = drop))
+        }
+        peaksData(object@backend, columns = columns, drop = drop)
+    }
+)
 
 #' @rdname peaksData
-setReplaceMethod("peaksData", signature = "Chromatograms",
-                 function(object, value) {
-    if (isReadOnly(object@backend))
-        stop("Cannot replace peaks data in a read-only backend")
-    peaksData(object@backend) <- value
-    object
+setReplaceMethod("peaksData",
+    signature = "Chromatograms",
+    function(object, value) {
+        if (isReadOnly(object@backend)) {
+            stop("Cannot replace peaks data in a read-only backend")
+        }
+        peaksData(object@backend) <- value
+        object
+    }
+)
+
+#' @rdname peaksData
+setMethod("peaksVariables", signature = "Chromatograms", function(object, ...) {
+    peaksVariables(object@backend)
 })
 
 #' @rdname peaksData
-setMethod("peaksVariables", signature = "Chromatograms", function(object, ...)
-              peaksVariables(object@backend))
-
-#' @rdname peaksData
-setMethod("rtime", signature = "Chromatograms", function(object, ...)
-              peaksData(object, columns = "rtime", drop = TRUE))
-
-#' @rdname peaksData
-setReplaceMethod("rtime", signature = "Chromatograms", function(object, value) {
-    if (isReadOnly(object@backend))
-        stop("Cannot replace peaks data in a read-only backend")
-    rtime(object@backend) <- value
-    object
+setMethod("rtime", signature = "Chromatograms", function(object, ...) {
+    peaksData(object, columns = "rtime", drop = TRUE)
 })
 
 #' @rdname peaksData
-setMethod("intensity", signature = "Chromatograms", function(object, ...)
-              peaksData(object, columns = "intensity", drop = TRUE))
+setReplaceMethod("rtime",
+    signature = "Chromatograms",
+    function(object, value) {
+        if (isReadOnly(object@backend)) {
+            stop("Cannot replace peaks data in a read-only backend")
+        }
+        rtime(object@backend) <- value
+        object
+    }
+)
 
 #' @rdname peaksData
-setReplaceMethod("intensity", signature = "Chromatograms", function(object, value) {
-    if (isReadOnly(object@backend))
-        stop("Cannot replace peaks data in a read-only backend")
-    intensity(object@backend) <- value
-    object
+setMethod("intensity", signature = "Chromatograms", function(object, ...) {
+    peaksData(object, columns = "intensity", drop = TRUE)
 })
+
+#' @rdname peaksData
+setReplaceMethod("intensity",
+    signature = "Chromatograms",
+    function(object, value) {
+        if (isReadOnly(object@backend)) {
+            stop("Cannot replace peaks data in a read-only backend")
+        }
+        intensity(object@backend) <- value
+        object
+    }
+)
 
 #' @rdname peaksData
 setMethod("filterPeaksData",
-          signature = "Chromatograms",
-          function(object, variables = character(),
-                   ranges = numeric(), match = c("any", "all"),
-                   keep = TRUE) {
-              object <- addProcessing(object, filterPeaksData,
-                                      variables = variables, ranges = ranges,
-                                      match = match, keep = keep)
-              object@processing <- .logging(
-                  object@processing, "Filter: remove peaks based ",
-                  "on the variables: " , paste(variables, collapse = ", "),
-                  "the ranges: ", paste(ranges, collapse = ", "),
-                  "and the match condition: ", match)
-              object
-          })
-
+    signature = "Chromatograms",
+    function(object, variables = character(),
+    ranges = numeric(), match = c("any", "all"),
+    keep = TRUE) {
+        object <- addProcessing(object, filterPeaksData,
+            variables = variables, ranges = ranges,
+            match = match, keep = keep
+        )
+        object@processing <- .logging(
+            object@processing, "Filter: remove peaks based ",
+            "on the variables: ", paste(variables, collapse = ", "),
+            "the ranges: ", paste(ranges, collapse = ", "),
+            "and the match condition: ", match
+        )
+        object
+    }
+)

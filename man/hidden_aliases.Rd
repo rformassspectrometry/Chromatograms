@@ -19,7 +19,7 @@
 \alias{isReadOnly,ChromBackendMemory-method}
 \alias{show,ChromBackendMemory-method}
 \alias{supportsSetBackend,ChromBackendMemory-method}
-\alias{[,ChromBackendMemory-method}
+\alias{[,ChromBackendMemory,ANY,ANY-method}
 \alias{$,ChromBackendMemory-method}
 \alias{$<-,ChromBackendMemory-method}
 \alias{show,ChromBackendMzR-method}
@@ -29,7 +29,7 @@
 \alias{peaksData<-,ChromBackendMzR-method}
 \alias{chromData<-,ChromBackendMzR-method}
 \alias{supportsSetBackend,ChromBackendMzR-method}
-\alias{[,ChromBackendMzR-method}
+\alias{[,ChromBackendMzR,ANY,ANY-method}
 \alias{show,ChromBackendSpectra-method}
 \alias{factorize,ChromBackendSpectra-method}
 \alias{backendParallelFactor,ChromBackendSpectra-method}
@@ -38,7 +38,7 @@
 \alias{peaksData<-,ChromBackendSpectra-method}
 \alias{chromData<-,ChromBackendSpectra-method}
 \alias{supportsSetBackend,ChromBackendSpectra-method}
-\alias{[,ChromBackendSpectra-method}
+\alias{[,ChromBackendSpectra,ANY,ANY-method}
 \alias{show,Chromatograms-method}
 \title{Fill data.frame with columns for missing core chromatogram variables.}
 \usage{
@@ -70,7 +70,7 @@ validPeaksData(x = list(), error = TRUE)
 
 \S4method{supportsSetBackend}{ChromBackendMemory}(object, ...)
 
-\S4method{[}{ChromBackendMemory}(x, i, j, ..., drop = FALSE)
+\S4method{[}{ChromBackendMemory,ANY,ANY}(x, i, j, ..., drop = FALSE)
 
 \S4method{$}{ChromBackendMemory}(x, name)
 
@@ -96,7 +96,7 @@ validPeaksData(x = list(), error = TRUE)
 
 \S4method{supportsSetBackend}{ChromBackendMzR}(object, ...)
 
-\S4method{[}{ChromBackendMzR}(x, i, j, ..., drop = TRUE)
+\S4method{[}{ChromBackendMzR,ANY,ANY}(x, i, j, ..., drop = TRUE)
 
 \S4method{show}{ChromBackendSpectra}(object)
 
@@ -114,7 +114,7 @@ validPeaksData(x = list(), error = TRUE)
 
 \S4method{supportsSetBackend}{ChromBackendSpectra}(object, ...)
 
-\S4method{[}{ChromBackendSpectra}(x, i, j, ..., drop = TRUE)
+\S4method{[}{ChromBackendSpectra,ANY,ANY}(x, i, j, ..., drop = TRUE)
 
 \S4method{show}{Chromatograms}(object)
 }
@@ -149,11 +149,12 @@ types.
 \code{validChromData()} checks that columns, representing \emph{core} chromatogram
 variables are of the correct data type.
 
-For S4 methods that require a documentation entry but only clutter the index.
+For S4 methods that require a documentation entry but only clutter the
+index.
 
 This method returns the chromatographic data stored in the
-backend. If not specified otherwise it will return all defined columns in the
-chromData slot as well as dding the coreChromVariables missing with NA
+backend. If not specified otherwise it will return all defined columns in
+thechromData slot as well as dding the coreChromVariables missing with NA
 values.
 }
 \examples{

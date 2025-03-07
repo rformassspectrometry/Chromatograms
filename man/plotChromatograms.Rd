@@ -50,6 +50,15 @@ plotChromatogramsOverlay(
 \item{type}{\code{character(1)} specifying the type of plot. See \code{\link[=plot.default]{plot.default()}}
 for details. Defaults to \code{type = "l"} which draws each peak as a line.}
 
+\item{pch}{\code{numeric(1)} specifying the symbol to be used for the peaks.
+Defaults to 20, a filled circle. See \code{\link[=points]{points()}} for details.}
+
+\item{cex}{\code{numeric(1)} specifying the character expansion factor for the
+peaks. Defaults to 0.6.}
+
+\item{lwd}{\code{numeric(1)} specifying the line width for the peaks. Defaults to
+1.5.}
+
 \item{xlim}{\code{numeric(2)} defining the x-axis limits. The range of m/z values
 are used by default.}
 
@@ -86,20 +95,29 @@ splitting the plot area into as many panels as there are spectra.
 \examples{
 
 ## Create a Chromatograms object
-cdata <- data.frame(msLevel = c(1L, 1L, 1L),
-                    mz = c(112.2, 123.3, 134.4),
-                    chromIndex = c(1L, 2L, 3L))
+cdata <- data.frame(
+    msLevel = c(1L, 1L, 1L),
+    mz = c(112.2, 123.3, 134.4),
+    chromIndex = c(1L, 2L, 3L)
+)
 pdata <- list(
-  data.frame(rtime = c(12.4, 12.8, 13.2, 14.6),
-             intensity = c(123.3, 153.6, 2354.3, 243.4)),
-  data.frame(rtime = c(45.1, 46.2),
-             intensity = c(100, 80.1)),
-  data.frame(rtime = c(12.4, 12.8, 13.2, 14.6),
-             intensity = c(123.3, 153.6, 2354.3, 243.4))
+    data.frame(
+        rtime = c(12.4, 12.8, 13.2, 14.6),
+        intensity = c(123.3, 153.6, 2354.3, 243.4)
+    ),
+    data.frame(
+        rtime = c(45.1, 46.2),
+        intensity = c(100, 80.1)
+    ),
+    data.frame(
+        rtime = c(12.4, 12.8, 13.2, 14.6),
+        intensity = c(123.3, 153.6, 2354.3, 243.4)
+    )
 )
 chr <- backendInitialize(ChromBackendMemory(),
-                        chromData = cdata,
-                        peaksData = pdata) |> Chromatograms()
+    chromData = cdata,
+    peaksData = pdata
+) |> Chromatograms()
 
 ## Plot one chromatogram
 plotChromatograms(chr[1])
@@ -109,6 +127,9 @@ plotChromatograms(chr)
 
 ## Define a color for each peak in each chromatogram
 plotChromatograms(chr[1:2], col = c("green", "blue"))
+
+## Overlay all chromatograms
+plotChromatogramsOverlay(chr[1:2], col = c("green", "blue"))
 
 }
 \author{

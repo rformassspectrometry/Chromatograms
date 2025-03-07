@@ -138,8 +138,8 @@
 
 \item{columns}{A \code{character} vector of chromatograms variables to extract.}
 
-\item{drop}{A \code{logical} indicating whether to drop dimensions when extracting
-a single variable.}
+\item{drop}{A \code{logical} indicating whether to drop dimensions when
+extracting a single variable.}
 
 \item{value}{replacement value for \verb{<-} methods. See individual
 method description or expected data type.}
@@ -165,11 +165,12 @@ defining whether to keep (\code{keep = TRUE}) or remove (\code{keep = FALSE})
 the chromatogram data that match the condition.}
 }
 \description{
-As explained in the \code{\link{Chromatograms}} class documentation, the \code{Chromatograms}
-object is a container for chromatogram data that includes chromatographic
-peaks data (\emph{retention time} and related intensity values, also referred to
-as \emph{peaks data variables} in the context of \code{Chromatograms}) and metadata of
-individual chromatograms (so called \emph{chromatograms variables}).
+As explained in the \code{\link{Chromatograms}} class documentation, the
+\code{Chromatograms} object is a container for chromatogram data that includes
+chromatographic peaks data (\emph{retention time} and related intensity values,
+also referred to as \emph{peaks data variables} in the context of
+\code{Chromatograms}) and metadata of individual chromatograms (so called
+\emph{chromatograms variables}).
 
 The \emph{chromatograms variables} information can be accessed using the
 \code{chromData()} function. it is also possible to access specific
@@ -231,6 +232,37 @@ chromatograms than the original.
 }
 }
 
+\examples{
+
+# Create a Chromatograms object
+cdata <- data.frame(
+    msLevel = c(1L, 1L, 1L),
+    mz = c(112.2, 123.3, 134.4),
+    chromIndex = c(1L, 2L, 3L)
+)
+
+be <- backendInitialize(new("ChromBackendMemory"), chromData = cdata)
+
+chr <- Chromatograms(be)
+
+# Access chromatograms variables
+chromData(chr)
+
+# Access specific chromatograms variables
+chromData(chr, columns = "msLevel")
+
+msLevel(chr)
+
+# Replace chromatograms variables
+msLevel(chr) <- c(1L, 2L, 2L)
+
+# Filter chromatograms variables
+filterChromData(chr,
+    variables = "msLevel", ranges = c(1L, 1L),
+    keep = FALSE
+)
+
+}
 \seealso{
 \link{Chromatograms} for a general description of the \code{Chromatograms}
 object.
