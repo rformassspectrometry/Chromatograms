@@ -10,7 +10,7 @@ NULL
 #' @description
 #' The `ChromBackendSpectra` class extends `ChromBackendMemory`, inheriting
 #' all its slots and methods while providing additional functionality for
-#' summarizing chromatographic data from `Spectra` objects.
+#' summarizing chromatographic data from [Spectra::Spectra()] objects.
 #'
 #' It can be initialized with a `Spectra` object, which is stored in the
 #' `spectra` slot of the backend. Users can also provide a `data.frame`
@@ -21,14 +21,19 @@ NULL
 #' The *dataOrigin* core chromatogram variable should reflect the *dataOrigin*
 #' of the `Spectra` object. The `factorize.by` parameter defines the variables
 #' for grouping `Spectra` data into chromatographic data. The default is
-#' `c("msLevel", "dataOrigin")`. These variables must be in both `Spectra` and
-#' `chromData` (if provided).
+#' `c("msLevel", "dataOrigin")`, which will defines separate chromatograms for
+#' each combination of `msLevel` and `dataOrigin`. These variables must be in
+#' both `Spectra` and `chromData` (if provided).
 #'
 #' The `summarize.method` parameter defines how spectral data intensity is
 #' summarized:
 #' - **"sum"**: Sums intensity to create a Total Ion Chromatogram (TIC).
 #' - **"max"**: Takes max intensity for a Base Peak Chromatogram (BPC).
 #'
+#' If `chromData` or its factorization columns are modified, the `factorize()`
+#' method must be called to update `chromSpectraIndex`.
+#'
+#' @details
 #' No `peaksData` is stored until the user calls a function that generates it
 #' (e.g., `rtime()`, `peaksData()`, `intensity()`). The `peaksData` slot
 #' replacement is unsupported—modifications are temporary to optimize memory.
@@ -36,9 +41,6 @@ NULL
 #'
 #' `ChromBackendSpectra` should reuse `ChromBackendMemory` methods whenever
 #' possible to keep implementations simple.
-#'
-#' If `chromData` or its factorization columns are modified, the `factorize()`
-#' method must be called to update `chromSpectraIndex`.
 #'
 #' @param chromData A `data.frame` with chromatographic data for use in
 #'        `backendInitialize()`. If missing, a default is generated. Columns
@@ -103,9 +105,6 @@ setMethod("backendInitialize", "ChromBackendSpectra",
                    chromData = data.frame(),
                    ...) {
               summarize.method <- match.arg(summarize.method)
-              if (!summarize.method %in% c("sum", "max"))
-                  stop("Invalid 'summarize.method' argument. Must be 'sum' or ",
-                       "'max'.")
               object@summaryFun <- if (summarize.method == "sum") sumi else maxi
               if (!is(spectra, "Spectra"))
                   stop("'spectra' must be a 'Spectra' object.")
@@ -159,10 +158,6 @@ setMethod("show", "ChromBackendSpectra", function(object) {
 })
 
 #' @rdname ChromBackendSpectra
-#' @note
-#' Does it needs to be a generic and implemented for ChromBackend ? It's very
-#' specific for this backend, also I would NOT allow replacement of it.
-#' @export
 chromSpectraIndex <- function(object) {
     if (!is(object, "ChromBackendSpectra"))
         stop("The object must be a 'ChromBackendSpectra' object.")
@@ -191,7 +186,7 @@ setMethod("factorize", "ChromBackendSpectra",
 #' @rdname hidden_aliases
 #' @importMethodsFrom ProtGenerics backendParallelFactor
 setMethod("backendParallelFactor", "ChromBackendSpectra", function(object, ...) {
-    factor(chromSpectraIndex(object), levels = unique(chromSpectraIndex(object))) # now sure about that.
+    factor()
 })
 
 #' @rdname hidden_aliases

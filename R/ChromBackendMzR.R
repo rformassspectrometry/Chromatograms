@@ -110,9 +110,9 @@ setMethod("peaksData", "ChromBackendMzR",
               ret <- all(pv %in% columns)
               f <- factor(dataOrigin(object),
                           levels = unique(dataOrigin(object)))
-              pd <- bplapply(split(object, f = dataOrigin(object)), #should not this be f = f ?
+              pd <- bplapply(split(object, f = f), #should not this be f = f ?
                              function(ob) {
-                                 chr <- .get_chrom_data(fl = unique(dataOrigin(ob)), # maybe here use levels(f), to prevent extracting origin again
+                                 chr <- .get_chrom_data(fl = ob@chromData$dataOrigin[1L], # maybe here use levels(f), to prevent extracting origin again
                                                         idx = chromIndex(ob))
                                  if (ret) chr
                                  else lapply(chr, `[`, , columns, drop = drop)

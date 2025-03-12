@@ -42,7 +42,7 @@ contain \code{NA} values. Use \code{-Inf/Inf} for unspecified values. The
 \description{
 The \code{ChromBackendSpectra} class extends \code{ChromBackendMemory}, inheriting
 all its slots and methods while providing additional functionality for
-summarizing chromatographic data from \code{Spectra} objects.
+summarizing chromatographic data from \code{\link[Spectra:Spectra]{Spectra::Spectra()}} objects.
 
 It can be initialized with a \code{Spectra} object, which is stored in the
 \code{spectra} slot of the backend. Users can also provide a \code{data.frame}
@@ -53,8 +53,9 @@ not provided, a default \code{data.frame} is created from the \code{Spectra} dat
 The \emph{dataOrigin} core chromatogram variable should reflect the \emph{dataOrigin}
 of the \code{Spectra} object. The \code{factorize.by} parameter defines the variables
 for grouping \code{Spectra} data into chromatographic data. The default is
-\code{c("msLevel", "dataOrigin")}. These variables must be in both \code{Spectra} and
-\code{chromData} (if provided).
+\code{c("msLevel", "dataOrigin")}, which will defines separate chromatograms for
+each combination of \code{msLevel} and \code{dataOrigin}. These variables must be in
+both \code{Spectra} and \code{chromData} (if provided).
 
 The \code{summarize.method} parameter defines how spectral data intensity is
 summarized:
@@ -63,6 +64,10 @@ summarized:
 \item \strong{"max"}: Takes max intensity for a Base Peak Chromatogram (BPC).
 }
 
+If \code{chromData} or its factorization columns are modified, the \code{factorize()}
+method must be called to update \code{chromSpectraIndex}.
+}
+\details{
 No \code{peaksData} is stored until the user calls a function that generates it
 (e.g., \code{rtime()}, \code{peaksData()}, \code{intensity()}). The \code{peaksData} slot
 replacement is unsupported—modifications are temporary to optimize memory.
@@ -70,13 +75,6 @@ The \code{inMemory} slot indicates this with \code{TRUE}.
 
 \code{ChromBackendSpectra} should reuse \code{ChromBackendMemory} methods whenever
 possible to keep implementations simple.
-
-If \code{chromData} or its factorization columns are modified, the \code{factorize()}
-method must be called to update \code{chromSpectraIndex}.
-}
-\note{
-Does it needs to be a generic and implemented for ChromBackend ? It's very
-specific for this backend, also I would NOT allow replacement of it.
 }
 \author{
 Philippine Louail, Johannes Rainer.
