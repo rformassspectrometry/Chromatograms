@@ -13,7 +13,7 @@ ChromBackendSpectra()
   spectra = Spectra::Spectra(),
   factorize.by = c("msLevel", "dataOrigin"),
   summarize.method = c("sum", "max"),
-  chromData = data.frame(),
+  chromData = fillCoreChromVariables(),
   ...
 )
 
@@ -25,8 +25,9 @@ chromSpectraIndex(object)
 \item{spectra}{A \code{Spectra} object.}
 
 \item{factorize.by}{A \code{character} vector of variables for grouping \code{Spectra}
-data into chromatographic data. Default: \code{c("msLevel", "dataOrigin")}.
-If \code{chromData} is provided, it must contain these columns.}
+data into chromatographic data.
+Default: \code{c("msLevel", "dataOrigin")}. If \code{chromData} is provided,
+it must contain these columns.}
 
 \item{summarize.method}{A \code{character} string specifying intensity summary:
 \code{"sum"} (default) or \code{"max"}.}
@@ -35,7 +36,8 @@ If \code{chromData} is provided, it must contain these columns.}
 \code{backendInitialize()}. If missing, a default is generated. Columns
 like \code{rtmin}, \code{rtmax}, \code{mzmin}, and \code{mzmax} must be provided and not
 contain \code{NA} values. Use \code{-Inf/Inf} for unspecified values. The
-\code{"dataOrigin"} column must match the \code{Spectra} object's \code{"dataOrigin"}.}
+\code{"dataOrigin"} column must match the \code{Spectra} object's
+\code{"dataOrigin"}.}
 
 \item{...}{Additional parameters.}
 }
@@ -75,6 +77,50 @@ The \code{inMemory} slot indicates this with \code{TRUE}.
 
 \code{ChromBackendSpectra} should reuse \code{ChromBackendMemory} methods whenever
 possible to keep implementations simple.
+}
+\note{
+ensure that it returns a factor
+}
+\examples{
+library(Spectra)
+library(MsBackendMetaboLights)
+
+## Get Spectra data from MetaboLights
+be <- backendInitialize(MsBackendMetaboLights(),
+    mtblsId = "MTBLS39",
+    filePattern = c("63B.cdf")
+)
+s <- Spectra(be)
+
+## Initialize ChromBackendSpectra
+be_empty <- new("ChromBackendSpectra")
+be <- backendInitialize(be_empty, s)
+
+## replace the msLevel data
+msLevel(be) <- c(1L, 2L, 3L)
+
+## re-factorize the data
+be <- factorize(be)
+
+## Create BPC : we summarize the intensity present in the Spectra object
+## by the maximum value, thus creating a Base Peak Chromatogram.
+be <- backendInitialize(be_empty, s, summarize.method = "max")
+
+## Can now see the details of this bpc by looking at the chromData of our
+## object
+chromData(be)
+
+## Another possibilities is to create eics from the Spectra object.
+## Here we create an EIC with a specific m/z and retention time window.
+df <- data.frame(mzmin = 100.01, mzmax = 100.02 , rtmin = 50, rtmax = 100)
+be <- backendInitialize(be_empty, s, summarize.method = "sum")
+chromData(be) <- cbind(chromData(be), df)
+
+## now when we call the peaksData function, we will get the intensity
+## of the spectra object that are in the m/z and retention time window
+## defined in the chromData.
+peaksData(be)
+
 }
 \author{
 Philippine Louail, Johannes Rainer.

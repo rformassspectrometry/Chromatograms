@@ -34,8 +34,11 @@ test_that("backendInitialize works", {
     bd_tmp <- backendInitialize(ChromBackendSpectra(), spectra = s,
                                 chromData = df,
                                 factorize.by = c("msLevel", "dataOrigin"))
-    df$chromSpectraIndex <- chromSpectraIndex(bd_tmp)
-    expect_identical(bd_tmp@chromData, df)
+    expect_identical(bd_tmp@chromData[, colnames(df)], df)
+    expect_true(all(c("rtmin", "rtmax", "mzmin", "mzmax", "chromSpectraIndex") %in%
+                colnames(bd_tmp@chromData)))
+
+
 })
 
 test_that("show method for ChromBackendSpectra works correctly", {
@@ -64,10 +67,6 @@ test_that("replacement method works", {
     expect_equal(chromData(tmp), cd)
 })
 
-test_that("backendParallelFactor works", {
-    expect_equal(levels(backendParallelFactor(be_sp)), unique(chromSpectraIndex(be_sp)))
-})
-
 test_that("error message work", {
     expect_error(peaksData(be_sp, columns = "notacolumn"),
                  "undefined columns selected")
@@ -75,7 +74,7 @@ test_that("error message work", {
 
 test_that("factorize() works", {
     expect_error(factorize(be_sp, factorize.by = "nope"),
-                 "variables must be in chromData")
+                 "variables must be in the Spectra")
     expect_error(factorize(be_sp, factorize.by = "chromIndex"),
                  "variables must be in the")
     tmp <- be_sp
@@ -86,10 +85,20 @@ test_that("factorize() works", {
     expect_false(identical(idx_before, idx_after))
     expect_identical(levels(chromSpectraIndex(tmp)),
                      levels(tmp@spectra$chromSpectraIndex))
+    tmp@spectra$extra_col <- seq_len(length(tmp@spectra))
+    expect_error(factorize(tmp, factorize.by = c("msLevel", "extra_col")),
+                 "must be in chromData")
 })
 
 test_that("chromSpectraIndex works", {
     expect_error(chromSpectraIndex(1),
                  "object must be a")
     expect_equal(be_sp@chromData$chromSpectraIndex, chromSpectraIndex(be_sp))
+    tmp <- be_sp
+    tmp@chromData$chromSpectraIndex <- seq_len(nrow(tmp@chromData))
+    expect_true(is.factor(chromSpectraIndex(tmp)))
+})
+
+test_that("backendParallelFactor works", {
+    expect_identical(backendParallelFactor(be_sp), factor())
 })

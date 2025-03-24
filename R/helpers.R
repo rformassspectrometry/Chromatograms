@@ -297,3 +297,33 @@
         chromSpectraIndex = unique(sps$chromSpectraIndex)
     )
 }
+
+#' Used in:
+#' - `factorize()` for `ChrombackendSpectra`
+#' @noRd
+.ensure_rt_mz_columns <- function(chrom_data, spectra, spectra_f) {
+    ## Ensure mzmin and mzmax are either both present or both missing
+    if (!all(c("mzmin", "mzmax") %in% colnames(chrom_data))) {
+        if ("mzmin" %in% colnames(chrom_data) || "mzmax" %in% colnames(chrom_data)) {
+            stop("Both 'mzmin' and 'mzmax' must be present if one is provided.")
+        } else {
+            chrom_data$mzmin <- -Inf
+            chrom_data$mzmax <- Inf
+        }
+    }
+
+    ## Ensure rtmin and rtmax are either both present or computed
+    if (!all(c("rtmin", "rtmax") %in% colnames(chrom_data))) {
+        if ("rtmin" %in% colnames(chrom_data) || "rtmax" %in% colnames(chrom_data)) {
+            stop("Both 'rtmin' and 'rtmax' must be present if one is provided.")
+        } else {
+            rt_range <- lapply(split(spectra$rtime, spectra_f), function(rt) {
+                list(rtmin = min(rt, na.rm = TRUE), rtmax = max(rt, na.rm = TRUE))
+            })
+            rt_values <- do.call(rbind, rt_range)
+            chrom_data$rtmin <- rt_values[, "rtmin"]
+            chrom_data$rtmax <- rt_values[, "rtmax"]
+        }
+    }
+    chrom_data
+}
