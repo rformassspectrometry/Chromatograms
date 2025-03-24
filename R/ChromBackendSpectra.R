@@ -17,6 +17,9 @@ NULL
 #' containing chromatographic metadata, stored in `chromData`. This metadata
 #' filters the `Spectra` object and generates `peaksData`. If `chromData` is
 #' not provided, a default `data.frame` is created from the `Spectra` data.
+#' An "rtmin", "rtmax", "mzmin", and "mzmax" column will be created by
+#' condensing the `Spectra` data corresponding to each unique combination of
+#' the `factorize.by` variables.
 #'
 #' The *dataOrigin* core chromatogram variable should reflect the *dataOrigin*
 #' of the `Spectra` object. The `factorize.by` parameter defines the variables
