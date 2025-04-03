@@ -2,16 +2,20 @@
 <url><loc>/404.html</loc></url>
 <url><loc>/articles/creating-backend-classes.html</loc></url>
 <url><loc>/articles/index.html</loc></url>
+<url><loc>/articles/using-a-chromatograms-object.html</loc></url>
 <url><loc>/authors.html</loc></url>
 <url><loc>/index.html</loc></url>
 <url><loc>/news/index.html</loc></url>
 <url><loc>/reference/ChromBackend.html</loc></url>
 <url><loc>/reference/ChromBackendMemory.html</loc></url>
+<url><loc>/reference/ChromBackendMzR.html</loc></url>
+<url><loc>/reference/ChromBackendSpectra.html</loc></url>
 <url><loc>/reference/Chromatograms.html</loc></url>
 <url><loc>/reference/chromData.html</loc></url>
 <url><loc>/reference/hidden_aliases.html</loc></url>
 <url><loc>/reference/index.html</loc></url>
 <url><loc>/reference/peaksData.html</loc></url>
-<url><loc>/reference/processingChunkSize.html</loc></url>
+<url><loc>/reference/plotChromatograms.html</loc></url>
+<url><loc>/reference/processingQueue.html</loc></url>
 </urlset>
 

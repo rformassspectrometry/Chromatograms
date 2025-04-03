@@ -26,7 +26,7 @@ the sections below for more details."><!-- mathjax --><script src="https://cdnjs
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">Chromatograms</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.0</span>
       </span>
     </div>
 
@@ -42,6 +42,9 @@ the sections below for more details."><!-- mathjax --><script src="https://cdnjs
   </a>
   <ul class="dropdown-menu" role="menu"><li>
       <a href="../articles/creating-backend-classes.html">Creating new `ChromBackend` classes for Chromatograms</a>
+    </li>
+    <li>
+      <a href="../articles/using-a-chromatograms-object.html">Using and understanding a Chromatograms object</a>
     </li>
   </ul></li>
 <li>
@@ -107,12 +110,6 @@ the sections below for more details.</p>
 <span></span>
 <span><span class="co"># S4 method for class 'Chromatograms'</span></span>
 <span><span class="fu">dataOrigin</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
-<span></span>
-<span><span class="co"># S4 method for class 'Chromatograms'</span></span>
-<span><span class="fu">dataStorage</span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># S4 method for class 'Chromatograms'</span></span>
-<span><span class="fu">dataStorage</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'Chromatograms'</span></span>
 <span><span class="fu">msLevel</span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
@@ -250,8 +247,7 @@ a specific function named after the variables names:</p><ul><li><p><code>chromIn
 original source file (e.g. <em>mzML</em> file).</p></li>
 <li><p><code>collisionEnergy</code>: for SRM data, <code>numeric</code> with the collision energy of
 the precursor.</p></li>
-<li><p><code>dataOrigin</code>: optional <code>character</code> with the origin of a chromatogram.</p></li>
-<li><p><code>dataStorage</code>: <code>character</code> defining where the data is (currently) stored.</p></li>
+<li><p><code>dataOrigin</code>: optional <code>character</code> with the origin of the data.</p></li>
 <li><p><code>msLevel</code>: <code>integer</code> defining the MS level of the data.</p></li>
 <li><p><code>mz</code>: optional <code>numeric</code> with the (target) m/z value for the
 chromatographic data.</p></li>
@@ -291,7 +287,12 @@ chromatograms than the original.</p></li>
     <div id="see-also">
     <h2>See also</h2>
     <div class="dont-index"><p><a href="Chromatograms.html">Chromatograms</a> for a general description of the <code>Chromatograms</code>
-object.</p></div>
+object.
+<a href="peaksData.html">peaksData</a> for a general description of the chromatographic peaks
+data available in the object, as well as how to access, replace and
+subset them.
+<a href="processingQueue.html">processingQueue</a> for more information on the queuing
+of processings and parallelization for larger dataset processing.</p></div>
     </div>
     <div id="author">
     <h2>Author</h2>

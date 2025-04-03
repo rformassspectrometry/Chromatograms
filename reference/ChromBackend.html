@@ -17,6 +17,12 @@ initialized with a data.frame of chromatographic data via the
 chromData parameter and a list of data.frame entries for peaks data
 using the peaksData parameter. These data can be accessed with the
 chromData() and peaksData() functions.
+ChromBackendMzR: The ChromBackendMzR inherits all slots and methods
+from the base ChromBackendMemory backend, providing additional
+functionality for reading chromatographic data from mzML files.
+ChromBackendSpectra: The ChromBackendSpectra inherits all slots and
+methods from the base ChromBackendMemory backend, providing additional
+functionality for reading chromatographic data from Spectra objects.
 
 
 Filter the peak data based on the provided ranges for the given variables."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
@@ -37,7 +43,7 @@ Filter the peak data based on the provided ranges for the given variables."><!--
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">Chromatograms</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.0</span>
       </span>
     </div>
 
@@ -53,6 +59,9 @@ Filter the peak data based on the provided ranges for the given variables."><!--
   </a>
   <ul class="dropdown-menu" role="menu"><li>
       <a href="../articles/creating-backend-classes.html">Creating new `ChromBackend` classes for Chromatograms</a>
+    </li>
+    <li>
+      <a href="../articles/using-a-chromatograms-object.html">Using and understanding a Chromatograms object</a>
     </li>
   </ul></li>
 <li>
@@ -96,6 +105,12 @@ initialized with a <code>data.frame</code> of chromatographic data via the
 <code>chromData</code> parameter and a <code>list</code> of <code>data.frame</code> entries for peaks data
 using the <code>peaksData</code> parameter. These data can be accessed with the
 <code><a href="chromData.html">chromData()</a></code> and <code><a href="peaksData.html">peaksData()</a></code> functions.</p></li>
+<li><p><code>ChromBackendMzR</code>: The <code>ChromBackendMzR</code> inherits all slots and methods
+from the base <code>ChromBackendMemory</code> backend, providing additional
+functionality for reading chromatographic data from mzML files.</p></li>
+<li><p><code>ChromBackendSpectra</code>: The <code>ChromBackendSpectra</code> inherits all slots and
+methods from the base <code>ChromBackendMemory</code> backend, providing additional
+functionality for reading chromatographic data from <code>Spectra</code> objects.</p></li>
 </ul><p>Filter the peak data based on the provided ranges for the given variables.</p>
     </div>
 
@@ -103,9 +118,6 @@ using the <code>peaksData</code> parameter. These data can be accessed with the
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">coreChromVariables</span><span class="op">(</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">corePeaksVariables</span><span class="op">(</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># S4 method for class 'ChromBackend'</span></span>
-<span><span class="va">x</span><span class="op">[</span><span class="va">i</span>, <span class="va">j</span>, <span class="va">...</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'ChromBackend'</span></span>
 <span><span class="va">x</span><span class="op">$</span><span class="va">name</span></span>
@@ -123,10 +135,16 @@ using the <code>peaksData</code> parameter. These data can be accessed with the
 <span><span class="fu"><a href="chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'ChromBackend'</span></span>
-<span><span class="fu"><a href="peaksData.html">peaksData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"rtime"</span>, <span class="st">"intensity"</span><span class="op">)</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="fu">factorize</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S4 method for class 'ChromBackend'</span></span>
+<span><span class="fu"><a href="peaksData.html">peaksData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"rtime"</span>, <span class="st">"intensity"</span><span class="op">)</span>, drop <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'ChromBackend'</span></span>
 <span><span class="fu"><a href="peaksData.html">peaksData</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
+<span></span>
+<span><span class="co"># S4 method for class 'ChromBackend'</span></span>
+<span><span class="va">x</span><span class="op">[</span><span class="va">i</span>, <span class="va">j</span>, <span class="va">...</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'ChromBackend'</span></span>
 <span><span class="va">x</span><span class="op">[[</span><span class="va">i</span>, <span class="va">j</span>, <span class="va">...</span><span class="op">]</span><span class="op">]</span></span>
@@ -167,11 +185,11 @@ using the <code>peaksData</code> parameter. These data can be accessed with the
 <span><span class="co"># S4 method for class 'ChromBackend'</span></span>
 <span><span class="fu"><a href="chromData.html">dataOrigin</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span></span>
-<span><span class="co"># S4 method for class 'ChromBackend'</span></span>
-<span><span class="fu"><a href="chromData.html">dataStorage</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
+<span><span class="co"># S4 method for class 'ChromBackend,ANY'</span></span>
+<span><span class="fu">extractByIndex</span><span class="op">(</span><span class="va">object</span>, <span class="va">i</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># S4 method for class 'ChromBackend'</span></span>
-<span><span class="fu"><a href="chromData.html">dataStorage</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
+<span><span class="co"># S4 method for class 'ChromBackend,missing'</span></span>
+<span><span class="fu">extractByIndex</span><span class="op">(</span><span class="va">object</span>, <span class="va">i</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'ChromBackend'</span></span>
 <span><span class="fu">intensity</span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
@@ -282,7 +300,10 @@ using the <code>peaksData</code> parameter. These data can be accessed with the
 <span>  ranges <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  match <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"any"</span>, <span class="st">"all"</span><span class="op">)</span>,</span>
 <span>  keep <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S4 method for class 'ChromBackend'</span></span>
+<span><span class="fu">supportsSetBackend</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -291,25 +312,6 @@ using the <code>peaksData</code> parameter. These data can be accessed with the
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
 <dd><p>Object extending <code>ChromBackend</code>.</p></dd>
-
-
-<dt id="arg-i">i<a class="anchor" aria-label="anchor" href="#arg-i"></a></dt>
-<dd><p>For <code>[</code>: <code>integer</code>, <code>logical</code> or <code>character</code> to subset the object.</p></dd>
-
-
-<dt id="arg-j">j<a class="anchor" aria-label="anchor" href="#arg-j"></a></dt>
-<dd><p>For <code>[</code> and <code>[[</code>: ignored.</p></dd>
-
-
-<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Additional arguments.</p></dd>
-
-
-<dt id="arg-drop">drop<a class="anchor" aria-label="anchor" href="#arg-drop"></a></dt>
-<dd><p>For <code><a href="chromData.html">chromData()</a></code> and <code><a href="peaksData.html">peaksData()</a></code>: <code>logical(1)</code> default to
-<code>FALSE</code>. If <code>TRUE</code>, and one column is called by the user, the method should
-return a vector (or list of vector for <code><a href="peaksData.html">peaksData()</a></code>) of the single column
-requested.</p></dd>
 
 
 <dt id="arg-name">name<a class="anchor" aria-label="anchor" href="#arg-name"></a></dt>
@@ -326,10 +328,29 @@ method description or expected data type.</p></dd>
 <dd><p>Object extending <code>ChromBackend</code>.</p></dd>
 
 
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
+<dd><p>Additional arguments.</p></dd>
+
+
 <dt id="arg-columns">columns<a class="anchor" aria-label="anchor" href="#arg-columns"></a></dt>
 <dd><p>For <code><a href="chromData.html">chromData()</a></code> accessor: optional <code>character</code> with column
 names (chromatogram variables) that should be included in the
 returned <code>data.frame</code>. By default, all columns are returned.</p></dd>
+
+
+<dt id="arg-drop">drop<a class="anchor" aria-label="anchor" href="#arg-drop"></a></dt>
+<dd><p>For <code><a href="chromData.html">chromData()</a></code> and <code><a href="peaksData.html">peaksData()</a></code>: <code>logical(1)</code> default to
+<code>FALSE</code>. If <code>TRUE</code>, and one column is requested by the user, the
+method should return a vector (or list of vector for <code><a href="peaksData.html">peaksData()</a></code>)
+of the single column requested.</p></dd>
+
+
+<dt id="arg-i">i<a class="anchor" aria-label="anchor" href="#arg-i"></a></dt>
+<dd><p>For <code>[</code>: <code>integer</code>, <code>logical</code> or <code>character</code> to subset the object.</p></dd>
+
+
+<dt id="arg-j">j<a class="anchor" aria-label="anchor" href="#arg-j"></a></dt>
+<dd><p>For <code>[</code> and <code>[[</code>: ignored.</p></dd>
 
 
 <dt id="arg-bpparam">BPPARAM<a class="anchor" aria-label="anchor" href="#arg-bpparam"></a></dt>
@@ -371,14 +392,10 @@ the chromatogram data that match the condition.</p></dd>
     <h2>Note</h2>
     <p>This function replaces the peaksData() of the input object. Therefore
 backend with <code>readOnly == TRUE</code> (i.e. ChromBackendmzR) will need to have a
-carefully implemented <code>peaksData(object) &lt;-</code> method.
-First thought are to implement a way  to "cache" the results in a slot of
-the object (maybe an actual <code>@peaksData</code> slot or  a <code>cacheData</code> slot).</p>
-<p>The important things to be aware of are:</p><ul><li><p>This slot should only be used temporarily as to not overload the memory.</p></li>
-<li><p>Maybe inspiring on the <code>MsBackendCached</code> class and method.</p></li>
-<li><p>E.g. not storing the data but some sort of indices ?</p></li>
-<li><p>Storing the data in a  temporary file and reading it back when needed ?</p></li>
-</ul></div>
+carefully implemented <code>peaksData(object) &lt;-</code> method.</p>
+<p>I don't know if I want to base is on the isReadOnly() output..
+I think it depends more on how the backend is implemented. we can discuss this.</p>
+    </div>
     <div id="core-chromatogram-variables">
     <h2>Core chromatogram variables</h2>
 
@@ -399,7 +416,7 @@ original source file (e.g. <em>mzML</em> file).</p></li>
 <li><p><code>collisionEnergy</code>: for SRM data, <code>numeric</code> with the collision energy of
 the precursor.</p></li>
 <li><p><code>dataOrigin</code>: optional <code>character</code> with the origin of a chromatogram.</p></li>
-<li><p><code>dataStorage</code>: <code>character</code> defining where the data is (currently) stored.</p></li>
+<li><p><code>dataOrigin</code>: <code>character</code> defining where the data is (currently) stored.</p></li>
 <li><p><code>msLevel</code>: <code>integer</code> defining the MS level of the data.</p></li>
 <li><p><code>mz</code>: optional <code>numeric</code> with the (target) m/z value for the
 chromatographic data.</p></li>
@@ -453,7 +470,7 @@ supposed to be called right after creating an instance of the
 backend class and should prepare the backend.
 Parameters can be defined freely for each backend, depending on what is
 needed to initialize the backend.
-This method has to ensure to set the chromtogram variable <code>dataStorage</code>
+This method has to ensure to set the chromatogram variable <code>dataOrigin</code>
 correctly.</p></li>
 <li><p><code>backendBpparam()</code>: returns the parallel processing setup supported by
 the backend class. This function can be used by any higher
@@ -471,7 +488,7 @@ processing.</p></li>
 used for all peak data accessor or data manipulation functions.
 The default implementation returns a factor of length 0 (<code><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor()</a></code>)
 providing thus no default splitting. <code>backendParallelFactor()</code> for
-<code>ChromBackendMzR</code> on the other hand returns <code>factor(dataStorage(object))</code>
+<code>ChromBackendMzR</code> on the other hand returns <code>factor(dataOrigin(object))</code>
 hence suggesting to split the object by data file.</p></li>
 <li><p><code><a href="chromData.html">chromData()</a></code>, <code>chromData&lt;-</code>: gets or sets general chromatogram metadata
 (annotation). <code><a href="chromData.html">chromData()</a></code> returns a <code>data.frame</code>, <code>chromData&lt;-</code> expects
@@ -480,12 +497,22 @@ a <code>data.frame</code> with the same number of rows as there are chromatogram
 replacement method <code>chromData&lt;-</code> (unless some internal caching mechanism
 could be used). <code><a href="chromData.html">chromData()</a></code> should be implemented with the parameter
 <code>drop</code> set to <code>FALSE</code> as default. With <code>drop = FALSE</code> the method should
-return a <code>data.frame</code> even if only one column is called. If <code>drop = TRUE</code>
+return a <code>data.frame</code> even if one column is requested. If <code>drop = TRUE</code>
 is specified, the output will be a vector of the single column requested.
 New backends should be implemented such as if empty, the method returns a
 <code>data.frame</code> with 0 rows and the columns defined by <code><a href="chromData.html">chromVariables()</a></code>.
 By default, the function <em>should</em> return at minimum the coreChromVariables,
 even if NAs.</p></li>
+<li><p><code>extractByIndex()</code>: function to subset a backend to selected elements
+defined by the provided index. Similar to <code>[</code>, this method should allow
+extracting (or to subset) the data in any order. In contrast to <code>[</code>,
+however, <code>i</code> is expected to be an <code>integer</code> (while <code>[</code> should also
+support <code>logical</code> and eventually <code>character</code>). While being apparently
+redundant to <code>[</code>, this methods avoids package namespace errors/problems
+that can result in implementations of <code>[</code> being not found by R (which
+can happen sometimes in parallel processing using the
+<code><a href="https://rdrr.io/pkg/BiocParallel/man/SnowParam-class.html" class="external-link">BiocParallel::SnowParam()</a></code>). This method is used internally to
+extract/subset its backend. Implementation of this method is mandatory.</p></li>
 <li><p><code><a href="peaksData.html">peaksData()</a></code>: returns a <code>list</code> of <code>data.frame</code> with the data
 (e.g. retention time - intensity pairs) from each chromatogram. The length
 of the <code>list</code> is equal to the number of chromatograms in <code>object</code>. For an
@@ -496,7 +523,7 @@ variables should be returned in each array. As default (minimum) columns
 <code>"rtime"</code> and <code>"intensity"</code> have to be provided. <code><a href="peaksData.html">peaksData()</a></code> should be
 implemented with the parameter <code>drop</code> set to <code>FALSE</code> as default.  With
 <code>drop = FALSE</code> the method should return a <code>data.frame</code> even if only one
-column is called. If <code>drop = TRUE</code>  is specified, the output will be a
+column is requested. If <code>drop = TRUE</code>  is specified, the output will be a
 vector of the single column requested.</p></li>
 <li><p><code>peaksData&lt;-</code> replaces the peak data (retention time and intensity values)
 of the backend. This method expects a <code>list</code> of two-dimensional arrays
@@ -536,11 +563,6 @@ of length equal to the number of chromatograms in <code>object</code>.</p></li>
 <code><a href="chromData.html">dataOrigin()</a></code> returns a <code>character</code> of length equal to the number of
 chromatograms, <code>dataOrigin&lt;-</code> expects a <code>character</code> of length equal
 <code>length(object)</code>.</p></li>
-<li><p><code><a href="chromData.html">dataStorage()</a></code>, <code>dataStorage&lt;-</code>: gets or sets the <em>data storage</em> variable.
-<code><a href="chromData.html">dataStorage()</a></code> returns a <code>character</code> of length equal to the number of
-chromatograms in <code>object</code>, <code>dataStorage&lt;- </code> expects a <code>character</code> of
-length equal <code>length(object)</code>. Note that missing values (<code>NA_character_</code>)
-are not supported for <code><a href="chromData.html">dataStorage()</a></code>.</p></li>
 <li><p><code><a href="chromData.html">filterChromData()</a></code>: filters any numerical chromatographic data variables
 based on the provided numerical <code>ranges</code>. The method should return a
 <code>ChromBackend</code> object with the chromatograms that match the condition. This
@@ -597,11 +619,11 @@ product (for SRM data). <code><a href="chromData.html">productMz()</a></code> re
 equal to the number of chromatograms in <code>object</code>. <code>productMz&lt;-</code> expects
 a <code>numeric</code> of length equal to the number of chromatograms.</p></li>
 <li><p><code>rtime()</code>: gets the retention times from the chromatograms. returns a
-<code>NumericList()</code> of <code>numeric</code> vectors (retention times for each
+<code>list</code> of <code>numeric</code> vectors (retention times for each
 chromatogram). The length of the returned list is equal to the number of
 chromatograms in <code>object</code>.</p></li>
-<li><p><code>rtime&lt;-</code>: replaces the retention times. <code>value</code> has to be a <code>list</code> (or
-<code>NumericList()</code>) of length equal to the number of chromatograms and the
+<li><p><code>rtime&lt;-</code>: replaces the retention times. <code>value</code> has to be a <code>list</code> of
+length equal to the number of chromatograms and the
 number of values within each list element identical to the number of
 data pairs in each chromatogram. Note that just writeable backends support
 this method.</p></li>
@@ -609,6 +631,13 @@ this method.</p></li>
 parameter <code>f</code>). The default method for <code>ChromBackend</code> uses
 <code><a href="https://rdrr.io/r/base/split.html" class="external-link">split.default()</a></code>, thus backends extending <code>ChromBackend</code> don't
 necessarily need to implement this method.</p></li>
+<li><p><code>supportsSetBackend()</code>: whether a <code>ChromBackend</code> supports the
+<code>Chromatograms</code> <code>setBackend()</code> function. The default function will
+take the <code><a href="peaksData.html">peaksData()</a></code> and <code><a href="chromData.html">chromData()</a></code> of the user's backend and pass it
+to the new backend. If the backend does not support this function, it
+should return <code>FALSE</code>. Therefore both backend in question should have a
+adequate <code><a href="peaksData.html">peaksData()</a></code> and <code><a href="chromData.html">chromData()</a></code> method as well as their respective
+replacement method.</p></li>
 </ul></div>
     <div id="implementation-notes">
     <h2>Implementation notes</h2>

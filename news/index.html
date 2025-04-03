@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">Chromatograms</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.4.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.6.0</span>
       </span>
     </div>
 
@@ -33,6 +33,9 @@
   </a>
   <ul class="dropdown-menu" role="menu"><li>
       <a href="../articles/creating-backend-classes.html">Creating new `ChromBackend` classes for Chromatograms</a>
+    </li>
+    <li>
+      <a href="../articles/using-a-chromatograms-object.html">Using and understanding a Chromatograms object</a>
     </li>
   </ul></li>
 <li>
@@ -58,24 +61,35 @@
     </div>
 
     <div class="section level2">
-<h2 class="page-header" data-toc-text="0.4.0" id="version-040">Version 0.4.0<a class="anchor" aria-label="anchor" href="#version-040"></a></h2>
+<h2 class="page-header" data-toc-text="0.6.0" id="version-060">Version 0.6.0<a class="anchor" aria-label="anchor" href="#version-060"></a></h2>
 <div class="section level3">
-<h3 id="changes-in-0-4-0">Changes in 0.4.0<a class="anchor" aria-label="anchor" href="#changes-in-0-4-0"></a></h3>
-<ul><li>Addition of <code><a href="../reference/peaksData.html">peaksData()</a></code> and implementation of chunkwise (and therefore paralleled) processing of <code>Chromatograms</code> object.</li>
-<li>Addition of <code><a href="https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html" class="external-link">addProcessing()</a></code>, <code><a href="../reference/peaksData.html">applyProcessing()</a></code>, <code><a href="../reference/processingChunkSize.html">processingChunkFactor()</a></code>, and <code><a href="../reference/processingChunkSize.html">processingChunkSize()</a></code>.</li>
+<h3 id="changes-in-0-6-0">Changes in 0.6.0<a class="anchor" aria-label="anchor" href="#changes-in-0-6-0"></a></h3>
+<ul><li>Addition of <code>ChromBackendSpectra</code> class and its respective methods.</li>
+<li>Addition of <code><a href="../reference/plotChromatograms.html">plotChromatograms()</a></code> and <code><a href="../reference/plotChromatograms.html">plotChromatogramsOverlay()</a></code> functions.</li>
+<li>Addition of the <code>extractByIndex</code> implementation in the backends.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="changes-in-0-4-0-1">Changes in 0.3.0<a class="anchor" aria-label="anchor" href="#changes-in-0-4-0-1"></a></h3>
+<h3 id="changes-in-0-6-0-1">Changes in 0.5.0<a class="anchor" aria-label="anchor" href="#changes-in-0-6-0-1"></a></h3>
+<ul><li>Addition of <code>ChromBackendMzR</code> and its respective methods.</li>
+<li>Addition of the Chromatograms vignette, which provides an overview of the object and related functionalities.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="changes-in-0-6-0-2">Changes in 0.4.0<a class="anchor" aria-label="anchor" href="#changes-in-0-6-0-2"></a></h3>
+<ul><li>Addition of <code><a href="../reference/peaksData.html">peaksData()</a></code> and implementation of chunkwise (and therefore paralleled) processing of <code>Chromatograms</code> object.</li>
+<li>Addition of <code><a href="https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html" class="external-link">addProcessing()</a></code>, <code><a href="https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html" class="external-link">applyProcessing()</a></code>, <code><a href="https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html" class="external-link">processingChunkFactor()</a></code>, and <code><a href="https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html" class="external-link">processingChunkSize()</a></code>.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="changes-in-0-6-0-3">Changes in 0.3.0<a class="anchor" aria-label="anchor" href="#changes-in-0-6-0-3"></a></h3>
 <ul><li>Addition of <code><a href="../reference/chromData.html">filterChromData()</a></code> method for <code>ChromBackend</code>.</li>
 <li>Creation of the <code>Chromatograms</code> class and implementation of basic accessor methods.</li>
 <li>Addition of basic plotting functions.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="changes-in-0-4-0-2">Changes in 0.2.0<a class="anchor" aria-label="anchor" href="#changes-in-0-4-0-2"></a></h3>
+<h3 id="changes-in-0-6-0-4">Changes in 0.2.0<a class="anchor" aria-label="anchor" href="#changes-in-0-6-0-4"></a></h3>
 <ul><li>Addition of <code>ChomBackendMemory</code> class and associated methods</li>
 </ul></div>
 <div class="section level3">
-<h3 id="changes-in-0-4-0-3">Changes in 0.1.0<a class="anchor" aria-label="anchor" href="#changes-in-0-4-0-3"></a></h3>
+<h3 id="changes-in-0-6-0-5">Changes in 0.1.0<a class="anchor" aria-label="anchor" href="#changes-in-0-6-0-5"></a></h3>
 <ul><li>Addition of basic <code>ChromBackend</code> class and default methods</li>
 </ul></div>
 </div>
