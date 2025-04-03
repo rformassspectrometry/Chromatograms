@@ -74,7 +74,6 @@ setMethod("backendInitialize", "ChromBackendMzR",
               })
 
 #' @rdname hidden_aliases
-#' @importFrom utils head
 #' @export
 setMethod("show", "ChromBackendMzR", function(object) {
     callNextMethod()
@@ -111,13 +110,13 @@ setMethod("peaksData", "ChromBackendMzR",
               ret <- all(pv %in% columns)
               f <- factor(dataOrigin(object),
                           levels = unique(dataOrigin(object)))
-              pd <- bplapply(split(object, f = dataOrigin(object)),
-                             function(ob) {
-                                 chr <- .get_chrom_data(fl = unique(dataOrigin(ob)),
-                                                        idx = chromIndex(ob))
-                                 if (ret) chr
-                                 else lapply(chr, `[`, , columns, drop = drop)
-                             }, BPPARAM = BPPARAM)
+              pd <- bplapply(split(object, f = f),
+                 function(ob) {
+                     chr <- .get_chrom_data(fl = ob@chromData$dataOrigin[1L],
+                                            idx = chromIndex(ob))
+                     if (ret) chr
+                     else lapply(chr, `[`, , columns, drop = drop)
+                 }, BPPARAM = BPPARAM)
               unsplit(pd, f = f)
           })
 

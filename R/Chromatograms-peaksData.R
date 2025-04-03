@@ -103,6 +103,7 @@
 NULL
 
 #' @rdname peaksData
+#' @importFrom MsCoreUtils between
 setMethod("peaksData",
           signature = "Chromatograms",
           function(object,

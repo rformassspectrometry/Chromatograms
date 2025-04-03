@@ -7,6 +7,7 @@ NULL
 #'
 #' @name ChromBackendMemory
 #'
+#'
 #' @description
 #'`ChromBackendMemory`: This backend stores chromatographic data directly
 #' in memory, making it ideal for small datasets or testing. It can be
@@ -15,22 +16,20 @@ NULL
 #' `peaksData` parameter. These data can be accessed with the `chromData()` and
 #' `peaksData()` functions.
 #'
-#'
 #' @param chromData For `backendInitialize()` of a `ChromBackendMemory` backend,
-#'     a `data.frame` with the chromatographic data. If not provided
-#'     (or if empty), a default `data.frame` with the core chromatographic
-#'     variables will be created.
+#'        a `data.frame` with the chromatographic data. If not provided
+#'        (or if empty), a default `data.frame` with the core chromatographic
+#'        variables will be created.
 #'
 #' @param object  A `ChromBackendMemory` object.
 #'
 #' @param peaksData For `backendInitialize()` of a `ChromBackendMemory` backend,
-#'     a `list` of `data.frame` with the peaks data. If not provided (or if
-#'     empty), a default `list` of empty `data.frame` with the core peaks
-#'     variables will be created. The length of the list should match the number
-#'     of chromatograms in the `chromData` parameter.
+#'        a `list` of `data.frame` with the peaks data. If not provided (or if
+#'        empty), a default `list` of empty `data.frame` with the core peaks
+#'        variables will be created. The length of the list should match the number
+#'        of chromatograms in the `chromData` parameter.
 #'
 #' @param ... Additional parameters to be passed.
-#'
 #'
 #' @author Philippine Louail
 #'
@@ -160,7 +159,7 @@ setMethod("peaksVariables", "ChromBackendMemory", function(object) {
 #' @export
 setMethod("isReadOnly", "ChromBackendMemory", function(object) FALSE)
 
-#' @importFrom utils capture.output
+#' @importFrom utils capture.output head
 #' @rdname hidden_aliases
 setMethod("show", "ChromBackendMemory", function(object){
   cpd <- object@chromData

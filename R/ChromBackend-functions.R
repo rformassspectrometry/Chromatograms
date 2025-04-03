@@ -148,3 +148,5 @@ validPeaksData <- function(x = list(), error = TRUE) {
     if (length(msgs) && error) stop(msgs)
     else msgs
 }
+
+

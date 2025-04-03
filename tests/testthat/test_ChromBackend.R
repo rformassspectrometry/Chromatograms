@@ -47,9 +47,13 @@ test_that("ChromBackend methods throw errors", {
     expect_error(productMzMin(dm) <- 1, "Not implemented for ")
     expect_error(rtime(dm), "Not implemented for ")
     expect_error(rtime(dm) <- c(1,1,1), "Not implemented for ")
+    expect_error(factorize(dm), "Not implemented for ")
+    expect_error(extractByIndex(dm, 1), "not implemented for ")
+
 
     expect_identical(chromVariables(dm), names(coreChromVariables()))
     expect_identical(peaksVariables(dm), names(corePeaksVariables()))
+    expect_identical(extractByIndex(dm), dm)
 
     expect_error(dm[[123]], "is supposed to be a character")
     expect_error(dm[["character", "character2"]], "is not supported")

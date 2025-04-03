@@ -1,8 +1,15 @@
+#' @include ChromBackend.R ChromBackendMemory.R
+NULL
+
 #' @title The Chromatograms class to manage and access chromatographic data
 #'
 #' @name Chromatograms
 #'
 #' @aliases Chromatograms-class Chromatograms
+#' @aliases [,Chromatograms-method
+#' @aliases [<-,Chromatograms-method
+#' @aliases [[,Chromatograms-method
+#' @aliases [[<-,Chromatograms-method
 #'
 #' @description
 #' The `Chromatograms` class encapsules chromatographic data and related
@@ -14,7 +21,9 @@
 #' @section Creation of objects:
 #'
 #' `Chromatograms` objects can be created using the `Chromatograms()`
-#' construction function.
+#' construction function. Either by providing a `ChromBackend` object or by
+#' providing a `Spectra` object. The `Spectra` object will be used to generate
+#' a `Chromatograms` object with a backend of class [`ChromBackendSpectra`].
 #'
 #' @section Data stored in a `Chromatograms` object:
 #'
@@ -64,7 +73,22 @@
 #' @param backend [ChromBackend] object providing the raw data for the
 #'        `Chromatograms` object.
 #'
+#' @param chromData For `Chromatograms()` build from a `Spectra` object backend,
+#'        a `data.frame` with the chromatographic data. If not provided
+#'        (or if empty), a default `data.frame` with the core chromatographic
+#'        variables will be created.
+#'
+#' @param drop For `[`: `logical(1)` default to `FALSE`.
+#'
 #' @param f `factor` defining the grouping to split the `Chromatograms` object.
+#'
+#' @param factorize.by A `character` vector with the names of the variables in
+#'        the `Spectra` object and the `chromData` slot that should be used
+#'        to factorize the `Spectra` object data to generate the chromatographic data.
+#'
+#' @param i For `[`: `integer`, `logical` or `character` to subset the object.
+#'
+#' @param j For `[` and `[[`: ignored.
 #'
 #' @param name A `character` string specifying the name of the variable to
 #'        access.
@@ -74,6 +98,11 @@
 #' @param processingQueue [list] a list of processing steps (i.e. functions) to
 #'        be applied to the chromatographic data. The processing steps are
 #'        applied in the order they are listed in the `processingQueue`.
+#'
+#' @param summarize.method For Chromatograms created with a `Spectra` object:
+#'        A `character` vector with the name of the function to be used to
+#'        summaries the spectra data intensity. The available methods are "sum"
+#'        and "max". The default is "sum".
 #'
 #' @param value The value to replace the variable with.
 #'
@@ -96,9 +125,11 @@
 #'
 #' @examples
 #' ## Create a Chromatograms object
-#' chroms <- Chromatograms(backend = ChromBackendMemory())
+#' chroms <- Chromatograms(ChromBackendMemory())
 #'
 NULL
+
+setClassUnion("ChromBackendOrMissing", c("ChromBackend", "missing"))
 
 #' The Chromatograms class
 #'
@@ -132,7 +163,9 @@ setClass("Chromatograms",
              processingChunkSize = "numeric",
              version = "character"),
          prototype = prototype(version = "0.1",
-                               processingChunkSize = Inf)
+                               processingChunkSize = Inf,
+                               processingQueue = list(),
+                               processing = character())
          )
 
 setValidity("Chromatograms", function(object) {
@@ -148,13 +181,31 @@ setValidity("Chromatograms", function(object) {
 })
 
 #' @rdname Chromatograms
+#' @export
+setMethod("Chromatograms", "ChromBackendOrMissing",
+          function(object = ChromBackendMemory(),
+                   processingQueue = list(), ...) {
+              if (missing(object))
+                  object <- ChromBackendMemory()
+              new("Chromatograms", backend = object,
+                  processingQueue = processingQueue, ...)
+          })
+
+#' @rdname Chromatograms
 #' @importFrom methods new
 #' @export
-Chromatograms <- function(backend = ChromBackendMemory(),
-                          processingQueue = list(), ...) {
-    new("Chromatograms", backend = backend,
-        processingQueue = processingQueue, ...)
-}
+setMethod("Chromatograms", "Spectra",
+          function(object, summarize.method = c("sum", "max"),
+                   chromData = data.frame(),
+                   factorize.by = c("msLevel", "dataOrigin"), ...){
+              bd <- backendInitialize(ChromBackendSpectra(), spectra = object,
+                                      factorize.by = factorize.by,
+                                      chromData = chromData,
+                                      summarize.method = summarize.method)
+              new("Chromatograms", backend = bd,
+                  processingQueue = list(), ...)
+          })
+
 
 #' @rdname hidden_aliases
 #'
@@ -240,4 +291,55 @@ setMethod("$", signature = "Chromatograms", function(x, name) {
 setReplaceMethod("$", signature = "Chromatograms", function(x, name, value) {
     x@backend[[name]] <- value
     x
+})
+
+#' @rdname Chromatograms
+#' @importFrom methods slot<-
+#' @importFrom MsCoreUtils i2index
+#' @export
+setMethod("[", "Chromatograms", function(x, i, j, ..., drop = FALSE) {
+    if (!missing(j))
+        stop("Subsetting 'Chromatograms' by columns is not (yet) supported")
+    if (missing(i))
+        return(x)
+    slot(x, "backend", check = FALSE) <- extractByIndex(
+        x@backend, i2index(i, length(x)))
+    x
+})
+
+#' @rdname Chromatograms
+#' @export
+setMethod("[[", "Chromatograms", function(x, i, j, ...) {
+    if (!is.character(i))
+        stop("'i' is supposed to be a character defining the chromatogram or ",
+             "peak variable to access.")
+    if (!missing(j))
+        stop("'j' is not supported.")
+    if (!(i %in% peaksVariables(x)) && !(i %in% chromVariables(x)))
+        stop("No variable '", i, "' available")
+    else
+        do.call("[[", list(x@backend, i))
+})
+
+#' @rdname Chromatograms
+#'
+#' @export
+setReplaceMethod("[[", "Chromatograms", function(x, i, j, ..., value) {
+    if (!is.character(i))
+        stop("'i' is supposed to be a character defining the chromatogram ",
+             "or peak variable to replace or create.")
+    if (!(i %in% peaksVariables(x)) && !(i %in% chromVariables(x)))
+        stop("No variable '", i, "' available")
+    if (!missing(j))
+        stop("'j' is not supported.")
+    x@backend <- do.call("[[<-", list(x@backend, i = i, value = value))
+    x
+})
+
+#' @rdname Chromatograms
+#' @export
+setMethod("factorize", "Chromatograms",
+          function(object,factorize.by = c("msLevel", "dataOrigin"),...) {
+    object@backend <- factorize(object@backend, ...)
+    object
 })

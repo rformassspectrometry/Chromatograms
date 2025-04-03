@@ -48,6 +48,7 @@ The package can be installed with the *BiocManager* package. To install
 `BiocManager::install("RformassSpectrometry/Chromatograms")` to install
 *Chromatograms*.
 
+
 # The Chromatograms object
 
 The `Chromatograms` object is a container for chromatographic data, which
@@ -82,7 +83,9 @@ could be used instead. The default backends are:
   variables in memory and relies on the `r Biocpkg("mzR")` package to read 
   chromatographic peaks (retention time and intensity values) from the 
   original mzML files on-demand.
-
+  
+- `ChromBackendSpectra`: this backend is used to generate chromatographic data
+  from a `Spectra` object. I can be use to vcreate TIC, BPC or EICs. 
 
 ## Chromatographic peaks data
 
@@ -209,7 +212,6 @@ The `Chromatograms` object provides a set of methods to access and manipulate
 the chromatographic data. The following sections describe how to do such things 
 on the peaks data and related metadata.
 
-
 ## peaksData
 
 The main function to access the full or a part of the peaks data is 
@@ -317,6 +319,7 @@ length(chr)
 ```
 
 The number of chromatograms in the `Chromatograms` object is reduced.
+
 
 # Lazy Processing and Parallelization
 
@@ -441,6 +444,7 @@ intense operation on the other hand, chunk-wise processing has the advantage,
 that chunks can (and will) be processed in parallel (depending on the parallel
 processing setup).
 
+
 # Changing backend type 
 
 In the previous sections we learned already that a `Chromatograms` object can use
@@ -464,6 +468,50 @@ larger than before.
 
 ```{r}
 print(object.size(chr_mzr), units = "Mb")
+```
+
+
+# Plotting chromatograms from a Spectra object
+
+For this purpose let's create a Chromatogram object from public spectral data.
+
+```{r}
+library(MsBackendMetaboLights)
+be <- backendInitialize(MsBackendMetaboLights(), mtblsId = "MTBLS39",
+                        filePattern = c("63B.cdf"))
+chr_s <- Chromatograms(Spectra(be))
+```
+
+We now have a `Chromatograms` object `chr_s` with a `ChromBackendSpectra` 
+backend. one chromatogram was generated per file. 
+
+```{r}
+chr_s
+```
+
+Now, let's say we want to plot specific area of the chromatograms. 
+
+```{r}
+chromData(chr_s)$rtmin <- 125
+chromData(chr_s)$rtmax <- 180
+chromData(chr_s)$mzmin <- 100
+chromData(chr_s)$mzmax <- 100.5
+```
+
+The `Chromatograms` object provides a set of functions to plot the chromatograms
+and their peaks data. The `plotChromatograms()` function can be used to plot each 
+single chromatograms into its own plot. 
+
+```{r}
+plotChromatograms(chr_s, col = c("green", "red", "blue"))
+```
+
+On the overhand if the users wants to easily compare the chromatograms, the
+`plotChromatogramsOverlay()` function can be used to overlay all chromatograms
+into one plot.
+
+```{r}
+plotChromatogramsOverlay(chr_s, col = c("green", "red", "blue"))
 ```
 
 # Session information

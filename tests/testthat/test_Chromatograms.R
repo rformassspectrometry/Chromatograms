@@ -19,6 +19,14 @@ test_that("Chromatograms works", {
     processingChunkSize(c_chunk) <- 2
     expect_equal(processingChunkSize(c_chunk), 2)
     expect_equal(levels(processingChunkFactor(c_chunk)), c("1", "2"))
+
+    ## method with Spectra works
+    c_sp <- Chromatograms(s[1:2])
+    expect_true(is(c_sp@backend, "ChromBackendSpectra"))
+    expect_true(is(c_sp, "Chromatograms"))
+    expect_true(c_sp@processingChunkSize == Inf)
+    expect_true(c_sp@version == "0.1")
+    expect_identical(c_sp@processingQueue, list())
 })
 
 test_that("show, Chromatograms - ChromBackendMemory works", {
@@ -70,5 +78,42 @@ test_that("$ works correctly", {
     expect_identical(msLevel(tmp), c(2L, 2L, 3L))
     tmp$intensity <- lapply(tmp$intensity, function(x) x + 10)
     expect_false(identical(intensity(tmp), intensity(c_full)))
+})
+
+test_that("[ works correctly", {
+    c_sub <- c_full[1:2]
+    expect_true(is(c_sub, "Chromatograms"))
+    expect_equal(nrow(chromData(c_sub)), 2)
+    expect_equal(length(peaksData(c_sub)), 2)
+    expect_error(c_full[1:2, 1], "by columns is not")
+
+    c_sub <- c_full[1]
+    expect_equal(c_sub, c_sub[])
+
+})
+
+test_that("[[ works properly", {
+    expect_error(c_full[[1]], "character")
+    expect_error(c_full[["test", 1]], "not supported")
+    expect_error(c_full[["test"]], "No variable")
+    expect_equal(c_full[["msLevel"]], msLevel(c_full))
+    expect_equal(c_full[["msLevel"]], c_full@backend[["msLevel"]])
+
+    ## replace
+    expect_error(c_full[[1]] <- 1, "character defining the chromatogram")
+    expect_error(c_full[["msLevel", 4]] <- 1, "not supported")
+    expect_error(c_full[["test"]] <- 1, "No variable")
+    repet <- c_full
+    repet[["msLevel"]] <- rep(2L, length(repet))
+    expect_false(identical(msLevel(repet), msLevel(c_full)))
+})
+
+test_that("factorize() works", {
+    tmp <- c_sp
+    tmp$msLevel <- c(1L, 2L, 3L)
+    idx_before <- chromSpectraIndex(tmp@backend)
+    tmp <- factorize(tmp)
+    idx_after <- chromSpectraIndex(tmp@backend)
+    expect_false(identical(idx_before, idx_after))
 })
 

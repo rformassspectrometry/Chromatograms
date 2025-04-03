@@ -7,16 +7,20 @@
 \alias{ChromBackend-class}
 \alias{ChromBackendMemory-class}
 \alias{ChromBackendMzR-class}
+\alias{ChromBackendSpectra-class}
 \alias{[,ChromBackend-method}
 \alias{[[,ChromBackend-method}
+\alias{[[<-,ChromBackend-method}
+\alias{extractByIndex}
+\alias{factorize}
 \alias{$,ChromBackend-method}
 \alias{$<-,ChromBackend-method}
 \alias{backendMerge,ChromBackend-method}
 \alias{chromData,ChromBackend-method}
 \alias{chromData<-,ChromBackend-method}
+\alias{factorize,ChromBackend-method}
 \alias{peaksData,ChromBackend-method}
 \alias{peaksData<-,ChromBackend-method}
-\alias{[[<-,ChromBackend-method}
 \alias{backendBpparam,ChromBackend-method}
 \alias{backendInitialize,ChromBackend-method}
 \alias{backendParallelFactor,ChromBackend-method}
@@ -28,6 +32,8 @@
 \alias{collisionEnergy<-,ChromBackend-method}
 \alias{dataOrigin,ChromBackend-method}
 \alias{dataOrigin<-,ChromBackend-method}
+\alias{extractByIndex,ChromBackend,ANY-method}
+\alias{extractByIndex,ChromBackend,missing-method}
 \alias{intensity,ChromBackend-method}
 \alias{intensity<-,ChromBackend-method}
 \alias{isEmpty,ChromBackend-method}
@@ -68,8 +74,6 @@ coreChromVariables()
 
 corePeaksVariables()
 
-\S4method{[}{ChromBackend}(x, i, j, ..., drop = FALSE)
-
 \S4method{$}{ChromBackend}(x, name)
 
 \S4method{$}{ChromBackend}(x, name) <- value
@@ -80,9 +84,13 @@ corePeaksVariables()
 
 \S4method{chromData}{ChromBackend}(object) <- value
 
+\S4method{factorize}{ChromBackend}(object, ...)
+
 \S4method{peaksData}{ChromBackend}(object, columns = c("rtime", "intensity"), drop = FALSE, ...)
 
 \S4method{peaksData}{ChromBackend}(object) <- value
+
+\S4method{[}{ChromBackend}(x, i, j, ..., drop = FALSE)
 
 \S4method{[[}{ChromBackend}(x, i, j, ...)
 
@@ -109,6 +117,10 @@ corePeaksVariables()
 \S4method{dataOrigin}{ChromBackend}(object)
 
 \S4method{dataOrigin}{ChromBackend}(object) <- value
+
+\S4method{extractByIndex}{ChromBackend,ANY}(object, i)
+
+\S4method{extractByIndex}{ChromBackend,missing}(object, i)
 
 \S4method{intensity}{ChromBackend}(object)
 
@@ -193,17 +205,6 @@ corePeaksVariables()
 \arguments{
 \item{x}{Object extending \code{ChromBackend}.}
 
-\item{i}{For \code{[}: \code{integer}, \code{logical} or \code{character} to subset the object.}
-
-\item{j}{For \code{[} and \code{[[}: ignored.}
-
-\item{...}{Additional arguments.}
-
-\item{drop}{For \code{chromData()} and \code{peaksData()}: \code{logical(1)} default to
-\code{FALSE}. If \code{TRUE}, and one column is requested by the user, the
-method should return a vector (or list of vector for \code{peaksData()})
-of the single column requested.}
-
 \item{name}{For \code{$} and \verb{$<-}: the name of the chromatogram variable to
 return or set.}
 
@@ -212,9 +213,20 @@ method description or expected data type.}
 
 \item{object}{Object extending \code{ChromBackend}.}
 
+\item{...}{Additional arguments.}
+
 \item{columns}{For \code{chromData()} accessor: optional \code{character} with column
 names (chromatogram variables) that should be included in the
 returned \code{data.frame}. By default, all columns are returned.}
+
+\item{drop}{For \code{chromData()} and \code{peaksData()}: \code{logical(1)} default to
+\code{FALSE}. If \code{TRUE}, and one column is requested by the user, the
+method should return a vector (or list of vector for \code{peaksData()})
+of the single column requested.}
+
+\item{i}{For \code{[}: \code{integer}, \code{logical} or \code{character} to subset the object.}
+
+\item{j}{For \code{[} and \code{[[}: ignored.}
 
 \item{BPPARAM}{Parallel setup configuration. See \code{\link[BiocParallel:register]{BiocParallel::bpparam()}}
 for more information.}
@@ -266,6 +278,9 @@ using the \code{peaksData} parameter. These data can be accessed with the
 \item \code{ChromBackendMzR}: The \code{ChromBackendMzR} inherits all slots and methods
 from the base \code{ChromBackendMemory} backend, providing additional
 functionality for reading chromatographic data from mzML files.
+\item \code{ChromBackendSpectra}: The \code{ChromBackendSpectra} inherits all slots and
+methods from the base \code{ChromBackendMemory} backend, providing additional
+functionality for reading chromatographic data from \code{Spectra} objects.
 }
 
 Filter the peak data based on the provided ranges for the given variables.
@@ -397,6 +412,16 @@ New backends should be implemented such as if empty, the method returns a
 \code{data.frame} with 0 rows and the columns defined by \code{chromVariables()}.
 By default, the function \emph{should} return at minimum the coreChromVariables,
 even if NAs.
+\item \code{extractByIndex()}: function to subset a backend to selected elements
+defined by the provided index. Similar to \code{[}, this method should allow
+extracting (or to subset) the data in any order. In contrast to \code{[},
+however, \code{i} is expected to be an \code{integer} (while \code{[} should also
+support \code{logical} and eventually \code{character}). While being apparently
+redundant to \code{[}, this methods avoids package namespace errors/problems
+that can result in implementations of \code{[} being not found by R (which
+can happen sometimes in parallel processing using the
+\code{\link[BiocParallel:SnowParam-class]{BiocParallel::SnowParam()}}). This method is used internally to
+extract/subset its backend. Implementation of this method is mandatory.
 \item \code{peaksData()}: returns a \code{list} of \code{data.frame} with the data
 (e.g. retention time - intensity pairs) from each chromatogram. The length
 of the \code{list} is equal to the number of chromatograms in \code{object}. For an
@@ -505,11 +530,11 @@ product (for SRM data). \code{productMz()} returns a \code{numeric} of length
 equal to the number of chromatograms in \code{object}. \verb{productMz<-} expects
 a \code{numeric} of length equal to the number of chromatograms.
 \item \code{rtime()}: gets the retention times from the chromatograms. returns a
-\code{\link[=NumericList]{NumericList()}} of \code{numeric} vectors (retention times for each
+\code{list} of \code{numeric} vectors (retention times for each
 chromatogram). The length of the returned list is equal to the number of
 chromatograms in \code{object}.
-\item \verb{rtime<-}: replaces the retention times. \code{value} has to be a \code{list} (or
-\code{\link[=NumericList]{NumericList()}}) of length equal to the number of chromatograms and the
+\item \verb{rtime<-}: replaces the retention times. \code{value} has to be a \code{list} of
+length equal to the number of chromatograms and the
 number of values within each list element identical to the number of
 data pairs in each chromatogram. Note that just writeable backends support
 this method.

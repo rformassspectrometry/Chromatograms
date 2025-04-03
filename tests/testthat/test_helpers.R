@@ -254,3 +254,43 @@ test_that(".valid_processing_queue works correctly", {
         "'processingQueue' should only contain ProcessingStep objects."
     )
 })
+
+test_that("ensure_rt_mz_columns correctly handles mz and rt columns", {
+    spectra <- s
+    spectra_f <- factor(
+        do.call(
+            paste,
+            c(as.list(Spectra::spectraData(s)[, c("msLevel", "dataOrigin")]),
+              sep = "_")))
+    chrom_data <- data.frame(msLevel = c(1,2,3))
+    chrom_data <- .ensure_rt_mz_columns(chrom_data, spectra, spectra_f)
+    expect_equal(chrom_data$mzmin, c(-Inf, -Inf, -Inf))
+    expect_equal(chrom_data$mzmax, c(Inf, Inf, Inf))
+
+    chrom_data <- data.frame(mzmin = c(100))
+    expect_error(.ensure_rt_mz_columns(chrom_data, spectra, spectra_f),
+                 "Both 'mzmin' and 'mzmax' must be present if one is provided.")
+
+    chrom_data <- data.frame(mzmax = c(200))
+    expect_error(.ensure_rt_mz_columns(chrom_data, spectra, spectra_f),
+                 "Both 'mzmin' and 'mzmax' must be present if one is provided.")
+    chrom_data <- data.frame(msLevel = c(1,2,3))
+    chrom_data <- .ensure_rt_mz_columns(chrom_data, spectra, spectra_f)
+    s_plit <- split(spectra, spectra_f)
+    expect_equal(chrom_data$rtmin[[1]], min(s_plit[[1]]$rtime, na.rm = TRUE))
+    expect_equal(chrom_data$rtmax[[1]], max(s_plit[[1]]$rtime, na.rm = TRUE))
+
+    chrom_data <- data.frame(rtmin = c(10))
+    expect_error(.ensure_rt_mz_columns(chrom_data, spectra, spectra_f),
+                 "Both 'rtmin' and 'rtmax' must be present if one is provided.")
+    chrom_data <- data.frame(rtmax = c(50))
+    expect_error(.ensure_rt_mz_columns(chrom_data, spectra, spectra_f),
+                 "Both 'rtmin' and 'rtmax' must be present if one is provided.")
+
+    chrom_data <- data.frame(mzmin = c(100), mzmax = c(200), rtmin = c(10), rtmax = c(50))
+    chrom_data <- .ensure_rt_mz_columns(chrom_data, spectra, spectra_f)
+    expect_equal(chrom_data$mzmin, 100)
+    expect_equal(chrom_data$mzmax, 200)
+    expect_equal(chrom_data$rtmin, 10)
+    expect_equal(chrom_data$rtmax, 50)
+})

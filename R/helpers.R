@@ -172,6 +172,16 @@
 }
 
 #' Used In:
+#' - `ChromBackendSpectra()`
+#' @noRd
+.check_Spectra_package <- function() {
+    if (!requireNamespace("Spectra", quietly = TRUE))
+        stop("The use of 'ChromBackendSpectra' requires package 'Spectra'. ",
+             "Install it using 'BiocManager::install(\"Spectra\")'")
+}
+
+#' Function to create chromData form mzml file
+#' Used In:
 #' - `backendInitialize()` for `ChromBackendMzR` class
 #' Helper function to format chromatographic data from mzR files.
 #' @noRd
@@ -196,4 +206,124 @@
     msd <- mzR::openMSfile(fl)
     on.exit(mzR::close(msd))
     mzR::chromatogram(msd, idx, drop = FALSE)
+}
+
+#' Helper function to plot a single chromatogram.
+#' @note:
+#' Used in:
+#' - `plotChromatograms()`
+#' - `plotChromatogramsOverlay()`
+#'
+#' @importFrom graphics plot.new plot.window plot.xy axis box title par
+#' @importFrom grDevices dev.hold dev.flush xy.coords n2mfrow
+#' @noRd
+.plot_single_chromatogram <- function(x, xlab = "rtime (s)", ylab = "intensity",
+                                      type = "l", xlim = numeric(),
+                                      ylim = numeric(),
+                                      main = paste("m/z", round(mz(x), 1)),
+                                      col = "#00000080",add = FALSE,
+                                      axes = TRUE, frame.plot = axes,
+                                      orientation = 1, ...) {
+    v <- peaksData(x)[[1L]]
+    rts <- v$rtime
+    ints <- orientation * v[, "intensity"]
+    if (!length(xlim))
+        suppressWarnings(xlim <- range(rts, na.rm = TRUE))
+    if (!length(ylim))
+        suppressWarnings(
+            ylim <- range(orientation * c(0, max(abs(ints), na.rm = TRUE))))
+    if (any(is.infinite(xlim)))
+        xlim <- c(0, 0)
+    if (any(is.infinite(ylim)))
+        ylim <- c(0, 0)
+    if (!add) {
+        dev.hold()
+        on.exit(dev.flush())
+        plot.new()
+        plot.window(xlim = xlim, ylim = ylim)
+    }
+    if (!add) {
+        if (axes) {
+            axis(side = 1, ...)
+            axis(side = 2, ...)
+        }
+        if (frame.plot)
+            box(...)
+        title(main = main, xlab = xlab, ylab = ylab, ...)
+    }
+    plot.xy(xy.coords(rts, ints), type = type, col = col, ...)
+}
+
+#' Used In:
+#' - `peaksData` for `ChromBackendSpectra` class.
+#' @noRd
+.process_peaks_data <- function(cd, s, columns, fun, drop) {
+    s <- Spectra::filterRanges(s, spectraVariables = rep("rtime", nrow(cd)),
+                      ranges = as.vector(rbind(cd$rtmin, cd$rtmax)),
+                      match = "any")
+    pd <- Spectra::peaksData(s, columns = c("mz", "intensity"))
+    do_rt <- "rtime" %in% columns
+    do_int <- "intensity" %in% columns
+    rt <- rtime(s)
+    lapply(seq_len(nrow(cd)), function(i) {
+        keep <- between(rt, c(cd$rtmin[i], cd$rtmax[i]))
+        df <- as.data.frame(matrix(ncol = 0, nrow = sum(keep)))
+        if (do_rt)
+            df$rtime <- rt[keep]
+        if (do_int)
+            df$intensity <- vapply(pd[keep], function(z) {
+                fun(z[between(z[, "mz"], c(cd$mzMin[i], cd$mzMax[i])),
+                      "intensity"])
+            }, NA_real_, USE.NAMES = FALSE)
+        df[, columns, drop = drop]
+    })
+}
+
+#' Used in:
+#' - `backendInitialize()` for `ChrombackendSpectra`
+#' @noRd
+.spectra_format_chromData <- function(sps) {
+    data.frame(
+        msLevel = unique(sps$msLevel),
+        rtmin = min(sps$rtime, na.rm = TRUE),
+        rtmax = max(sps$rtime, na.rm = TRUE),
+        mzMin = -Inf,
+        mzMax = Inf,
+        mz = Inf,
+        polarity = sps$polarity[1],
+        scanWindowLowerLimit = sps$scanWindowLowerLimit[1],
+        scanWindowUpperLimit = sps$scanWindowUpperLimit[1],
+        dataOrigin = unique(sps$dataOrigin),
+        chromSpectraIndex = unique(sps$chromSpectraIndex)
+    )
+}
+
+#' Used in:
+#' - `factorize()` for `ChrombackendSpectra`
+#' @noRd
+.ensure_rt_mz_columns <- function(chrom_data, spectra, spectra_f) {
+    ## Ensure mzmin and mzmax are either both present or both missing
+    if (!all(c("mzmin", "mzmax") %in% colnames(chrom_data))) {
+        if ("mzmin" %in% colnames(chrom_data) || "mzmax" %in% colnames(chrom_data)) {
+            stop("Both 'mzmin' and 'mzmax' must be present if one is provided.")
+        } else {
+            chrom_data$mzmin <- -Inf
+            chrom_data$mzmax <- Inf
+        }
+    }
+
+    ## Ensure rtmin and rtmax are either both present or computed
+    if (!all(c("rtmin", "rtmax") %in% colnames(chrom_data))) {
+        if ("rtmin" %in% colnames(chrom_data) || "rtmax" %in% colnames(chrom_data)) {
+            stop("Both 'rtmin' and 'rtmax' must be present if one is provided.")
+        } else {
+            rt_range <- lapply(split(spectra$rtime, spectra_f), function(rt) {
+                list(rtmin = min(rt, na.rm = TRUE), rtmax = max(rt, na.rm = TRUE))
+            })
+            rt_values <- do.call(rbind, rt_range)
+            chrom_data$rtmin <- rt_values[, "rtmin"]
+            chrom_data$rtmax <- rt_values[, "rtmax"]
+        }
+    }
+    chrom_data
 }
