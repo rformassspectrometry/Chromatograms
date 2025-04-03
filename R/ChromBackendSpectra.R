@@ -24,7 +24,7 @@ NULL
 #' The *dataOrigin* core chromatogram variable should reflect the *dataOrigin*
 #' of the `Spectra` object. The `factorize.by` parameter defines the variables
 #' for grouping `Spectra` data into chromatographic data. The default is
-#' `c("msLevel", "dataOrigin")`, which will defines separate chromatograms for
+#' `c("msLevel", "dataOrigin")`, which will define separate chromatograms for
 #' each combination of `msLevel` and `dataOrigin`. These variables must be in
 #' both `Spectra` and `chromData` (if provided).
 #'
@@ -39,7 +39,7 @@ NULL
 #' @details
 #' No `peaksData` is stored until the user calls a function that generates it
 #' (e.g., `rtime()`, `peaksData()`, `intensity()`). The `peaksData` slot
-#' replacement is unsupported—modifications are temporary to optimize memory.
+#' replacement is unsupported — modifications are temporary to optimize memory.
 #' The `inMemory` slot indicates this with `TRUE`.
 #'
 #' `ChromBackendSpectra` should reuse `ChromBackendMemory` methods whenever

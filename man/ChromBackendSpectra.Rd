@@ -51,11 +51,14 @@ It can be initialized with a \code{Spectra} object, which is stored in the
 containing chromatographic metadata, stored in \code{chromData}. This metadata
 filters the \code{Spectra} object and generates \code{peaksData}. If \code{chromData} is
 not provided, a default \code{data.frame} is created from the \code{Spectra} data.
+An "rtmin", "rtmax", "mzmin", and "mzmax" column will be created by
+condensing the \code{Spectra} data corresponding to each unique combination of
+the \code{factorize.by} variables.
 
 The \emph{dataOrigin} core chromatogram variable should reflect the \emph{dataOrigin}
 of the \code{Spectra} object. The \code{factorize.by} parameter defines the variables
 for grouping \code{Spectra} data into chromatographic data. The default is
-\code{c("msLevel", "dataOrigin")}, which will defines separate chromatograms for
+\code{c("msLevel", "dataOrigin")}, which will define separate chromatograms for
 each combination of \code{msLevel} and \code{dataOrigin}. These variables must be in
 both \code{Spectra} and \code{chromData} (if provided).
 
@@ -72,7 +75,7 @@ method must be called to update \code{chromSpectraIndex}.
 \details{
 No \code{peaksData} is stored until the user calls a function that generates it
 (e.g., \code{rtime()}, \code{peaksData()}, \code{intensity()}). The \code{peaksData} slot
-replacement is unsupported—modifications are temporary to optimize memory.
+replacement is unsupported — modifications are temporary to optimize memory.
 The \code{inMemory} slot indicates this with \code{TRUE}.
 
 \code{ChromBackendSpectra} should reuse \code{ChromBackendMemory} methods whenever

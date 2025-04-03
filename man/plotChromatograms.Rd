@@ -50,6 +50,14 @@ plotChromatogramsOverlay(
 \item{type}{\code{character(1)} specifying the type of plot. See \code{\link[=plot.default]{plot.default()}}
 for details. Defaults to \code{type = "l"} which draws each peak as a line.}
 
+\item{pch}{\code{integer(1)} or \code{character(1)} specifying the plotting symbol
+(see \code{\link[=plot.default]{plot.default()}}).}
+
+\item{cex}{\code{numeric(1)} specifying the size of the plotting symbol (see
+\code{\link[=plot.default]{plot.default()}}).}
+
+\item{lwd}{\code{numeric(1)} specifying the line width (see \code{\link[=plot.default]{plot.default()}}).}
+
 \item{xlim}{\code{numeric(2)} defining the x-axis limits. The range of m/z values
 are used by default.}
 
