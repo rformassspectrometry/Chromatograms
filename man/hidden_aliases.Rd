@@ -157,6 +157,12 @@ backend. If not specified otherwise it will return all defined columns in
 thechromData slot as well as dding the coreChromVariables missing with NA
 values.
 }
+\note{
+I know it is a bit weird, but it's to facilitate initalisation
+the problem is that we need to support to factorise the spectra based on
+chromdata but if not present then we need to do the other way around.
+and it makes things a bit confusing.
+}
 \examples{
 
 ## Define a data frame

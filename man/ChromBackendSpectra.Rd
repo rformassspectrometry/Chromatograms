@@ -13,7 +13,7 @@ ChromBackendSpectra()
   spectra = Spectra::Spectra(),
   factorize.by = c("msLevel", "dataOrigin"),
   summarize.method = c("sum", "max"),
-  chromData = data.frame(),
+  chromData = fillCoreChromVariables(),
   ...
 )
 
@@ -44,19 +44,23 @@ contain \code{NA} values. Use \code{-Inf/Inf} for unspecified values. The
 \description{
 The \code{ChromBackendSpectra} class extends \code{ChromBackendMemory}, inheriting
 all its slots and methods while providing additional functionality for
-summarizing chromatographic data from \code{Spectra} objects.
+summarizing chromatographic data from \code{\link[Spectra:Spectra]{Spectra::Spectra()}} objects.
 
 It can be initialized with a \code{Spectra} object, which is stored in the
 \code{spectra} slot of the backend. Users can also provide a \code{data.frame}
 containing chromatographic metadata, stored in \code{chromData}. This metadata
 filters the \code{Spectra} object and generates \code{peaksData}. If \code{chromData} is
 not provided, a default \code{data.frame} is created from the \code{Spectra} data.
+An "rtmin", "rtmax", "mzmin", and "mzmax" column will be created by
+condensing the \code{Spectra} data corresponding to each unique combination of
+the \code{factorize.by} variables.
 
 The \emph{dataOrigin} core chromatogram variable should reflect the \emph{dataOrigin}
 of the \code{Spectra} object. The \code{factorize.by} parameter defines the variables
 for grouping \code{Spectra} data into chromatographic data. The default is
-\code{c("msLevel", "dataOrigin")}. These variables must be in both \code{Spectra} and
-\code{chromData} (if provided).
+\code{c("msLevel", "dataOrigin")}, which will define separate chromatograms for
+each combination of \code{msLevel} and \code{dataOrigin}. These variables must be in
+both \code{Spectra} and \code{chromData} (if provided).
 
 The \code{summarize.method} parameter defines how spectral data intensity is
 summarized:
@@ -65,20 +69,20 @@ summarized:
 \item \strong{"max"}: Takes max intensity for a Base Peak Chromatogram (BPC).
 }
 
+If \code{chromData} or its factorization columns are modified, the \code{factorize()}
+method must be called to update \code{chromSpectraIndex}.
+}
+\details{
 No \code{peaksData} is stored until the user calls a function that generates it
 (e.g., \code{rtime()}, \code{peaksData()}, \code{intensity()}). The \code{peaksData} slot
-replacement is unsupported—modifications are temporary to optimize memory.
+replacement is unsupported — modifications are temporary to optimize memory.
 The \code{inMemory} slot indicates this with \code{TRUE}.
 
 \code{ChromBackendSpectra} should reuse \code{ChromBackendMemory} methods whenever
 possible to keep implementations simple.
-
-If \code{chromData} or its factorization columns are modified, the \code{factorize()}
-method must be called to update \code{chromSpectraIndex}.
 }
 \note{
-Does it needs to be a generic and implemented for ChromBackend ? It's very
-specific for this backend, also I would NOT allow replacement of it.
+ensure that it returns a factor
 }
 \examples{
 library(Spectra)
@@ -101,8 +105,24 @@ msLevel(be) <- c(1L, 2L, 3L)
 ## re-factorize the data
 be <- factorize(be)
 
-## Look at the index between chromatographic data and spectra
-chromSpectraIndex(be)
+## Create BPC : we summarize the intensity present in the Spectra object
+## by the maximum value, thus creating a Base Peak Chromatogram.
+be <- backendInitialize(be_empty, s, summarize.method = "max")
+
+## Can now see the details of this bpc by looking at the chromData of our
+## object
+chromData(be)
+
+## Another possibilities is to create eics from the Spectra object.
+## Here we create an EIC with a specific m/z and retention time window.
+df <- data.frame(mzmin = 100.01, mzmax = 100.02 , rtmin = 50, rtmax = 100)
+be <- backendInitialize(be_empty, s, summarize.method = "sum")
+chromData(be) <- cbind(chromData(be), df)
+
+## now when we call the peaksData function, we will get the intensity
+## of the spectra object that are in the m/z and retention time window
+## defined in the chromData.
+peaksData(be)
 
 }
 \author{

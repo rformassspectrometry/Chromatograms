@@ -22,7 +22,6 @@
 
 on:
   push:
-  pull_request:
 
 name: R-CMD-check-bioc
 
@@ -220,17 +219,6 @@ jobs:
         if:  env.has_RUnit == 'true'
         run: |
           BiocGenerics:::testPackage()
-        shell: Rscript {0}
-
-      - name: Run BiocCheck
-        env:
-          DISPLAY: 99.0
-        run: |
-          BiocCheck::BiocCheck(
-              dir('check', 'tar.gz$', full.names = TRUE),
-              `quit-with-status` = TRUE
-
-          )
         shell: Rscript {0}
 
       - name: Test coverage

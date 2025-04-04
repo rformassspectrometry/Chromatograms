@@ -51,6 +51,14 @@
 #' @param frame.plot `logical(1)` whether a box should be drawn around the
 #'        plotting area.
 #'
+#' @param pch `integer(1)` or `character(1)` specifying the plotting symbol
+#'       (see [plot.default()]).
+#'
+#' @param cex `numeric(1)` specifying the size of the plotting symbol (see
+#'       [plot.default()]).
+#'
+#' @param lwd `numeric(1)` specifying the line width (see [plot.default()]).
+#'
 #' @param ... Additional arguments to be passed to [plot.default()].
 #'
 #' @return These functions create a plot.

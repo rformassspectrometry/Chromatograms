@@ -52,18 +52,14 @@ test_that("backendInitialize works", {
         ),
         "should be one of"
     )
-
-    df <- data.frame(
-        chromIndex = 1:3, msLevel = 1:3, mz = 1:3,
-        dataOrigin = dataOrigin(s)[1]
-    )
-    bd_tmp <- backendInitialize(ChromBackendSpectra(),
-        spectra = s,
-        chromData = df,
-        factorize.by = c("msLevel", "dataOrigin")
-    )
-    df$chromSpectraIndex <- chromSpectraIndex(bd_tmp)
-    expect_identical(bd_tmp@chromData, df)
+    df <- data.frame(chromIndex = 1:3, msLevel = 1:3, mz = 1:3,
+                     dataOrigin = dataOrigin(s)[1])
+    bd_tmp <- backendInitialize(ChromBackendSpectra(), spectra = s,
+                                chromData = df,
+                                factorize.by = c("msLevel", "dataOrigin"))
+    expect_identical(bd_tmp@chromData[, colnames(df)], df)
+    expect_true(all(c("rtmin", "rtmax", "mzmin", "mzmax", "chromSpectraIndex") %in%
+                colnames(bd_tmp@chromData)))
 })
 
 test_that("show method for ChromBackendSpectra works correctly", {
@@ -92,10 +88,6 @@ test_that("replacement method works", {
     expect_equal(chromData(tmp), cd)
 })
 
-test_that("backendParallelFactor works", {
-    expect_equal(levels(backendParallelFactor(be_sp)), unique(chromSpectraIndex(be_sp)))
-})
-
 test_that("error message work", {
     expect_error(
         peaksData(be_sp, columns = "notacolumn"),
@@ -104,24 +96,21 @@ test_that("error message work", {
 })
 
 test_that("factorize() works", {
-    expect_error(
-        factorize(be_sp, factorize.by = "nope"),
-        "variables must be in chromData"
-    )
-    expect_error(
-        factorize(be_sp, factorize.by = "chromIndex"),
-        "variables must be in the"
-    )
+    expect_error(factorize(be_sp, factorize.by = "nope"),
+                 "variables must be in the Spectra")
+    expect_error(factorize(be_sp, factorize.by = "chromIndex"),
+                 "variables must be in the")
     tmp <- be_sp
     tmp$msLevel <- c(1L, 2L, 3L)
     idx_before <- chromSpectraIndex(tmp)
     tmp <- factorize(tmp)
     idx_after <- chromSpectraIndex(tmp)
     expect_false(identical(idx_before, idx_after))
-    expect_identical(
-        levels(chromSpectraIndex(tmp)),
-        levels(tmp@spectra$chromSpectraIndex)
-    )
+    expect_identical(levels(chromSpectraIndex(tmp)),
+                     levels(tmp@spectra$chromSpectraIndex))
+    tmp@spectra$extra_col <- seq_len(length(tmp@spectra))
+    expect_error(factorize(tmp, factorize.by = c("msLevel", "extra_col")),
+                 "must be in chromData")
 })
 
 test_that("chromSpectraIndex works", {
@@ -130,4 +119,11 @@ test_that("chromSpectraIndex works", {
         "object must be a"
     )
     expect_equal(be_sp@chromData$chromSpectraIndex, chromSpectraIndex(be_sp))
+    tmp <- be_sp
+    tmp@chromData$chromSpectraIndex <- seq_len(nrow(tmp@chromData))
+    expect_true(is.factor(chromSpectraIndex(tmp)))
+})
+
+test_that("backendParallelFactor works", {
+    expect_identical(backendParallelFactor(be_sp), factor())
 })

@@ -362,7 +362,6 @@ setReplaceMethod("$", signature = "Chromatograms", function(x, name, value) {
 
 #' @rdname Chromatograms
 #' @importFrom methods slot<-
-#' @importFrom ProtGenerics extractByIndex
 #' @importFrom MsCoreUtils i2index
 #' @export
 setMethod("[", "Chromatograms", function(x, i, j, ..., drop = FALSE) {

@@ -126,44 +126,26 @@ setMethod("isReadOnly", "ChromBackendMzR", function(object) TRUE)
 
 #' @rdname hidden_aliases
 #' @importFrom BiocParallel bplapply
-setMethod(
-    "peaksData", "ChromBackendMzR",
-    function(object, columns = peaksVariables(object), drop = FALSE,
-    BPPARAM = SerialParam(), ...) {
-        if (object@inMemory || !length(object)) {
-            return(callNextMethod())
-        }
-        pv <- peaksVariables(object)
-        if (!any(columns %in% pv)) {
-            stop(
-                "Some of the requested peaks variables are not",
-                " available"
-            )
-        }
-        ret <- all(pv %in% columns)
-        f <- factor(dataOrigin(object),
-            levels = unique(dataOrigin(object))
-        )
-        pd <- bplapply(split(object, f = dataOrigin(object)),
-            ## should not this be f = f ?
-            function(ob) {
-                chr <- .get_chrom_data(
-                    fl = unique(dataOrigin(ob)),
-                    ## maybe here use levels(f), to prevent
-                    ## extracting origin again
-                    idx = chromIndex(ob)
-                )
-                if (ret) {
-                    chr
-                } else {
-                    lapply(chr, `[`, , columns, drop = drop)
-                }
-            },
-            BPPARAM = BPPARAM
-        )
-        unsplit(pd, f = f)
-    }
-)
+setMethod("peaksData", "ChromBackendMzR",
+          function(object, columns = peaksVariables(object), drop = FALSE,
+                   BPPARAM = SerialParam(), ...) {
+              if (object@inMemory || !length(object)) return(callNextMethod())
+              pv <- peaksVariables(object)
+              if (!any(columns %in% pv))
+                  stop("Some of the requested peaks variables are not",
+                       " available")
+              ret <- all(pv %in% columns)
+              f <- factor(dataOrigin(object),
+                          levels = unique(dataOrigin(object)))
+              pd <- bplapply(split(object, f = f),
+                 function(ob) {
+                     chr <- .get_chrom_data(fl = ob@chromData$dataOrigin[1L],
+                                            idx = chromIndex(ob))
+                     if (ret) chr
+                     else lapply(chr, `[`, , columns, drop = drop)
+                 }, BPPARAM = BPPARAM)
+              unsplit(pd, f = f)
+          })
 
 #' @rdname hidden_aliases
 setReplaceMethod("peaksData", "ChromBackendMzR", function(object, value) {

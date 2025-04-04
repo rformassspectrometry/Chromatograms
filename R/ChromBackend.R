@@ -552,7 +552,6 @@ setReplaceMethod("peaksData", "ChromBackend", function(object, value) {
 
 #' @exportMethod [
 #' @rdname ChromBackend
-#' @export
 setMethod("[", "ChromBackend", function(x, i, j, ..., drop = FALSE) {
     extractByIndex(x, i2index(i, length = length(x)))
 })
@@ -708,8 +707,6 @@ setMethod("extractByIndex", c("ChromBackend", "ANY"), function(object, i) {
 })
 
 #' @rdname ChromBackend
-#'
-#' @export
 setMethod("extractByIndex", c("ChromBackend", "missing"), function(object, i) {
     object
 })
