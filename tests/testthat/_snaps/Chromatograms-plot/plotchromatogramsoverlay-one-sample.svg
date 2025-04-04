@@ -51,10 +51,10 @@
   </clipPath>
 </defs>
 <g clip-path='url(#cpNTkuMDR8Njg5Ljc2fDU5LjA0fDUwMi41Ng==)'>
-<polyline points='82.40,464.63 188.58,459.34 294.76,75.47 666.40,443.68 ' style='stroke-width: 0.75; stroke: #FF0000;' />
-<circle cx='82.40' cy='464.63' r='2.70' style='stroke-width: 0.75; stroke: #FF0000;' />
-<circle cx='188.58' cy='459.34' r='2.70' style='stroke-width: 0.75; stroke: #FF0000;' />
-<circle cx='294.76' cy='75.47' r='2.70' style='stroke-width: 0.75; stroke: #FF0000;' />
-<circle cx='666.40' cy='443.68' r='2.70' style='stroke-width: 0.75; stroke: #FF0000;' />
+<polyline points='82.40,464.63 188.58,459.34 294.76,75.47 666.40,443.68 ' style='stroke-width: 1.12; stroke: #FF0000;' />
+<circle cx='82.40' cy='464.63' r='1.08' style='stroke-width: 1.12; stroke: #FF0000; fill: #FF0000;' />
+<circle cx='188.58' cy='459.34' r='1.08' style='stroke-width: 1.12; stroke: #FF0000; fill: #FF0000;' />
+<circle cx='294.76' cy='75.47' r='1.08' style='stroke-width: 1.12; stroke: #FF0000; fill: #FF0000;' />
+<circle cx='666.40' cy='443.68' r='1.08' style='stroke-width: 1.12; stroke: #FF0000; fill: #FF0000;' />
 </g>
 </svg>
