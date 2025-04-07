@@ -7,11 +7,11 @@
 
 
 This package, part of the [*R for Mass
-Spectrometry*](https://www.rformassspectrometry.org/) initiative, will
-provide support for handling and analysing chromatographic mass spectrometry
+Spectrometry*](https://www.rformassspectrometry.org/) initiative,
+provides support for handling and analysing chromatographic mass spectrometry
 (MS) data.
 
-It will follow the API that is currenlty available in the
+It follows the API that is currenlty available in the
 [`Chromatogram`](http://lgatto.github.io/MSnbase/reference/Chromatogram-class.html)
 class in the [`MSnbase`](http://lgatto.github.io/MSnbase/index.html) package,
 with support for different *backends* to provide/represent the data, similar to
@@ -27,6 +27,22 @@ the end user, providing functionality to access, filter or process
 chromatographic data, with the actual chromatographic MS data being stored
 within *backend* classes. Different implementations of backend classes can be
 designed for high performance or low memory footprint.
+
+The existing backend classes are: 
+
+- `ChromBackendMemory`: a memory-based backend, storing the data in
+  memory. This is the default backend and is used for testing purposes.
+- The `ChromBackendMzR` inherits all slots and methods from the base
+  `ChromBackendMemory` backend, providing additional functionality for reading 
+  chromatographic data from mzML files.
+
+- `ChromBackendSpectra`: The `ChromBackendSpectra` inherits all slots and
+   methods from the base `ChromBackendMemory` backend, providing additional
+   functionality for reading chromatographic data from `Spectra` objects.
+   
+These backend are then handled on a user level by the `Chromatograms` class,
+which provides a unified interface to access and manipulate the chromatographic
+data. 
 
 ## Installation
 

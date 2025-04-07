@@ -115,7 +115,7 @@ validChromData <- function(x = data.frame(), error = TRUE) {
     intensity = "numeric"
 )
 
-#' an empty peaks data.frame
+#' An empty peaks data.frame
 #' @noRd
 .EMPTY_PEAKS_DATA <- as.data.frame(lapply(
     .CORE_PEAKS_VARIABLES,
@@ -147,14 +147,12 @@ validPeaksData <- function(x = list(), error = TRUE) {
     expected_types <- .CORE_PEAKS_VARIABLES
     msgs <- unlist(lapply(seq_along(x), function(i) {
         df <- x[[i]]
-        # Check if the column names match those in the first data.frame
         if (!identical(colnames(df), first_cols)) {
             return(paste(
                 "All data.frames must have the same columns in the",
                 " same order. Issue found in entry", i
             ))
         }
-        # Check column types and any other validation with .validate_entry
         .validate_entry(x[[i]], i, expected_cols, expected_types)
     }))
     if (length(msgs) && error) {

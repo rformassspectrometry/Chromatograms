@@ -146,8 +146,8 @@ setMethod("backendMerge", "ChromBackendMemory", function(object, ...) {
 #' @rdname hidden_aliases
 #' @description This method returns the chromatographic data stored in the
 #' backend. If not specified otherwise it will return all defined columns in
-#' thechromData slot as well as dding the coreChromVariables missing with NA
-#' values.
+#' the chromData slot as well as adding the `coreChromVariables` missing with
+#' NA values.
 setMethod(
     "chromData", "ChromBackendMemory",
     function(object, columns = chromVariables(object), drop = FALSE) {

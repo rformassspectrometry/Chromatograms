@@ -110,8 +110,6 @@ NULL
 #' ## defined in the chromData.
 #' peaksData(be)
 #'
-#'
-#'
 NULL
 
 
@@ -198,10 +196,6 @@ chromSpectraIndex <- function(object) {
 }
 
 #' @rdname hidden_aliases
-#' @note I know it is a bit weird, but it's to facilitate initalisation
-#' the problem is that we need to support to factorise the spectra based on
-#' chromdata but if not present then we need to do the other way around.
-#' and it makes things a bit confusing.
 setMethod("factorize", "ChromBackendSpectra",
           function(object, factorize.by = c("msLevel", "dataOrigin"),...) {
             if (!all(factorize.by %in%
