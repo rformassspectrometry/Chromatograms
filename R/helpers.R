@@ -361,7 +361,7 @@
         if ("mzmin" %in% colnames(chrom_data) ||
             "mzmax" %in% colnames(chrom_data)) {
             stop("Both 'mzmin' and 'mzmax' must be present if one",
-                 "is provided.")
+                 " is provided.")
         } else {
             chrom_data$mzmin <- -Inf
             chrom_data$mzmax <- Inf
@@ -371,7 +371,7 @@
         if ("rtmin" %in% colnames(chrom_data) || "rtmax" %in%
             colnames(chrom_data)) {
             stop("Both 'rtmin' and 'rtmax' must be present if one",
-                 "is provided.")
+                 " is provided.")
         } else {
             rt_range <- lapply(split(spectra$rtime, spectra_f), function(rt) {
                 list(rtmin = min(rt, na.rm = TRUE),
