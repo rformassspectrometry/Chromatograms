@@ -9,3 +9,4 @@ Makefile
 local_data
 NEWS.md
 README.Rmd
+^CITATION\.cff$

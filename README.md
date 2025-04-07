@@ -28,6 +28,12 @@ chromatographic data, with the actual chromatographic MS data being stored
 within *backend* classes. Different implementations of backend classes can be
 designed for high performance or low memory footprint.
 
+## Installation
+
+```
+install.packages("BiocManager")
+BiocManager::install("RforMassSpectrometry/Chromatograms")
+```
 
 ## Contributions
 

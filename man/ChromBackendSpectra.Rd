@@ -124,6 +124,8 @@ chromData(be) <- cbind(chromData(be), df)
 ## defined in the chromData.
 peaksData(be)
 
+
+
 }
 \author{
 Philippine Louail, Johannes Rainer.

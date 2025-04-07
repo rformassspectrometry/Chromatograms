@@ -110,6 +110,8 @@ NULL
 #' ## defined in the chromData.
 #' peaksData(be)
 #'
+#'
+#'
 NULL
 
 
@@ -202,13 +204,16 @@ chromSpectraIndex <- function(object) {
 #' and it makes things a bit confusing.
 setMethod("factorize", "ChromBackendSpectra",
           function(object, factorize.by = c("msLevel", "dataOrigin"),...) {
-            if (!all(factorize.by %in% Spectra::spectraVariables(object@spectra)))
+            if (!all(factorize.by %in%
+                     Spectra::spectraVariables(object@spectra)))
                   stop("All 'factorize.by' variables must be in the ",
                        "Spectra object.")
            spectra_f <- factor(
                   do.call(
                       paste,
-                      c(as.list(Spectra::spectraData(object@spectra)[, factorize.by]),
+                      c(as.list(
+                          Spectra::spectraData(object@spectra)[,
+                                                               factorize.by]),
                         sep = "_")))
 
           if (nrow(chromData(object))) {
