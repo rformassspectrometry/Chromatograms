@@ -164,8 +164,8 @@ jobs:
           remotes::install_local(dependencies = TRUE, repos = BiocManager::repositories(), build_vignettes = TRUE, upgrade = TRUE)
 
           ## Manually install required packages
-          # BiocManager::install("sneumann/mzR", ref = "devel", ask = FALSE, force = TRUE)
           BiocManager::install("SummarizedExperiment", ask = FALSE, update = FALSE)
+          BiocManager::install("RforMassSpectrometry/MsBackendMetaboLights")
           BiocManager::install("msdata")
 
           # BiocManager::install(c("devtools", "usethis", "vdiffr"), dependencies = TRUE, ask = FALSE, update = FALSE)
