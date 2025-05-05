@@ -12,9 +12,9 @@ NULL
 #' `ChromBackendMemory` backend, providing additional functionality for reading
 #' chromatographic data from mzML files.
 #'
-#' Unlike the `ChromBackendMemory` backend, the `ChromBackendMzR` backend should
-#' have the *dataOrigin* chromatographic variables populated with the file path
-#' of the mzML file from which the chromatographic data was read.
+#' Unlike the `ChromBackendMemory` backend, the `ChromBackendMzR` backend
+#' should have the *dataOrigin* chromatographic variables populated with the
+#' file path of the mzML file from which the chromatographic data was read.
 #'
 #' Note that the `ChromBackendMzR` backend is read-only and does not support
 #' direct modification of chromatographic data. However, it does support
@@ -35,17 +35,34 @@ NULL
 #' @author Philippine Louail
 #'
 #' @exportClass ChromBackendMzR
+#'
+#' @examples
+#' library(mzR)
+#' library(msdata)
+#'
+#' ## Load an mzML file
+#' MRM_file <- system.file("proteomics", "MRM-standmix-5.mzML.gz",
+#'     package = "msdata"
+#' )
+#'
+#' ## Initialize the ChromBackendMzR object
+#' be_empty <- ChromBackendMzR()
+#' be <- backendInitialize(be_empty, files = MRM_file, BPPARAM = SerialParam())
+#'
 NULL
 
 #' @noRd
 setClass("ChromBackendMzR",
-         contains = "ChromBackendMemory",
-         slots = c(inMemory = "logical"),
-         prototype = prototype(chromData = fillCoreChromVariables(data.frame()),
-                               peaksData = list(.EMPTY_PEAKS_DATA),
-                               readonly = FALSE,
-                               version = "0.1",
-                               inMemory = FALSE))
+    contains = "ChromBackendMemory",
+    slots = c(inMemory = "logical"),
+    prototype = prototype(
+        chromData = fillCoreChromVariables(data.frame()),
+        peaksData = list(.EMPTY_PEAKS_DATA),
+        readonly = FALSE,
+        version = "0.1",
+        inMemory = FALSE
+    )
+)
 
 #' @rdname ChromBackendMzR
 #' @export ChromBackendMzR
@@ -58,20 +75,28 @@ ChromBackendMzR <- function() {
 #' @importFrom methods callNextMethod
 #' @importFrom MsCoreUtils rbindFill
 #' @export
-setMethod("backendInitialize", "ChromBackendMzR",
-          function(object, files = character(), BPPARAM = bpparam(), ...) {
-              if (!length(files)) return(object)
-              if (!is.character(files))
-                  stop("Parameter 'files' must be a character vector of file ",
-                       "paths")
-              files <- normalizePath(files, mustWork = FALSE)
-              chromData <- do.call(rbindFill,
-                                   bplapply(files,
-                                            FUN = function(fl) {
-                                                cbind(.mzR_format_chromData(fl))
-                                            }, BPPARAM = BPPARAM))
-              callNextMethod(object, chromData = chromData, ...)
-              })
+setMethod(
+    "backendInitialize", "ChromBackendMzR",
+    function(object, files = character(), BPPARAM = bpparam(), ...) {
+        if (!length(files)) {
+            return(object)
+        }
+        if (!is.character(files)) {
+            stop(
+                "Parameter 'files' must be a character vector of ",
+                "file paths"
+            )
+        }
+        files <- normalizePath(files, mustWork = FALSE)
+        chromData <- do.call(
+            rbindFill,
+            bplapply(files, FUN = function(fl) {
+                cbind(.mzR_format_chromData(fl))
+            }, BPPARAM = BPPARAM)
+        )
+        callNextMethod(object, chromData = chromData, ...)
+    }
+)
 
 #' @rdname hidden_aliases
 #' @export
@@ -81,7 +106,9 @@ setMethod("show", "ChromBackendMzR", function(object) {
     if (length(fls)) {
         to <- min(3, length(fls))
         cat("\nfile(s):\n", paste(basename(fls[seq_len(to)]), collapse = "\n"),
-            "\n", sep = "")
+            "\n",
+            sep = ""
+        )
         if (length(fls) > 3) cat(" ...", length(fls) - 3, "more files\n")
     }
     if (object@inMemory) cat("\nPeaks data is cached in memory\n")
@@ -122,9 +149,11 @@ setMethod("peaksData", "ChromBackendMzR",
 
 #' @rdname hidden_aliases
 setReplaceMethod("peaksData", "ChromBackendMzR", function(object, value) {
-    message("Please keep in mind the 'ChromBackendMzR' backend is read-only.",
-            " The peaksData slot will be modified but the changes will not",
-            " affect the local mzML files.")
+    message(
+        "Please keep in mind the 'ChromBackendMzR' backend is read-only.",
+        " The peaksData slot will be modified but the changes will not",
+        " affect the local mzML files."
+    )
     object <- callNextMethod()
     object@inMemory <- TRUE
     object
@@ -132,10 +161,12 @@ setReplaceMethod("peaksData", "ChromBackendMzR", function(object, value) {
 
 #' @rdname hidden_aliases
 setReplaceMethod("chromData", "ChromBackendMzR", function(object, value) {
-    message("Please keep in mind the 'ChromBackendMzR' backend is read-only.",
-            " The chromData slot will be modified but the changes will not",
-            " affect the local mzML files.")
-    callNextMethod() # should there be extra check for storage and chromIndex?
+    message(
+        "Please keep in mind the 'ChromBackendMzR' backend is read-only.",
+        " The chromData slot will be modified but the changes will not",
+        " affect the local mzML files."
+    )
+    callNextMethod()
 })
 
 #' @rdname hidden_aliases
@@ -145,6 +176,8 @@ setMethod("supportsSetBackend", "ChromBackendMzR", function(object, ...) FALSE)
 #' @rdname hidden_aliases
 #' @importMethodsFrom S4Vectors [ [<-
 setMethod("[", "ChromBackendMzR", function(x, i, j, ...) {
-    if (!length(i)) return (ChromBackendMzR())
+    if (!length(i)) {
+        return(ChromBackendMzR())
+    }
     callNextMethod()
 })

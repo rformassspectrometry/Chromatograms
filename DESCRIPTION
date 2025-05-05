@@ -22,7 +22,7 @@ Authors@R: c(person(given = "Laurent", family = "Gatto",
 Depends:
     BiocParallel,
     ProtGenerics (>= 1.39.2),
-    R (>= 4.2.0)
+    R (>= 4.4.0)
 Imports:
     methods,
     S4Vectors,
@@ -36,14 +36,14 @@ Suggests:
     rmarkdown,
     mzR (>= 2.41.4),
     Spectra, 
-    MsBackendMetaboLights,
+    MsBackendMetaboLights (>= 1.3.1),
     vdiffr
 License: Artistic-2.0
 Encoding: UTF-8
 VignetteBuilder: knitr
 BugReports: https://github.com/RforMassSpectrometry/Chromatograms/issues
 URL: https://github.com/RforMassSpectrometry/Chromatograms
-biocViews: Infrastructure, Proteomics, MassSpectrometry, Metabolomics
+biocViews: Infrastructure, Metabolomics, MassSpectrometry
 Roxygen: list(markdown=TRUE)
 RoxygenNote: 7.3.2
 Collate:

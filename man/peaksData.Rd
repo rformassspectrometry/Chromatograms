@@ -125,6 +125,51 @@ the original mzml files will not be affected by computations performed on
 the \link{Chromatograms}.
 }
 
+\examples{
+
+# Create a Chromatograms object
+cdata <- data.frame(
+    msLevel = c(1L, 1L, 1L),
+    mz = c(112.2, 123.3, 134.4),
+    chromIndex = c(1L, 2L, 3L)
+)
+
+pdata <- list(
+    data.frame(
+        rtime = c(12.4, 12.8, 13.2, 14.6),
+        intensity = c(123.3, 153.6, 2354.3, 243.4)
+    ),
+    data.frame(
+        rtime = c(45.1, 46.2),
+        intensity = c(100, 80.1)
+    ),
+    data.frame(
+        rtime = c(12.4, 12.8, 13.2, 14.6),
+        intensity = c(123.3, 153.6, 2354.3, 243.4)
+    )
+)
+
+be <- backendInitialize(new("ChromBackendMemory"),
+    chromData = cdata,
+    peaksData = pdata
+)
+
+chr <- Chromatograms(be)
+
+# Access peaks data
+peaksData(chr)
+
+# Access specific peaks data variables
+peaksData(chr, columns = "rtime")
+rtime(chr)
+
+# Replace peaks data
+rtime(chr)[[1]] <- c(1, 2, 3, 4)
+
+# Filter peaks data
+filterPeaksData(chr, variables = "rtime", ranges = c(12.5, 13.5))
+
+}
 \seealso{
 \link{Chromatograms} for a general description of the \code{Chromatograms}
 object, and \link{chromData} for accessing,substituting and filtering

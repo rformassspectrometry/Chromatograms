@@ -289,9 +289,6 @@ Filter the peak data based on the provided ranges for the given variables.
 This function replaces the peaksData() of the input object. Therefore
 backend with \code{readOnly == TRUE} (i.e. ChromBackendmzR) will need to have a
 carefully implemented \verb{peaksData(object) <-} method.
-
-I don't know if I want to base is on the isReadOnly() output..
-I think it depends more on how the backend is implemented. we can discuss this.
 }
 \section{Core chromatogram variables}{
 
@@ -363,9 +360,9 @@ The core peaks variables, listed in the required order for \code{peaksData}, are
 \item \code{intensity}: A \code{numeric} vector containing intensity values.
 }
 
-They should be provided for each chromatogram in the backend, \strong{in this order},
-No NAs are allowed for the \code{rtime} values. These characteristics will be
-checked with the \code{validPeaksData()} function.
+They should be provided for each chromatogram in the backend,
+\strong{in this order}, No NAs are allowed for the \code{rtime} values. These
+characteristics will be checked with the \code{validPeaksData()} function.
 }
 
 \section{Mandatory methods}{
@@ -410,8 +407,8 @@ return a \code{data.frame} even if one column is requested. If \code{drop = TRUE
 is specified, the output will be a vector of the single column requested.
 New backends should be implemented such as if empty, the method returns a
 \code{data.frame} with 0 rows and the columns defined by \code{chromVariables()}.
-By default, the function \emph{should} return at minimum the coreChromVariables,
-even if NAs.
+By default, the function \emph{should} return at minimum the
+coreChromVariables, even if NAs.
 \item \code{extractByIndex()}: function to subset a backend to selected elements
 defined by the provided index. Similar to \code{[}, this method should allow
 extracting (or to subset) the data in any order. In contrast to \code{[},
@@ -438,8 +435,8 @@ vector of the single column requested.
 of the backend. This method expects a \code{list} of two-dimensional arrays
 (\code{data.frame}) with columns representing the peak variables.
 All existing peaks data are expected to be replaced with these new values.
-The length of the \code{list} has to match the number of chromatogram of \code{object}.
-Note that only writeable backends need to support this method.
+The length of the \code{list} has to match the number of chromatogram of
+\code{object}. Note that only writeable backends need to support this method.
 \item \code{[}: subset the backend. Only subsetting by element (\emph{row}/\code{i}) is
 allowed. This method should be implemented as to support empty integer.
 \item \code{$}, \verb{$<-}: access or set/add a single chromatogram variable (column) in
@@ -467,17 +464,18 @@ chromatograms in the original source file.
 available chromatogram variables (columns, fields or attributes)
 available in \code{object}. Variables listed by this function are expected to
 be returned (if requested) by the \code{chromData()} function.
-\item \code{collisionEnergy()}, \verb{collisionEnergy<-}: gets or sets the collision energy
-for the precursor (for SRM data). \code{collisionEnergy()} returns a \code{numeric}
-of length equal to the number of chromatograms in \code{object}.
+\item \code{collisionEnergy()}, \verb{collisionEnergy<-}: gets or sets the collision
+energy for the precursor (for SRM data). \code{collisionEnergy()} returns a
+\code{numeric} of length equal to the number of chromatograms in \code{object}.
 \item \code{dataOrigin()}, \verb{dataOrigin<-}: gets or sets the \emph{data origin} variable.
 \code{dataOrigin()} returns a \code{character} of length equal to the number of
 chromatograms, \verb{dataOrigin<-} expects a \code{character} of length equal
 \code{length(object)}.
 \item \code{filterChromData()}: filters any numerical chromatographic data variables
 based on the provided numerical \code{ranges}. The method should return a
-\code{ChromBackend} object with the chromatograms that match the condition. This
-function will results in an object with less chromatogram than the original.
+\code{ChromBackend} object with the chromatograms that match the condition.
+This function will results in an object with less chromatogram than the
+original.
 \item \code{intensity()}: gets the intensity values from the chromatograms. Returns
 a \code{list} of \code{numeric} vectors (intensity values for each
 chromatogram). The length of the list is equal to the number of
@@ -492,8 +490,8 @@ only} or does allow also to write/update data. Defaults to FALSE.
 \item \code{isEmpty()}: returns a \code{logical} of length equal to the number of
 chromatograms with \code{TRUE} for chromatograms without any data pairs.
 \item \code{length()}: returns the number of chromatograms in the object.
-\item \code{lengths()}: returns the number of data pairs (retention time and intensity
-values) per chromatogram.
+\item \code{lengths()}: returns the number of data pairs (retention time and
+intensity values) per chromatogram.
 \item \code{msLevel()}: gets the chromatogram's MS level. Returns an \code{integer}
 vector (of length equal to the number of chromatograms) with the MS
 level for each chromatogram (or \code{NA_integer_} if not available).
@@ -501,14 +499,14 @@ level for each chromatogram (or \code{NA_integer_} if not available).
 returns a \code{numeric} of length equal to the number of chromatograms in \code{ object}, \verb{mz<-} expects a \code{numeric} of length \code{length(object)}.
 \item \code{mzMax()},\verb{mzMax<-}: gets or sets the upper m/z of the mass-to-charge
 range from which a chromatogram contains signal (e.g. if the chromatogram
-was extracted from MS data in spectra format and a m/z range was provided).
-\code{mzMax()} returns a \code{numeric} of length equal to the number of
+was extracted from MS data in spectra format and a m/z range was
+provided). \code{mzMax()} returns a \code{numeric} of length equal to the number of
 chromatograms in \code{object}, \verb{mzMax<-} expects a \code{numeric} of length equal
 to the number of chromatograms in \code{object}.
-\item \code{mzMin()},\verb{mzMin<-}: gets or sets the lower m/z of the mass-to-charge range
-from which a chromatogram contains signal (e.g. if the chromatogram
-was extracted from MS data in spectra format and a m/z range was provided).
-\code{mzMin()} returns a \code{numeric} of length equal to the number of
+\item \code{mzMin()},\verb{mzMin<-}: gets or sets the lower m/z of the mass-to-charge
+range from which a chromatogram contains signal (e.g. if the chromatogram
+was extracted from MS data in spectra format and a m/z range was
+provided). \code{mzMin()} returns a \code{numeric} of length equal to the number of
 chromatograms in \code{object}, \verb{mzMin<-} expects a \code{numeric} of length equal
 to the number of chromatograms in \code{object}.
 \item \code{peaksVariables()}: lists the available data variables for the
@@ -547,8 +545,8 @@ necessarily need to implement this method.
 take the \code{peaksData()} and \code{chromData()} of the user's backend and pass it
 to the new backend. If the backend does not support this function, it
 should return \code{FALSE}. Therefore both backend in question should have a
-adequate \code{peaksData()} and \code{chromData()} method as well as their respective
-replacement method.
+adequate \code{peaksData()} and \code{chromData()} method as well as their
+respective replacement method.
 }
 }
 
@@ -565,7 +563,78 @@ implementation is provided in the respective vignette.
 
 ## Create a simple backend implementation
 ChromBackendDummy <- setClass("ChromBackendDummy",
-    contains = "ChromBackend")
+    contains = "ChromBackend"
+)
+
+## We will show examples on a `ChromBackendMemory` backend.
+be <- ChromBackendMemory()
+
+## The `backendInitialize()` method initializes the backend filling it with
+## data. This method can take any parameters needed for the backend to
+## get loaded with the data.
+cdata <- data.frame(
+    msLevel = c(1L, 1L, 1L),
+    mz = c(112.2, 123.3, 134.4),
+    chromIndex = c(1L, 2L, 3L)
+)
+
+pdata <- list(
+    data.frame(
+        rtime = c(12.4, 12.8, 13.2, 14.6),
+        intensity = c(123.3, 153.6, 2354.3, 243.4)
+    ),
+    data.frame(
+        rtime = c(45.1, 46.2),
+        intensity = c(100, 80.1)
+    ),
+    data.frame(
+        rtime = c(12.4, 12.8, 13.2, 14.6),
+        intensity = c(123.3, 153.6, 2354.3, 243.4)
+    )
+)
+be <- backendInitialize(be, chromData = cdata, peaksData = pdata)
+
+be
+
+## Data can be accessed with the accessor methods
+msLevel(be)
+
+rtime(be)
+
+## Even if no data was provided for all chromatogram variables, its accessor
+## methods are supposed to return a value.
+precursorMz(be)
+
+## The `peaksData()` method is supposed to return data/frames of rtime and
+## intensity pairs as a `list`.
+peaksData(be)
+
+## Use columns to extract specific peaks variables. Below we extract rtime
+## and intensity values, but in reversed order to the default.
+peaksData(be, columns = c("intensity", "rtime"))
+
+## List available chromatographic variables
+chromVariables(be)
+
+## List available peak variables
+peaksVariables(be)
+
+## Extract multiple chromatographic variables
+chromData(be, c("chromIndex", "mz", "msLevel"))
+
+## Single variables can also be accessed and replaced
+mz(be)
+mz(be) <- c(123.4, 134.5, 145.6)
+
+be$msLevel
+be$msLevel <- c(2L, 2L, 2L)
+
+be[["rtime"]]
+be[["rtime"]] <- list(
+    c(12.4, 12.8, 13.2, 14.6),
+    c(45.1, 46.2),
+    c(12.4, 12.8, 13.2, 14.6)
+)
 }
 \author{
 Johannes Rainer, Philippine Louail

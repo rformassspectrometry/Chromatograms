@@ -58,11 +58,11 @@ which is particularly useful for larger datasets. The processing queue
 enables functions to be applied in a chunk-wise manner, facilitating
 parallel processing and reducing memory demand.
 
-Since the peaks data can be quite large, a processing queue is used to ensure
-efficiency. Generally, the processing queue is applied either temporarily
-when calling \code{peaksData()} or permanently when calling \code{applyProcessing()}.
-As explained below the processing efficiency can be further improved by
-enabling chunk-wise processing.
+Since the peaks data can be quite large, a processing queue is used to
+ensure efficiency. Generally, the processing queue is applied either
+temporarily when calling \code{peaksData()} or permanently when calling
+\code{applyProcessing()}. As explained below the processing efficiency can be
+further improved by enabling chunk-wise processing.
 }
 \note{
 Some backends might not support parallel processing. For these, the
@@ -92,9 +92,9 @@ subset is loaded into memory. Chunk-wise processing, which is disabled by
 default, can be enabled by setting the processing chunk size of a
 \code{Chromatograms} object using the \code{processingChunkSize()} function to a value
 smaller than the length of the \code{Chromatograms} object. For example, setting
-\code{processingChunkSize(chr) <- 1000} will cause any data manipulation operation
-on \code{chr}, such as \code{filterPeaksData()}, to be performed in parallel for sets
-of 1000 chromatograms in each iteration.
+\code{processingChunkSize(chr) <- 1000} will cause any data manipulation
+operation on \code{chr}, such as \code{filterPeaksData()}, to be performed in parallel
+for sets of 1000 chromatograms in each iteration.
 
 Chunk-wise processing is particularly useful for \code{Chromatograms} objects
 using an \emph{on-disk} backend or for very large experiments. For small datasets
@@ -126,6 +126,49 @@ will be performed.
 }
 }
 
+\examples{
+# Create a Chromatograms object
+cdata <- data.frame(
+    msLevel = c(1L, 1L, 1L),
+    mz = c(112.2, 123.3, 134.4),
+    chromIndex = c(1L, 2L, 3L)
+)
+
+pdata <- list(
+    data.frame(
+        rtime = c(12.4, 12.8, 13.2, 14.6),
+        intensity = c(123.3, 153.6, 2354.3, 243.4)
+    ),
+    data.frame(
+        rtime = c(45.1, 46.2),
+        intensity = c(100, 80.1)
+    ),
+    data.frame(
+        rtime = c(12.4, 12.8, 13.2, 14.6),
+        intensity = c(123.3, 153.6, 2354.3, 243.4)
+    )
+)
+
+be <- backendInitialize(new("ChromBackendMemory"),
+    chromData = cdata,
+    peaksData = pdata
+)
+
+chr <- Chromatograms(be)
+
+divide_intensities <- function(x, y, ...) {
+    intensity(x) <- lapply(intensity(x), `/`, y)
+    x
+}
+
+## Add the function to the procesing queue
+chr <- addProcessing(chr, divide_intensities, y = 2)
+chr
+
+# Apply the processing queue
+chr <- applyProcessing(chr)
+
+}
 \author{
 Johannes Rainer, Philippine Louail
 }

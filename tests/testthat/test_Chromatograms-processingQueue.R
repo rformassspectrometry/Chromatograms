@@ -1,19 +1,24 @@
 test_that("addProcessing adds processing steps correctly", {
     c_queued <- addProcessing(c_full, filterPeaksData,
-                              variables = c("rtime"), ranges = c(12.5, 45.5))
+        variables = c("rtime"), ranges = c(12.5, 45.5)
+    )
     queue <- c_queued@processingQueue
     expect_length(queue, 1)
     expect_equal(queue[[1]]@FUN, filterPeaksData)
-    expect_equal(queue[[1]]@ARGS, list(variables = c("rtime"),
-                                       ranges = c(12.5, 45.5)))
+    expect_equal(queue[[1]]@ARGS, list(
+        variables = c("rtime"),
+        ranges = c(12.5, 45.5)
+    ))
     c_queued <- addProcessing(c_queued, filterPeaksData,
-                              variables = c("intensity"), ranges = c(100, 200))
+        variables = c("intensity"), ranges = c(100, 200)
+    )
     queue <- c_queued@processingQueue
     expect_length(queue, 2)
 
     ## Missing FUN
     c_queued <- addProcessing(c_mzr,
-                              variables = c("rtime"), ranges = c(12.5, 45.5))
+        variables = c("rtime"), ranges = c(12.5, 45.5)
+    )
     expect_equal(c_queued, c_mzr)
 })
 
@@ -30,10 +35,14 @@ test_that("processingChunkFactor is handled correctly in peaksData", {
 })
 
 test_that("applyProcessing applies all queued processing steps", {
-    c_queued <- filterPeaksData(c_full, variables = c("rtime"),
-                                ranges = c(12.5, 45.5))
-    c_queued <- filterPeaksData(c_queued, variables = c("intensity"),
-                                ranges = c(100, 200), keep = FALSE)
+    c_queued <- filterPeaksData(c_full,
+        variables = c("rtime"),
+        ranges = c(12.5, 45.5)
+    )
+    c_queued <- filterPeaksData(c_queued,
+        variables = c("intensity"),
+        ranges = c(100, 200), keep = FALSE
+    )
     c_applied <- applyProcessing(c_queued)
     expect_length(c_applied@processingQueue, 0)
     expect_equal(peaksData(c_applied), peaksData(c_applied@backend))
@@ -43,7 +52,9 @@ test_that("applyProcessing applies all queued processing steps", {
     c_applied <- applyProcessing(c_queued)
     expect_equal(c_applied, c_queued)
 
-    c_queued <- filterPeaksData(c_mzr, variables = c("rtime"),
-                                ranges = c(12.5, 45.5))
+    c_queued <- filterPeaksData(c_mzr,
+        variables = c("rtime"),
+        ranges = c(12.5, 45.5)
+    )
     expect_error(applyProcessing(c_queued), "Cannot apply")
 })

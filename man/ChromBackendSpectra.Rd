@@ -26,8 +26,8 @@ chromSpectraIndex(object)
 
 \item{factorize.by}{A \code{character} vector of variables for grouping \code{Spectra}
 data into chromatographic data.
-Default: \code{c("msLevel", "dataOrigin")}. If \code{chromData} is provided,
-it must contain these columns.}
+Default: \code{c("msLevel", "dataOrigin")}.
+If \code{chromData} is provided, it must contain these columns.}
 
 \item{summarize.method}{A \code{character} string specifying intensity summary:
 \code{"sum"} (default) or \code{"max"}.}

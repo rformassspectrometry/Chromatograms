@@ -1,4 +1,3 @@
-
 test_that("Chromatograms works", {
     ## empty object
     expect_true(is(c_empty@backend, "ChromBackendMemory"))
@@ -64,8 +63,10 @@ test_that("setBackend works correctly", {
     expect_identical(peaksData(c_mzr_new), peaksData(c_mzr))
     expect_identical(c_mzr_new@backend@peaksData, peaksData(c_mzr))
 
-    expect_error(setBackend(c_mzr, backend = ChromBackendMzR()),
-                 "does not support")
+    expect_error(
+        setBackend(c_mzr, backend = ChromBackendMzR()),
+        "does not support"
+    )
 })
 
 test_that("$ works correctly", {
@@ -74,7 +75,7 @@ test_that("$ works correctly", {
     expect_identical(intensity(c_full), c_full$intensity)
     expect_identical(intensity(c_mzr), c_mzr$intensity)
     tmp <- c_full
-    tmp$msLevel <- c(2L, 2L, 3L )
+    tmp$msLevel <- c(2L, 2L, 3L)
     expect_identical(msLevel(tmp), c(2L, 2L, 3L))
     tmp$intensity <- lapply(tmp$intensity, function(x) x + 10)
     expect_false(identical(intensity(tmp), intensity(c_full)))
@@ -89,7 +90,6 @@ test_that("[ works correctly", {
 
     c_sub <- c_full[1]
     expect_equal(c_sub, c_sub[])
-
 })
 
 test_that("[[ works properly", {
@@ -116,4 +116,3 @@ test_that("factorize() works", {
     idx_after <- chromSpectraIndex(tmp@backend)
     expect_false(identical(idx_before, idx_after))
 })
-

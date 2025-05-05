@@ -4,7 +4,7 @@ test_that("fillCoreChromVariables works", {
     expect_true(is.data.frame(res))
     expect_true(all(c("a", "b") %in% colnames(res)))
     expect_true(all(names(.CORE_CHROM_VARIABLES) %in%
-                        c(colnames(res), "intensity", "rtime")))
+        c(colnames(res), "intensity", "rtime")))
     expect_true(nrow(res) == 0)
 
     x <- data.frame(msLevel = c(1L, 2L, 1L), other_col = "a")
@@ -12,11 +12,11 @@ test_that("fillCoreChromVariables works", {
     expect_true(is.data.frame(res))
     expect_true(all(c("msLevel", "other_col") %in% colnames(res)))
     expect_true(all(names(.CORE_CHROM_VARIABLES) %in%
-                        c(colnames(res), "intensity", "rtime")))
+        c(colnames(res), "intensity", "rtime")))
     expect_true(nrow(res) == 3L)
 
     cv <- .CORE_CHROM_VARIABLES[!names(.CORE_CHROM_VARIABLES) %in%
-                                    c("intensity", "rtime", "msLevel")]
+        c("intensity", "rtime", "msLevel")]
     for (i in seq_along(cv)) {
         expect_true(is(res[, names(cv)[i]], cv[i]))
         expect_true(all(is.na(res[, names(cv)[i]])))
@@ -57,15 +57,16 @@ test_that("validPeaksData works", {
     x <- list(data.frame(rtime = numeric(), intensity = numeric()))
     res <- validPeaksData(x)
     expect_true(is.null(res))
-    #checks order
+    # checks order
     x <- list(data.frame(intensity = numeric(), rtime = numeric()))
     expect_error(validPeaksData(x), "Columns should be in the order")
 
     x <- list(
         data.frame(rtime = c(10.0, 12.0), intensity = c(200, 150)),
-        data.frame(rtime = c(30.1, 31.2), intensity = c(110, 90), other_col= c("test", "test"))
+        data.frame(rtime = c(30.1, 31.2), intensity = c(110, 90), other_col = c("test", "test"))
     )
-    expect_error(validPeaksData(x),
-                 "same order")
+    expect_error(
+        validPeaksData(x),
+        "same order"
+    )
 })
-

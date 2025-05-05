@@ -54,8 +54,8 @@ NULL
 #'
 #' @param factorize.by A `character` vector of variables for grouping `Spectra`
 #'        data into chromatographic data.
-#'        Default: `c("msLevel", "dataOrigin")`. If `chromData` is provided,
-#'        it must contain these columns.
+#'        Default: `c("msLevel", "dataOrigin")`.
+#'        If `chromData` is provided, it must contain these columns.
 #'
 #' @param object A `ChromBackendSpectra` object.
 #'
@@ -196,19 +196,18 @@ chromSpectraIndex <- function(object) {
 }
 
 #' @rdname hidden_aliases
-#' @note I know it is a bit weird, but it's to facilitate initalisation
-#' the problem is that we need to support to factorise the spectra based on
-#' chromdata but if not present then we need to do the other way around.
-#' and it makes things a bit confusing.
 setMethod("factorize", "ChromBackendSpectra",
           function(object, factorize.by = c("msLevel", "dataOrigin"),...) {
-            if (!all(factorize.by %in% Spectra::spectraVariables(object@spectra)))
+            if (!all(factorize.by %in%
+                     Spectra::spectraVariables(object@spectra)))
                   stop("All 'factorize.by' variables must be in the ",
                        "Spectra object.")
            spectra_f <- factor(
                   do.call(
                       paste,
-                      c(as.list(Spectra::spectraData(object@spectra)[, factorize.by]),
+                      c(as.list(
+                          Spectra::spectraData(object@spectra)[,
+                                                               factorize.by]),
                         sep = "_")))
 
           if (nrow(chromData(object))) {
@@ -236,40 +235,55 @@ setMethod("factorize", "ChromBackendSpectra",
 
 #' @rdname hidden_aliases
 #' @importMethodsFrom ProtGenerics backendParallelFactor
-setMethod("backendParallelFactor", "ChromBackendSpectra", function(object, ...) {
+setMethod("backendParallelFactor", "ChromBackendSpectra", function(object, ...)
     factor()
-})
+)
 
 #' @rdname hidden_aliases
 #' @export
 setMethod("isReadOnly", "ChromBackendSpectra", function(object) TRUE)
 
 #' @rdname hidden_aliases
-setMethod("peaksData", "ChromBackendSpectra",
-          function(object, columns = peaksVariables(object),
-                   drop = FALSE, ...) {
-              if (object@inMemory || !length(object)) return(callNextMethod())
-              ## Ensure chromSpectraIndex only contains relevant levels needed
-              valid_levels <- chromSpectraIndex(object)
-              fs <- factor(object@spectra$chromSpectraIndex,
-                           levels = levels(valid_levels))
-
-              ## Process peaks data
-              pd <- mapply(.process_peaks_data,
-                           cd = split(chromData(object), valid_levels),
-                           s = split(object@spectra, fs),
-                           MoreArgs = list(columns = columns,
-                                           fun = object@summaryFun,
-                                           drop = drop),
-                           SIMPLIFY = FALSE)
-              unlist(pd, use.names = FALSE, recursive = FALSE)
-          })
-
+setMethod(
+    "peaksData", "ChromBackendSpectra",
+    function(object, columns = peaksVariables(object),
+    drop = FALSE, ...) {
+        if (object@inMemory || !length(object)) {
+            return(callNextMethod())
+        }
+        ## Ensure chromSpectraIndex only contains relevant levels needed
+        valid_levels <- chromSpectraIndex(object)
+        if (!all(levels(object@spectra$chromSpectraIndex) %in%
+            valid_levels)) {
+            object@spectra$chromSpectraIndex <- factor(
+                object@spectra$chromSpectraIndex,
+                levels = valid_levels
+            )
+        }
+        ## Process peaks data
+        pd <- mapply(.process_peaks_data,
+            cd = split(chromData(object), valid_levels),
+            s = split(
+                object@spectra,
+                object@spectra$chromSpectraIndex
+            ),
+            MoreArgs = list(
+                columns = columns,
+                fun = object@summaryFun,
+                drop = drop
+            ),
+            SIMPLIFY = FALSE
+        )
+        unlist(pd, use.names = FALSE, recursive = FALSE)
+    }
+)
 
 #' @rdname hidden_aliases
 setReplaceMethod("peaksData", "ChromBackendSpectra", function(object, value) {
-    message("The `peaksData` slot will be modified but the changes will not",
-            " affect the Spectra object.")
+    message(
+        "The `peaksData` slot will be modified but the changes will not",
+        " affect the Spectra object."
+    )
     object <- callNextMethod()
     object@inMemory <- TRUE
     object
@@ -277,23 +291,27 @@ setReplaceMethod("peaksData", "ChromBackendSpectra", function(object, value) {
 
 #' @rdname hidden_aliases
 setReplaceMethod("chromData", "ChromBackendSpectra", function(object, value) {
-    message("Please keep in mind the 'ChromBackendSpectra' backend is read-only.",
-            " The chromData slot will be modified but the changes will not",
-            " affect the Spectra object. You will need to run `factorize()` to",
-            " update the 'chromSpectraIndex' column.")
+    message(
+        "Please keep in mind the 'ChromBackendSpectra' backend ",
+        "is read-only. The chromData slot will be modified but the ",
+        "changes will not affect the Spectra object. You will need to ",
+        "run `factorize()` to update the 'chromSpectraIndex' column."
+    )
     callNextMethod()
 })
 
 #' @rdname hidden_aliases
 #' @export
-setMethod("supportsSetBackend", "ChromBackendSpectra",
-          function(object, ...) FALSE)
+setMethod(
+    "supportsSetBackend", "ChromBackendSpectra",
+    function(object, ...) FALSE
+)
 
 #' @rdname hidden_aliases
 #' @importMethodsFrom S4Vectors [ [[
 #' @export
 setMethod("[", "ChromBackendSpectra", function(x, i, j, ...) {
-    if (!length(i)) return (ChromBackendSpectra())
+    if (!length(i))
+        return(ChromBackendSpectra())
     callNextMethod()
 })
-
