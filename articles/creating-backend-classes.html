@@ -102,14 +102,14 @@ document.addEventListener("DOMContentLoaded", function() {
     if (links[i].hostname != window.location.hostname)
       links[i].target = '_blank';
 });
-</script><p><strong>Package</strong>: <em><a href="https://bioconductor.org/packages/3.21/Chromatograms" class="external-link">Chromatograms</a></em><br><strong>Authors</strong>: Laurent Gatto [aut] (ORCID: <a href="https://orcid.org/0000-0002-1520-2268" class="external-link uri">https://orcid.org/0000-0002-1520-2268</a>), Johannes Rainer
+</script><p><strong>Package</strong>: <em><a href="https://bioconductor.org/packages/3.22/Chromatograms" class="external-link">Chromatograms</a></em><br><strong>Authors</strong>: Laurent Gatto [aut] (ORCID: <a href="https://orcid.org/0000-0002-1520-2268" class="external-link uri">https://orcid.org/0000-0002-1520-2268</a>), Johannes Rainer
 [aut] (ORCID: <a href="https://orcid.org/0000-0002-6977-7147" class="external-link uri">https://orcid.org/0000-0002-6977-7147</a>), Philippine
-Louail [aut, cre] (ORCID: <a href="https://orcid.org/0009-0007-5429-6846" class="external-link uri">https://orcid.org/0009-0007-5429-6846</a>)<br><strong>Compiled</strong>: Thu Apr 3 09:37:00 2025</p>
+Louail [aut, cre] (ORCID: <a href="https://orcid.org/0009-0007-5429-6846" class="external-link uri">https://orcid.org/0009-0007-5429-6846</a>)<br><strong>Compiled</strong>: Mon May 5 08:40:50 2025</p>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
-<p>Similar to the <em><a href="https://bioconductor.org/packages/3.21/Spectra" class="external-link">Spectra</a></em>
-package, the <em><a href="https://bioconductor.org/packages/3.21/Chromatograms" class="external-link">Chromatograms</a></em>
+<p>Similar to the <em><a href="https://bioconductor.org/packages/3.22/Spectra" class="external-link">Spectra</a></em>
+package, the <em><a href="https://bioconductor.org/packages/3.22/Chromatograms" class="external-link">Chromatograms</a></em>
 also separates the user-faced functionality to process and analyze
 chromatographic mass spectrometry (MS) data from the code for storage
 and <em>representation</em> of the data. The latter functionality is
@@ -173,11 +173,7 @@ methods need to be implemented but not data replacement methods
 (i.e. <code>&lt;-</code> methods that would allow to add or set
 variables. Read-only backends should implement the
 <code><a href="https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html" class="external-link">isReadOnly()</a></code> method, that should then return
-<code>TRUE</code>. Note that backends for purely read-only resources
-could also implement a <em>caching</em> mechanism to (temporarily) store
-changes to the data locally within the object (and hence in memory). See
-information on the <code>MsBackendCached</code> in the <em><a href="https://bioconductor.org/packages/3.21/Spectra" class="external-link">Spectra</a></em>
-package for more details.</li>
+<code>TRUE</code>.</li>
 </ul>
 </div>
 <div class="section level3">
@@ -215,7 +211,7 @@ example we define a simple class that uses a <code>data.frame</code> to
 store general properties (<em>chromatogram variables</em>) and a list of
 <code>data.frame</code> for the retention time and intensity values of
 each chromatograms, which represent the actual chromatographic MS data.
-These values are store in a <code>list</code>, where each element
+These values are store in a<code>list</code>, where each element
 correspond to one chromatogram, as the number of values (<em>peaks</em>)
 can vary between chromatograms. We also provide a basic constructor
 function that returns an empty instance of the new class.</p>
@@ -223,20 +219,21 @@ function that returns an empty instance of the new class.</p>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/RforMassSpectrometry/Chromatograms" class="external-link">Chromatograms</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">#' Definition of the backend class extending ChromBackend</span></span>
-<span><span class="kw">setClass</span><span class="op">(</span><span class="st">"ChromBackendTest"</span>,</span>
-<span>         contains <span class="op">=</span> <span class="st">"ChromBackend"</span>,</span>
-<span>         slots <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
-<span>             chromData <span class="op">=</span> <span class="st">"data.frame"</span>,</span>
-<span>             peaksData <span class="op">=</span> <span class="st">"list"</span></span>
-<span>         <span class="op">)</span>,</span>
-<span>         prototype <span class="op">=</span> <span class="fu">prototype</span><span class="op">(</span></span>
-<span>             chromData <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>             peaksData <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
-<span>         <span class="op">)</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setClass.html" class="external-link">setClass</a></span><span class="op">(</span><span class="st">"ChromBackendTest"</span>,</span>
+<span>    contains <span class="op">=</span> <span class="st">"ChromBackend"</span>,</span>
+<span>    slots <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>        chromData <span class="op">=</span> <span class="st">"data.frame"</span>,</span>
+<span>        peaksData <span class="op">=</span> <span class="st">"list"</span></span>
+<span>    <span class="op">)</span>,</span>
+<span>    prototype <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/methods/representation.html" class="external-link">prototype</a></span><span class="op">(</span></span>
+<span>        chromData <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>        peaksData <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>    <span class="op">)</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">#' Simple constructor function</span></span>
 <span><span class="va">ChromBackendTest</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="fu">new</span><span class="op">(</span><span class="st">"ChromBackendTest"</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/methods/new.html" class="external-link">new</a></span><span class="op">(</span><span class="st">"ChromBackendTest"</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>The 2 slots <code>@chromData</code> and <code>@peaksData</code> will
 be used to store the general properties of the chromatograms and the
@@ -255,10 +252,13 @@ the number of rows of the <code>@chromData</code> slot matches the
 length of the <code>@peaksData</code> slots.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Basic validation function</span></span>
-<span><span class="fu">setValidity</span><span class="op">(</span><span class="st">"ChromBackendTest"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">object</span><span class="op">@</span><span class="va">peaksData</span><span class="op">)</span> <span class="op">!=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">object</span><span class="op">@</span><span class="va">chromData</span><span class="op">)</span><span class="op">)</span></span>
-<span>        <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="st">"length of 'peaksData' has to match the number of rows of "</span>,</span>
-<span>               <span class="st">"'chromData'"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/methods/validObject.html" class="external-link">setValidity</a></span><span class="op">(</span><span class="st">"ChromBackendTest"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">object</span><span class="op">@</span><span class="va">peaksData</span><span class="op">)</span> <span class="op">!=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">object</span><span class="op">@</span><span class="va">chromData</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span></span>
+<span>            <span class="st">"length of 'peaksData' has to match the number of rows of "</span>,</span>
+<span>            <span class="st">"'chromData'"</span></span>
+<span>        <span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
 <span>    <span class="cn">NULL</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## Class "ChromBackendTest" [in ".GlobalEnv"]</span></span>
@@ -286,12 +286,12 @@ length of the <code>@peaksData</code> slots.</p>
 <span><span class="co">## </span></span>
 <span><span class="co">## Slot "version":</span></span>
 <span><span class="co">## [1] "0.1"</span></span></code></pre>
-<p>A <code>show()</code> method would allow for a more convenient way
+<p>A <code><a href="https://rdrr.io/r/methods/show.html" class="external-link">show()</a></code> method would allow for a more convenient way
 how general information of our object is displayed. Below we add an
-implementation of the <code>show()</code> method.</p>
+implementation of the <code><a href="https://rdrr.io/r/methods/show.html" class="external-link">show()</a></code> method.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' implementation of show for ChromBackendTest</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"show"</span>, <span class="st">"ChromBackendTest"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span><span class="st">"show"</span>, <span class="st">"ChromBackendTest"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">cd</span> <span class="op">&lt;-</span> <span class="va">object</span><span class="op">@</span><span class="va">chromData</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>, <span class="st">"with"</span>, <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">cd</span><span class="op">)</span>, <span class="st">"chromatograms\n"</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
@@ -322,7 +322,7 @@ chromatograms that are represented by the object. The values for
 <code>character</code>).</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' dataStorage method to provide information *where* data is stored</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"dataStorage"</span>, <span class="st">"ChromBackendTest"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span><span class="st">"dataStorage"</span>, <span class="st">"ChromBackendTest"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character</a></span><span class="op">(</span><span class="va">object</span><span class="op">@</span><span class="va">chromData</span><span class="op">$</span><span class="va">dataStorage</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>Calling <code><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">dataStorage()</a></code> on our example backend will thus
@@ -343,7 +343,7 @@ rows of the <code>data.frame</code> stored in the
 <code>@chromData</code> slot.</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' length to provide information on the number of chromatograms</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"length"</span>, <span class="st">"ChromBackendTest"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span><span class="st">"length"</span>, <span class="st">"ChromBackendTest"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">x</span><span class="op">@</span><span class="va">chromData</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
@@ -364,11 +364,11 @@ data. It is also recommended that the the special chromatogram variables
 <p>It is strongly recommended to validate the input data within the
 initialize method. The advantage of performing these validity checks in
 <code><a href="https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html" class="external-link">backendInitialize()</a></code> rather than using
-<code>setValidity()</code> is that computationally expensive
+<code><a href="https://rdrr.io/r/methods/validObject.html" class="external-link">setValidity()</a></code> is that computationally expensive
 operations/checks would only be performed once,during initialization,
 instead of each time values within the object are modified (e.g.,
 through subsetting or similar operations), which would occur with
-<code>setValidity()</code>.</p>
+<code><a href="https://rdrr.io/r/methods/validObject.html" class="external-link">setValidity()</a></code>.</p>
 <p>We also use the <code><a href="../reference/hidden_aliases.html">validChromData()</a></code> and
 <code><a href="../reference/hidden_aliases.html">validPeaksData()</a></code> functions to ensure that core chromatogram
 variables and core peaks variables have the correct data type. These
@@ -381,15 +381,19 @@ a <code>list</code> with retention time and intensity values for each
 chromatogram.</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' backendInitialize method to fill the backend with data.</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span></span>
 <span>    <span class="st">"backendInitialize"</span>, <span class="st">"ChromBackendTest"</span>,</span>
 <span>    <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">chromData</span>, <span class="va">peaksData</span><span class="op">)</span> <span class="op">{</span></span>
-<span>        <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">is.data.frame</a></span><span class="op">(</span><span class="va">chromData</span><span class="op">)</span><span class="op">)</span></span>
-<span>            <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"'chromData' needs to be a 'data.frame' with the general"</span>,</span>
-<span>                 <span class="st">"chromatogram variables"</span><span class="op">)</span></span>
+<span>        <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/as.data.frame.html" class="external-link">is.data.frame</a></span><span class="op">(</span><span class="va">chromData</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>            <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span></span>
+<span>                <span class="st">"'chromData' needs to be a 'data.frame' with the general"</span>,</span>
+<span>                <span class="st">"chromatogram variables"</span></span>
+<span>            <span class="op">)</span></span>
+<span>        <span class="op">}</span></span>
 <span>        <span class="co">## Defining dataStorage and dataOrigin, if not available</span></span>
-<span>        <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">chromData</span><span class="op">$</span><span class="va">dataOrigin</span><span class="op">)</span><span class="op">)</span></span>
+<span>        <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">chromData</span><span class="op">$</span><span class="va">dataOrigin</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>            <span class="va">chromData</span><span class="op">$</span><span class="va">dataOrigin</span> <span class="op">&lt;-</span> <span class="cn">NA_character_</span></span>
+<span>        <span class="op">}</span></span>
 <span>        <span class="co">## Validate the provided data</span></span>
 <span>        <span class="fu"><a href="../reference/hidden_aliases.html">validChromData</a></span><span class="op">(</span><span class="va">chromData</span><span class="op">)</span></span>
 <span>        <span class="fu"><a href="../reference/hidden_aliases.html">validPeaksData</a></span><span class="op">(</span><span class="va">peaksData</span><span class="op">)</span></span>
@@ -397,7 +401,8 @@ chromatogram.</p>
 <span>        <span class="va">object</span><span class="op">@</span><span class="va">chromData</span> <span class="op">&lt;-</span> <span class="va">chromData</span></span>
 <span>        <span class="va">object</span><span class="op">@</span><span class="va">peaksData</span> <span class="op">&lt;-</span> <span class="va">peaksData</span></span>
 <span>        <span class="va">object</span></span>
-<span>    <span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<span>    <span class="op">}</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p>In addition to adding the data to object, the function also define
 the <code>dataOrigin</code> chromatographic variables. This variable is
 expected to provide information on where the data is originating.</p>
@@ -406,20 +411,27 @@ data. We thus first define our MS data and pass this to the
 <code><a href="https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html" class="external-link">backendInitialize()</a></code> method.</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># A data.frame with chromatogram variables.</span></span>
-<span><span class="va">cdata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>msLevel <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">1L</span><span class="op">)</span>,</span>
-<span>                    mz <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">112.2</span>, <span class="fl">123.3</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">cdata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    msLevel <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">1L</span><span class="op">)</span>,</span>
+<span>    mz <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">112.2</span>, <span class="fl">123.3</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Retention time and intensity values for each chromatogram.</span></span>
 <span><span class="va">pdata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>rtime <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12.4</span>, <span class="fl">12.8</span>, <span class="fl">13.2</span>, <span class="fl">14.6</span><span class="op">)</span>,</span>
-<span>       intensity <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">123.3</span>, <span class="fl">153.6</span>, <span class="fl">2354.3</span>, <span class="fl">243.4</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>rtime <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">45.1</span>, <span class="fl">46.2</span><span class="op">)</span>,</span>
-<span>       intensity <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">80.1</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>        rtime <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12.4</span>, <span class="fl">12.8</span>, <span class="fl">13.2</span>, <span class="fl">14.6</span><span class="op">)</span>,</span>
+<span>        intensity <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">123.3</span>, <span class="fl">153.6</span>, <span class="fl">2354.3</span>, <span class="fl">243.4</span><span class="op">)</span></span>
+<span>    <span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>        rtime <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">45.1</span>, <span class="fl">46.2</span><span class="op">)</span>,</span>
+<span>        intensity <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">80.1</span><span class="op">)</span></span>
+<span>    <span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">#' Create and initialize the backend</span></span>
 <span><span class="va">be</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html" class="external-link">backendInitialize</a></span><span class="op">(</span><span class="fu">ChromBackendTest</span><span class="op">(</span><span class="op">)</span>,</span>
-<span>                        chromData <span class="op">=</span> <span class="va">cdata</span>, peaksData <span class="op">=</span> <span class="va">pdata</span><span class="op">)</span></span>
+<span>    chromData <span class="op">=</span> <span class="va">cdata</span>, peaksData <span class="op">=</span> <span class="va">pdata</span></span>
+<span><span class="op">)</span></span>
 <span><span class="va">be</span></span></code></pre></div>
 <pre><code><span><span class="co">## ChromBackendTest with 2 chromatograms</span></span></code></pre>
 <p>This <code><a href="https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html" class="external-link">backendInitialize()</a></code> implementation should assure
@@ -469,7 +481,7 @@ defines additional chromatogram variables, the
 names of these additional variables as well.</p>
 <div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Accessor for available chromatogram variables</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"chromVariables"</span>, <span class="st">"ChromBackendTest"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span><span class="st">"chromVariables"</span>, <span class="st">"ChromBackendTest"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">union</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">object</span><span class="op">@</span><span class="va">chromData</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="../reference/ChromBackend.html">coreChromVariables</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span></span>
@@ -518,17 +530,21 @@ chromatogram variables in the <code>chromData</code> implementation for
 our backend:</p>
 <div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' function to extract the full chromData</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span></span>
 <span>    <span class="st">"chromData"</span>, <span class="st">"ChromBackendTest"</span>,</span>
 <span>    <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">columns</span> <span class="op">=</span> <span class="fu"><a href="../reference/chromData.html">chromVariables</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>,</span>
-<span>             <span class="va">drop</span> <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
-<span>      <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/any.html" class="external-link">any</a></span><span class="op">(</span><span class="fu"><a href="../reference/chromData.html">chromVariables</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">columns</span><span class="op">)</span><span class="op">)</span></span>
-<span>        <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"Some of the requested Chromatogram variables are not "</span>,</span>
-<span>                   <span class="st">"available"</span><span class="op">)</span></span>
-<span>      <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hidden_aliases.html">fillCoreChromVariables</a></span><span class="op">(</span><span class="va">object</span><span class="op">@</span><span class="va">chromData</span><span class="op">)</span></span>
-<span>      <span class="va">res</span> <span class="op">&lt;-</span> <span class="va">res</span><span class="op">[</span>, <span class="va">columns</span>, drop <span class="op">=</span> <span class="va">drop</span><span class="op">]</span></span>
-<span>      <span class="va">res</span></span>
-<span>      <span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<span>    <span class="va">drop</span> <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/any.html" class="external-link">any</a></span><span class="op">(</span><span class="fu"><a href="../reference/chromData.html">chromVariables</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="va">columns</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>            <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span></span>
+<span>                <span class="st">"Some of the requested Chromatogram variables are not "</span>,</span>
+<span>                <span class="st">"available"</span></span>
+<span>            <span class="op">)</span></span>
+<span>        <span class="op">}</span></span>
+<span>        <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/hidden_aliases.html">fillCoreChromVariables</a></span><span class="op">(</span><span class="va">object</span><span class="op">@</span><span class="va">chromData</span><span class="op">)</span></span>
+<span>        <span class="va">res</span> <span class="op">&lt;-</span> <span class="va">res</span><span class="op">[</span>, <span class="va">columns</span>, drop <span class="op">=</span> <span class="va">drop</span><span class="op">]</span></span>
+<span>        <span class="va">res</span></span>
+<span>    <span class="op">}</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p>We can now use <code><a href="../reference/chromData.html">chromData()</a></code> to either extract the full
 chromatogram data from the backend, or only the data for selected
 variables.</p>
@@ -568,8 +584,8 @@ variables, the <code><a href="../reference/peaksData.html">peaksVariables()</a><
 implemented to return the names of these additional variables as
 well.</p>
 <div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"peaksVariables"</span>, <span class="st">"ChromBackendTest"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">union</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="../reference/ChromBackend.html">corePeaksVariables</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">object</span><span class="op">@</span><span class="va">peaksData</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span><span class="st">"peaksVariables"</span>, <span class="st">"ChromBackendTest"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">union</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="../reference/ChromBackend.html">corePeaksVariables</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">object</span><span class="op">@</span><span class="va">peaksData</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>We can now see what peaks variables are present in our object:</p>
 <div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
@@ -601,14 +617,16 @@ listed by the <code><a href="../reference/ChromBackend.html">corePeaksVariables(
 backend.</p>
 <div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' method to extract the full chromatographic data as list of arrays</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span></span>
 <span>    <span class="st">"peaksData"</span>, <span class="st">"ChromBackendTest"</span>,</span>
-<span>    <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">columns</span> <span class="op">=</span> <span class="fu"><a href="../reference/peaksData.html">peaksVariables</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>, <span class="va">drop</span> <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> </span>
-<span>      <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">columns</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="../reference/peaksData.html">peaksVariables</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span>        <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"Some of the requested peaks variables are not available"</span><span class="op">)</span></span>
-<span>      <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">object</span><span class="op">@</span><span class="va">peaksData</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">[</span>, <span class="va">columns</span>, drop <span class="op">=</span> <span class="va">drop</span><span class="op">]</span><span class="op">)</span></span>
-<span>      <span class="va">res</span></span>
-<span>    <span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<span>    <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">columns</span> <span class="op">=</span> <span class="fu"><a href="../reference/peaksData.html">peaksVariables</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>, <span class="va">drop</span> <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">columns</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="../reference/peaksData.html">peaksVariables</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>            <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"Some of the requested peaks variables are not available"</span><span class="op">)</span></span>
+<span>        <span class="op">}</span></span>
+<span>        <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">object</span><span class="op">@</span><span class="va">peaksData</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="va">x</span><span class="op">[</span>, <span class="va">columns</span>, drop <span class="op">=</span> <span class="va">drop</span><span class="op">]</span><span class="op">)</span></span>
+<span>        <span class="va">res</span></span>
+<span>    <span class="op">}</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p>And with this method we can now extract the peaks data from our
 backend.</p>
 <div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
@@ -652,11 +670,11 @@ the <code>[</code> generic, since we treat our data to be
 one-dimensional (with each chromatogram being one element).</p>
 <div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Main subset method.</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"["</span>, <span class="st">"ChromBackendTest"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">i</span>, <span class="va">j</span>, <span class="va">...</span>, <span class="va">drop</span> <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">i</span> <span class="op">&lt;-</span> <span class="fu">MsCoreUtils</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/MsCoreUtils/man/i2index.html" class="external-link">i2index</a></span><span class="op">(</span><span class="va">i</span>, length <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
-<span>  <span class="va">x</span><span class="op">@</span><span class="va">chromData</span> <span class="op">&lt;-</span> <span class="va">x</span><span class="op">@</span><span class="va">chromData</span><span class="op">[</span><span class="va">i</span>, <span class="op">]</span></span>
-<span>  <span class="va">x</span><span class="op">@</span><span class="va">peaksData</span> <span class="op">&lt;-</span> <span class="va">x</span><span class="op">@</span><span class="va">peaksData</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
-<span>  <span class="va">x</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span><span class="st">"["</span>, <span class="st">"ChromBackendTest"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">i</span>, <span class="va">j</span>, <span class="va">...</span>, <span class="va">drop</span> <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">i</span> <span class="op">&lt;-</span> <span class="fu">MsCoreUtils</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/pkg/MsCoreUtils/man/i2index.html" class="external-link">i2index</a></span><span class="op">(</span><span class="va">i</span>, length <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="va">x</span><span class="op">@</span><span class="va">chromData</span> <span class="op">&lt;-</span> <span class="va">x</span><span class="op">@</span><span class="va">chromData</span><span class="op">[</span><span class="va">i</span>, <span class="op">]</span></span>
+<span>    <span class="va">x</span><span class="op">@</span><span class="va">peaksData</span> <span class="op">&lt;-</span> <span class="va">x</span><span class="op">@</span><span class="va">peaksData</span><span class="op">[</span><span class="va">i</span><span class="op">]</span></span>
+<span>    <span class="va">x</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>We can now subset our backend to the last two chromatograms.</p>
 <div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
@@ -695,13 +713,15 @@ but more efficient implementations might be possible as well. Also, the
 available and should throw an error otherwise.</p>
 <div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Access a single chromatogram variable</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"$"</span>, <span class="st">"ChromBackendTest"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">name</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="kw">if</span> <span class="op">(</span><span class="va">name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">union</a></span><span class="op">(</span><span class="fu"><a href="../reference/chromData.html">chromVariables</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="../reference/ChromBackend.html">coreChromVariables</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span>    <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">x</span>, columns <span class="op">=</span> <span class="va">name</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span>  <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="../reference/peaksData.html">peaksVariables</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
-<span>    <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/peaksData.html">peaksData</a></span><span class="op">(</span><span class="va">x</span>, columns <span class="op">=</span> <span class="va">name</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span>  <span class="kw">else</span> <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"The requested variable '"</span>, <span class="va">name</span>, <span class="st">"' is not available"</span><span class="op">)</span></span>
-<span>  <span class="va">res</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span><span class="st">"$"</span>, <span class="st">"ChromBackendTest"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">name</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="va">name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">union</a></span><span class="op">(</span><span class="fu"><a href="../reference/chromData.html">chromVariables</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="fu"><a href="../reference/ChromBackend.html">coreChromVariables</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">x</span>, columns <span class="op">=</span> <span class="va">name</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>    <span class="op">}</span> <span class="kw">else</span> <span class="kw">if</span> <span class="op">(</span><span class="va">name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="../reference/peaksData.html">peaksVariables</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/peaksData.html">peaksData</a></span><span class="op">(</span><span class="va">x</span>, columns <span class="op">=</span> <span class="va">name</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>    <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>        <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"The requested variable '"</span>, <span class="va">name</span>, <span class="st">"' is not available"</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span>    <span class="va">res</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>With this we can now extract the MS levels</p>
 <div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
@@ -736,13 +756,15 @@ all available columns filling eventually missing columns with
 <code>NA</code>).</p>
 <div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Method allowing to join (concatenate) backends</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"backendMerge"</span>, <span class="st">"ChromBackendTest"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span><span class="st">"backendMerge"</span>, <span class="st">"ChromBackendTest"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">res</span> <span class="op">&lt;-</span> <span class="va">object</span></span>
 <span>    <span class="va">object</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unname.html" class="external-link">unname</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">...</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span>    <span class="va">res</span><span class="op">@</span><span class="va">peaksData</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">c</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">object</span>, <span class="kw">function</span><span class="op">(</span><span class="va">z</span><span class="op">)</span> <span class="va">z</span><span class="op">@</span><span class="va">peaksData</span><span class="op">)</span><span class="op">)</span></span>
-<span>    <span class="va">res</span><span class="op">@</span><span class="va">chromData</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="fu">MsCoreUtils</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/MsCoreUtils/man/rbindFill.html" class="external-link">rbindFill</a></span>,</span>
-<span>                             <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">object</span>, <span class="kw">function</span><span class="op">(</span><span class="va">z</span><span class="op">)</span> <span class="va">z</span><span class="op">@</span><span class="va">chromData</span><span class="op">)</span><span class="op">)</span></span>
-<span>    <span class="fu">validObject</span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
+<span>    <span class="va">res</span><span class="op">@</span><span class="va">chromData</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span></span>
+<span>        <span class="fu">MsCoreUtils</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/pkg/MsCoreUtils/man/rbindFill.html" class="external-link">rbindFill</a></span>,</span>
+<span>        <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">object</span>, <span class="kw">function</span><span class="op">(</span><span class="va">z</span><span class="op">)</span> <span class="va">z</span><span class="op">@</span><span class="va">chromData</span><span class="op">)</span></span>
+<span>    <span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/methods/validObject.html" class="external-link">validObject</a></span><span class="op">(</span><span class="va">res</span><span class="op">)</span></span>
 <span>    <span class="va">res</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>Testing the function by merging the example backend instance with
@@ -773,7 +795,7 @@ return <code>FALSE</code> (instead of the default
 <pre><code><span><span class="co">## [1] FALSE</span></span></code></pre>
 <div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Implementation of isReadOnly for ChromBackendTest</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"isReadOnly"</span>, <span class="st">"ChromBackendTest"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span><span class="st">"isReadOnly"</span>, <span class="st">"ChromBackendTest"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html" class="external-link">isReadOnly</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] FALSE</span></span></code></pre>
 <p>All data replacement function are expected to return an instance of
@@ -791,16 +813,19 @@ chromatograms before and after a call to <code>chromData&lt;-</code> has
 to be the same.</p>
 <div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Replacement method for the full chromatogram data</span></span>
-<span><span class="fu">setReplaceMethod</span><span class="op">(</span><span class="st">"chromData"</span>, <span class="st">"ChromBackendTest"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu">is</span><span class="op">(</span><span class="va">value</span>, <span class="st">"DataFrame"</span><span class="op">)</span><span class="op">)</span></span>
-<span>    <span class="va">value</span> <span class="op">&lt;-</span> <span class="fu">as</span><span class="op">(</span><span class="va">value</span>, <span class="st">"data.frame"</span><span class="op">)</span></span>
-<span>  <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">inherits</a></span><span class="op">(</span><span class="va">value</span>, <span class="st">"data.frame"</span><span class="op">)</span><span class="op">)</span></span>
-<span>    <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"'value' is expected to be a 'data.frame'"</span><span class="op">)</span></span>
-<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">!=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span><span class="op">)</span></span>
-<span>    <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"'value' has to be a 'data.frame' with "</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>, <span class="st">" rows"</span><span class="op">)</span></span>
-<span>  <span class="fu"><a href="../reference/hidden_aliases.html">validChromData</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span></span>
-<span>  <span class="va">object</span><span class="op">@</span><span class="va">chromData</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
-<span>  <span class="va">object</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/methods/GenericFunctions.html" class="external-link">setReplaceMethod</a></span><span class="op">(</span><span class="st">"chromData"</span>, <span class="st">"ChromBackendTest"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/methods/is.html" class="external-link">is</a></span><span class="op">(</span><span class="va">value</span>, <span class="st">"DataFrame"</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="va">value</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/methods/as.html" class="external-link">as</a></span><span class="op">(</span><span class="va">value</span>, <span class="st">"data.frame"</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">inherits</a></span><span class="op">(</span><span class="va">value</span>, <span class="st">"data.frame"</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"'value' is expected to be a 'data.frame'"</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">!=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"'value' has to be a 'data.frame' with "</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>, <span class="st">" rows"</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span>    <span class="fu"><a href="../reference/hidden_aliases.html">validChromData</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span></span>
+<span>    <span class="va">object</span><span class="op">@</span><span class="va">chromData</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
+<span>    <span class="va">object</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>To test this new method we extract the full chromatogram data from
 our example data set, add an additional column (chromatogram variable)
@@ -833,22 +858,26 @@ function to ensure that, after replacement, all core chromatogram
 variables have the correct data type.</p>
 <div class="sourceCode" id="cb62"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Replace or add a single chromatogram variable.</span></span>
-<span><span class="fu">setReplaceMethod</span><span class="op">(</span><span class="st">"$"</span>, <span class="st">"ChromBackendTest"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">name</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span> <span class="op">!=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
-<span>    <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"length of 'value' needs to match the number of chromatograms "</span>,</span>
-<span>         <span class="st">"in object."</span><span class="op">)</span></span>
-<span>  <span class="kw">if</span> <span class="op">(</span><span class="va">name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="../reference/peaksData.html">peaksVariables</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">is.list</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span><span class="op">)</span></span>
-<span>      <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"The value for peaksData should be a list"</span><span class="op">)</span></span>
-<span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>      <span class="va">x</span><span class="op">@</span><span class="va">peaksData</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="va">name</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">value</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span></span>
-<span>      <span class="fu"><a href="../reference/hidden_aliases.html">validPeaksData</a></span><span class="op">(</span><span class="va">x</span><span class="op">@</span><span class="va">peaksData</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/methods/GenericFunctions.html" class="external-link">setReplaceMethod</a></span><span class="op">(</span><span class="st">"$"</span>, <span class="st">"ChromBackendTest"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">name</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span> <span class="op">!=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span></span>
+<span>            <span class="st">"length of 'value' needs to match the number of chromatograms "</span>,</span>
+<span>            <span class="st">"in object."</span></span>
+<span>        <span class="op">)</span></span>
 <span>    <span class="op">}</span></span>
-<span>  <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
-<span>    <span class="va">x</span><span class="op">@</span><span class="va">chromData</span><span class="op">[</span>, <span class="va">name</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
-<span>    <span class="fu"><a href="../reference/hidden_aliases.html">validChromData</a></span><span class="op">(</span><span class="va">x</span><span class="op">@</span><span class="va">chromData</span><span class="op">)</span></span>
-<span>  <span class="op">}</span></span>
-<span>  <span class="va">x</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="va">name</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="../reference/peaksData.html">peaksVariables</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">is.list</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>            <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"The value for peaksData should be a list"</span><span class="op">)</span></span>
+<span>        <span class="op">}</span></span>
+<span>        <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>            <span class="va">x</span><span class="op">@</span><span class="va">peaksData</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">[[</span><span class="va">name</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">value</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span></span>
+<span>            <span class="fu"><a href="../reference/hidden_aliases.html">validPeaksData</a></span><span class="op">(</span><span class="va">x</span><span class="op">@</span><span class="va">peaksData</span><span class="op">)</span></span>
+<span>        <span class="op">}</span></span>
+<span>    <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>        <span class="va">x</span><span class="op">@</span><span class="va">chromData</span><span class="op">[</span>, <span class="va">name</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
+<span>        <span class="fu"><a href="../reference/hidden_aliases.html">validChromData</a></span><span class="op">(</span><span class="va">x</span><span class="op">@</span><span class="va">chromData</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span>    <span class="va">x</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>We can thus replace an existing chromatogram variable, such as
 <code>msLevel</code>:</p>
@@ -892,24 +921,30 @@ like <code>rtime&lt;-</code> or <code>$rtime</code> would not
 allow).</p>
 <div class="sourceCode" id="cb71"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' replacement method for peaks data</span></span>
-<span><span class="fu">setReplaceMethod</span><span class="op">(</span><span class="st">"peaksData"</span>, <span class="st">"ChromBackendTest"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">is.list</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span><span class="op">)</span></span>
-<span>    <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"'value' is expected to be a list"</span><span class="op">)</span></span>
-<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">!=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span><span class="op">)</span></span>
-<span>    <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"'value' has to be a list with "</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>, <span class="st">" elements"</span><span class="op">)</span></span>
-<span>  <span class="fu"><a href="../reference/hidden_aliases.html">validPeaksData</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span></span>
-<span>  <span class="va">object</span><span class="op">@</span><span class="va">peaksData</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
-<span>  <span class="va">object</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/methods/GenericFunctions.html" class="external-link">setReplaceMethod</a></span><span class="op">(</span><span class="st">"peaksData"</span>, <span class="st">"ChromBackendTest"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">is.list</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"'value' is expected to be a list"</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">!=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"'value' has to be a list with "</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span>, <span class="st">" elements"</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span>    <span class="fu"><a href="../reference/hidden_aliases.html">validPeaksData</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span></span>
+<span>    <span class="va">object</span><span class="op">@</span><span class="va">peaksData</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
+<span>    <span class="va">object</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>With this method we can now replace the peaks data of a backend:</p>
 <div class="sourceCode" id="cb72"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Create a list with peaks matrices; our backend has 3 chromatograms</span></span>
 <span><span class="co">#' thus our `list` has to be of length 3</span></span>
 <span><span class="va">tmp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>rtime <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12.3</span>, <span class="fl">14.4</span>, <span class="fl">15.4</span>, <span class="fl">16.4</span><span class="op">)</span>,</span>
-<span>          intensity <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">200</span>, <span class="fl">312</span>, <span class="fl">354.1</span>, <span class="fl">232</span><span class="op">)</span><span class="op">)</span>,</span>
-<span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>rtime <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">14.4</span><span class="op">)</span>,</span>
-<span>          intensity <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">13.4</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>        rtime <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12.3</span>, <span class="fl">14.4</span>, <span class="fl">15.4</span>, <span class="fl">16.4</span><span class="op">)</span>,</span>
+<span>        intensity <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">200</span>, <span class="fl">312</span>, <span class="fl">354.1</span>, <span class="fl">232</span><span class="op">)</span></span>
+<span>    <span class="op">)</span>,</span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>        rtime <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">14.4</span><span class="op">)</span>,</span>
+<span>        intensity <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">13.4</span><span class="op">)</span></span>
+<span>    <span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">be_2</span> <span class="op">&lt;-</span> <span class="va">be</span></span>
@@ -955,7 +990,7 @@ splitting setup.</p>
 <div class="sourceCode" id="cb74"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Is there a specific way how the object could be best split for</span></span>
 <span><span class="co">#' parallel processing?</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"backendParallelFactor"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span><span class="st">"backendParallelFactor"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/factor.html" class="external-link">factor</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb75"><pre class="downlit sourceCode r">
@@ -974,10 +1009,12 @@ the <code>"chromIndex"</code> chromatogram variable. As a result, an
 is:</p>
 <div class="sourceCode" id="cb77"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' get the values for the chromIndex chromatogram variable</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"chromIndex"</span>, <span class="st">"ChromBackend"</span>,</span>
-<span>          <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">columns</span> <span class="op">=</span> <span class="fu"><a href="../reference/chromData.html">chromVariables</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>              <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"chromIndex"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span>          <span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span></span>
+<span>    <span class="st">"chromIndex"</span>, <span class="st">"ChromBackend"</span>,</span>
+<span>    <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">columns</span> <span class="op">=</span> <span class="fu"><a href="../reference/chromData.html">chromVariables</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"chromIndex"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p>The result of calling this method on our test backend:</p>
 <div class="sourceCode" id="cb78"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/chromData.html">chromIndex</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></code></pre></div>
@@ -993,7 +1030,7 @@ result, a <code>numeric</code> of length equal to the number of
 chromatograms has to be returned. The default implementation is:</p>
 <div class="sourceCode" id="cb80"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' get the values for the collisionEnergy chromatogram variable</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"collisionEnergy"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span><span class="st">"collisionEnergy"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"collisionEnergy"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>The result of calling this method on our test backend:</p>
@@ -1004,11 +1041,12 @@ chromatograms has to be returned. The default implementation is:</p>
 chromatogram variable is:</p>
 <div class="sourceCode" id="cb83"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default replacement method for collisionEnergy</span></span>
-<span><span class="fu">setReplaceMethod</span><span class="op">(</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/methods/GenericFunctions.html" class="external-link">setReplaceMethod</a></span><span class="op">(</span></span>
 <span>    <span class="st">"collisionEnergy"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
-<span>    <span class="va">object</span><span class="op">$</span><span class="va">collisionEnergy</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
-<span>    <span class="va">object</span></span>
-<span>    <span class="op">}</span><span class="op">)</span></span></code></pre></div>
+<span>        <span class="va">object</span><span class="op">$</span><span class="va">collisionEnergy</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
+<span>        <span class="va">object</span></span>
+<span>    <span class="op">}</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <p>This method thus makes use of the <code>$&lt;-</code> replacement
 method we implemented above. To test this function we replace the
 collision energy below.</p>
@@ -1030,7 +1068,7 @@ chromatograms). The default implementation for <code><a href="../reference/chrom
 is:</p>
 <div class="sourceCode" id="cb86"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default implementation to access dataOrigin</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"dataOrigin"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span><span class="st">"dataOrigin"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"dataOrigin"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>Below we use this method to access the values of the
@@ -1044,9 +1082,9 @@ like all defaults for replacement methods, the <code>$&lt;-</code>
 method:</p>
 <div class="sourceCode" id="cb89"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default implementation of the `dataOrigin&lt;-` replacement method</span></span>
-<span><span class="fu">setReplaceMethod</span><span class="op">(</span><span class="st">"dataOrigin"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">object</span><span class="op">$</span><span class="va">dataOrigin</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
-<span>  <span class="va">object</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/methods/GenericFunctions.html" class="external-link">setReplaceMethod</a></span><span class="op">(</span><span class="st">"dataOrigin"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">object</span><span class="op">$</span><span class="va">dataOrigin</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
+<span>    <span class="va">object</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>For our backend we can change the values of the
 <code>dataOrigin</code> variable:</p>
@@ -1069,24 +1107,29 @@ values of each chromatogram, uses the <code><a href="../reference/peaksData.html
 method:</p>
 <div class="sourceCode" id="cb92"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default method to extract intensity values</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"intensity"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span><span class="st">"intensity"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>        <span class="fu"><a href="../reference/peaksData.html">peaksData</a></span><span class="op">(</span><span class="va">object</span>, column <span class="op">=</span> <span class="st">"intensity"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span>    <span class="op">}</span> <span class="kw">else</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>    <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>        <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>The default replacement method for intensity values uses the
 <code>$&lt;-</code> method:</p>
 <div class="sourceCode" id="cb93"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default implementation of the replacement method for intensity values</span></span>
-<span><span class="fu">setReplaceMethod</span><span class="op">(</span><span class="st">"intensity"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/methods/GenericFunctions.html" class="external-link">setReplaceMethod</a></span><span class="op">(</span><span class="st">"intensity"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">pd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/peaksData.html">peaksData</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
-<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">is.list</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span> <span class="op">||</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">pd</span><span class="op">)</span> <span class="op">!=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">is.list</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span> <span class="op">||</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">pd</span><span class="op">)</span> <span class="op">!=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>        <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"'value' should be a list of the same length as 'object'"</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
 <span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">pd</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>        <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">value</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">)</span> <span class="op">!=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">pd</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>            <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Length of 'value[["</span>, <span class="va">i</span>, <span class="st">"]]' does not match "</span>,</span>
-<span>                       <span class="st">"the number of rows in the intensity of chromatogram: "</span>,</span>
-<span>                       <span class="va">i</span>, <span class="st">"'"</span><span class="op">)</span><span class="op">)</span></span>
+<span>            <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span></span>
+<span>                <span class="st">"Length of 'value[["</span>, <span class="va">i</span>, <span class="st">"]]' does not match "</span>,</span>
+<span>                <span class="st">"the number of rows in the intensity of chromatogram: "</span>,</span>
+<span>                <span class="va">i</span>, <span class="st">"'"</span></span>
+<span>            <span class="op">)</span><span class="op">)</span></span>
 <span>        <span class="op">}</span></span>
 <span>    <span class="op">}</span></span>
 <span>    <span class="fu"><a href="../reference/peaksData.html">peaksData</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">pd</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="op">{</span></span>
@@ -1119,7 +1162,7 @@ method (defined further below) that returns for each chromatogram the
 number of available data points (peaks).</p>
 <div class="sourceCode" id="cb96"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default implementation for `isEmpty()`</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"isEmpty"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span><span class="st">"isEmpty"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/lengths.html" class="external-link">lengths</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">==</span> <span class="fl">0L</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb97"><pre class="downlit sourceCode r">
@@ -1138,7 +1181,7 @@ support updating or replacing data). In such cases, the default
 <code>TRUE</code>:</p>
 <div class="sourceCode" id="cb99"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default implementation of `isReadOnly()`</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"isReadOnly"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span><span class="st">"isReadOnly"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="cn">TRUE</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>Backends that support changing data values should implement their own
@@ -1157,7 +1200,7 @@ through the backend. The default implementation for this function
 is:</p>
 <div class="sourceCode" id="cb102"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default implementation for `length()`</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"length"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span><span class="st">"length"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">x</span>, columns <span class="op">=</span> <span class="st">"dataStorage"</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb103"><pre class="downlit sourceCode r">
@@ -1175,7 +1218,7 @@ number of chromatograms in the backend) with these counts. The default
 implementation uses the <code><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">intensity()</a></code> function.</p>
 <div class="sourceCode" id="cb105"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default implementation for `lengths()`</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"lengths"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span><span class="st">"lengths"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/lengths.html" class="external-link">lengths</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">intensity</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>The number of peaks for our test backend:</p>
@@ -1196,10 +1239,10 @@ length equal to the number of chromatograms of the backend and
 default implementations for both methods are shown below.</p>
 <div class="sourceCode" id="cb108"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default methods to get or set MS levels</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"msLevel"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span><span class="st">"msLevel"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"msLevel"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
-<span><span class="fu">setReplaceMethod</span><span class="op">(</span><span class="st">"msLevel"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/methods/GenericFunctions.html" class="external-link">setReplaceMethod</a></span><span class="op">(</span><span class="st">"msLevel"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">object</span><span class="op">$</span><span class="va">msLevel</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span>    <span class="va">object</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
@@ -1222,10 +1265,10 @@ equal to the number of chromatograms. The default implementations are
 shown below.</p>
 <div class="sourceCode" id="cb111"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default implementations to get or set m/z value(s)</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"mz"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span><span class="st">"mz"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"mz"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
-<span><span class="fu">setReplaceMethod</span><span class="op">(</span><span class="st">"mz"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/methods/GenericFunctions.html" class="external-link">setReplaceMethod</a></span><span class="op">(</span><span class="st">"mz"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">object</span><span class="op">$</span><span class="va">mz</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span>    <span class="va">object</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
@@ -1247,10 +1290,10 @@ equal to the number of chromatograms. The default implementations are
 shown below.</p>
 <div class="sourceCode" id="cb114"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default implementations to get or set upper m/z limits</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"mzMax"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span><span class="st">"mzMax"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"mzMax"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
-<span><span class="fu">setReplaceMethod</span><span class="op">(</span><span class="st">"mzMax"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/methods/GenericFunctions.html" class="external-link">setReplaceMethod</a></span><span class="op">(</span><span class="st">"mzMax"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">object</span><span class="op">$</span><span class="va">mzMax</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span>    <span class="va">object</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
@@ -1273,13 +1316,13 @@ equal to the number of chromatograms. The default implementations are
 shown below.</p>
 <div class="sourceCode" id="cb117"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default methods to get or set the lower m/z boundary</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"mzMin"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"mzMin"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span><span class="st">"mzMin"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"mzMin"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">setReplaceMethod</span><span class="op">(</span><span class="st">"mzMin"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">object</span><span class="op">$</span><span class="va">mzMin</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
-<span>  <span class="va">object</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/methods/GenericFunctions.html" class="external-link">setReplaceMethod</a></span><span class="op">(</span><span class="st">"mzMin"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="va">object</span><span class="op">$</span><span class="va">mzMin</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
+<span>    <span class="va">object</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>Testing these functions by replacing the lower m/z boundary with new
 values.</p>
@@ -1300,10 +1343,10 @@ not available <code>NA_real_</code> should be returned. The default
 implementations are:</p>
 <div class="sourceCode" id="cb120"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default implementations to get or set the precursorMz chrom variable</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"precursorMz"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span><span class="st">"precursorMz"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"precursorMz"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
-<span><span class="fu">setReplaceMethod</span><span class="op">(</span><span class="st">"precursorMz"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/methods/GenericFunctions.html" class="external-link">setReplaceMethod</a></span><span class="op">(</span><span class="st">"precursorMz"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">object</span><span class="op">$</span><span class="va">precursorMz</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span>    <span class="va">object</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
@@ -1323,10 +1366,10 @@ variable for our backend.</p>
 implementations are:</p>
 <div class="sourceCode" id="cb123"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default implementations for `precursorMzMax`</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"precursorMzMax"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span><span class="st">"precursorMzMax"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"precursorMzMax"</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
-<span><span class="fu">setReplaceMethod</span><span class="op">(</span><span class="st">"precursorMzMax"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/methods/GenericFunctions.html" class="external-link">setReplaceMethod</a></span><span class="op">(</span><span class="st">"precursorMzMax"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">object</span><span class="op">$</span><span class="va">precursorMzMax</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span>    <span class="va">object</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
@@ -1346,10 +1389,10 @@ for this chromatogram variable.</p>
 implementations are:</p>
 <div class="sourceCode" id="cb126"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default implementations for `precursorMzMin`</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"precursorMzMin"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span><span class="st">"precursorMzMin"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"precursorMzMin"</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
-<span><span class="fu">setReplaceMethod</span><span class="op">(</span><span class="st">"precursorMzMin"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/methods/GenericFunctions.html" class="external-link">setReplaceMethod</a></span><span class="op">(</span><span class="st">"precursorMzMin"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">object</span><span class="op">$</span><span class="va">precursorMzMin</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span>    <span class="va">object</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
@@ -1369,10 +1412,10 @@ for this chromatogram variable.</p>
 implementations are:</p>
 <div class="sourceCode" id="cb129"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default implementations for `productMz`</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"productMz"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span><span class="st">"productMz"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"productMz"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
-<span><span class="fu">setReplaceMethod</span><span class="op">(</span><span class="st">"productMz"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/methods/GenericFunctions.html" class="external-link">setReplaceMethod</a></span><span class="op">(</span><span class="st">"productMz"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">object</span><span class="op">$</span><span class="va">productMz</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span>    <span class="va">object</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
@@ -1392,10 +1435,10 @@ for this chromatogram variable.</p>
 implementations are:</p>
 <div class="sourceCode" id="cb132"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default implementations for `productMzMax`</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"productMzMax"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span><span class="st">"productMzMax"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"productMzMax"</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
-<span><span class="fu">setReplaceMethod</span><span class="op">(</span><span class="st">"productMzMax"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/methods/GenericFunctions.html" class="external-link">setReplaceMethod</a></span><span class="op">(</span><span class="st">"productMzMax"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">object</span><span class="op">$</span><span class="va">productMzMax</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span>    <span class="va">object</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
@@ -1415,10 +1458,10 @@ for this chromatogram variable.</p>
 implementations are:</p>
 <div class="sourceCode" id="cb135"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default implementations for `productMzMin`</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"productMzMin"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span><span class="st">"productMzMin"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span>, columns <span class="op">=</span> <span class="st">"productMzMin"</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
-<span><span class="fu">setReplaceMethod</span><span class="op">(</span><span class="st">"productMzMin"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/methods/GenericFunctions.html" class="external-link">setReplaceMethod</a></span><span class="op">(</span><span class="st">"productMzMin"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">object</span><span class="op">$</span><span class="va">productMzMin</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span>    <span class="va">object</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
@@ -1442,20 +1485,25 @@ one chromatogram. The default implementations of these methods are shown
 below.</p>
 <div class="sourceCode" id="cb138"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default methods for `rtime()` and `rtime&lt;-`</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"rtime"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span>    </span>
-<span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>      <span class="fu"><a href="../reference/peaksData.html">peaksData</a></span><span class="op">(</span><span class="va">object</span>, column <span class="op">=</span> <span class="st">"rtime"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span>  <span class="op">}</span> <span class="kw">else</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span><span class="st">"rtime"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">{</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>        <span class="fu"><a href="../reference/peaksData.html">peaksData</a></span><span class="op">(</span><span class="va">object</span>, column <span class="op">=</span> <span class="st">"rtime"</span>, drop <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span>    <span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>        <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">setReplaceMethod</span><span class="op">(</span><span class="st">"rtime"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/methods/GenericFunctions.html" class="external-link">setReplaceMethod</a></span><span class="op">(</span><span class="st">"rtime"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">object</span>, <span class="va">value</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="va">pd</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/peaksData.html">peaksData</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span></span>
-<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">is.list</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span> <span class="op">||</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">pd</span><span class="op">)</span> <span class="op">!=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span><span class="op">)</span></span>
+<span>    <span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">is.list</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span> <span class="op">||</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">pd</span><span class="op">)</span> <span class="op">!=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">value</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>        <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="st">"'value' should be a list of the same length as 'object'"</span><span class="op">)</span></span>
+<span>    <span class="op">}</span></span>
 <span>    <span class="kw">for</span> <span class="op">(</span><span class="va">i</span> <span class="kw">in</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">pd</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>        <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">value</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">)</span> <span class="op">!=</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">pd</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>            <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"Length of 'value[["</span>, <span class="va">i</span>, <span class="st">"]]' does not match "</span>,</span>
-<span>            <span class="st">"the number of rows in 'the rtime of chromatogram: "</span>, <span class="va">i</span>, <span class="st">"'"</span><span class="op">)</span><span class="op">)</span></span>
+<span>            <span class="kw"><a href="https://rdrr.io/r/base/stop.html" class="external-link">stop</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span></span>
+<span>                <span class="st">"Length of 'value[["</span>, <span class="va">i</span>, <span class="st">"]]' does not match "</span>,</span>
+<span>                <span class="st">"the number of rows in 'the rtime of chromatogram: "</span>, <span class="va">i</span>, <span class="st">"'"</span></span>
+<span>            <span class="op">)</span><span class="op">)</span></span>
 <span>        <span class="op">}</span></span>
 <span>    <span class="op">}</span></span>
 <span>    <span class="fu"><a href="../reference/peaksData.html">peaksData</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">pd</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="op">{</span></span>
@@ -1486,7 +1534,7 @@ backend. The default implementation uses the default implementation of
 uses the <code>[</code> method to subset/split the object.</p>
 <div class="sourceCode" id="cb141"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">#' Default method to split a backend</span></span>
-<span><span class="kw">setMethod</span><span class="op">(</span><span class="st">"split"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">f</span>, <span class="va">drop</span> <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/methods/setMethod.html" class="external-link">setMethod</a></span><span class="op">(</span><span class="st">"split"</span>, <span class="st">"ChromBackend"</span>, <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">f</span>, <span class="va">drop</span> <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span> <span class="op">{</span></span>
 <span>    <span class="fu"><a href="https://rdrr.io/r/base/split.html" class="external-link">split.default</a></span><span class="op">(</span><span class="va">x</span>, <span class="va">f</span>, drop <span class="op">=</span> <span class="va">drop</span>, <span class="va">...</span><span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
 <p>We below test this by splitting the backend into two subsets.</p>
@@ -1507,9 +1555,9 @@ uses the <code>[</code> method to subset/split the object.</p>
 </h2>
 <div class="sourceCode" id="cb145"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## R Under development (unstable) (2025-03-08 r87910)</span></span>
+<pre><code><span><span class="co">## R version 4.5.0 (2025-04-11)</span></span>
 <span><span class="co">## Platform: x86_64-pc-linux-gnu</span></span>
-<span><span class="co">## Running under: Ubuntu 24.04.1 LTS</span></span>
+<span><span class="co">## Running under: Ubuntu 24.04.2 LTS</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Matrix products: default</span></span>
 <span><span class="co">## BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 </span></span>
@@ -1530,23 +1578,23 @@ uses the <code>[</code> method to subset/split the object.</p>
 <span><span class="co">## [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## other attached packages:</span></span>
-<span><span class="co">## [1] Chromatograms_0.6.0 ProtGenerics_1.39.2 BiocParallel_1.41.5</span></span>
-<span><span class="co">## [4] BiocStyle_2.35.0   </span></span>
+<span><span class="co">## [1] Chromatograms_0.6.0 ProtGenerics_1.41.0 BiocParallel_1.43.0</span></span>
+<span><span class="co">## [4] BiocStyle_2.37.0   </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## loaded via a namespace (and not attached):</span></span>
 <span><span class="co">##  [1] jsonlite_2.0.0         compiler_4.5.0         BiocManager_1.30.25   </span></span>
 <span><span class="co">##  [4] parallel_4.5.0         cluster_2.1.8.1        jquerylib_0.1.4       </span></span>
-<span><span class="co">##  [7] systemfonts_1.2.1      IRanges_2.41.3         textshaping_1.0.0     </span></span>
+<span><span class="co">##  [7] systemfonts_1.2.3      IRanges_2.43.0         textshaping_1.0.1     </span></span>
 <span><span class="co">## [10] yaml_2.3.10            fastmap_1.2.0          R6_2.6.1              </span></span>
-<span><span class="co">## [13] generics_0.1.3         knitr_1.50             BiocGenerics_0.53.6   </span></span>
-<span><span class="co">## [16] htmlwidgets_1.6.4      MASS_7.3-65            bookdown_0.42         </span></span>
-<span><span class="co">## [19] desc_1.4.3             Spectra_1.17.9         bslib_0.9.0           </span></span>
-<span><span class="co">## [22] rlang_1.1.5            cachem_1.1.0           xfun_0.52             </span></span>
-<span><span class="co">## [25] fs_1.6.5               MsCoreUtils_1.19.2     sass_0.4.9            </span></span>
-<span><span class="co">## [28] cli_3.6.4              pkgdown_2.1.1.9000     digest_0.6.37         </span></span>
-<span><span class="co">## [31] MetaboCoreUtils_1.15.0 lifecycle_1.0.4        clue_0.3-66           </span></span>
-<span><span class="co">## [34] S4Vectors_0.45.4       evaluate_1.0.3         codetools_0.2-20      </span></span>
-<span><span class="co">## [37] ragg_1.3.3             stats4_4.5.0           rmarkdown_2.29        </span></span>
+<span><span class="co">## [13] generics_0.1.3         knitr_1.50             BiocGenerics_0.55.0   </span></span>
+<span><span class="co">## [16] htmlwidgets_1.6.4      MASS_7.3-65            bookdown_0.43         </span></span>
+<span><span class="co">## [19] desc_1.4.3             Spectra_1.19.0         bslib_0.9.0           </span></span>
+<span><span class="co">## [22] rlang_1.1.6            cachem_1.1.0           xfun_0.52             </span></span>
+<span><span class="co">## [25] fs_1.6.6               MsCoreUtils_1.21.0     sass_0.4.10           </span></span>
+<span><span class="co">## [28] cli_3.6.5              pkgdown_2.1.2.9000     digest_0.6.37         </span></span>
+<span><span class="co">## [31] MetaboCoreUtils_1.17.0 lifecycle_1.0.4        clue_0.3-66           </span></span>
+<span><span class="co">## [34] S4Vectors_0.47.0       evaluate_1.0.3         codetools_0.2-20      </span></span>
+<span><span class="co">## [37] ragg_1.4.0             stats4_4.5.0           rmarkdown_2.29        </span></span>
 <span><span class="co">## [40] tools_4.5.0            htmltools_0.5.8.1</span></span></code></pre>
 </div>
 <div class="section level2">
@@ -1570,7 +1618,7 @@ uses the <code>[</code> method to subset/split the object.</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.9000.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.9000.</p>
 </div>
 
       </footer>

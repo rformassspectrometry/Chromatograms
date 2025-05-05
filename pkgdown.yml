@@ -1,7 +1,7 @@
-pandoc: 3.6.3
-pkgdown: 2.1.1.9000
-pkgdown_sha: 66477c0dbb4f4925ec872cf64d5eaa316cc70bac
+pandoc: 3.6.4
+pkgdown: 2.1.2.9000
+pkgdown_sha: 99457e7fa7f36696ae743b06aca59c0fdd97a7d6
 articles:
   creating-backend-classes: creating-backend-classes.html
   using-a-chromatograms-object: using-a-chromatograms-object.html
-last_built: 2025-04-03T09:36Z
+last_built: 2025-05-05T08:40Z

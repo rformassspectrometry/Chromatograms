@@ -393,8 +393,6 @@ the chromatogram data that match the condition.</p></dd>
     <p>This function replaces the peaksData() of the input object. Therefore
 backend with <code>readOnly == TRUE</code> (i.e. ChromBackendmzR) will need to have a
 carefully implemented <code>peaksData(object) &lt;-</code> method.</p>
-<p>I don't know if I want to base is on the isReadOnly() output..
-I think it depends more on how the backend is implemented. we can discuss this.</p>
     </div>
     <div id="core-chromatogram-variables">
     <h2>Core chromatogram variables</h2>
@@ -455,9 +453,9 @@ obtained with the <code><a href="peaksData.html">peaksVariables()</a></code> fun
 with their expected (defined) data type.</p>
 <p>The core peaks variables, listed in the required order for <code>peaksData</code>, are:</p><ul><li><p><code>rtime</code>: A <code>numeric</code> vector containing retention time values.</p></li>
 <li><p><code>intensity</code>: A <code>numeric</code> vector containing intensity values.</p></li>
-</ul><p>They should be provided for each chromatogram in the backend, <strong>in this order</strong>,
-No NAs are allowed for the <code>rtime</code> values. These characteristics will be
-checked with the <code><a href="hidden_aliases.html">validPeaksData()</a></code> function.</p>
+</ul><p>They should be provided for each chromatogram in the backend,
+<strong>in this order</strong>, No NAs are allowed for the <code>rtime</code> values. These
+characteristics will be checked with the <code><a href="hidden_aliases.html">validPeaksData()</a></code> function.</p>
     </div>
     <div id="mandatory-methods">
     <h2>Mandatory methods</h2>
@@ -501,8 +499,8 @@ return a <code>data.frame</code> even if one column is requested. If <code>drop 
 is specified, the output will be a vector of the single column requested.
 New backends should be implemented such as if empty, the method returns a
 <code>data.frame</code> with 0 rows and the columns defined by <code><a href="chromData.html">chromVariables()</a></code>.
-By default, the function <em>should</em> return at minimum the coreChromVariables,
-even if NAs.</p></li>
+By default, the function <em>should</em> return at minimum the
+coreChromVariables, even if NAs.</p></li>
 <li><p><code>extractByIndex()</code>: function to subset a backend to selected elements
 defined by the provided index. Similar to <code>[</code>, this method should allow
 extracting (or to subset) the data in any order. In contrast to <code>[</code>,
@@ -529,8 +527,8 @@ vector of the single column requested.</p></li>
 of the backend. This method expects a <code>list</code> of two-dimensional arrays
 (<code>data.frame</code>) with columns representing the peak variables.
 All existing peaks data are expected to be replaced with these new values.
-The length of the <code>list</code> has to match the number of chromatogram of <code>object</code>.
-Note that only writeable backends need to support this method.</p></li>
+The length of the <code>list</code> has to match the number of chromatogram of
+<code>object</code>. Note that only writeable backends need to support this method.</p></li>
 <li><p><code>[</code>: subset the backend. Only subsetting by element (<em>row</em>/<code>i</code>) is
 allowed. This method should be implemented as to support empty integer.</p></li>
 <li><p><code>$</code>, <code>$&lt;-</code>: access or set/add a single chromatogram variable (column) in
@@ -556,17 +554,18 @@ chromatograms in the original source file.</p></li>
 available chromatogram variables (columns, fields or attributes)
 available in <code>object</code>. Variables listed by this function are expected to
 be returned (if requested) by the <code><a href="chromData.html">chromData()</a></code> function.</p></li>
-<li><p><code><a href="chromData.html">collisionEnergy()</a></code>, <code>collisionEnergy&lt;-</code>: gets or sets the collision energy
-for the precursor (for SRM data). <code><a href="chromData.html">collisionEnergy()</a></code> returns a <code>numeric</code>
-of length equal to the number of chromatograms in <code>object</code>.</p></li>
+<li><p><code><a href="chromData.html">collisionEnergy()</a></code>, <code>collisionEnergy&lt;-</code>: gets or sets the collision
+energy for the precursor (for SRM data). <code><a href="chromData.html">collisionEnergy()</a></code> returns a
+<code>numeric</code> of length equal to the number of chromatograms in <code>object</code>.</p></li>
 <li><p><code><a href="chromData.html">dataOrigin()</a></code>, <code>dataOrigin&lt;-</code>: gets or sets the <em>data origin</em> variable.
 <code><a href="chromData.html">dataOrigin()</a></code> returns a <code>character</code> of length equal to the number of
 chromatograms, <code>dataOrigin&lt;-</code> expects a <code>character</code> of length equal
 <code>length(object)</code>.</p></li>
 <li><p><code><a href="chromData.html">filterChromData()</a></code>: filters any numerical chromatographic data variables
 based on the provided numerical <code>ranges</code>. The method should return a
-<code>ChromBackend</code> object with the chromatograms that match the condition. This
-function will results in an object with less chromatogram than the original.</p></li>
+<code>ChromBackend</code> object with the chromatograms that match the condition.
+This function will results in an object with less chromatogram than the
+original.</p></li>
 <li><p><code>intensity()</code>: gets the intensity values from the chromatograms. Returns
 a <code>list</code> of <code>numeric</code> vectors (intensity values for each
 chromatogram). The length of the list is equal to the number of
@@ -581,8 +580,8 @@ only</em> or does allow also to write/update data. Defaults to FALSE.</p></li>
 <li><p><code>isEmpty()</code>: returns a <code>logical</code> of length equal to the number of
 chromatograms with <code>TRUE</code> for chromatograms without any data pairs.</p></li>
 <li><p><code><a href="https://rdrr.io/r/base/length.html" class="external-link">length()</a></code>: returns the number of chromatograms in the object.</p></li>
-<li><p><code><a href="https://rdrr.io/r/base/lengths.html" class="external-link">lengths()</a></code>: returns the number of data pairs (retention time and intensity
-values) per chromatogram.</p></li>
+<li><p><code><a href="https://rdrr.io/r/base/lengths.html" class="external-link">lengths()</a></code>: returns the number of data pairs (retention time and
+intensity values) per chromatogram.</p></li>
 <li><p><code><a href="chromData.html">msLevel()</a></code>: gets the chromatogram's MS level. Returns an <code>integer</code>
 vector (of length equal to the number of chromatograms) with the MS
 level for each chromatogram (or <code>NA_integer_</code> if not available).</p></li>
@@ -590,14 +589,14 @@ level for each chromatogram (or <code>NA_integer_</code> if not available).</p><
 returns a <code>numeric</code> of length equal to the number of chromatograms in <code> object</code>, <code>mz&lt;-</code> expects a <code>numeric</code> of length <code>length(object)</code>.</p></li>
 <li><p><code><a href="chromData.html">mzMax()</a></code>,<code>mzMax&lt;-</code>: gets or sets the upper m/z of the mass-to-charge
 range from which a chromatogram contains signal (e.g. if the chromatogram
-was extracted from MS data in spectra format and a m/z range was provided).
-<code><a href="chromData.html">mzMax()</a></code> returns a <code>numeric</code> of length equal to the number of
+was extracted from MS data in spectra format and a m/z range was
+provided). <code><a href="chromData.html">mzMax()</a></code> returns a <code>numeric</code> of length equal to the number of
 chromatograms in <code>object</code>, <code>mzMax&lt;-</code> expects a <code>numeric</code> of length equal
 to the number of chromatograms in <code>object</code>.</p></li>
-<li><p><code><a href="chromData.html">mzMin()</a></code>,<code>mzMin&lt;-</code>: gets or sets the lower m/z of the mass-to-charge range
-from which a chromatogram contains signal (e.g. if the chromatogram
-was extracted from MS data in spectra format and a m/z range was provided).
-<code><a href="chromData.html">mzMin()</a></code> returns a <code>numeric</code> of length equal to the number of
+<li><p><code><a href="chromData.html">mzMin()</a></code>,<code>mzMin&lt;-</code>: gets or sets the lower m/z of the mass-to-charge
+range from which a chromatogram contains signal (e.g. if the chromatogram
+was extracted from MS data in spectra format and a m/z range was
+provided). <code><a href="chromData.html">mzMin()</a></code> returns a <code>numeric</code> of length equal to the number of
 chromatograms in <code>object</code>, <code>mzMin&lt;-</code> expects a <code>numeric</code> of length equal
 to the number of chromatograms in <code>object</code>.</p></li>
 <li><p><code><a href="peaksData.html">peaksVariables()</a></code>: lists the available data variables for the
@@ -636,8 +635,8 @@ necessarily need to implement this method.</p></li>
 take the <code><a href="peaksData.html">peaksData()</a></code> and <code><a href="chromData.html">chromData()</a></code> of the user's backend and pass it
 to the new backend. If the backend does not support this function, it
 should return <code>FALSE</code>. Therefore both backend in question should have a
-adequate <code><a href="peaksData.html">peaksData()</a></code> and <code><a href="chromData.html">chromData()</a></code> method as well as their respective
-replacement method.</p></li>
+adequate <code><a href="peaksData.html">peaksData()</a></code> and <code><a href="chromData.html">chromData()</a></code> method as well as their
+respective replacement method.</p></li>
 </ul></div>
     <div id="implementation-notes">
     <h2>Implementation notes</h2>
@@ -659,7 +658,154 @@ implementation is provided in the respective vignette.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## Create a simple backend implementation</span></span></span>
 <span class="r-in"><span><span class="va">ChromBackendDummy</span> <span class="op">&lt;-</span> <span class="kw">setClass</span><span class="op">(</span><span class="st">"ChromBackendDummy"</span>,</span></span>
-<span class="r-in"><span>    contains <span class="op">=</span> <span class="st">"ChromBackend"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    contains <span class="op">=</span> <span class="st">"ChromBackend"</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## We will show examples on a `ChromBackendMemory` backend.</span></span></span>
+<span class="r-in"><span><span class="va">be</span> <span class="op">&lt;-</span> <span class="fu"><a href="ChromBackendMemory.html">ChromBackendMemory</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## The `backendInitialize()` method initializes the backend filling it with</span></span></span>
+<span class="r-in"><span><span class="co">## data. This method can take any parameters needed for the backend to</span></span></span>
+<span class="r-in"><span><span class="co">## get loaded with the data.</span></span></span>
+<span class="r-in"><span><span class="va">cdata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    msLevel <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">1L</span>, <span class="fl">1L</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    mz <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">112.2</span>, <span class="fl">123.3</span>, <span class="fl">134.4</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    chromIndex <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">2L</span>, <span class="fl">3L</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">pdata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>        rtime <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12.4</span>, <span class="fl">12.8</span>, <span class="fl">13.2</span>, <span class="fl">14.6</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>        intensity <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">123.3</span>, <span class="fl">153.6</span>, <span class="fl">2354.3</span>, <span class="fl">243.4</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span>,</span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>        rtime <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">45.1</span>, <span class="fl">46.2</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>        intensity <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">80.1</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span>,</span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>        rtime <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12.4</span>, <span class="fl">12.8</span>, <span class="fl">13.2</span>, <span class="fl">14.6</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>        intensity <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">123.3</span>, <span class="fl">153.6</span>, <span class="fl">2354.3</span>, <span class="fl">243.4</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">be</span> <span class="op">&lt;-</span> <span class="fu">backendInitialize</span><span class="op">(</span><span class="va">be</span>, chromData <span class="op">=</span> <span class="va">cdata</span>, peaksData <span class="op">=</span> <span class="va">pdata</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">be</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ChromBackendMemory with 3 chromatograms</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   chromIndex msLevel    mz</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1          1       1 112.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2          2       1 123.3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3          3       1 134.4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ... 0 more  chromatogram variables/columns</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ... 2 peaksData variables</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## Data can be accessed with the accessor methods</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="chromData.html">msLevel</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1 1 1</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu">rtime</span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 12.4 12.8 13.2 14.6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [[2]]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 45.1 46.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [[3]]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 12.4 12.8 13.2 14.6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## Even if no data was provided for all chromatogram variables, its accessor</span></span></span>
+<span class="r-in"><span><span class="co">## methods are supposed to return a value.</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="chromData.html">precursorMz</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA NA NA</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## The `peaksData()` method is supposed to return data/frames of rtime and</span></span></span>
+<span class="r-in"><span><span class="co">## intensity pairs as a `list`.</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="peaksData.html">peaksData</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   rtime intensity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  12.4     123.3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  12.8     153.6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  13.2    2354.3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  14.6     243.4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [[2]]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   rtime intensity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  45.1     100.0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  46.2      80.1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [[3]]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   rtime intensity</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1  12.4     123.3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2  12.8     153.6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3  13.2    2354.3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4  14.6     243.4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## Use columns to extract specific peaks variables. Below we extract rtime</span></span></span>
+<span class="r-in"><span><span class="co">## and intensity values, but in reversed order to the default.</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="peaksData.html">peaksData</a></span><span class="op">(</span><span class="va">be</span>, columns <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"intensity"</span>, <span class="st">"rtime"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   intensity rtime</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     123.3  12.4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2     153.6  12.8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3    2354.3  13.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4     243.4  14.6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [[2]]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   intensity rtime</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     100.0  45.1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2      80.1  46.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [[3]]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   intensity rtime</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1     123.3  12.4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2     153.6  12.8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3    2354.3  13.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4     243.4  14.6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## List available chromatographic variables</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="chromData.html">chromVariables</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "msLevel"         "mz"              "chromIndex"      "collisionEnergy"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "dataOrigin"      "mzMin"           "mzMax"           "precursorMz"    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "precursorMzMin"  "precursorMzMax"  "productMz"       "productMzMin"   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [13] "productMzMax"   </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## List available peak variables</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="peaksData.html">peaksVariables</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "rtime"     "intensity"</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## Extract multiple chromatographic variables</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="chromData.html">chromData</a></span><span class="op">(</span><span class="va">be</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chromIndex"</span>, <span class="st">"mz"</span>, <span class="st">"msLevel"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   chromIndex    mz msLevel</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1          1 112.2       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2          2 123.3       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3          3 134.4       1</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## Single variables can also be accessed and replaced</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="chromData.html">mz</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 112.2 123.3 134.4</span>
+<span class="r-in"><span><span class="fu"><a href="chromData.html">mz</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">123.4</span>, <span class="fl">134.5</span>, <span class="fl">145.6</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">be</span><span class="op">$</span><span class="va">msLevel</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1 1 1</span>
+<span class="r-in"><span><span class="va">be</span><span class="op">$</span><span class="va">msLevel</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2L</span>, <span class="fl">2L</span>, <span class="fl">2L</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">be</span><span class="op">[[</span><span class="st">"rtime"</span><span class="op">]</span><span class="op">]</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [[1]]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 12.4 12.8 13.2 14.6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [[2]]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 45.1 46.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [[3]]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 12.4 12.8 13.2 14.6</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-in"><span><span class="va">be</span><span class="op">[[</span><span class="st">"rtime"</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12.4</span>, <span class="fl">12.8</span>, <span class="fl">13.2</span>, <span class="fl">14.6</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">45.1</span>, <span class="fl">46.2</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12.4</span>, <span class="fl">12.8</span>, <span class="fl">13.2</span>, <span class="fl">14.6</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 </code></pre></div>
     </div>
   </div>
@@ -674,7 +820,7 @@ implementation is provided in the respective vignette.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.9000.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.9000.</p>
 </div>
 
       </footer></div>

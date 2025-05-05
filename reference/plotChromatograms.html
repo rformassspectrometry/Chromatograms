@@ -194,20 +194,29 @@ plotting area.</p></dd>
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## Create a Chromatograms object</span></span></span>
-<span class="r-in"><span><span class="va">cdata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>msLevel <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">1L</span>, <span class="fl">1L</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>                    mz <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">112.2</span>, <span class="fl">123.3</span>, <span class="fl">134.4</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>                    chromIndex <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">2L</span>, <span class="fl">3L</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">cdata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>    msLevel <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">1L</span>, <span class="fl">1L</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    mz <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">112.2</span>, <span class="fl">123.3</span>, <span class="fl">134.4</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>    chromIndex <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">2L</span>, <span class="fl">3L</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">pdata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
-<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>rtime <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12.4</span>, <span class="fl">12.8</span>, <span class="fl">13.2</span>, <span class="fl">14.6</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>             intensity <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">123.3</span>, <span class="fl">153.6</span>, <span class="fl">2354.3</span>, <span class="fl">243.4</span><span class="op">)</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>rtime <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">45.1</span>, <span class="fl">46.2</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>             intensity <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">80.1</span><span class="op">)</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>rtime <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12.4</span>, <span class="fl">12.8</span>, <span class="fl">13.2</span>, <span class="fl">14.6</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>             intensity <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">123.3</span>, <span class="fl">153.6</span>, <span class="fl">2354.3</span>, <span class="fl">243.4</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>        rtime <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12.4</span>, <span class="fl">12.8</span>, <span class="fl">13.2</span>, <span class="fl">14.6</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>        intensity <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">123.3</span>, <span class="fl">153.6</span>, <span class="fl">2354.3</span>, <span class="fl">243.4</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span>,</span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>        rtime <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">45.1</span>, <span class="fl">46.2</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>        intensity <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">80.1</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span>,</span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
+<span class="r-in"><span>        rtime <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12.4</span>, <span class="fl">12.8</span>, <span class="fl">13.2</span>, <span class="fl">14.6</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>        intensity <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">123.3</span>, <span class="fl">153.6</span>, <span class="fl">2354.3</span>, <span class="fl">243.4</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">chr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html" class="external-link">backendInitialize</a></span><span class="op">(</span><span class="fu"><a href="ChromBackendMemory.html">ChromBackendMemory</a></span><span class="op">(</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>                        chromData <span class="op">=</span> <span class="va">cdata</span>,</span></span>
-<span class="r-in"><span>                        peaksData <span class="op">=</span> <span class="va">pdata</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="Chromatograms.html">Chromatograms</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    chromData <span class="op">=</span> <span class="va">cdata</span>,</span></span>
+<span class="r-in"><span>    peaksData <span class="op">=</span> <span class="va">pdata</span></span></span>
+<span class="r-in"><span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="Chromatograms.html">Chromatograms</a></span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## Plot one chromatogram</span></span></span>
 <span class="r-in"><span><span class="fu">plotChromatograms</span><span class="op">(</span><span class="va">chr</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span></span>
@@ -220,6 +229,10 @@ plotting area.</p></dd>
 <span class="r-in"><span><span class="fu">plotChromatograms</span><span class="op">(</span><span class="va">chr</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"green"</span>, <span class="st">"blue"</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="plotChromatograms-2.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## Overlay all chromatograms</span></span></span>
+<span class="r-in"><span><span class="fu">plotChromatogramsOverlay</span><span class="op">(</span><span class="va">chr</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"green"</span>, <span class="st">"blue"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-plt img"><img src="plotChromatograms-3.png" alt="" width="700" height="433"></span>
 </code></pre></div>
     </div>
   </div>
@@ -234,7 +247,7 @@ plotting area.</p></dd>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.9000.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.9000.</p>
 </div>
 
       </footer></div>
