@@ -1,6 +1,6 @@
 Package: Chromatograms
 Title: Infrastructure for Chromatographic Mass Spectrometry Data
-Version: 0.6.0
+Version: 0.99.0
 Description: The Chromatograms packages defines a efficient infrastructure
    for storing and handling of chromatographic mass spectrometry data. It
    provides different implementations of *backends* to store and represent the
@@ -18,11 +18,14 @@ Authors@R: c(person(given = "Laurent", family = "Gatto",
 	     person(given = "Philippine", family = "Louail",
 		    email = "philippine.louail@eurac.edu",
 		    role = c("aut", "cre"),
-		    comment = c(ORCID = "0009-0007-5429-6846")))
+		    comment = c(ORCID = "0009-0007-5429-6846", 
+		    fnd = "European Union HORIZON-MSCA-2021 project 
+		    Grant No. 101073062: HUMAN – Harmonising and Unifying Blood 
+		    Metabolic Analysis Networks")))
 Depends:
     BiocParallel,
     ProtGenerics (>= 1.39.2),
-    R (>= 4.4.0)
+    R (>= 4.5.0)
 Imports:
     methods,
     S4Vectors,

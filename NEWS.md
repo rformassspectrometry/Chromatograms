@@ -1,4 +1,8 @@
-# Version 0.6.0
+# Version 0.99.0
+
+## Changes in 0.99.0
+
+- General documentation and formatting fixes for Bioconductor submission.
 
 ## Changes in 0.6.0
 
