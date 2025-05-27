@@ -84,6 +84,10 @@ the default), or for any of them (\code{match = "any"}).}
 keep (\code{keep = TRUE}) or remove (\code{keep = FALSE}) the chromatographic
 peaks data that match the condition.}
 }
+\value{
+Refer to the individual function description for information on the
+return value.
+}
 \description{
 As explained in the \link{Chromatograms} class documentation, the \code{Chromatograms}
 object is a container for chromatographic data that includes chromatographic

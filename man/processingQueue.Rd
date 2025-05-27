@@ -49,6 +49,9 @@ chunk size (or \code{Inf} if it is not defined). \code{processingChunkFactor()}
 returns a \code{factor} defining the chunks into which \code{object} will be
 split for (parallel) chunk-wise processing or a \code{factor} of length 0
 if no splitting is defined.
+
+Refer to the individual function description for information on the
+return value.
 }
 \description{
 The \code{processingQueue} of a \code{Chromatograms} object is a list of processing

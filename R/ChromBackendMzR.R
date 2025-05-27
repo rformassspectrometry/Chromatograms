@@ -36,6 +36,9 @@ NULL
 #'
 #' @exportClass ChromBackendMzR
 #'
+#' @return Refer to the individual function description for information on the
+#'         return value.
+#'
 #' @examples
 #' library(mzR)
 #' library(msdata)

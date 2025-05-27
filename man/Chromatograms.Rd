@@ -90,6 +90,10 @@ access.}
 
 \item{drop}{For \code{[}: \code{logical(1)} default to \code{FALSE}.}
 }
+\value{
+Refer to the individual function description for information on
+the return value.
+}
 \description{
 The \code{Chromatograms} class encapsules chromatographic data and related
 metadata. The chromatographic data is represented by a \emph{backend} extending

@@ -1,6 +1,6 @@
 Package: Chromatograms
 Title: Infrastructure for Chromatographic Mass Spectrometry Data
-Version: 0.99.0
+Version: 0.99.1
 Description: The Chromatograms packages defines a efficient infrastructure
    for storing and handling of chromatographic mass spectrometry data. It
    provides different implementations of *backends* to store and represent the
@@ -16,7 +16,7 @@ Authors@R: c(person(given = "Laurent", family = "Gatto",
 		    role = c("aut"),
 		    comment = c(ORCID = "0000-0002-6977-7147")),
 	     person(given = "Philippine", family = "Louail",
-		    email = "philippine.louail@eurac.edu",
+		    email = "philippine.louail@outlook.com",
 		    role = c("aut", "cre"),
 		    comment = c(ORCID = "0009-0007-5429-6846", 
 		    fnd = "European Union HORIZON-MSCA-2021 project 

@@ -98,6 +98,9 @@
 #'
 #' @author Johannes Rainer, Philippine Louail
 #'
+#' @return Refer to the individual function description for information on the
+#'         return value.
+#'
 #' @importMethodsFrom ProtGenerics processingChunkSize processingChunkSize<-
 #'   processingChunkFactor
 #'

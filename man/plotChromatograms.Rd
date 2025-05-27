@@ -84,6 +84,9 @@ plotting area.}
 }
 \value{
 These functions create a plot.
+
+Refer to the individual function description for information on the
+return value.
 }
 \description{
 \code{\link[=Chromatograms]{Chromatograms()}} can be plotted with the following functions:
@@ -132,5 +135,5 @@ plotChromatogramsOverlay(chr[1:2], col = c("green", "blue"))
 
 }
 \author{
-Philippine Louail, Johannes Rainer
+Philippine Louail, Johannes Rainer.
 }

@@ -251,6 +251,10 @@ defining whether the condition has to match for all provided
 defining whether to keep (\code{keep = TRUE}) or remove (\code{keep = FALSE})
 the chromatogram data that match the condition.}
 }
+\value{
+Refer to the individual function description for information on the
+return value.
+}
 \description{
 \code{ChromBackend} is a virtual class that defines what different backends need
 to provide to be used by the \code{Chromatograms} package and classes.

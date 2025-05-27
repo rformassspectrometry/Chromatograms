@@ -31,6 +31,10 @@ parameter.}
 
 \item{...}{Additional parameters to be passed.}
 }
+\value{
+Refer to the individual function description for information on the
+return value.
+}
 \description{
 \code{ChromBackendMemory}: This backend stores chromatographic data directly
 in memory, making it ideal for small datasets or testing. It can be

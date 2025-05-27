@@ -164,6 +164,10 @@ defining whether the condition has to match for all provided
 defining whether to keep (\code{keep = TRUE}) or remove (\code{keep = FALSE})
 the chromatogram data that match the condition.}
 }
+\value{
+Refer to the individual function description for information on the
+return value.
+}
 \description{
 As explained in the \code{\link{Chromatograms}} class documentation, the
 \code{Chromatograms} object is a container for chromatogram data that includes

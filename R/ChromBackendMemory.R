@@ -36,6 +36,9 @@ NULL
 #'
 #' @exportClass ChromBackendMemory
 #'
+#' @return Refer to the individual function description for information on the
+#'         return value.
+#'
 #' @examples
 #'
 #' ## Create a ChromBackendMemory object

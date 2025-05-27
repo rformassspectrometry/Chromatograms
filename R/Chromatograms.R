@@ -115,6 +115,9 @@ NULL
 #'
 #' @exportClass Chromatograms
 #'
+#' @return Refer to the individual function description for information on
+#' the return value.
+#'
 #' @seealso [chromData] for a general description of the chromatographic
 #'          metadata available in the object, as well as how to access, replace
 #'          and subset them.

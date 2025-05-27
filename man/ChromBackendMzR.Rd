@@ -19,6 +19,10 @@ for more information.}
 
 \item{...}{Additional parameters to be passed.}
 }
+\value{
+Refer to the individual function description for information on the
+return value.
+}
 \description{
 The \code{ChromBackendMzR} inherits all slots and methods from the base
 \code{ChromBackendMemory} backend, providing additional functionality for reading

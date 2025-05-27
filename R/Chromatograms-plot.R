@@ -63,7 +63,10 @@
 #'
 #' @return These functions create a plot.
 #'
-#' @author Philippine Louail, Johannes Rainer
+#' @author Philippine Louail, Johannes Rainer.
+#'
+#' @return Refer to the individual function description for information on the
+#' return value.
 #'
 #' @examples
 #'

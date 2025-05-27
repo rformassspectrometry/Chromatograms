@@ -41,6 +41,10 @@ contain \code{NA} values. Use \code{-Inf/Inf} for unspecified values. The
 
 \item{...}{Additional parameters.}
 }
+\value{
+Refer to the individual function description for information on the
+return value.
+}
 \description{
 The \code{ChromBackendSpectra} class extends \code{ChromBackendMemory}, inheriting
 all its slots and methods while providing additional functionality for
