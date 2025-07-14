@@ -2,8 +2,8 @@ test_that(".df_combine works as expected", {
     combined_backend <- .df_combine(list(be, be_cd))
     expect_equal(nrow(combined_backend@chromData), nrow(cdata) + nrow(cdata))
     expect_equal(
-        length(combined_backend@peaksData),
-        length(be@peaksData) + length(be_cd@peaksData)
+        length(.peaksData(combined_backend)),
+        length(.peaksData(be)) + length(.peaksData(be_cd))
     )
 
     expect_equal(.df_combine(list(be)), be)
@@ -386,3 +386,4 @@ test_that("ensure_rt_mz_columns correctly handles mz and rt columns", {
     expect_equal(chrom_data$rtmin, 10)
     expect_equal(chrom_data$rtmax, 50)
 })
+

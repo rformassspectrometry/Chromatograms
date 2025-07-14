@@ -155,19 +155,19 @@ setMethod(
     "applyProcessing", "Chromatograms",
     function(object, f = processingChunkFactor(object),
     BPPARAM = bpparam(), ...) {
-        if (isReadOnly(object@backend)) {
+        if (isReadOnly(.backend(object))) {
             stop("Cannot apply processing to a read-only backend")
         }
-        queue <- object@processingQueue
+        queue <- .processingQueue(object)
         if (!length(queue)) {
             return(object)
         }
-        object@backend <- .run_process_queue(object@backend,
+        object@backend <- .run_process_queue(.backend(object),
             queue = queue,
             f = f, BPPARAM, ...
         )
         object@processing <- .logging(
-            object@processing,
+            .processing(object),
             "Applied processing queue with ",
             length(queue),
             " steps"
@@ -186,7 +186,7 @@ setMethod("addProcessing", "Chromatograms", function(object, FUN, ...) {
         return(object)
     }
     object@processingQueue <- c(
-        object@processingQueue,
+        .processingQueue(object),
         list(ProcessingStep(FUN, ARGS = list(...)))
     )
     validObject(object)
@@ -223,7 +223,7 @@ setMethod("processingChunkFactor",
             )[seq_len(lx)])
             return(fres)
         } else {
-            backendParallelFactor(object@backend)
+            backendParallelFactor(.backend(object))
         }
     }
 )

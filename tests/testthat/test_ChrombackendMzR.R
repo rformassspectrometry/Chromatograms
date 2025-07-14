@@ -1,11 +1,11 @@
 test_that("ChromBackendMzR works", {
     expect_true(isReadOnly(be_mzr))
     expect_false(be_mzr@inMemory)
-    expect_false(identical(peaksData(be_mzr), be_mzr@peaksData))
-    expect_true(identical(length(peaksData(be_mzr)), length((be_mzr@peaksData))))
+    expect_false(identical(peaksData(be_mzr),.peaksData(be_mzr)))
+    expect_true(identical(length(peaksData(be_mzr)), length(.peaksData(be_mzr))))
     expect_true(identical(
         chromData(be_mzr),
-        fillCoreChromVariables(be_mzr@chromData)
+        fillCoreChromVariables(.chromData(be_mzr))
     ))
     expect_false(supportsSetBackend(be_mzr))
 })
@@ -37,8 +37,8 @@ test_that("replacement method works", {
     peaksData(tmp)[[1]] <- peaksData(be_mzr)[[1]] + 1
     expect_false(identical(peaksData(tmp)[[1]], peaksData(be_mzr)[[1]]))
     expect_true(identical(peaksData(tmp)[[1]], peaksData(be_mzr)[[1]] + 1))
-    expect_true(tmp@inMemory)
-    expect_false(be_mzr@inMemory)
+    expect_true(.inMemory(tmp))
+    expect_false(.inMemory(be_mzr))
 
     cd <- chromData(tmp)
     cd$mz <- 1

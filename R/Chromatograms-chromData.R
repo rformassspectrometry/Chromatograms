@@ -180,7 +180,7 @@ NULL
 setMethod(
     "chromData", "Chromatograms",
     function(object, columns = chromVariables(object), drop = FALSE) {
-        chromData(object@backend, columns = columns, drop = drop)
+        chromData(.backend(object), columns = columns, drop = drop)
     }
 )
 
@@ -192,12 +192,12 @@ setReplaceMethod("chromData", "Chromatograms", function(object, value) {
 
 #' @rdname chromData
 setMethod("chromVariables", "Chromatograms", function(object) {
-    chromVariables(object@backend)
+    chromVariables(.backend(object))
 })
 
 #' @rdname chromData
 setMethod("chromIndex", "Chromatograms", function(object) {
-    chromIndex(object@backend)
+    chromIndex(.backend(object))
 })
 
 #' @rdname chromData
@@ -208,7 +208,7 @@ setReplaceMethod("chromIndex", "Chromatograms", function(object, value) {
 
 #' @rdname chromData
 setMethod("collisionEnergy", "Chromatograms", function(object) {
-    collisionEnergy(object@backend)
+    collisionEnergy(.backend(object))
 })
 
 #' @rdname chromData
@@ -219,7 +219,7 @@ setReplaceMethod("collisionEnergy", "Chromatograms", function(object, value) {
 
 #' @rdname chromData
 setMethod("dataOrigin", "Chromatograms", function(object) {
-    dataOrigin(object@backend)
+    dataOrigin(.backend(object))
 })
 
 #' @rdname chromData
@@ -229,7 +229,7 @@ setReplaceMethod("dataOrigin", "Chromatograms", function(object, value) {
 })
 
 #' @rdname chromData
-setMethod("msLevel", "Chromatograms", function(object) msLevel(object@backend))
+setMethod("msLevel", "Chromatograms", function(object) msLevel(.backend(object)))
 
 #' @rdname chromData
 setReplaceMethod("msLevel", "Chromatograms", function(object, value) {
@@ -238,7 +238,7 @@ setReplaceMethod("msLevel", "Chromatograms", function(object, value) {
 })
 
 #' @rdname chromData
-setMethod("mz", "Chromatograms", function(object) mz(object@backend))
+setMethod("mz", "Chromatograms", function(object) mz(.backend(object)))
 
 #' @rdname chromData
 setReplaceMethod("mz", "Chromatograms", function(object, value) {
@@ -247,7 +247,7 @@ setReplaceMethod("mz", "Chromatograms", function(object, value) {
 })
 
 #' @rdname chromData
-setMethod("mzMax", "Chromatograms", function(object) mzMax(object@backend))
+setMethod("mzMax", "Chromatograms", function(object) mzMax(.backend(object)))
 
 #' @rdname chromData
 setReplaceMethod("mzMax", "Chromatograms", function(object, value) {
@@ -256,7 +256,7 @@ setReplaceMethod("mzMax", "Chromatograms", function(object, value) {
 })
 
 #' @rdname chromData
-setMethod("mzMin", "Chromatograms", function(object) mzMin(object@backend))
+setMethod("mzMin", "Chromatograms", function(object) mzMin(.backend(object)))
 
 #' @rdname chromData
 setReplaceMethod("mzMin", "Chromatograms", function(object, value) {
@@ -269,7 +269,7 @@ setMethod("length", "Chromatograms", function(x) length(x@backend))
 
 #' @rdname chromData
 setMethod("precursorMz", "Chromatograms", function(object) {
-    precursorMz(object@backend)
+    precursorMz(.backend(object))
 })
 
 #' @rdname chromData
@@ -280,7 +280,7 @@ setReplaceMethod("precursorMz", "Chromatograms", function(object, value) {
 
 #' @rdname chromData
 setMethod("precursorMzMin", "Chromatograms", function(object) {
-    precursorMzMin(object@backend)
+    precursorMzMin(.backend(object))
 })
 
 #' @rdname chromData
@@ -291,7 +291,7 @@ setReplaceMethod("precursorMzMin", "Chromatograms", function(object, value) {
 
 #' @rdname chromData
 setMethod("precursorMzMax", "Chromatograms", function(object) {
-    precursorMzMax(object@backend)
+    precursorMzMax(.backend(object))
 })
 
 #' @rdname chromData
@@ -302,7 +302,7 @@ setReplaceMethod("precursorMzMax", "Chromatograms", function(object, value) {
 
 #' @rdname chromData
 setMethod("productMz", "Chromatograms", function(object) {
-    productMz(object@backend)
+    productMz(.backend(object))
 })
 
 #' @rdname chromData
@@ -313,7 +313,7 @@ setReplaceMethod("productMz", "Chromatograms", function(object, value) {
 
 #' @rdname chromData
 setMethod("productMzMin", "Chromatograms", function(object) {
-    productMzMin(object@backend)
+    productMzMin(.backend(object))
 })
 
 #' @rdname chromData
@@ -324,7 +324,7 @@ setReplaceMethod("productMzMin", "Chromatograms", function(object, value) {
 
 #' @rdname chromData
 setMethod("productMzMax", "Chromatograms", function(object) {
-    productMzMax(object@backend)
+    productMzMax(.backend(object))
 })
 
 #' @rdname chromData
@@ -339,7 +339,7 @@ setMethod(
     function(object,
     variables = character(), ranges = numeric(),
     match = c("any", "all"), keep = TRUE) {
-        object@backend <- filterChromData(object@backend,
+        object@backend <- filterChromData(.backend(object),
             variables = variables,
             ranges = ranges,
             match = match,

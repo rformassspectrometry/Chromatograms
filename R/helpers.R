@@ -17,12 +17,12 @@
         stop("Can only merge backends of the same type: ", class(objects[[1]]))
     }
     res <- objects[[1]]
-    pv <- names(res@peaksData[[1]])
+    pv <- names(.peaksData(res)[[1]])
     for (i in 2:length(objects)) {
-        res@chromData <- rbindFill(res@chromData, objects[[i]]@chromData)
+        res@chromData <- rbindFill(.chromData(res), .chromData(objects[[i]]))
         pv2 <- peaksVariables(objects[[i]])
         if (length(pv) == length(pv2) && all(pv == pv2)) {
-            res@peaksData <- c(res@peaksData, objects[[i]]@peaksData)
+            res@peaksData <- c(.peaksData(res), .peaksData(objects[[i]]))
         } else {
             stop(
                 "Provided objects have different sets of peak variables. ",
@@ -383,4 +383,57 @@
         }
     }
     chrom_data
+}
+
+## Below are internal accessors functions, these are used ubiquitously in the
+## package. They directly access the slots. these are NOT to be used by general
+## users.
+#' @noRd
+.backend <- function(object) {
+    if (!is(object, "Chromatograms")) {
+        stop("'object' must be of class 'Chromatograms'.")
+    }
+    object@backend
+}
+.peaksData <- function(object) {
+    if (is(object, "Chromatograms")) {
+        return(object@backend@peaksData)
+    }
+    if (is(object, "ChromBackend")) {
+        return(object@peaksData)
+    }
+    stop("'object' must be of class 'Chromatograms' or 'ChromBackend'.")
+}
+.chromData <- function(object) {
+    if (is(object, "Chromatograms")) {
+        return(object@backend@chromData)
+    }
+    if (is(object, "ChromBackend")) {
+        return(object@chromData)
+    }
+    stop("'object' must be of class 'Chromatograms' or 'ChromBackend'.")
+}
+.inMemory <- function(object) {
+    if (!is(object, "ChromBackend")) {
+        stop("'object' must be of class 'Chrombackend'.")
+    }
+    object@inMemory
+}
+.processing <- function(object) {
+    if (!is(object, "Chromatograms")) {
+        stop("'object' must be of class 'Chromatograms'.")
+    }
+    object@processing
+}
+.processingQueue <- function(object) {
+    if (!is(object, "Chromatograms")) {
+        stop("'object' must be of class 'Chromatograms'.")
+    }
+    object@processingQueue
+}
+.spectra <- function(object) {
+    if (!is(object, "ChromBackendSpectra")) {
+        stop("'object' must be of class 'ChromBackendSpectra'.")
+    }
+    object@spectra
 }

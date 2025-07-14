@@ -2,7 +2,7 @@ test_that("addProcessing adds processing steps correctly", {
     c_queued <- addProcessing(c_full, filterPeaksData,
         variables = c("rtime"), ranges = c(12.5, 45.5)
     )
-    queue <- c_queued@processingQueue
+    queue <- .processingQueue(c_queued)
     expect_length(queue, 1)
     expect_equal(queue[[1]]@FUN, filterPeaksData)
     expect_equal(queue[[1]]@ARGS, list(
@@ -12,10 +12,10 @@ test_that("addProcessing adds processing steps correctly", {
     c_queued <- addProcessing(c_queued, filterPeaksData,
         variables = c("intensity"), ranges = c(100, 200)
     )
-    queue <- c_queued@processingQueue
+    queue <- .processingQueue(c_queued)
     expect_length(queue, 2)
 
-    ## Missing FUN
+    ## Missing FUNs
     c_queued <- addProcessing(c_mzr,
         variables = c("rtime"), ranges = c(12.5, 45.5)
     )
@@ -44,8 +44,8 @@ test_that("applyProcessing applies all queued processing steps", {
         ranges = c(100, 200), keep = FALSE
     )
     c_applied <- applyProcessing(c_queued)
-    expect_length(c_applied@processingQueue, 0)
-    expect_equal(peaksData(c_applied), peaksData(c_applied@backend))
+    expect_length(.processingQueue(c_applied), 0)
+    expect_equal(peaksData(c_applied), peaksData(.backend(c_applied)))
 
     ## empty queue
     c_queued@processingQueue <- list()

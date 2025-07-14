@@ -141,8 +141,8 @@ setMethod("backendMerge", "ChromBackendMemory", function(object, ...) {
     } else {
         res <- object[[1L]]
     }
-    validChromData(res@chromData)
-    validPeaksData(res@peaksData)
+    validChromData(.chromData(res))
+    validPeaksData(.peaksData(res))
     res
 })
 
@@ -160,7 +160,7 @@ setMethod(
                 "available"
             )
         }
-        res <- fillCoreChromVariables(object@chromData)
+        res <- fillCoreChromVariables(.chromData(object))
         res <- res[, columns, drop = drop]
         res
     }
@@ -181,7 +181,7 @@ setReplaceMethod("chromData", "ChromBackendMemory", function(object, value) {
 
 #' @rdname hidden_aliases
 setMethod("chromVariables", "ChromBackendMemory", function(object) {
-    union(names(object@chromData), names(coreChromVariables()))
+    union(names(.chromData(object)), names(coreChromVariables()))
 })
 
 #' @rdname hidden_aliases
@@ -199,9 +199,9 @@ setMethod(
             as.vector(peaksVariables(object)),
             as.vector(columns)
         )) {
-            return(object@peaksData)
+            return(.peaksData(object))
         }
-        lapply(object@peaksData, function(x) x[, columns, drop = drop])
+        lapply(.peaksData(object), function(x) x[, columns, drop = drop])
     }
 )
 
@@ -220,7 +220,7 @@ setReplaceMethod("peaksData", "ChromBackendMemory", function(object, value) {
 
 #' @rdname hidden_aliases
 setMethod("peaksVariables", "ChromBackendMemory", function(object) {
-    union(names(object@peaksData[[1]]), names(corePeaksVariables()))
+    union(names(.peaksData(object)[[1]]), names(corePeaksVariables()))
 })
 
 #' @rdname hidden_aliases
@@ -230,20 +230,20 @@ setMethod("isReadOnly", "ChromBackendMemory", function(object) FALSE)
 #' @importFrom utils capture.output head
 #' @rdname hidden_aliases
 setMethod("show", "ChromBackendMemory", function(object) {
-    cpd <- object@chromData
+    cpd <- .chromData(object)
     cat(class(object), "with", nrow(cpd), "chromatograms\n")
     if (nrow(cpd)) {
         cpd <- fillCoreChromVariables(cpd)
         cpd <- cpd[, c("chromIndex", "msLevel", "mz"), drop = FALSE]
         txt <- capture.output(print(head(cpd)))
         cat(txt, sep = "\n")
-        cp_cols <- object@chromData[
+        cp_cols <- .chromData(object)[
             ,
-            !(colnames(object@chromData) %in%
+            !(colnames(.chromData(object)) %in%
                 colnames(cpd))
         ]
         cat("...", length(cp_cols), "more  chromatogram variables/columns\n")
-        cat("...", ncol(object@peaksData[[1]]), "peaksData variables\n")
+        cat("...", ncol(.peaksData(object)[[1]]), "peaksData variables\n")
     }
 })
 
@@ -262,8 +262,8 @@ setMethod("[", "ChromBackendMemory", function(x, i, j, ..., drop = FALSE) {
         return(ChromBackendMemory())
     }
     i <- i2index(i, length = length(x))
-    x@chromData <- x@chromData[i, ]
-    x@peaksData <- x@peaksData[i]
+    x@chromData <- .chromData(x)[i, ]
+    x@peaksData <- .peaksData(x)[i]
     x
 })
 

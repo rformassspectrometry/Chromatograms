@@ -48,7 +48,7 @@ data.
 
 ```
 install.packages("BiocManager")
-BiocManager::install("RforMassSpectrometry/Chromatograms")
+BiocManager::install("Chromatograms")
 ```
 
 ## Contributions

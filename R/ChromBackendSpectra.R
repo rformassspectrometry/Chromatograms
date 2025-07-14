@@ -174,7 +174,7 @@ setMethod("backendInitialize", "ChromBackendSpectra",
               object@chromData <- chromData
               object@spectra <- spectra
               object <- factorize(object, factorize.by = factorize.by)
-              callNextMethod(object, chromData = object@chromData)
+              callNextMethod(object, chromData = .chromData(object))
               }
           )
 
@@ -183,7 +183,7 @@ setMethod("backendInitialize", "ChromBackendSpectra",
 setMethod("show", "ChromBackendSpectra", function(object) {
     callNextMethod()
     cat("\nThe Spectra object contains", length(object@spectra), "spectra\n")
-    if (object@inMemory) cat("\nPeaks data is cached in memory\n")
+    if (.inMemory(object)) cat("\nPeaks data is cached in memory\n")
 })
 
 #' @rdname ChromBackendSpectra
@@ -202,14 +202,14 @@ chromSpectraIndex <- function(object) {
 setMethod("factorize", "ChromBackendSpectra",
           function(object, factorize.by = c("msLevel", "dataOrigin"),...) {
             if (!all(factorize.by %in%
-                     Spectra::spectraVariables(object@spectra)))
+                     Spectra::spectraVariables(.spectra(object))))
                   stop("All 'factorize.by' variables must be in the ",
                        "Spectra object.")
            spectra_f <- factor(
                   do.call(
                       paste,
                       c(as.list(
-                          Spectra::spectraData(object@spectra)[,
+                          Spectra::spectraData(.spectra(object))[,
                                                                factorize.by]),
                         sep = "_")))
 
@@ -217,17 +217,17 @@ setMethod("factorize", "ChromBackendSpectra",
               if (!all(factorize.by %in% chromVariables(object)))
                   stop("All 'factorize.by' variables must be in chromData.")
               object@chromData$chromSpectraIndex <- factor(do.call(
-                  paste, c(object@chromData[, factorize.by], sep = "_")))
+                  paste, c(.chromData(object)[, factorize.by], sep = "_")))
 
-              levels(spectra_f) <- levels(object@chromData$chromSpectraIndex)
+              levels(spectra_f) <- levels(.chromData(object)$chromSpectraIndex)
               object@spectra$chromSpectraIndex <- droplevels(spectra_f)
-              object@chromData <- .ensure_rt_mz_columns(object@chromData,
-                                                        object@spectra,
+              object@chromData <- .ensure_rt_mz_columns(.chromData(object),
+                                                        .spectra(object),
                                                         spectra_f)
           } else {
               object@spectra$chromSpectraIndex <- spectra_f
               full_sp <- do.call(rbindFill,
-                                 lapply(split(object@spectra, spectra_f),
+                                 lapply(split(.spectra(object), spectra_f),
                                         .spectra_format_chromData))
               full_sp$chromIndex <- seq_len(nrow(full_sp))
               rownames(full_sp) <- NULL
@@ -251,15 +251,15 @@ setMethod(
     "peaksData", "ChromBackendSpectra",
     function(object, columns = peaksVariables(object),
     drop = FALSE, ...) {
-        if (object@inMemory || !length(object)) {
+        if (.inMemory(object) || !length(object)) {
             return(callNextMethod())
         }
         ## Ensure chromSpectraIndex only contains relevant levels needed
         valid_levels <- chromSpectraIndex(object)
-        if (!all(levels(object@spectra$chromSpectraIndex) %in%
+        if (!all(levels(.spectra(object)$chromSpectraIndex) %in%
             valid_levels)) {
             object@spectra$chromSpectraIndex <- factor(
-                object@spectra$chromSpectraIndex,
+                .spectra(object)$chromSpectraIndex,
                 levels = valid_levels
             )
         }
@@ -267,8 +267,8 @@ setMethod(
         pd <- mapply(.process_peaks_data,
             cd = split(chromData(object), valid_levels),
             s = split(
-                object@spectra,
-                object@spectra$chromSpectraIndex
+                .spectra(object),
+                .spectra(object)$chromSpectraIndex
             ),
             MoreArgs = list(
                 columns = columns,

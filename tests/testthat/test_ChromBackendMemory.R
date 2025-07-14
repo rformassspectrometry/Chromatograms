@@ -17,63 +17,63 @@ test_that("backendInitialize, ChromBackendMemory works", {
         "needs to be a"
     )
     fill_test <- backendInitialize(be_empty, chromData = data.frame())
-    expect_equal(fill_test@chromData, fillCoreChromVariables(data.frame()))
+    expect_equal(.chromData(fill_test), fillCoreChromVariables(data.frame()))
 
     ### empty backend
     expect_true(is(be_empty, "ChromBackendMemory"))
-    expect_true(is(be_empty@chromData, "data.frame"))
-    expect_true(nrow(be_empty@chromData) == 0)
-    expect_true(all(names(be_empty@chromData) == names(.CORE_CHROM_VARIABLES)))
-    expect_true(is.null(validChromData(be_empty@chromData)))
-    expect_true(is(be_empty@peaksData, "list"))
-    expect_true(length(be_empty@peaksData) == 1)
-    expect_true(all(names(be_empty@peaksData[[1]]) == names(.CORE_PEAKS_VARIABLES)))
-    expect_true(is.null(unlist(validChromData(be_empty@peaksData))))
+    expect_true(is(.chromData(be_empty), "data.frame"))
+    expect_true(nrow(.chromData(be_empty)) == 0)
+    expect_true(all(names(.chromData(be_empty)) == names(.CORE_CHROM_VARIABLES)))
+    expect_true(is.null(validChromData(.chromData(be_empty))))
+    expect_true(is(.peaksData(be_empty), "list"))
+    expect_true(length(.peaksData(be_empty)) == 1)
+    expect_true(all(names(.peaksData(be_empty)[[1]]) == names(.CORE_PEAKS_VARIABLES)))
+    expect_true(is.null(unlist(validChromData(.peaksData(be_empty)))))
 
     ### empty peaksData
     expect_true(is(be_cd, "ChromBackendMemory"))
-    expect_true(is(be_cd@chromData, "data.frame"))
-    expect_true(nrow(be_cd@chromData) == nrow(cdata))
-    expect_true(all(names(be_cd@chromData) %in% c(names(cdata), "dataOrigin")))
-    expect_true(is.null(validChromData(be_cd@chromData)))
-    expect_true(all(be_cd@chromData$dataOrigin == NA_character_))
+    expect_true(is(.chromData(be_cd), "data.frame"))
+    expect_true(nrow(.chromData(be_cd)) == nrow(cdata))
+    expect_true(all(names(.chromData(be_cd)) %in% c(names(cdata), "dataOrigin")))
+    expect_true(is.null(validChromData(.chromData(be_cd))))
+    expect_true(all(.chromData(be_cd)$dataOrigin == NA_character_))
 
-    expect_true(is(be_cd@peaksData, "list"))
-    expect_true(length(be_cd@peaksData) == nrow(be_cd@chromData))
-    expect_true(all(vapply(be_cd@peaksData, nrow, integer(1)) == 0))
-    expect_true(all(vapply(be_cd@peaksData, is.data.frame, logical(1))))
-    expect_true(all(names(be_cd@peaksData[[1]]) %in% names(.CORE_PEAKS_VARIABLES)))
-    expect_true(is.null(unlist(validPeaksData(be_cd@peaksData))))
+    expect_true(is(.peaksData(be_cd), "list"))
+    expect_true(length(.peaksData(be_cd)) == nrow(.chromData(be_cd)))
+    expect_true(all(vapply(.peaksData(be_cd), nrow, integer(1)) == 0))
+    expect_true(all(vapply(.peaksData(be_cd), is.data.frame, logical(1))))
+    expect_true(all(names(.peaksData(be_cd)[[1]]) %in% names(.CORE_PEAKS_VARIABLES)))
+    expect_true(is.null(unlist(validPeaksData(.peaksData(be_cd)))))
 
     ### full backend
     expect_true(is(be, "ChromBackendMemory"))
-    expect_true(is(be@chromData, "data.frame"))
-    expect_true(nrow(be@chromData) == nrow(cdata))
-    expect_true(all(names(be@chromData) %in% c(names(cdata), "dataOrigin")))
-    expect_true(is.null(validChromData(be@chromData)))
+    expect_true(is(.chromData(be), "data.frame"))
+    expect_true(nrow(.chromData(be)) == nrow(cdata))
+    expect_true(all(names(.chromData(be)) %in% c(names(cdata), "dataOrigin")))
+    expect_true(is.null(validChromData(.chromData(be))))
 
-    expect_true(is(be@peaksData, "list"))
-    expect_true(length(be@peaksData) == nrow(be@chromData))
-    expect_true(all(vapply(be@peaksData, nrow, integer(1)) == nrow(pdata)))
-    expect_true(all(vapply(be@peaksData, is.data.frame, logical(1))))
-    expect_true(all(names(be@peaksData[[1]]) %in% names(.CORE_PEAKS_VARIABLES)))
-    expect_true(is.null(unlist(validPeaksData(be@peaksData))))
+    expect_true(is(.peaksData(be), "list"))
+    expect_true(length(.peaksData(be)) == nrow(.chromData(be)))
+    expect_true(all(vapply(.peaksData(be), nrow, integer(1)) == nrow(pdata)))
+    expect_true(all(vapply(.peaksData(be), is.data.frame, logical(1))))
+    expect_true(all(names(.peaksData(be)[[1]]) %in% names(.CORE_PEAKS_VARIABLES)))
+    expect_true(is.null(unlist(validPeaksData(.peaksData(be)))))
 })
 
 test_that("backend removes NA columns", {
     chromData <- chromData(be)
     chromData$NAcol <- NA
     be2 <- backendInitialize(be, chromData)
-    expect_false("NAcol" %in% names(be2@chromData))
+    expect_false("NAcol" %in% names(.chromData(be2)))
 })
 
 test_that("backendMerge, ChromBackendMemory works", {
     be_merge <- backendMerge(c(be_cd, be))
     expect_true(is(be_merge, "ChromBackendMemory"))
-    expect_true(is(be_merge@chromData, "data.frame"))
-    expect_true(is(be_merge@peaksData, "list"))
-    expect_true(nrow(be_merge@chromData) == nrow(be_cd@chromData) + nrow(be@chromData))
-    expect_true(length(be_merge@peaksData) == length(be_cd@peaksData) + length(be@peaksData))
+    expect_true(is(.chromData(be_merge), "data.frame"))
+    expect_true(is(.peaksData(be_merge), "list"))
+    expect_true(nrow(.chromData(be_merge)) == nrow(.chromData(be_cd)) + nrow(.chromData(be)))
+    expect_true(length(.peaksData(be_merge)) == length(.peaksData(be_cd)) + length(.peaksData(be)))
     expect_equal(backendMerge(c(be_empty, be_empty)), be_empty)
 })
 
@@ -109,9 +109,9 @@ test_that("$<-,ChromBackendMemory works", {
         c(150, 250, 350, 450)
     )
     be$intensity <- new_peaks_intensity
-    expect_equal(be@peaksData[[1]]$intensity, new_peaks_intensity[[1]])
-    expect_equal(be@peaksData[[2]]$intensity, new_peaks_intensity[[2]])
-    expect_equal(be@peaksData[[3]]$intensity, new_peaks_intensity[[3]])
+    expect_equal(.peaksData(be)[[1]]$intensity, new_peaks_intensity[[1]])
+    expect_equal(.peaksData(be)[[2]]$intensity, new_peaks_intensity[[2]])
+    expect_equal(.peaksData(be)[[3]]$intensity, new_peaks_intensity[[3]])
 
     expect_error(
         be$intensity <- c(100, 200, 300),
@@ -119,10 +119,10 @@ test_that("$<-,ChromBackendMemory works", {
     )
 
     be_cd$new_var <- c("A", "B", "C")
-    expect_equal(be_cd@chromData$new_var, c("A", "B", "C"))
+    expect_equal(.chromData(be_cd)$new_var, c("A", "B", "C"))
 
     be_cd$mz <- c(111.1, 222.2, 333.3)
-    expect_equal(be_cd@chromData$mz, c(111.1, 222.2, 333.3))
+    expect_equal(.chromData(be_cd)$mz, c(111.1, 222.2, 333.3))
 })
 
 test_that("filterChromData works", {

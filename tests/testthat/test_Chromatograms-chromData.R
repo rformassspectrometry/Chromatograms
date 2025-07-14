@@ -1,5 +1,5 @@
 test_that("Chromatograms, chromData, chromData<- works", {
-    expect_equal(chromData(c_full), fillCoreChromVariables(c_full@backend@chromData))
+    expect_equal(chromData(c_full), fillCoreChromVariables(.chromData(c_full)))
     cdata2 <- cdata
     cdata2$mz <- cdata2$mz + 1
     res <- c_full

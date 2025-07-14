@@ -105,7 +105,7 @@ setMethod(
 #' @export
 setMethod("show", "ChromBackendMzR", function(object) {
     callNextMethod()
-    fls <- unique(object@chromData$dataOrigin)
+    fls <- unique(dataOrigin(object))
     if (length(fls)) {
         to <- min(3, length(fls))
         cat("\nfile(s):\n", paste(basename(fls[seq_len(to)]), collapse = "\n"),
@@ -132,7 +132,7 @@ setMethod("isReadOnly", "ChromBackendMzR", function(object) TRUE)
 setMethod("peaksData", "ChromBackendMzR",
           function(object, columns = peaksVariables(object), drop = FALSE,
                    BPPARAM = SerialParam(), ...) {
-              if (object@inMemory || !length(object)) return(callNextMethod())
+              if (.inMemory(object) || !length(object)) return(callNextMethod())
               pv <- peaksVariables(object)
               if (!any(columns %in% pv))
                   stop("Some of the requested peaks variables are not",
@@ -142,7 +142,7 @@ setMethod("peaksData", "ChromBackendMzR",
                           levels = unique(dataOrigin(object)))
               pd <- bplapply(split(object, f = f),
                  function(ob) {
-                     chr <- .get_chrom_data(fl = ob@chromData$dataOrigin[1L],
+                     chr <- .get_chrom_data(fl = .chromData(ob)$dataOrigin[1L],
                                             idx = chromIndex(ob))
                      if (ret) chr
                      else lapply(chr, `[`, , columns, drop = drop)

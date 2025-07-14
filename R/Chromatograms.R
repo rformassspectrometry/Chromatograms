@@ -205,14 +205,14 @@ setClass("Chromatograms",
 
 setValidity("Chromatograms", function(object) {
     msg <- character()
-    if (!is(object@backend, "ChromBackend")) {
+    if (!is(.backend(object), "ChromBackend")) {
         msg <- ("backend must be a ChromBackend object")
     }
-    if (!is.numeric(object@processingChunkSize) ||
-        length(object@processingChunkSize) != 1) {
+    if (!is.numeric(processingChunkSize(object)) ||
+        length(processingChunkSize(object)) != 1) {
         msg <- c(msg, "processingChunkSize must be a numeric value")
     }
-    msg <- c(msg, .valid_processing_queue(object@processingQueue))
+    msg <- c(msg, .valid_processing_queue(.processingQueue(object)))
     if (length(msg)) {
         msg
     } else {
@@ -269,23 +269,23 @@ setMethod(
     "show", "Chromatograms",
     function(object) {
         cat("Chromatographic data (", class(object)[1L], ") with ",
-            length(object@backend), " chromatograms in a ",
-            class(object@backend), " backend:\n",
+            length(.backend(object)), " chromatograms in a ",
+            class(.backend(object)), " backend:\n",
             sep = ""
         )
-        if (length(object@backend)) {
-            txt <- capture.output(show(object@backend))
+        if (length(.backend(object))) {
+            txt <- capture.output(show(.backend(object)))
             cat(txt[-1], sep = "\n")
         }
-        if (length(object@processingQueue)) {
+        if (length(.processingQueue(object))) {
             cat(
-                "Lazy evaluation queue:", length(object@processingQueue),
+                "Lazy evaluation queue:", length(.processingQueue(object)),
                 "processing step(s)\n"
             )
         }
-        lp <- length(object@processing)
+        lp <- length(.processing(object))
         if (lp) {
-            lps <- object@processing
+            lps <- .processing(object)
             if (lp > 3) {
                 lps <- lps[seq_len(3)]
                 lps <- c(lps, paste0(
@@ -314,8 +314,8 @@ setMethod(
     "setBackend", c("Chromatograms", "ChromBackend"),
     function(object, backend, f = processingChunkFactor(object),
     BPPARAM = SerialParam(), ...) {
-        backend_class <- class(object@backend)
-        BPPARAM <- backendBpparam(object@backend, BPPARAM)
+        backend_class <- class(.backend(object))
+        BPPARAM <- backendBpparam(.backend(object), BPPARAM)
         BPPARAM <- backendBpparam(backend, BPPARAM)
         if (!supportsSetBackend(backend)) {
             stop(class(backend), " does not support 'setBackend'")
@@ -327,7 +327,7 @@ setMethod(
             )
         } else {
             bd_new <- bplapply(
-                split(object@backend, f = f),
+                split(.backend(object), f = f),
                 function(z, ...) {
                     backendInitialize(backend,
                         peaksData = peaksData(z),
@@ -344,7 +344,7 @@ setMethod(
             object@processing,
             "Switch backend from ",
             backend_class, " to ",
-            class(object@backend)
+            class(.backend(object))
         )
         object
     }
@@ -353,7 +353,7 @@ setMethod(
 #' @rdname Chromatograms
 #' @export
 setMethod("$", signature = "Chromatograms", function(x, name) {
-    x@backend[[name]]
+    .backend(x)[[name]]
 })
 
 #' @rdname Chromatograms
@@ -375,7 +375,7 @@ setMethod("[", "Chromatograms", function(x, i, j, ..., drop = FALSE) {
         return(x)
     }
     slot(x, "backend", check = FALSE) <- extractByIndex(
-        x@backend, i2index(i, length(x))
+        .backend(x), i2index(i, length(x))
     )
     x
 })
@@ -395,7 +395,7 @@ setMethod("[[", "Chromatograms", function(x, i, j, ...) {
     if (!(i %in% peaksVariables(x)) && !(i %in% chromVariables(x))) {
         stop("No variable '", i, "' available")
     } else {
-        do.call("[[", list(x@backend, i))
+        do.call("[[", list(.backend(x), i))
     }
 })
 
@@ -415,7 +415,7 @@ setReplaceMethod("[[", "Chromatograms", function(x, i, j, ..., value) {
     if (!missing(j)) {
         stop("'j' is not supported.")
     }
-    x@backend <- do.call("[[<-", list(x@backend, i = i, value = value))
+    x@backend <- do.call("[[<-", list(.backend(x), i = i, value = value))
     x
 })
 
@@ -424,7 +424,7 @@ setReplaceMethod("[[", "Chromatograms", function(x, i, j, ..., value) {
 setMethod(
     "factorize", "Chromatograms",
     function(object, factorize.by = c("msLevel", "dataOrigin"), ...) {
-        object@backend <- factorize(object@backend, ...)
+        object@backend <- factorize(.backend(object), ...)
         object
     }
 )

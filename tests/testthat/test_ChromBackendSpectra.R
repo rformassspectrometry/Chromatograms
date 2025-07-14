@@ -1,8 +1,8 @@
 test_that("ChromBackendSpectra works", {
     expect_true(isReadOnly(be_sp))
     expect_false(be_sp@inMemory)
-    expect_false(identical(peaksData(be_sp), be_sp@peaksData))
-    expect_true(identical(length(peaksData(be_sp)), length((be_sp@peaksData))))
+    expect_false(identical(peaksData(be_sp),.peaksData(be_sp)))
+    expect_true(identical(length(peaksData(be_sp)), length((.peaksData(be_sp)))))
     expect_true(identical(
         chromData(be_sp),
         fillCoreChromVariables(be_sp@chromData)

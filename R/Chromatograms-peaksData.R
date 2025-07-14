@@ -158,16 +158,16 @@ setMethod("peaksData",
     columns = peaksVariables(object),
     f = processingChunkFactor(object),
     BPPARAM = bpparam(), drop = FALSE, ...) {
-        queue <- object@processingQueue
+        queue <- .processingQueue(object)
         if (length(queue)) {
-            bd <- .run_process_queue(object@backend,
+            bd <- .run_process_queue(.backend(object),
                 queue = queue,
                 f = f,
                 BPPARAM = BPPARAM
             )
             return(peaksData(bd, columns = columns, drop = drop))
         }
-        peaksData(object@backend, columns = columns, drop = drop)
+        peaksData(.backend(object), columns = columns, drop = drop)
     }
 )
 
@@ -175,7 +175,7 @@ setMethod("peaksData",
 setReplaceMethod("peaksData",
     signature = "Chromatograms",
     function(object, value) {
-        if (isReadOnly(object@backend)) {
+        if (isReadOnly(.backend(object))) {
             stop("Cannot replace peaks data in a read-only backend")
         }
         peaksData(object@backend) <- value
@@ -185,7 +185,7 @@ setReplaceMethod("peaksData",
 
 #' @rdname peaksData
 setMethod("peaksVariables", signature = "Chromatograms", function(object, ...) {
-    peaksVariables(object@backend)
+    peaksVariables(.backend(object))
 })
 
 #' @rdname peaksData
@@ -197,7 +197,7 @@ setMethod("rtime", signature = "Chromatograms", function(object, ...) {
 setReplaceMethod("rtime",
     signature = "Chromatograms",
     function(object, value) {
-        if (isReadOnly(object@backend)) {
+        if (isReadOnly(.backend(object))) {
             stop("Cannot replace peaks data in a read-only backend")
         }
         rtime(object@backend) <- value
@@ -214,7 +214,7 @@ setMethod("intensity", signature = "Chromatograms", function(object, ...) {
 setReplaceMethod("intensity",
     signature = "Chromatograms",
     function(object, value) {
-        if (isReadOnly(object@backend)) {
+        if (isReadOnly(.backend(object))) {
             stop("Cannot replace peaks data in a read-only backend")
         }
         intensity(object@backend) <- value
@@ -233,7 +233,7 @@ setMethod("filterPeaksData",
             match = match, keep = keep
         )
         object@processing <- .logging(
-            object@processing, "Filter: remove peaks based ",
+            .processing(object), "Filter: remove peaks based ",
             "on the variables: ", paste(variables, collapse = ", "),
             "the ranges: ", paste(ranges, collapse = ", "),
             "and the match condition: ", match

@@ -15,8 +15,7 @@ vignette: >
 BiocStyle::markdown()
 ```
 
-**Package**: `r Biocpkg("Chromatograms")`<br />
-**Authors**: `r packageDescription("Chromatograms")[["Author"]] `<br />
+**Package**: `r BiocStyle::pkg_ver('Chromatograms')` <br />
 **Compiled**: `r date()`
 
 ```{r, echo = FALSE, message = FALSE}
@@ -38,6 +37,13 @@ Contributions to this vignette (content or correction of typos) or requests for
 additional details and information are highly welcome, ideally *via* pull
 requests or *issues* on the package's 
 [github repository](https://github.com/RforMassSpectrometry/Chromatograms).
+
+This vignette describe the structure of a backend class and the methods that
+need to be implemented. In order to see the structure of the backend, the 
+`@` accessor is used to access the slots of the backend object. This is
+possible because the backend class is defined as an S4 class. However users
+should not use the `@` accessor to access the slots of a backend object, but
+instead use the methods defined by the `ChromBackend` class. 
 
 
 # What is a `ChromBackend`?
@@ -90,7 +96,6 @@ parameter `processingChunkSize`. Alternatively, through the
 should/could be used for splitting and parallel processing. The default
 implementation for `backendParallelFactor()` is to return an empty `factor`
 (`factor()`) hence not suggesting any preferred splitting.
-
 Besides parallel processing, for on-disk backends (i.e., backends that don't
 keep all of the data in memory), this chunk-wise processing can also reduce the
 memory demand for operations, because only the peak data of the current chunk
@@ -423,7 +428,7 @@ chromData(be)
 #' Selected variables
 chromData(be, c("mz", "msLevel"))
 
-#' Only missing core spectra variables
+#' Only missing core chromatograms variables
 chromData(be, c("collisionEnergy", "mzMin"))
 ```
 
@@ -1410,4 +1415,3 @@ split(be, f = c(1, 2, 1))
 sessionInfo()
 ```
 
-# References
