@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">Chromatograms</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.3</span>
       </span>
     </div>
 
@@ -102,7 +102,7 @@ document.addEventListener("DOMContentLoaded", function() {
     if (links[i].hostname != window.location.hostname)
       links[i].target = '_blank';
 });
-</script><p><strong>Package</strong>: Chromatograms 0.99.2 <br><strong>Compiled</strong>: Mon Jul 14 12:21:35 2025</p>
+</script><p><strong>Package</strong>: Chromatograms 0.99.3 <br><strong>Compiled</strong>: Tue Jul 15 06:55:37 2025</p>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
@@ -595,7 +595,7 @@ use this to make all data manipulations on peak data of the
 <span><span class="co">## ... 11 more  chromatogram variables/columns</span></span>
 <span><span class="co">## ... 2 peaksData variables</span></span>
 <span><span class="co">## Processing:</span></span>
-<span><span class="co">##  Applied processing queue with 1 steps [Mon Jul 14 12:21:39 2025]</span></span></code></pre>
+<span><span class="co">##  Applied processing queue with 1 steps [Tue Jul 15 06:55:41 2025]</span></span></code></pre>
 <p>Before <code><a href="https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html" class="external-link">applyProcessing()</a></code> the lazy evaluation queue
 contained 2 processing steps, which were then applied to the peak data
 and <em>written</em> to the data storage. Note that calling
@@ -691,7 +691,7 @@ change the <code>ChrombackendMzR</code> to an in-memory backend such as
 <span><span class="co">## ... 6 more  chromatogram variables/columns</span></span>
 <span><span class="co">## ... 2 peaksData variables</span></span>
 <span><span class="co">## Processing:</span></span>
-<span><span class="co">##  Switch backend from ChromBackendMzR to ChromBackendMemory [Mon Jul 14 12:21:41 2025]</span></span></code></pre>
+<span><span class="co">##  Switch backend from ChromBackendMzR to ChromBackendMemory [Tue Jul 15 06:55:42 2025]</span></span></code></pre>
 <div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">chr_mzr</span><span class="op">@</span><span class="va">backend</span><span class="op">@</span><span class="va">peaksData</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># data is now in memory</span></span></code></pre></div>
 <pre><code><span><span class="co">##          rtime intensity</span></span>
@@ -797,7 +797,7 @@ be used to overlay all chromatograms into one plot.</p>
 <span><span class="co">##  [1] RColorBrewer_1.1-3          MsBackendMetaboLights_1.3.1</span></span>
 <span><span class="co">##  [3] Spectra_1.19.2              S4Vectors_0.47.0           </span></span>
 <span><span class="co">##  [5] BiocGenerics_0.55.0         generics_0.1.4             </span></span>
-<span><span class="co">##  [7] Chromatograms_0.99.2        ProtGenerics_1.41.0        </span></span>
+<span><span class="co">##  [7] Chromatograms_0.99.3        ProtGenerics_1.41.0        </span></span>
 <span><span class="co">##  [9] BiocParallel_1.43.4         BiocStyle_2.37.0           </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## loaded via a namespace (and not attached):</span></span>
