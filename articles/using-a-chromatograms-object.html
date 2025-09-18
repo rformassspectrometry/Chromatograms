@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">Chromatograms</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.4</span>
       </span>
     </div>
 
@@ -102,7 +102,7 @@ document.addEventListener("DOMContentLoaded", function() {
     if (links[i].hostname != window.location.hostname)
       links[i].target = '_blank';
 });
-</script><p><strong>Package</strong>: Chromatograms 0.99.3 <br><strong>Compiled</strong>: Tue Jul 15 06:55:37 2025</p>
+</script><p><strong>Package</strong>: Chromatograms 0.99.4 <br><strong>Compiled</strong>: Thu Sep 18 14:24:53 2025</p>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
@@ -595,7 +595,7 @@ use this to make all data manipulations on peak data of the
 <span><span class="co">## ... 11 more  chromatogram variables/columns</span></span>
 <span><span class="co">## ... 2 peaksData variables</span></span>
 <span><span class="co">## Processing:</span></span>
-<span><span class="co">##  Applied processing queue with 1 steps [Tue Jul 15 06:55:41 2025]</span></span></code></pre>
+<span><span class="co">##  Applied processing queue with 1 steps [Thu Sep 18 14:24:57 2025]</span></span></code></pre>
 <p>Before <code><a href="https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html" class="external-link">applyProcessing()</a></code> the lazy evaluation queue
 contained 2 processing steps, which were then applied to the peak data
 and <em>written</em> to the data storage. Note that calling
@@ -629,7 +629,7 @@ will be performed. We next evaluate whether the
 <code>Chromatograms</code> with the <code>ChromBackendMzR</code> on-disk
 backend would use chunk-wise processing.</p>
 <div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html" class="external-link">processingChunkFactor</a></span><span class="op">(</span><span class="va">chr_mzr</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html" class="external-link">processingChunkFactor</a></span><span class="op">(</span><span class="va">chr_mzr</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] /__w/_temp/Library/msdata/proteomics/MRM-standmix-5.mzML.gz</span></span>
 <span><span class="co">## [2] /__w/_temp/Library/msdata/proteomics/MRM-standmix-5.mzML.gz</span></span>
@@ -691,7 +691,7 @@ change the <code>ChrombackendMzR</code> to an in-memory backend such as
 <span><span class="co">## ... 6 more  chromatogram variables/columns</span></span>
 <span><span class="co">## ... 2 peaksData variables</span></span>
 <span><span class="co">## Processing:</span></span>
-<span><span class="co">##  Switch backend from ChromBackendMzR to ChromBackendMemory [Tue Jul 15 06:55:42 2025]</span></span></code></pre>
+<span><span class="co">##  Switch backend from ChromBackendMzR to ChromBackendMemory [Thu Sep 18 14:24:58 2025]</span></span></code></pre>
 <div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">chr_mzr</span><span class="op">@</span><span class="va">backend</span><span class="op">@</span><span class="va">peaksData</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># data is now in memory</span></span></code></pre></div>
 <pre><code><span><span class="co">##          rtime intensity</span></span>
@@ -709,12 +709,13 @@ size, which is now much larger than before.</p>
 <pre><code><span><span class="co">## 2.8 Mb</span></span></code></pre>
 </div>
 <div class="section level2">
-<h2 id="plotting-chromatograms-from-a-spectra-object">Plotting chromatograms from a Spectra object<a class="anchor" aria-label="anchor" href="#plotting-chromatograms-from-a-spectra-object"></a>
+<h2 id="plotting-chromatograms-from-a-spectra-object">Plotting chromatograms from a <code>Spectra</code> object<a class="anchor" aria-label="anchor" href="#plotting-chromatograms-from-a-spectra-object"></a>
 </h2>
-<p>For this purpose let’s create a Chromatogram object from public
-spectral data.</p>
+<p>For this purpose let’s create a <code>Chromatograms</code> object
+from public spectral data.</p>
 <div class="sourceCode" id="cb60"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/RforMassSpectrometry/MsBackendMetaboLights" class="external-link">MsBackendMetaboLights</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/RforMassSpectrometry/Spectra" class="external-link">Spectra</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/RforMassSpectrometry/MsBackendMetaboLights" class="external-link">MsBackendMetaboLights</a></span><span class="op">)</span></span>
 <span><span class="va">be</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html" class="external-link">backendInitialize</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/MsBackendMetaboLights/man/MsBackendMetaboLights.html" class="external-link">MsBackendMetaboLights</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>    mtblsId <span class="op">=</span> <span class="st">"MTBLS39"</span>,</span>
 <span>    filePattern <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"63B.cdf"</span><span class="op">)</span></span>
@@ -795,33 +796,33 @@ be used to overlay all chromatograms into one plot.</p>
 <span><span class="co">## </span></span>
 <span><span class="co">## other attached packages:</span></span>
 <span><span class="co">##  [1] RColorBrewer_1.1-3          MsBackendMetaboLights_1.3.1</span></span>
-<span><span class="co">##  [3] Spectra_1.19.2              S4Vectors_0.47.0           </span></span>
-<span><span class="co">##  [5] BiocGenerics_0.55.0         generics_0.1.4             </span></span>
-<span><span class="co">##  [7] Chromatograms_0.99.3        ProtGenerics_1.41.0        </span></span>
-<span><span class="co">##  [9] BiocParallel_1.43.4         BiocStyle_2.37.0           </span></span>
+<span><span class="co">##  [3] Spectra_1.19.8              S4Vectors_0.47.1           </span></span>
+<span><span class="co">##  [5] BiocGenerics_0.55.1         generics_0.1.4             </span></span>
+<span><span class="co">##  [7] Chromatograms_0.99.4        ProtGenerics_1.41.0        </span></span>
+<span><span class="co">##  [9] BiocParallel_1.43.4         BiocStyle_2.37.1           </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## loaded via a namespace (and not attached):</span></span>
-<span><span class="co">##  [1] xfun_0.52              bslib_0.9.0            httr2_1.2.0           </span></span>
-<span><span class="co">##  [4] htmlwidgets_1.6.4      Biobase_2.69.0         vctrs_0.6.5           </span></span>
-<span><span class="co">##  [7] tools_4.5.1            curl_6.4.0             parallel_4.5.1        </span></span>
-<span><span class="co">## [10] tibble_3.3.0           RSQLite_2.4.1          cluster_2.1.8.1       </span></span>
-<span><span class="co">## [13] blob_1.2.4             pkgconfig_2.0.3        dbplyr_2.5.0          </span></span>
+<span><span class="co">##  [1] xfun_0.53              bslib_0.9.0            httr2_1.2.1           </span></span>
+<span><span class="co">##  [4] htmlwidgets_1.6.4      Biobase_2.69.1         vctrs_0.6.5           </span></span>
+<span><span class="co">##  [7] tools_4.5.1            curl_7.0.0             parallel_4.5.1        </span></span>
+<span><span class="co">## [10] tibble_3.3.0           RSQLite_2.4.3          cluster_2.1.8.1       </span></span>
+<span><span class="co">## [13] blob_1.2.4             pkgconfig_2.0.3        dbplyr_2.5.1          </span></span>
 <span><span class="co">## [16] desc_1.4.3             lifecycle_1.0.4        compiler_4.5.1        </span></span>
-<span><span class="co">## [19] progress_1.2.3         textshaping_1.0.1      codetools_0.2-20      </span></span>
+<span><span class="co">## [19] progress_1.2.3         textshaping_1.0.3      codetools_0.2-20      </span></span>
 <span><span class="co">## [22] ncdf4_1.24             clue_0.3-66            htmltools_0.5.8.1     </span></span>
 <span><span class="co">## [25] sass_0.4.10            yaml_2.3.10            crayon_1.5.3          </span></span>
-<span><span class="co">## [28] pkgdown_2.1.3.9000     pillar_1.11.0          jquerylib_0.1.4       </span></span>
+<span><span class="co">## [28] pkgdown_2.1.3.9000     pillar_1.11.1          jquerylib_0.1.4       </span></span>
 <span><span class="co">## [31] MASS_7.3-65            cachem_1.1.0           MetaboCoreUtils_1.17.1</span></span>
 <span><span class="co">## [34] tidyselect_1.2.1       digest_0.6.37          purrr_1.1.0           </span></span>
-<span><span class="co">## [37] dplyr_1.1.4            bookdown_0.43          fastmap_1.2.0         </span></span>
-<span><span class="co">## [40] cli_3.6.5              magrittr_2.0.3         withr_3.0.2           </span></span>
+<span><span class="co">## [37] dplyr_1.1.4            bookdown_0.44          fastmap_1.2.0         </span></span>
+<span><span class="co">## [40] cli_3.6.5              magrittr_2.0.4         withr_3.0.2           </span></span>
 <span><span class="co">## [43] prettyunits_1.2.0      filelock_1.0.3         rappdirs_0.3.3        </span></span>
 <span><span class="co">## [46] bit64_4.6.0-1          rmarkdown_2.29         bit_4.6.0             </span></span>
-<span><span class="co">## [49] hms_1.1.3              ragg_1.4.0             memoise_2.0.1         </span></span>
-<span><span class="co">## [52] evaluate_1.0.4         knitr_1.50             IRanges_2.43.0        </span></span>
-<span><span class="co">## [55] BiocFileCache_2.99.5   rlang_1.1.6            Rcpp_1.1.0            </span></span>
+<span><span class="co">## [49] hms_1.1.3              ragg_1.5.0             memoise_2.0.1         </span></span>
+<span><span class="co">## [52] evaluate_1.0.5         knitr_1.50             IRanges_2.43.2        </span></span>
+<span><span class="co">## [55] BiocFileCache_2.99.6   rlang_1.1.6            Rcpp_1.1.0            </span></span>
 <span><span class="co">## [58] glue_1.8.0             DBI_1.2.3              BiocManager_1.30.26   </span></span>
-<span><span class="co">## [61] mzR_2.43.0             jsonlite_2.0.0         R6_2.6.1              </span></span>
+<span><span class="co">## [61] mzR_2.43.3             jsonlite_2.0.0         R6_2.6.1              </span></span>
 <span><span class="co">## [64] systemfonts_1.2.3      fs_1.6.6               MsCoreUtils_1.21.0</span></span></code></pre>
 </div>
   </div>
