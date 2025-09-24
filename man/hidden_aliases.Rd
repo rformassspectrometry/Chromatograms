@@ -22,6 +22,7 @@
 \alias{[,ChromBackendMemory-method}
 \alias{$,ChromBackendMemory-method}
 \alias{$<-,ChromBackendMemory-method}
+\alias{chromExtract,ChromBackendMemory-method}
 \alias{show,ChromBackendMzR-method}
 \alias{backendParallelFactor,ChromBackendMzR-method}
 \alias{isReadOnly,ChromBackendMzR-method}
@@ -36,9 +37,9 @@
 \alias{isReadOnly,ChromBackendSpectra-method}
 \alias{peaksData,ChromBackendSpectra-method}
 \alias{peaksData<-,ChromBackendSpectra-method}
-\alias{chromData<-,ChromBackendSpectra-method}
 \alias{supportsSetBackend,ChromBackendSpectra-method}
 \alias{[,ChromBackendSpectra-method}
+\alias{chromExtract,ChromBackendSpectra-method}
 \alias{show,Chromatograms-method}
 \title{Fill data.frame with columns for missing core chromatogram variables.}
 \usage{
@@ -76,6 +77,8 @@ validPeaksData(x = list(), error = TRUE)
 
 \S4method{$}{ChromBackendMemory}(x, name) <- value
 
+\S4method{chromExtract}{ChromBackendMemory}(object, peak_table, by)
+
 \S4method{show}{ChromBackendMzR}(object)
 
 \S4method{backendParallelFactor}{ChromBackendMzR}(object, ...)
@@ -110,11 +113,11 @@ validPeaksData(x = list(), error = TRUE)
 
 \S4method{peaksData}{ChromBackendSpectra}(object) <- value
 
-\S4method{chromData}{ChromBackendSpectra}(object) <- value
-
 \S4method{supportsSetBackend}{ChromBackendSpectra}(object, ...)
 
 \S4method{[}{ChromBackendSpectra}(x, i, j, ..., drop = TRUE)
+
+\S4method{chromExtract}{ChromBackendSpectra}(object, peak_table, by)
 
 \S4method{show}{Chromatograms}(object)
 }

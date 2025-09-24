@@ -188,19 +188,19 @@ setClassUnion("ChromBackendOrMissing", c("ChromBackend", "missing"))
 #'
 #' @noRd
 setClass("Chromatograms",
-    slots = c(
-        backend = "ChromBackend",
-        processingQueue = "list",
-        processing = "character",
-        processingChunkSize = "numeric",
-        version = "character"
-    ),
-    prototype = prototype(
-        version = "0.1",
-        processingChunkSize = Inf,
-        processingQueue = list(),
-        processing = character()
-    )
+         slots = c(
+             backend = "ChromBackend",
+             processingQueue = "list",
+             processing = "character",
+             processingChunkSize = "numeric",
+             version = "character"
+         ),
+         prototype = prototype(
+             version = "0.1",
+             processingChunkSize = Inf,
+             processingQueue = list(),
+             processing = character()
+         )
 )
 
 setValidity("Chromatograms", function(object) {
@@ -225,7 +225,7 @@ setValidity("Chromatograms", function(object) {
 setMethod(
     "Chromatograms", "ChromBackendOrMissing",
     function(object = ChromBackendMemory(),
-    processingQueue = list(), ...) {
+             processingQueue = list(), ...) {
         if (missing(object)) {
             object <- ChromBackendMemory()
         }
@@ -242,13 +242,13 @@ setMethod(
 setMethod(
     "Chromatograms", "Spectra",
     function(object, summarize.method = c("sum", "max"),
-    chromData = data.frame(),
-    factorize.by = c("msLevel", "dataOrigin"), ...) {
+             chromData = data.frame(),
+             factorize.by = c("msLevel", "dataOrigin"), ...) {
         bd <- backendInitialize(ChromBackendSpectra(),
-            spectra = object,
-            factorize.by = factorize.by,
-            chromData = chromData,
-            summarize.method = summarize.method
+                                spectra = object,
+                                factorize.by = factorize.by,
+                                chromData = chromData,
+                                summarize.method = summarize.method
         )
         new("Chromatograms",
             backend = bd,
@@ -313,7 +313,7 @@ setMethod(
 setMethod(
     "setBackend", c("Chromatograms", "ChromBackend"),
     function(object, backend, f = processingChunkFactor(object),
-    BPPARAM = SerialParam(), ...) {
+             BPPARAM = SerialParam(), ...) {
         backend_class <- class(.backend(object))
         BPPARAM <- backendBpparam(.backend(object), BPPARAM)
         BPPARAM <- backendBpparam(backend, BPPARAM)
@@ -322,23 +322,25 @@ setMethod(
         }
         if (!length(f) || length(levels(f)) == 1 || !length(object)) {
             bd_new <- backendInitialize(backend,
-                peaksData = peaksData(object),
-                chromData = chromData(object)
+                                        peaksData = peaksData(object),
+                                        chromData = chromData(object)
             )
         } else {
             bd_new <- bplapply(
                 split(.backend(object), f = f),
                 function(z, ...) {
                     backendInitialize(backend,
-                        peaksData = peaksData(z),
-                        chromData = chromData(z),
-                        BPPARAM = SerialParam()
+                                      peaksData = peaksData(z),
+                                      chromData = chromData(z),
+                                      BPPARAM = SerialParam()
                     )
                 }, ...,
                 BPPARAM = BPPARAM
             )
             bd_new <- backendMerge(bd_new)
         }
+        if (colnames(chromData(bd_new)) %in% c("rtMin", "rtMax"))
+            chromData(bd_new) <- chromData(bd_new)[, - which(colnames(chromData(bd_new)) %in% c("rtMin", "rtMax"))]
         object@backend <- bd_new
         object@processing <- .logging(
             object@processing,

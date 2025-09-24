@@ -73,7 +73,7 @@
     }
 
     if (!all(diff(df$rtime) > 0)) {
-        return("'rtime' column is not strictly increasing.")
+        return("'rtime' column is not strictly increasing.") ## does it need to strictly increase ?
     }
 
     return(NULL)
@@ -271,7 +271,8 @@
     orientation = 1, ...) {
     v <- peaksData(x)[[1L]]
     rts <- v$rtime
-    ints <- orientation * v[, "intensity"]
+    raw_ints <- v[, "intensity"]
+    ints <- orientation * raw_ints
     if (!length(xlim)) {
         xlim <- range(rts, na.rm = TRUE)
     }
@@ -302,22 +303,27 @@
     }
     plot.xy(xy.coords(rts, ints), type = type, col = col, ...)
 }
-
 #' Used In:
 #' - `peaksData` for `ChromBackendSpectra` class.
 #' @noRd
 .process_peaks_data <- function(cd, s, columns, fun, drop) {
     s <- Spectra::filterRanges(s,
         spectraVariables = rep("rtime", nrow(cd)),
-        ranges = as.vector(rbind(cd$rtmin, cd$rtmax)),
+        ranges = as.vector(rbind(cd$rtMin, cd$rtMax)),
         match = "any"
     )
     pd <- Spectra::peaksData(s, columns = c("mz", "intensity"))
     do_rt <- "rtime" %in% columns
     do_int <- "intensity" %in% columns
-    rt <- rtime(s)
+    rt <- rtime(s) ## there are duplicate here, this is where the problem is,
+    ## because we don't summarize this. should we ? i guess there cannot be
+    ## multiple spectra at the same exact time in the same file. this could be
+    ## just due to playing around in the spectra object.
+    ## ## i would keep only the first one.
+
     lapply(seq_len(nrow(cd)), function(i) {
-        keep <- between(rt, c(cd$rtmin[i], cd$rtmax[i]))
+        ## only keep the first rt if there is duplication
+        keep <- between(rt, c(cd$rtMin[i], cd$rtMax[i])) & !duplicated(rt) ## so dumb, should be much faster to here.
         df <- as.data.frame(matrix(ncol = 0, nrow = sum(keep)))
         if (do_rt) {
             df$rtime <- rt[keep]
@@ -340,8 +346,8 @@
 .spectra_format_chromData <- function(sps) {
     data.frame(
         msLevel = unique(sps$msLevel),
-        rtmin = min(sps$rtime, na.rm = TRUE),
-        rtmax = max(sps$rtime, na.rm = TRUE),
+        rtMin = min(sps$rtime, na.rm = TRUE),
+        rtMax = max(sps$rtime, na.rm = TRUE),
         mzMin = -Inf,
         mzMax = Inf,
         mz = Inf,
@@ -357,29 +363,29 @@
 #' - `factorize()` for `ChrombackendSpectra`
 #' @noRd
 .ensure_rt_mz_columns <- function(chrom_data, spectra, spectra_f) {
-    if (!all(c("mzmin", "mzmax") %in% colnames(chrom_data))) {
-        if ("mzmin" %in% colnames(chrom_data) ||
-            "mzmax" %in% colnames(chrom_data)) {
-            stop("Both 'mzmin' and 'mzmax' must be present if one",
+    if (!all(c("mzMin", "mzMax") %in% colnames(chrom_data))) {
+        if ("mzMin" %in% colnames(chrom_data) ||
+            "mzMax" %in% colnames(chrom_data)) {
+            stop("Both 'mzMin' and 'mzMax' must be present if one",
                  " is provided.")
         } else {
-            chrom_data$mzmin <- -Inf
-            chrom_data$mzmax <- Inf
+            chrom_data$mzMin <- -Inf
+            chrom_data$mzMax <- Inf
         }
     }
-    if (!all(c("rtmin", "rtmax") %in% colnames(chrom_data))) {
-        if ("rtmin" %in% colnames(chrom_data) || "rtmax" %in%
+    if (!all(c("rtMin", "rtMax") %in% colnames(chrom_data))) {
+        if ("rtMin" %in% colnames(chrom_data) || "rtMax" %in%
             colnames(chrom_data)) {
-            stop("Both 'rtmin' and 'rtmax' must be present if one",
+            stop("Both 'rtMin' and 'rtMax' must be present if one",
                  " is provided.")
         } else {
             rt_range <- lapply(split(spectra$rtime, spectra_f), function(rt) {
-                list(rtmin = min(rt, na.rm = TRUE),
-                     rtmax = max(rt, na.rm = TRUE))
+                list(rtMin = min(rt, na.rm = TRUE),
+                     rtMax = max(rt, na.rm = TRUE))
             })
             rt_values <- do.call(rbind, rt_range)
-            chrom_data$rtmin <- rt_values[, "rtmin"]
-            chrom_data$rtmax <- rt_values[, "rtmax"]
+            chrom_data$rtMin <- rt_values[, "rtMin"]
+            chrom_data$rtMax <- rt_values[, "rtMax"]
         }
     }
     chrom_data

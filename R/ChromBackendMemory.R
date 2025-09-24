@@ -297,3 +297,54 @@ setReplaceMethod("$", "ChromBackendMemory", function(x, name, value) {
     }
     x
 })
+
+#' @rdname hidden_aliases
+setMethod("chromExtract", "ChromBackendMemory", function(object, peak_table, by) {
+    if (!all(c("rtMin", "rtMax") %in% colnames(peak_table))) {
+        stop('The peak_table must contain the columns: "rtMin" and "rtMax".')
+    }
+
+    if (any(is.na(peak_table$rtMin)) || any(is.na(peak_table$rtMax))) {
+        stop("The 'rtMin' and 'rtMax' columns in peak_table cannot contain NA values.")
+    }
+
+    cd <- chromData(object)
+
+    if (!all(by %in% colnames(cd))) {
+        stop("All 'by' columns must be present in the chromData of the object.")
+    }
+
+    # Check for uniqueness of the combination of 'by' columns in chromData
+    if (nrow(cd) != nrow(unique(cd[by]))) {
+        stop("The combination of 'by' columns must be unique in the chromData.")
+    }
+
+    pdata <- vector("list", nrow(peak_table))
+    new_cdata <- data.frame()
+
+    for (i in seq_len(nrow(peak_table))) {
+        p <- peak_table[i, ]
+
+        # Create a logical vector to match rows based on 'by' columns
+        match_idx <- rep(TRUE, nrow(cd))
+        for (col in by) {
+            match_idx <- match_idx & (cd[[col]] == p[[col]])
+        }
+
+        idx <- which(match_idx)
+
+        if (length(idx) == 0) next
+
+        # Update peaksData
+        rt <- rtime(object)[[idx]]
+        inrt <- rt >= p$rtMin & rt <= p$rtMax
+        pdata[[i]] <- peaksData(object)[[idx]][inrt, , drop = FALSE]
+
+        # Update chromData
+        new_cdata <- rbind(new_cdata, cd[idx, ])
+    }
+
+    backendInitialize(new("ChromBackendMemory"),
+                      chromData = new_cdata, peaksData = pdata)
+
+})

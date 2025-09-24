@@ -17,7 +17,7 @@ NULL
 #' containing chromatographic metadata, stored in `chromData`. This metadata
 #' filters the `Spectra` object and generates `peaksData`. If `chromData` is
 #' not provided, a default `data.frame` is created from the `Spectra` data.
-#' An "rtmin", "rtmax", "mzmin", and "mzmax" column will be created by
+#' An "rtMin", "rtMax", "mzMin", and "mzMax" column will be created by
 #' condensing the `Spectra` data corresponding to each unique combination of
 #' the `factorize.by` variables.
 #'
@@ -47,7 +47,7 @@ NULL
 #'
 #' @param chromData A `data.frame` with chromatographic data for use in
 #'        `backendInitialize()`. If missing, a default is generated. Columns
-#'        like `rtmin`, `rtmax`, `mzmin`, and `mzmax` must be provided and not
+#'        like `rtMin`, `rtMax`, `mzMin`, and `mzMax` must be provided and not
 #'        contain `NA` values. Use `-Inf/Inf` for unspecified values. The
 #'        `"dataOrigin"` column must match the `Spectra` object's
 #'        `"dataOrigin"`.
@@ -104,7 +104,7 @@ NULL
 #'
 #' ## Another possibilities is to create eics from the Spectra object.
 #' ## Here we create an EIC with a specific m/z and retention time window.
-#' df <- data.frame(mzmin = 100.01, mzmax = 100.02 , rtmin = 50, rtmax = 100)
+#' df <- data.frame(mzMin = 100.01, mzMax = 100.02 , rtMin = 50, rtMax = 100)
 #' be <- backendInitialize(be_empty, s, summarize.method = "sum")
 #' chromData(be) <- cbind(chromData(be), df)
 #'
@@ -157,6 +157,10 @@ setMethod("backendInitialize", "ChromBackendSpectra",
               object@summaryFun <- if (summarize.method == "sum") sumi else maxi
               if (!is(spectra, "Spectra"))
                   stop("'spectra' must be a 'Spectra' object.")
+              spectra <- lapply(split(spectra, spectra$dataOrigin), function(x) {
+                  x[order(x$rtime)]
+              })
+              spectra <- concatenateSpectra(spectra)
               if (!length(spectra)) return(object)
               if (!all(factorize.by %in% Spectra::spectraVariables(spectra)))
                   stop("All 'factorize.by' variables must exist in 'spectra'.")
@@ -229,7 +233,7 @@ setMethod("factorize", "ChromBackendSpectra",
               full_sp <- do.call(rbindFill,
                                  lapply(split(.spectra(object), spectra_f),
                                         .spectra_format_chromData))
-              full_sp$chromIndex <- seq_len(nrow(full_sp))
+              full_sp$chromIndex <- unsplit(lapply(split(seq_along(full_sp$dataOrigin), full_sp$dataOrigin), seq_along),full_sp$dataOrigin) ## need to test this.
               rownames(full_sp) <- NULL
               object@chromData <- full_sp
               }
@@ -292,16 +296,7 @@ setReplaceMethod("peaksData", "ChromBackendSpectra", function(object, value) {
     object
 })
 
-#' @rdname hidden_aliases
-setReplaceMethod("chromData", "ChromBackendSpectra", function(object, value) {
-    message(
-        "Please keep in mind the 'ChromBackendSpectra' backend ",
-        "is read-only. The chromData slot will be modified but the ",
-        "changes will not affect the Spectra object. You will need to ",
-        "run `factorize()` to update the 'chromSpectraIndex' column."
-    )
-    callNextMethod()
-})
+
 
 #' @rdname hidden_aliases
 #' @export
@@ -317,4 +312,46 @@ setMethod("[", "ChromBackendSpectra", function(x, i, j, ...) {
     if (!length(i))
         return(ChromBackendSpectra())
     callNextMethod()
+})
+
+#' @rdname hidden_aliases
+setMethod("chromExtract", "ChromBackendSpectra", function(object, peak_table, by) {
+    if (!all(c("rtMin", "rtMax", "mzMin", "mzMax") %in% colnames(peak_table))) {
+        stop('The peak_table must contain the columns: "rtMin", "rtMax", "mzMin", and "mzMax".')
+    }
+
+    if (any(is.na(peak_table$rtMin)) || any(is.na(peak_table$rtMax))) {
+        stop("The 'rtMin' and 'rtMax' columns in peak_table cannot contain NA values.")
+    }
+
+    cd <- chromData(object)
+
+    if (!all(by %in% colnames(cd))) {
+        stop("All 'by' columns must be present in the chromData of the object.")
+    }
+
+    # Check for uniqueness of the combination of 'by' columns in chromData
+    if (nrow(cd) != nrow(unique(cd[by]))) {
+        stop("The combination of 'by' columns must be unique in the chromData.")
+    }
+    # build grouping keys regardless of whether 'by' has length 1 or >
+    peak_keys  <- interaction(peak_table[, by, drop = FALSE], drop = TRUE)
+    chrom_keys <- interaction(chromData(object)[, by, drop = FALSE], drop = TRUE)
+    new_cdata <- do.call(rbind, lapply(seq_along(peak_keys), function(i) {
+        pk <- peak_table[i, , drop = FALSE]
+        d  <- chromData(object)[chrom_keys == peak_keys[i], , drop = FALSE]
+
+        # replicate the matching row(s) in chromData to align with this pk row
+        d  <- d[rep(seq_len(nrow(d)), each = 1), , drop = FALSE]
+
+        # assign rt/mz values from pk
+        d[, c("rtMin", "rtMax", "mzMin", "mzMax")] <- pk[, c("rtMin", "rtMax", "mzMin", "mzMax")]
+
+        ## allows to add other columns ?
+        d
+    }))
+
+    backendInitialize(new("ChromBackendSpectra"),
+                      chromData = new_cdata, spectra = object@spectra)
+
 })

@@ -5,6 +5,7 @@ setGeneric("chromData", function(object, ...) standardGeneric("chromData"))
 setGeneric("chromData<-", function(object, value) {
     standardGeneric("chromData<-")
 })
+setGeneric("chromExtract", function(object,peak_table, by, ...) standardGeneric("chromExtract"))
 setGeneric("chromIndex", function(object, ...) standardGeneric("chromIndex"))
 setGeneric("chromIndex<-", function(object, value) {
     standardGeneric("chromIndex<-")
@@ -47,6 +48,8 @@ setGeneric("productMzMin", function(object, ...) {
 setGeneric("productMzMin<-", function(object, value) {
     standardGeneric("productMzMin<-")
 })
+setGeneric("imputePeaksData", function(object, ...)
+    standardGeneric("imputePeaksData"))
 #' @rdname hidden_aliases
 setGeneric("reset", function(object, ...) {
     standardGeneric("reset")
