@@ -29,7 +29,8 @@ Depends:
 Imports:
     methods,
     S4Vectors,
-    MsCoreUtils (>= 1.7.5)
+    MsCoreUtils (>= 1.7.5), 
+    IRanges
 Suggests:
     msdata (>= 0.19.3),
     roxygen2,
