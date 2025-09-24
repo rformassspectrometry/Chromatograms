@@ -73,6 +73,8 @@ NULL
 #' @return Refer to the individual function description for information on the
 #'         return value.
 #'
+#' @importFrom IRanges NumericList
+#'
 #' @examples
 #' library(Spectra)
 #' library(MsBackendMetaboLights)
@@ -114,7 +116,6 @@ NULL
 #' peaksData(be)
 #'
 NULL
-
 
 #' @noRd
 ChromBackendSpectra <- setClass(

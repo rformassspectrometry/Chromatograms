@@ -1,6 +1,6 @@
 Package: Chromatograms
 Title: Infrastructure for Chromatographic Mass Spectrometry Data
-Version: 0.99.4
+Version: 0.99.5
 Description: The Chromatograms packages defines an efficient infrastructure
    for storing and handling of chromatographic mass spectrometry data. It
    provides different implementations of *backends* to store and represent the
@@ -29,7 +29,8 @@ Depends:
 Imports:
     methods,
     S4Vectors,
-    MsCoreUtils (>= 1.7.5)
+    MsCoreUtils (>= 1.7.5), 
+    IRanges
 Suggests:
     msdata (>= 0.19.3),
     roxygen2,
