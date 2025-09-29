@@ -73,7 +73,8 @@ NULL
 #' @return Refer to the individual function description for information on the
 #'         return value.
 #'
-#' @importFrom IRanges NumericList
+#' @importClassesFrom Spectra Spectra
+#' @importFrom Spectra Spectra spectraVariables spectraData
 #'
 #' @examples
 #' library(Spectra)
@@ -130,7 +131,7 @@ ChromBackendSpectra <- setClass(
         chromData = fillCoreChromVariables(data.frame()),
         peaksData = list(.EMPTY_PEAKS_DATA),
         readonly = TRUE,
-        spectra = Spectra::Spectra(),
+        spectra = Spectra(),
         version = "0.1",
         inMemory = FALSE,
         summaryFun = sumi
@@ -141,7 +142,6 @@ ChromBackendSpectra <- setClass(
 #' @importFrom methods new
 #' @export ChromBackendSpectra
 ChromBackendSpectra <- function() {
-    .check_Spectra_package()
     new("ChromBackendSpectra")
 }
 
@@ -149,7 +149,7 @@ ChromBackendSpectra <- function() {
 #' @importFrom methods callNextMethod
 #' @importFrom MsCoreUtils rbindFill sumi maxi
 setMethod("backendInitialize", "ChromBackendSpectra",
-          function(object, spectra = Spectra::Spectra(),
+          function(object, spectra = Spectra(),
                    factorize.by = c("msLevel" , "dataOrigin"),
                    summarize.method = c("sum", "max"),
                    chromData = fillCoreChromVariables(),
@@ -159,7 +159,7 @@ setMethod("backendInitialize", "ChromBackendSpectra",
               if (!is(spectra, "Spectra"))
                   stop("'spectra' must be a 'Spectra' object.")
               if (!length(spectra)) return(object)
-              if (!all(factorize.by %in% Spectra::spectraVariables(spectra)))
+              if (!all(factorize.by %in% spectraVariables(spectra)))
                   stop("All 'factorize.by' variables must exist in 'spectra'.")
               if (!is.data.frame(chromData))
                   stop("'chromData' must be a 'data.frame'.")
@@ -203,14 +203,14 @@ chromSpectraIndex <- function(object) {
 setMethod("factorize", "ChromBackendSpectra",
           function(object, factorize.by = c("msLevel", "dataOrigin"),...) {
             if (!all(factorize.by %in%
-                     Spectra::spectraVariables(.spectra(object))))
+                     spectraVariables(.spectra(object))))
                   stop("All 'factorize.by' variables must be in the ",
                        "Spectra object.")
            spectra_f <- factor(
                   do.call(
                       paste,
                       c(as.list(
-                          Spectra::spectraData(.spectra(object))[,
+                          spectraData(.spectra(object))[,
                                                                factorize.by]),
                         sep = "_")))
 
