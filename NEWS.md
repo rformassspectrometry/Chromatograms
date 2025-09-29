@@ -1,4 +1,8 @@
-# Version 0.99.5
+# Version 0.99.6
+
+## Changes in 0.99.6
+
+- Add `Spectra` dependency.
 
 ## Changes in 0.99.5
 

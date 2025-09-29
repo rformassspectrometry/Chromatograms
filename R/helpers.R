@@ -208,18 +208,6 @@
     }
 }
 
-#' Used In:
-#' - `ChromBackendSpectra()`
-#' @noRd
-.check_Spectra_package <- function() {
-    if (!requireNamespace("Spectra", quietly = TRUE)) {
-        stop(
-            "The use of 'ChromBackendSpectra' requires package 'Spectra'. ",
-            "Install it using 'BiocManager::install(\"Spectra\")'"
-        )
-    }
-}
-
 #' Function to create chromData form mzml file
 #' Used In:
 #' - `backendInitialize()` for `ChromBackendMzR` class
@@ -305,14 +293,15 @@
 
 #' Used In:
 #' - `peaksData` for `ChromBackendSpectra` class.
+#' @importFrom Spectra peaksData filterRanges
 #' @noRd
 .process_peaks_data <- function(cd, s, columns, fun, drop) {
-    s <- Spectra::filterRanges(s,
+    s <- filterRanges(s,
         spectraVariables = rep("rtime", nrow(cd)),
         ranges = as.vector(rbind(cd$rtmin, cd$rtmax)),
         match = "any"
     )
-    pd <- Spectra::peaksData(s, columns = c("mz", "intensity"))
+    pd <- peaksData(s, columns = c("mz", "intensity"))
     do_rt <- "rtime" %in% columns
     do_int <- "intensity" %in% columns
     rt <- rtime(s)
