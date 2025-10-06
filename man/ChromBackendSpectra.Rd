@@ -10,7 +10,7 @@ ChromBackendSpectra()
 
 \S4method{backendInitialize}{ChromBackendSpectra}(
   object,
-  spectra = Spectra::Spectra(),
+  spectra = Spectra(),
   factorize.by = c("msLevel", "dataOrigin"),
   summarize.method = c("sum", "max"),
   chromData = fillCoreChromVariables(),

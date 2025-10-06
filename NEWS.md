@@ -1,4 +1,12 @@
-# Version 0.99.0
+# Version 0.99.6
+
+## Changes in 0.99.6
+
+- Add `Spectra` dependency.
+
+## Changes in 0.99.5
+
+- Add `IRanges` dependency
 
 ## Changes in 0.99.4
 
