@@ -5,7 +5,8 @@ setGeneric("chromData", function(object, ...) standardGeneric("chromData"))
 setGeneric("chromData<-", function(object, value) {
     standardGeneric("chromData<-")
 })
-setGeneric("chromExtract", function(object,peak_table, by, ...) standardGeneric("chromExtract"))
+setGeneric("chromExtract", function(object, peak.table, by, ...)
+    standardGeneric("chromExtract"))
 setGeneric("chromIndex", function(object, ...) standardGeneric("chromIndex"))
 setGeneric("chromIndex<-", function(object, value) {
     standardGeneric("chromIndex<-")

@@ -57,3 +57,46 @@ test_that("error message work", {
         "requested peaks variables"
     )
 })
+
+test_that("chromExtract works correctly for ChromBackendMzR", {
+    cd <- chromData(be_mzr)
+    first_cd <- cd[100:102,]
+
+    ## We'll use known retention time ranges and identifiers from chromData
+    peak_tbl <- data.frame(
+        rtMin = c(13.7, 16.2, 18 ),
+        rtMax = c(18.1,19,20.6 ),
+        dataOrigin = first_cd$dataOrigin,
+        chromIndex = c(100, 101, 102)
+    )
+    out <- chromExtract(be_mzr, peak_tbl, by = c("dataOrigin", "chromIndex"))
+
+    expect_s4_class(out, "ChromBackendMzR")
+    expect_true(validObject(out))
+    expect_equal(nrow(chromData(out)), nrow(peak_tbl))
+
+    ## Chromatographic data should have been restricted to the same identifiers
+    out_cd <- chromData(out)
+    expect_true(all(out_cd$dataOrigin %in% unique(peak_tbl$dataOrigin)))
+    expect_true(all(out_cd$chromIndex %in% unique(peak_tbl$chromIndex)))
+
+    ## rtMin/rtMax should match peak.table values
+    expect_equal(out_cd$rtMin, peak_tbl$rtMin)
+    expect_equal(out_cd$rtMax, peak_tbl$rtMax)
+
+    bad_tbl <- data.frame(
+        rtMin = 1, rtMax = 2,
+        msLevel = 9L, dataOrigin = "nonexistent_file.mzML"
+    )
+    expect_error(
+        chromExtract(be, bad_tbl, by = c("dataOrigin", "msLevel")),
+        regexp = "do not exist|must be present"
+    )
+    pd <- peaksData(out) # should work
+    expect_equal(length(pd), nrow(peak_tbl))
+    expect_true(all(sapply(pd, nrow) > 0))
+
+    expect_equal(length(.peaksData(out)), nrow(peak_tbl)) ## i think this fails
+
+})
+

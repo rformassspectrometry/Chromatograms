@@ -31,6 +31,7 @@
 \alias{chromData<-,ChromBackendMzR-method}
 \alias{supportsSetBackend,ChromBackendMzR-method}
 \alias{[,ChromBackendMzR-method}
+\alias{chromExtract,ChromBackendMzR-method}
 \alias{show,ChromBackendSpectra-method}
 \alias{factorize,ChromBackendSpectra-method}
 \alias{backendParallelFactor,ChromBackendSpectra-method}
@@ -77,7 +78,7 @@ validPeaksData(x = list(), error = TRUE)
 
 \S4method{$}{ChromBackendMemory}(x, name) <- value
 
-\S4method{chromExtract}{ChromBackendMemory}(object, peak_table, by)
+\S4method{chromExtract}{ChromBackendMemory}(object, peak.table, by)
 
 \S4method{show}{ChromBackendMzR}(object)
 
@@ -101,6 +102,8 @@ validPeaksData(x = list(), error = TRUE)
 
 \S4method{[}{ChromBackendMzR}(x, i, j, ..., drop = TRUE)
 
+\S4method{chromExtract}{ChromBackendMzR}(object, peak.table, by, ...)
+
 \S4method{show}{ChromBackendSpectra}(object)
 
 \S4method{factorize}{ChromBackendSpectra}(object, factorize.by = c("msLevel", "dataOrigin"), ...)
@@ -117,7 +120,7 @@ validPeaksData(x = list(), error = TRUE)
 
 \S4method{[}{ChromBackendSpectra}(x, i, j, ..., drop = TRUE)
 
-\S4method{chromExtract}{ChromBackendSpectra}(object, peak_table, by)
+\S4method{chromExtract}{ChromBackendSpectra}(object, peak.table, by, ...)
 
 \S4method{show}{Chromatograms}(object)
 }

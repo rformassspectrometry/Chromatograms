@@ -4,16 +4,39 @@
 \alias{peaksData}
 \alias{peaksVariables}
 \alias{filterPeaksData}
+\alias{imputePeaksData}
+\alias{imputePeaksData,Chromatograms-method}
+\alias{filterPeaksData,Chromatograms-method}
+\alias{intensity,Chromatograms-method}
+\alias{intensity<-,Chromatograms-method}
 \alias{peaksData,Chromatograms-method}
 \alias{peaksData<-,Chromatograms-method}
 \alias{peaksVariables,Chromatograms-method}
 \alias{rtime,Chromatograms-method}
 \alias{rtime<-,Chromatograms-method}
-\alias{intensity,Chromatograms-method}
-\alias{intensity<-,Chromatograms-method}
-\alias{filterPeaksData,Chromatograms-method}
 \title{Chromatographic peaks data}
 \usage{
+\S4method{imputePeaksData}{Chromatograms}(
+  object,
+  method = c("linear", "spline", "gaussian", "loess"),
+  span = 0.3,
+  sd = 1,
+  window = 2,
+  ...
+)
+
+\S4method{filterPeaksData}{Chromatograms}(
+  object,
+  variables = character(),
+  ranges = numeric(),
+  match = c("any", "all"),
+  keep = TRUE
+)
+
+\S4method{intensity}{Chromatograms}(object, ...)
+
+\S4method{intensity}{Chromatograms}(object) <- value
+
 \S4method{peaksData}{Chromatograms}(
   object,
   columns = peaksVariables(object),
@@ -30,42 +53,24 @@
 \S4method{rtime}{Chromatograms}(object, ...)
 
 \S4method{rtime}{Chromatograms}(object) <- value
-
-\S4method{intensity}{Chromatograms}(object, ...)
-
-\S4method{intensity}{Chromatograms}(object) <- value
-
-\S4method{filterPeaksData}{Chromatograms}(
-  object,
-  variables = character(),
-  ranges = numeric(),
-  match = c("any", "all"),
-  keep = TRUE
-)
 }
 \arguments{
 \item{object}{A \link{Chromatograms} object.}
 
-\item{columns}{For \code{peaksData()}: optional \code{character} with column
-names (peaks variables) that should be included in the
-returned \code{list} of \code{data.frame}. By default, all columns are returned.
-Available variables can be found by calling \code{peaksVariables()} on the
-object.}
+\item{method}{For \code{imputePeaksData()}: \code{character(1)}: Imputation
+method ("linear", "spline", "gaussian", "loess")}
 
-\item{f}{\code{factor} defining the grouping to split the \code{Chromatograms} object.}
+\item{span}{For \code{imputePeaksData}: \code{numeric(1)}, for the loess method:
+Smoothing parameter (only used if method == "loess")}
 
-\item{BPPARAM}{Parallel setup configuration. See \code{\link[BiocParallel:register]{BiocParallel::bpparam()}}
-for more information.}
+\item{sd}{For \code{imputePeaksData}: \code{numeric(1)}, for the gaussian method:
+Standard deviation for Gaussian kernel
+(only used if method == "gaussian")}
 
-\item{drop}{\code{logical(1)} For \code{peaksData()}, default to \code{FALSE}. If \code{TRUE},
-and one column is called by the user, the method returns a list of
-vector of the single column requested.}
+\item{window}{For \code{imputePeaksData}: \code{integer}, for the gaussian method:
+Half-width of Gaussian kernel window (e.g., 2 gives window size 5)}
 
 \item{...}{Additional arguments passed to the method.}
-
-\item{value}{For \code{rtime()} and \code{intensity()}: \code{numeric} vector with the
-values to replace the current values. The length of the vector must
-match the number of peaks data pairs in the \code{Chromatograms} object.}
 
 \item{variables}{For \code{filterPeaksData()}: \code{character} vector with the names
 of the peaks data variables to filter for. The list of available
@@ -83,6 +88,25 @@ the default), or for any of them (\code{match = "any"}).}
 \item{keep}{For \code{filterPeaksData()}: \code{logical(1)} defining whether to
 keep (\code{keep = TRUE}) or remove (\code{keep = FALSE}) the chromatographic
 peaks data that match the condition.}
+
+\item{value}{For \code{rtime()} and \code{intensity()}: \code{numeric} vector with the
+values to replace the current values. The length of the vector must
+match the number of peaks data pairs in the \code{Chromatograms} object.}
+
+\item{columns}{For \code{peaksData()}: optional \code{character} with column
+names (peaks variables) that should be included in the
+returned \code{list} of \code{data.frame}. By default, all columns are returned.
+Available variables can be found by calling \code{peaksVariables()} on the
+object.}
+
+\item{f}{\code{factor} defining the grouping to split the \code{Chromatograms} object.}
+
+\item{BPPARAM}{Parallel setup configuration. See \code{\link[BiocParallel:register]{BiocParallel::bpparam()}}
+for more information.}
+
+\item{drop}{\code{logical(1)} For \code{peaksData()}, default to \code{FALSE}. If \code{TRUE},
+and one column is called by the user, the method returns a list of
+vector of the single column requested.}
 }
 \value{
 Refer to the individual function description for information on the
@@ -129,13 +153,24 @@ the original mzml files will not be affected by computations performed on
 the \link{Chromatograms}.
 }
 
+\section{Impute Peaks Variables}{
+
+
+\code{imputePeaksData} will impute missing values in a \code{Chromatograms}'s peaks data
+(i.e., \code{peaksData}). This functions replace missing peaks data values with
+specified imputation methods using various methods such as linear
+interpolation, spline interpolation, Gaussian kernel smoothing, or LOESS
+smoothing. This method modifies the peaks data in place and returns the
+same \code{Chromatograms} object with imputed values.
+}
+
 \examples{
 
 # Create a Chromatograms object
 cdata <- data.frame(
     msLevel = c(1L, 1L, 1L),
     mz = c(112.2, 123.3, 134.4),
-    chromIndex = c(1L, 2L, 3L)
+    dataOrigin = c("mem1", "mem2", "mem3")
 )
 
 pdata <- list(

@@ -116,3 +116,22 @@ test_that("factorize() works", {
     idx_after <- chromSpectraIndex(.backend(tmp))
     expect_false(identical(idx_before, idx_after))
 })
+
+test_that("chromExtract, Chromatograms works correctly", {
+    peak.table <- data.frame(
+        msLevel = 1L,
+        dataOrigin = "mem1",
+        rtMin = 12.5,
+        rtMax = 14.0
+    )
+    res <- chromExtract(c_full, peak.table, by = c("msLevel", "dataOrigin"))
+    expect_s4_class(res, "Chromatograms")
+    expect_true(length(res) == nrow(peak.table))
+
+    pk_nomatch <- transform(peak.table, dataOrigin = "no_such_sample")
+    expect_error(chromExtract(c_full, pk_nomatch,
+                              by = c("msLevel", "dataOrigin")),
+                 "Some combinations in")
+
+})
+

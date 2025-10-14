@@ -508,7 +508,9 @@ be <- backendInitialize(MsBackendMetaboLights(),
     mtblsId = "MTBLS39",
     filePattern = c("63B.cdf")
 )
-chr_s <- Chromatograms(Spectra(be))
+sp <- Spectra(be)
+sp <- setBackend(sp, MsBackendMemory())
+chr_s <- Chromatograms(sp)
 ```
 
 We now have a `Chromatograms` object `chr_s` with a `ChromBackendSpectra`
@@ -545,6 +547,15 @@ into one plot.
 ```{r}
 plotChromatogramsOverlay(chr_s, col = col3)
 ```
+
+## Impute missing values 
+
+TBD
+
+
+## Extracting chromatographic area of interest. 
+
+TBD
 
 # Session information
 

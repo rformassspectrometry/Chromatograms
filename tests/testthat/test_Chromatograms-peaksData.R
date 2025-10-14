@@ -29,7 +29,8 @@ test_that("peaksData, Chromatograms, ChrombackendMemory works as expected", {
         variables = c("rtime"),
         ranges = c(12.5, 45.5)
     )
-    expect_false(identical(peaksData(c_queued), peaksData(.backend(c_queued))))
+    expect_false(identical(peaksData(c_queued),
+                           peaksData(.backend(c_queued))))
     c_queued2 <- filterPeaksData(c_queued,
         variables = c("intensity"),
         ranges = c(100, 1000)
@@ -85,7 +86,8 @@ test_that("peaksVariables works as expected", {
 
 test_that("rtime accessor and replacement work as expected", {
     rtime_data <- rtime(c_full)
-    backend_rtime <- peaksData(.backend(c_full), columns = "rtime", drop = TRUE)
+    backend_rtime <- peaksData(.backend(c_full), columns = "rtime",
+                               drop = TRUE)
     expect_equal(rtime_data, backend_rtime)
 
     rtime_data <- rtime(c_mzr)
@@ -143,4 +145,48 @@ test_that("filterPeaksData queues the correct processing step", {
     ))
 
     expect_match(.processing(c_filtered), "Filter: remove peaks")
+})
+
+test_that("Chromatograms, imputePeaksData works", {
+    pdata <- list(
+        data.frame(
+            rtime = seq(12, 20, by = 0.5),
+            intensity = c(123.3, 153.6, NA, 200, 210, 230, NA, 250, 260, 280,
+                          300, 320, 340, 360, 380, 400, 420)
+        ),
+        data.frame(
+            rtime = seq(45, 55, by = 0.5),  # length 21
+            intensity = c(100, NA, 120, 130, 140, NA, 160, 170, 180, 190, 200,
+                          210, 220, 230, 240, 250, 260, 270, 280, 290, 300)
+        ),
+        data.frame(
+            rtime = seq(10, 18, by = 0.5),  # length 17
+            intensity = c(NA, 153.6, 2354.3, 243.4, 260, NA, 280, 300, 320,
+                          340, 360, 380, 400, 420, 440, 460, 480)
+        )
+    )
+
+    tmp <- backendInitialize(be_empty, chromData = cdata, peaksData = pdata)
+    c_tmp <- Chromatograms(tmp)
+
+    for (meth in c("linear", "spline")) {
+        c_imp <- imputePeaksData(c_tmp, method = meth, span = 0.3,
+                                 sd = 1, window = 2)
+        expect_s4_class(c_imp, "Chromatograms")
+
+        expect_equal(length(peaksData(c_imp)), length(peaksData(c_tmp)))
+        expect_true(all(!is.na(unlist(intensity(c_imp)))))
+        expect_true(any(grepl(meth, .processing(c_imp))))
+    }
+
+    for (meth in c("gaussian", "loess")) {
+        c_imp <- imputePeaksData(c_tmp, method = meth, span = 0.3,
+                                 sd = 1, window = 2)
+        expect_warning(c_imp <- applyProcessing(c_imp),
+                       "Falling back to linear interpolation")
+        expect_s4_class(c_imp, "Chromatograms")
+        expect_equal(length(peaksData(c_imp)), length(peaksData(c_tmp)))
+        expect_true(all(!is.na(unlist(intensity(c_imp)))))
+        expect_true(any(grepl(meth, .processing(c_imp))))
+    }
 })

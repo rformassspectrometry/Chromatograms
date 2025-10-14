@@ -64,11 +64,11 @@
 #' The core chromatogram variables (in alphabetical order) are:
 #'
 #' - `chromIndex`: an `integer` with the index of the chromatogram in the
-#'   original source file (e.g. *mzML* file).
+#'   original source file (e.g. *mzML* file). In backedn with no original
+#'   source file, this variable should be set to `NA_integer_`.
 #' - `collisionEnergy`: for SRM data, `numeric` with the collision energy of
 #'   the precursor.
 #' - `dataOrigin`: optional `character` with the origin of a chromatogram.
-#' - `dataOrigin`: `character` defining where the data is (currently) stored.
 #' - `msLevel`: `integer` defining the MS level of the data.
 #' - `mz`: optional `numeric` with the (target) m/z value for the
 #'   chromatographic data.
@@ -119,10 +119,11 @@
 #' @param BPPARAM Parallel setup configuration. See [BiocParallel::bpparam()]
 #'        for more information.
 #'
-#' @param by A character vector specifying the column names in both
-#' `peak_table` and the `chromData` of `object` that uniquely identify
-#' chromatograms. The combination of these columns must be unique in the
-#' `chromData`. Can also be of length 1
+#' @param by for `chromExtract() `A `character` vector specifying one or more
+#'        column names that are present in both `peak.table` and
+#'        `chromData(object)`. These columns uniquely identify chromatograms.
+#'        The combination of these columns must be unique in
+#'        `chromData(object)`. Can be of length 1 or greater.
 #'
 #' @param columns For `chromData()` accessor: optional `character` with column
 #'        names (chromatogram variables) that should be included in the
@@ -148,25 +149,38 @@
 #'        `ranges` (`match = "all"`; the default), or for any of them
 #'        (`match = "any"`) for chromatogram data to be retained.
 #'
+#' @param method For `imputePeaksData()`: `character(1)`: Imputation
+#'        method ("linear", "spline", "gaussian", "loess")
+#'
 #' @param name For `$` and `$<-`: the name of the chromatogram variable to
 #'        return or set.
 #'
 #' @param object Object extending `ChromBackend`.
 #'
-#' @param peak_table A data frame containing the following minimum columns:
-#' - "rtMin": Minimum retention time for each peak. Cannot be NA
-#' - "rtMax": Maximum retention time for each peak. Cannot be NA
-#'
-#' Additionally, the `peak_table` must include columns that uniquely identify
-#' chromatograms in the `object`. Common choices are "chromIndex" and/or
-#' "dataOrigin". These columns must also be present in the `chromData` of the
-#' `object`.
+#' @param peak.table For `chromExtract()` A `data frame` containing the
+#'        following minimum columns:
+#'          - rtMin: Minimum retention time for each peak. Cannot be NA.
+#'          - rtMax: Maximum retention time for each peak. Cannot be NA.
+#'          - mzMin: Minimum m/z value for each peak.
+#'          - mzMax: Maximum m/z value for each peak.
+#'        Additionally, the `peak.table` must include columns that uniquely
+#'        identify chromatograms in the `object`. Common choices are
+#'        "msLevel" and/or "dataOrigin". These columns must also be present
+#'        in the `chromData` of the `object`. Any extra columns in
+#'        `peak.table` will be added to the `chromData` of the newly created
+#'        object.
 #'
 #' @param ranges For `filterChromData()` : a `numeric`
 #'        vector of paired values (upper and lower boundary) that define the
 #'        ranges to filter the `object`. These paired values need to be in the
 #'        same order as the `variables` parameter (see below).
 #'
+#' @param sd For `imputePeaksData`: `numeric(1)`, for the gaussian method:
+#'        Standard deviation for Gaussian kernel
+#'        (only used if method == "gaussian")
+#'
+#' @param span For `imputePeaksData`: `numeric(1)`, for the loess method:
+#'        Smoothing parameter (only used if method == "loess")
 #'
 #' @param value Replacement value for `<-` methods. See individual
 #'        method description or expected data type.
@@ -174,6 +188,9 @@
 #' @param variables For `filterChromData()`: `character` vector with the names
 #'        of the chromatogram variables to filter for. The list of available
 #'        chromatogram variables can be obtained with `chromVariables()`.
+#'
+#' @param window For `imputePeaksData`: `integer`, for the gaussian method:
+#'        Half-width of Gaussian kernel window (e.g., 2 gives window size 5)
 #'
 #' @param x Object extending `ChromBackend`.
 #'
@@ -225,6 +242,13 @@
 #'   `data.frame` with 0 rows and the columns defined by `chromVariables()`.
 #'   By default, the function *should* return at minimum the
 #'   coreChromVariables, even if NAs.
+#'
+#' - `chromExtract()`: return A new `Chrombackend` object containing separated
+#'   chromatographic area as individual chromatograms. The chromatographic areas
+#'   are defined by the `peak.table` parameter. The new object will contain
+#'   chromatograms that match the conditions defined in `peak.table`. If no
+#'   chromatograms match the conditions, an empty `ChromBackend` object
+#'   should be returned.
 #'
 #' - `extractByIndex()`: function to subset a backend to selected elements
 #'   defined by the provided index. Similar to `[`, this method should allow
@@ -287,9 +311,6 @@
 #'   available in `object`. Variables listed by this function are expected to
 #'   be returned (if requested) by the `chromData()` function.
 #'
-#' - `chromExtract()`: return A new `Chrombackend` object containing separated
-#'   peaks as individual chromatograms.
-#'
 #' - `collisionEnergy()`, `collisionEnergy<-`: gets or sets the collision
 #'   energy for the precursor (for SRM data). `collisionEnergy()` returns a
 #'   `numeric` of length equal to the number of chromatograms in `object`.
@@ -315,6 +336,12 @@
 #'   within each list element identical to the number of data pairs in each
 #'   chromatogram. Note that just writeable backends need to support this
 #'   method.
+#'
+#' - `imputePeaksData()`: Imputes missing intensity values in the
+#'   chromatographic peaks data using various methods such as linear
+#'   interpolation, spline interpolation, Gaussian kernel smoothing, or LOESS
+#'   smoothing. This method modifies the peaks data in place and returns the
+#'   same `ChromBackend` object with imputed values.
 #'
 #' - `isReadOnly()`: returns a `logical(1)` whether the backend is *read
 #'   only* or does allow also to write/update data. Defaults to FALSE.
@@ -427,7 +454,7 @@
 #' cdata <- data.frame(
 #'     msLevel = c(1L, 1L, 1L),
 #'     mz = c(112.2, 123.3, 134.4),
-#'     chromIndex = c(1L, 2L, 3L)
+#'     dataOrigin = c("mem1", "mem2", "mem3")
 #' )
 #'
 #' pdata <- list(
@@ -472,7 +499,7 @@
 #' peaksVariables(be)
 #'
 #' ## Extract multiple chromatographic variables
-#' chromData(be, c("chromIndex", "mz", "msLevel"))
+#' chromData(be, c("dataOrigin", "mz", "msLevel"))
 #'
 #' ## Single variables can also be accessed and replaced
 #' mz(be)
@@ -536,6 +563,16 @@ setMethod(
 #'
 #' @rdname ChromBackend
 setReplaceMethod("chromData", "ChromBackend", function(object, value) {
+    stop("Not implemented for ", class(object), ".")
+})
+
+
+#' @exportMethod chromExtract
+#'
+#' @rdname ChromBackend
+setMethod("chromExtract", "ChromBackend", function(object,
+                                                   peak.table,
+                                                   by) {
     stop("Not implemented for ", class(object), ".")
 })
 
@@ -1128,17 +1165,10 @@ setMethod(
 #' @rdname ChromBackend
 setMethod("supportsSetBackend", "ChromBackend", function(object, ...) FALSE)
 
-#' @rdname ChromBackend
+
 #' @exportMethod imputePeaksData
-#' @param method character: Imputation method ("linear", "spline",
-#'        "gaussian", "loess")
-#' @param span `numeric`, for the loess method: Smoothing parameter (only used
-#'        if method == "loess")
-#' @param sd `numeric`, for the gaussian method: Standard deviation for
-#'        Gaussian kernel (only for method == "gaussian")
-#' @param window `integer`, for the gaussian method: Half-width of Gaussian
-#'        kernel window (e.g., 2 gives window size 5)
-#' @importFrom stats approx filter loess
+#' @importFrom stats approx filter
+#' @rdname ChromBackend
 setMethod("imputePeaksData", signature(object = "ChromBackend"),
           function(object,
                    method = c("linear", "spline", "gaussian", "loess"),
@@ -1146,53 +1176,12 @@ setMethod("imputePeaksData", signature(object = "ChromBackend"),
                    sd = 1,
                    window = 2,
                    ...) {
+
               method <- match.arg(method)
-              impute <- function(x) {
-                  if (all(is.na(x))) return(x)
-
-                  na_idx <- which(is.na(x))
-                  if (length(na_idx) == 0) return(x)
-
-                  not_na_idx <- which(!is.na(x))
-                  x_out <- seq_along(x)
-
-                  x[na_idx] <- switch(method,
-                                      linear = approx(not_na_idx, x[not_na_idx],
-                                                      xout = na_idx, rule = 2)$y,
-
-                                      spline = spline(not_na_idx, x[not_na_idx],
-                                                      xout = na_idx, method = "natural")$y,
-                                      gaussian = {
-                                          # Create symmetric Gaussian kernel
-                                          kernel_range <- -window:window
-                                          w <- dnorm(kernel_range, mean = 0, sd = sd)
-                                          w <- w / sum(w)
-
-                                          # Fill missing with linear approx to allow smoothing
-                                          x_filled <- x
-                                          x_filled[is.na(x_filled)] <- approx(not_na_idx, x[not_na_idx],
-                                                                              xout = which(is.na(x_filled)),
-                                                                              rule = 2)$y
-                                          smoothed <- filter(x_filled, filter = w, sides = 2, circular = FALSE)
-                                          smoothed[na_idx]
-                                      },
-
-                                      loess = {
-                                          fit <- loess(x[not_na_idx] ~ not_na_idx, span = span)
-                                          predict(fit, newdata = na_idx)
-                                      }
-                  )
-                  x
-              }
-              object$intensity <- lapply(object$intensity, impute)
+              if (!length(object) || all(lengths(object) == 0L))
+                  return(object)
+              object$intensity <- lapply(object$intensity, .impute,
+                           method = method,
+                           span = span, window = window, sd = sd)
               object
           })
-
-#' @rdname ChromBackend
-#' @exportMethod chromExtract
-#'
-setMethod("chromExtract", "ChromBackend",
-          function(object, by = character(), drop = FALSE) {
-              stop("Not implemented for ", class(object), ".")
-          }
-)

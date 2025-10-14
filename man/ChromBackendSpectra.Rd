@@ -99,6 +99,8 @@ be <- backendInitialize(MsBackendMetaboLights(),
 )
 s <- Spectra(be)
 
+s <- setBackend(s, MsBackendMemory())
+
 ## Initialize ChromBackendSpectra
 be_empty <- new("ChromBackendSpectra")
 be <- backendInitialize(be_empty, s)

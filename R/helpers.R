@@ -304,15 +304,10 @@
     pd <- peaksData(s, columns = c("mz", "intensity"))
     do_rt <- "rtime" %in% columns
     do_int <- "intensity" %in% columns
-    rt <- rtime(s) ## there are duplicate here, this is where the problem is,
-    ## because we don't summarize this. should we ? i guess there cannot be
-    ## multiple spectra at the same exact time in the same file. this could be
-    ## just due to playing around in the spectra object.
-    ## ## i would keep only the first one.
-
+    rt <- rtime(s)
     lapply(seq_len(nrow(cd)), function(i) {
         ## only keep the first rt if there is duplication
-        keep <- between(rt, c(cd$rtMin[i], cd$rtMax[i])) & !duplicated(rt) ## so dumb, should be much faster to here.
+        keep <- between(rt, c(cd$rtMin[i], cd$rtMax[i])) & !duplicated(rt)
         df <- as.data.frame(matrix(ncol = 0, nrow = sum(keep)))
         if (do_rt) {
             df$rtime <- rt[keep]
@@ -379,6 +374,133 @@
     }
     chrom_data
 }
+
+#' Used in:
+#' - `chromExtract()`.
+#' @noRd
+.validate_chromExtract_input <- function(object,
+                                         peak.table,
+                                         by,
+                                         required_cols = c("rtMin", "rtMax",
+                                                           by)) {
+    cd <- .chromData(object)
+    if (!all(required_cols %in% names(peak.table))) {
+        stop("`peak.table` must contain columns: ", paste(required_cols,
+                                                          collapse = ", "), ".")
+    }
+
+    if (anyNA(peak.table$rtMin) || anyNA(peak.table$rtMax)) {
+        stop("Columns 'rtMin' and 'rtMax' in `peak.table` cannot ",
+             "contain NA values.")
+    }
+    if (!all(by %in% names(cd))) {
+        stop("All 'by' columns must be present in chromData(object).")
+    }
+    if (nrow(cd) != nrow(unique(cd[, by, drop = FALSE]))) {
+        stop("Combinations of 'by' columns must uniquely identify rows ",
+             "in chromData.")
+    }
+}
+
+
+#' Used in:
+#' - `chromExract()`
+#' @noRd
+.match_chromdata_peaktable <- function(object, peak.table, by) {
+    cd <- .chromData(object)
+    chrom_keys <- interaction(cd[, by, drop = FALSE], drop = TRUE)
+    peak_keys  <- interaction(peak.table[, by, drop = FALSE], drop = TRUE)
+
+    # ensure all peak.table keys exist in chromData
+    missing_keys <- setdiff(levels(peak_keys), levels(chrom_keys))
+    if (length(missing_keys)) {
+        stop("Some combinations in `peak.table` do not exist in chromData: ",
+             paste(missing_keys, collapse = ", "))
+    }
+
+    ## Subset chromdata and only keep the row of interest.
+    keep_idx <- chrom_keys %in% peak_keys
+    object <- object[keep_idx]
+    chrom_keys <- droplevels(chrom_keys[keep_idx])
+
+    # align factor levels (so splitting matches between cd and peak.table)
+    shared_levels <- intersect(levels(peak_keys), levels(chrom_keys))
+    chrom_keys <- factor(as.character(chrom_keys), levels = shared_levels)
+    peak_keys  <- factor(as.character(peak_keys),  levels = shared_levels)
+
+    list(object = object, chrom_keys = chrom_keys, peak_keys = peak_keys)
+
+}
+
+#' Used in:
+#' - `chromExtract()`
+#' @noRd
+.check_overl_columns <- function(object, peak.table, required_cols) {
+    overl_cols <- names(peak.table) %in% chromVariables(object)
+    extra_cols <- setdiff(names(peak.table)[overl_cols], required_cols)
+    if (length(extra_cols)) {
+        warning( "The following columns in `peak.table` already exist in ",
+                 "`chromData` and will be replaced in the output: ",
+                 paste(extra_cols, collapse = ", ")
+        )
+    }
+    overl_cols
+}
+
+
+#' Used in:
+#' - `imputePeaksData()`
+#' @importFrom stats approx filter loess spline dnorm sd predict
+#' @noRd
+.impute <- function(x, method,
+                    window = 2, span = 0.25, sd = 1) {
+    if (all(is.na(x))) return(x)
+
+    na_idx <- which(is.na(x))
+    if (length(na_idx) == 0) return(x)
+
+    not_na_idx <- which(!is.na(x))
+    x_out <- seq_along(x)
+
+    x[na_idx] <- switch(method,
+        linear = approx(not_na_idx, x[not_na_idx],
+                        xout = na_idx, rule = 2)$y,
+
+        spline = spline(not_na_idx, x[not_na_idx],
+                        xout = na_idx, method = "natural")$y,
+        gaussian = {
+            # Create symmetric Gaussian kernel
+            kernel_range <- -window:window
+            w <- dnorm(kernel_range, mean = 0, sd = sd)
+            w <- w / sum(w)
+
+            # Fill missing with linear approx to allow smoothing
+            x_filled <- x
+            x_filled[is.na(x_filled)] <- approx(not_na_idx, x[not_na_idx],
+                                                xout = which(is.na(x_filled)),
+                                                rule = 2)$y
+            smoothed <- filter(x_filled, filter = w, sides = 2,
+                               circular = FALSE)
+            smoothed[na_idx]
+        },
+        loess = {
+            fit <- loess(x[not_na_idx] ~ not_na_idx, span = span)
+            predict(fit, newdata = na_idx)
+        }
+    )
+    # Fallback for any remaining NAs
+    na_remaining <- is.na(x)
+    if (any(na_remaining)) {
+        warning("Method chosen could not fill all NAs. ",
+                "Falling back to linear interpolation ",
+                "for these positions.")
+        x[na_remaining] <- approx(not_na_idx, x[not_na_idx],
+                                         xout = which(na_remaining),
+                                         rule = 2)$y
+    }
+    x
+}
+
 
 ## Below are internal accessors functions, these are used ubiquitously in the
 ## package. They directly access the slots. these are NOT to be used by general

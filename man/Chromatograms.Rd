@@ -7,12 +7,14 @@
 \alias{[<-,Chromatograms-method}
 \alias{[[,Chromatograms-method}
 \alias{[[<-,Chromatograms-method}
+\alias{chromExtract}
 \alias{Chromatograms,ChromBackendOrMissing-method}
 \alias{Chromatograms,Spectra-method}
 \alias{setBackend,Chromatograms,ChromBackend-method}
 \alias{$,Chromatograms-method}
 \alias{$<-,Chromatograms-method}
 \alias{factorize,Chromatograms-method}
+\alias{chromExtract,Chromatograms-method}
 \title{The Chromatograms class to manage and access chromatographic data}
 \usage{
 \S4method{Chromatograms}{ChromBackendOrMissing}(object = ChromBackendMemory(), processingQueue = list(), ...)
@@ -44,6 +46,8 @@
 \S4method{[[}{Chromatograms}(x, i, j, ...) <- value
 
 \S4method{factorize}{Chromatograms}(object, factorize.by = c("msLevel", "dataOrigin"), ...)
+
+\S4method{chromExtract}{Chromatograms}(object, peak.table, by, ...)
 }
 \arguments{
 \item{object}{A \link{Chromatograms} object.}
@@ -89,6 +93,25 @@ access.}
 \item{j}{For \code{[} and \code{[[}: ignored.}
 
 \item{drop}{For \code{[}: \code{logical(1)} default to \code{FALSE}.}
+
+\item{peak.table}{For \code{chromExtract()} A \verb{data frame} containing the
+following minimum columns:
+- rtMin: Minimum retention time for each peak. Cannot be NA.
+- rtMax: Maximum retention time for each peak. Cannot be NA.
+- mzMin: Minimum m/z value for each peak.
+- mzMax: Maximum m/z value for each peak.
+Additionally, the \code{peak.table} must include columns that uniquely
+identify chromatograms in the \code{object}. Common choices are
+"msLevel" and/or "dataOrigin". These columns must also be present
+in the \code{chromData} of the \code{object}. Any extra columns in
+\code{peak.table} will be added to the \code{chromData} of the newly created
+object.}
+
+\item{by}{A \code{character} vector naming one or more columns that uniquely
+identify chromatograms in both \code{peak.table} and
+\code{chromData(object)}. The combination of these columns must be unique
+within \code{chromData(object)}. Typically includes \code{"dataOrigin"},
+\code{"msLevel"}, or both.}
 }
 \value{
 Refer to the individual function description for information on
@@ -162,6 +185,44 @@ processing of the data and reduces the memory demand. To read more about the
 \link{processingQueue} documentation.
 }
 
+\section{Subsetting and accessing data}{
+
+The \code{Chromatograms} class supports subsetting by chromatogram (i.e. rows) using
+the \code{[} operator. The \code{[} operator does not support subsetting by columns.
+Specific chromatograms or peaks variables can be accessed using the \code{[[}
+operator or the \code{$} operator. The \code{[[} operator can also be used to
+replace specific chromatograms or peaks variables.
+}
+
+\section{Changing the backend}{
+
+The \code{setBackend()} function can be used to change the backend of a
+\code{Chromatograms} object. This can be useful to switch to a backend that
+better suits the needs of the user, for example switching to a memory-based
+backend for smaller datasets or to a file-based backend for larger datasets.
+The \code{setBackend()} function supports parallelization of the backend
+conversion using the \code{BPPARAM} parameter.
+}
+
+\section{Extracting chromatograms based on a peak table}{
+
+
+The \code{chromExtract()} function allows users to extract specific regions of
+interest from a \code{Chromatograms} object based on a user-provided peak table.
+Each row in the \code{peak.table} defines a region to extract, using minimum and
+maximum retention time (and m/z in the case of \code{chromBackendSpectra})
+boundaries, and identifiers that uniquely match chromatograms in the object.
+
+The resulting \strong{new} \code{Chromatograms} object contains only chromatograms overlapping
+the specified regions, with updated metadata reflecting the extracted
+boundaries.
+
+This function is most commonly used to subset chromatographic data around
+detected peaks or predefined time/mass ranges, for example to reprocess,
+visualize, or quantify extracted chromatograms corresponding to known
+features.
+}
+
 \examples{
 
 library(MsBackendMetaboLights)
@@ -173,6 +234,7 @@ be <- backendInitialize(MsBackendMetaboLights(),
     filePattern = c("63B.cdf")
 )
 s <- Spectra(be)
+s <- setBackend(s, MsBackendMemory())
 be <- backendInitialize(new("ChromBackendSpectra"), s)
 chr <- Chromatograms(be)
 

@@ -356,34 +356,198 @@ test_that("ensure_rt_mz_columns correctly handles mz and rt columns", {
               sep = "_")))
     chrom_data <- data.frame(msLevel = c(1,2,3))
     chrom_data <- .ensure_rt_mz_columns(chrom_data, spectra, spectra_f)
-    expect_equal(chrom_data$mzmin, c(-Inf, -Inf, -Inf))
-    expect_equal(chrom_data$mzmax, c(Inf, Inf, Inf))
+    expect_equal(chrom_data$mzMin, c(-Inf, -Inf, -Inf))
+    expect_equal(chrom_data$mzMax, c(Inf, Inf, Inf))
 
-    chrom_data <- data.frame(mzmin = c(100))
+    chrom_data <- data.frame(mzMin = c(100))
     expect_error(.ensure_rt_mz_columns(chrom_data, spectra, spectra_f),
-                 "Both 'mzmin' and 'mzmax' must be present if one is provided.")
+                 "must be present if one is provided.")
 
-    chrom_data <- data.frame(mzmax = c(200))
+    chrom_data <- data.frame(mzMax = c(200))
     expect_error(.ensure_rt_mz_columns(chrom_data, spectra, spectra_f),
-                 "Both 'mzmin' and 'mzmax' must be present if one is provided.")
+                 "must be present if one is provided.")
     chrom_data <- data.frame(msLevel = c(1,2,3))
     chrom_data <- .ensure_rt_mz_columns(chrom_data, spectra, spectra_f)
     s_plit <- split(spectra, spectra_f)
-    expect_equal(chrom_data$rtmin[[1]], min(s_plit[[1]]$rtime, na.rm = TRUE))
-    expect_equal(chrom_data$rtmax[[1]], max(s_plit[[1]]$rtime, na.rm = TRUE))
+    expect_equal(chrom_data$rtMin[[1]], min(s_plit[[1]]$rtime, na.rm = TRUE))
+    expect_equal(chrom_data$rtMax[[1]], max(s_plit[[1]]$rtime, na.rm = TRUE))
 
-    chrom_data <- data.frame(rtmin = c(10))
+    chrom_data <- data.frame(rtMin = c(10))
     expect_error(.ensure_rt_mz_columns(chrom_data, spectra, spectra_f),
-                 "Both 'rtmin' and 'rtmax' must be present if one is provided.")
-    chrom_data <- data.frame(rtmax = c(50))
+                 " must be present if one is provided.")
+    chrom_data <- data.frame(rtMax = c(50))
     expect_error(.ensure_rt_mz_columns(chrom_data, spectra, spectra_f),
-                 "Both 'rtmin' and 'rtmax' must be present if one is provided.")
+                 "must be present if one is provided.")
 
-    chrom_data <- data.frame(mzmin = c(100), mzmax = c(200), rtmin = c(10), rtmax = c(50))
+    chrom_data <- data.frame(mzMin = c(100), mzMax = c(200),
+                             rtMin = c(10), rtMax = c(50))
     chrom_data <- .ensure_rt_mz_columns(chrom_data, spectra, spectra_f)
-    expect_equal(chrom_data$mzmin, 100)
-    expect_equal(chrom_data$mzmax, 200)
-    expect_equal(chrom_data$rtmin, 10)
-    expect_equal(chrom_data$rtmax, 50)
+    expect_equal(chrom_data$mzMin, 100)
+    expect_equal(chrom_data$mzMax, 200)
+    expect_equal(chrom_data$rtMin, 10)
+    expect_equal(chrom_data$rtMax, 50)
+})
+
+test_that(".validate_chromExtract_input works correctly", {
+    cdata <- data.frame(
+        msLevel = c(1L, 1L, 1L),
+        dataOrigin = c("A", "B", "C")
+    )
+    be <- backendInitialize(new("ChromBackendMemory"), chromData = cdata)
+
+    peak_tbl <- data.frame(
+        rtMin = c(1, 2, 3),
+        rtMax = c(5, 6, 7),
+        msLevel = c(1L, 1L, 1L),
+        dataOrigin = c("A", "B", "C")
+    )
+
+    # should pass
+    expect_silent(
+        .validate_chromExtract_input(be, peak_tbl,
+                                     by = c("msLevel", "dataOrigin"))
+    )
+
+    # missing required column
+    bad_tbl <- peak_tbl[, !names(peak_tbl) %in% "rtMax", drop = FALSE]
+    expect_error(
+        .validate_chromExtract_input(be, bad_tbl,
+                                     by = c("msLevel", "dataOrigin")),
+        "must contain columns"
+    )
+
+    # NA in rtMin
+    bad_tbl2 <- peak_tbl
+    bad_tbl2$rtMin[1] <- NA
+    expect_error(
+        .validate_chromExtract_input(be, bad_tbl2,
+                                     by = c("msLevel", "dataOrigin")),
+        "cannot contain NA"
+    )
+
+    # missing 'by' columns in chromData
+    bad_be <- backendInitialize(new("ChromBackendMemory"),
+                                chromData = cdata[, "msLevel", drop = FALSE])
+    expect_error(
+        .validate_chromExtract_input(bad_be, peak_tbl,
+                                     by = c("msLevel", "dataOrigin")),
+        "must be present"
+    )
+})
+
+test_that(".match_chromdata_peaktable aligns correctly", {
+    tmp_cdata <- data.frame(
+        msLevel = c(1L, 1L, 2L),
+        dataOrigin = c("A", "B", "A")
+    )
+    tmp <- backendInitialize(new("ChromBackendMemory"), chromData = tmp_cdata)
+
+    peak_tbl <- data.frame(
+        msLevel = c(1L, 2L),
+        dataOrigin = c("A", "A"),
+        rtMin = c(1, 2),
+        rtMax = c(5, 6)
+    )
+
+    matched <- .match_chromdata_peaktable(tmp, peak_tbl,
+                                          by = c("msLevel", "dataOrigin"))
+
+    # Expect a subset of object
+    expect_s4_class(matched$object, "ChromBackendMemory")
+    expect_equal(length(matched$chrom_keys), nrow(.chromData(matched$object)))
+
+    # Check factor levels alignment
+    expect_true(all(levels(matched$peak_keys) %in% levels(matched$chrom_keys)))
+
+    # missing key should error
+    bad_tbl <- data.frame(
+        msLevel = 3L, dataOrigin = "Z", rtMin = 1, rtMax = 2
+    )
+    expect_error(
+        .match_chromdata_peaktable(tmp, bad_tbl,
+                                   by = c("msLevel", "dataOrigin")),
+        "do not exist"
+    )
+})
+
+test_that(".check_overl_columns warns correctly", {
+    tmp_cdata <- data.frame(
+        msLevel = 1L,
+        dataOrigin = "X",
+        mz = 100, extracol = "info"
+    )
+    tmp <- backendInitialize(new("ChromBackendMemory"), chromData = tmp_cdata)
+
+    peak_tbl <- data.frame(
+        rtMin = 1, rtMax = 2, mzMin = 99, mzMax = 101,
+        msLevel = 1L, dataOrigin = "X", mz = 123, extracol = "test"
+    )
+
+    req_cols <- c("rtMin", "rtMax", "mzMin", "mzMax", "msLevel", "dataOrigin")
+
+    expect_warning(
+        overl <- .check_overl_columns(tmp, peak_tbl, req_cols),
+        "already exist"
+    )
+
+    # overlapping should include "mz"
+    expect_true(all(c("mz", "extracol") %in% names(peak_tbl)[overl]))
+
+})
+
+test_that(".impute() works correctly and without warnings", {
+    # Base signal with gaps
+    x <- c(1:5, NA, 7:10, NA, 12:15, rep(NA, 2), 18:20)
+
+    ## linear
+    expect_silent({
+        res_lin <- .impute(x, method = "linear")
+    })
+    expect_false(anyNA(res_lin))
+    expect_true(all(diff(res_lin) > 0))  # still increasing
+
+    ## spline
+    expect_silent({
+        res_spl <- .impute(x, method = "spline")
+    })
+    expect_false(anyNA(res_spl))
+    expect_equal(length(res_spl), length(x))
+
+    ## Gaussian
+    expect_silent(
+        res_gauss <- .impute(x, method = "gaussian", window = 2, sd = 1)
+    )
+    expect_false(anyNA(res_gauss))
+    expect_equal(length(res_gauss), length(x))
+
+    ## loess
+    expect_warning({
+        res_loess <- .impute(x, method = "loess", span = 0.3)
+        "could not fill all NAs"
+    })
+    expect_false(anyNA(res_loess))
+    expect_equal(length(res_loess), length(x))
+
+    ## Consecutive NAs
+    x_na <- c(1, 2, NA, NA, 5, 6, 7, 8, NA, NA, 11, 12)
+    expect_silent({
+        res_consec <- .impute(x_na, method = "linear")
+    })
+    expect_false(anyNA(res_consec))
+    expect_equal(length(res_consec), length(x_na))
+
+    ## No NA
+    x_nomiss <- 1:10
+    expect_silent({
+        res_nomiss <- .impute(x_nomiss, method = "spline")
+    })
+    expect_identical(res_nomiss, x_nomiss)
+
+    ## all Nas returns NA
+    x_allna <- rep(NA_real_, 8)
+    expect_silent({
+        res_allna <- .impute(x_allna, method = "gaussian")
+    })
+    expect_true(all(is.na(res_allna)))
 })
 
