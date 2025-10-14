@@ -394,7 +394,9 @@ setMethod(
             bd_new <- backendMerge(bd_new)
         }
         if (any(colnames(chromData(bd_new)) %in% c("rtMin", "rtMax")))
-            chromData(bd_new) <- chromData(bd_new)[, !colnames(chromData(bd_new)) %in% c("rtMin", "rtMax")]
+            chromData(bd_new) <- chromData(bd_new)[,
+                                 !colnames(chromData(bd_new)) %in%
+                                     c("rtMin", "rtMax")]
         object@backend <- bd_new
         object@processing <- .logging(
             object@processing,
@@ -489,9 +491,8 @@ setMethod(
 #' @export
 setMethod("chromExtract", "Chromatograms",  function(object, peak.table, by, ...) {
     new_bd <- chromExtract(.backend(object), peak.table, by, ...)
-    if (length(new_bd) == 0) {
-        return(Chromatograms())
-    }
     return(Chromatograms(new_bd))
 })
+
+
 

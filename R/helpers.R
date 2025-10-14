@@ -507,9 +507,6 @@
 ## users.
 #' @noRd
 .backend <- function(object) {
-    if (!is(object, "Chromatograms")) {
-        stop("'object' must be of class 'Chromatograms'.")
-    }
     object@backend
 }
 .peaksData <- function(object) {
@@ -531,26 +528,14 @@
     stop("'object' must be of class 'Chromatograms' or 'ChromBackend'.")
 }
 .inMemory <- function(object) {
-    if (!is(object, "ChromBackend")) {
-        stop("'object' must be of class 'Chrombackend'.")
-    }
     object@inMemory
 }
 .processing <- function(object) {
-    if (!is(object, "Chromatograms")) {
-        stop("'object' must be of class 'Chromatograms'.")
-    }
     object@processing
 }
 .processingQueue <- function(object) {
-    if (!is(object, "Chromatograms")) {
-        stop("'object' must be of class 'Chromatograms'.")
-    }
     object@processingQueue
 }
 .spectra <- function(object) {
-    if (!is(object, "ChromBackendSpectra")) {
-        stop("'object' must be of class 'ChromBackendSpectra'.")
-    }
     object@spectra
 }

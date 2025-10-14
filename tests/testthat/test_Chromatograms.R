@@ -67,6 +67,9 @@ test_that("setBackend works correctly", {
         setBackend(c_mzr, backend = ChromBackendMzR()),
         "does not support"
     )
+
+    c_sp_new <- setBackend(c_sp, backend = ChromBackendMemory())
+    expect_true(!all(c("rtMin", "rtMax") %in% colnames(chromData(c_sp_new))))
 })
 
 test_that("$ works correctly", {

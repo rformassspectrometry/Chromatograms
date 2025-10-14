@@ -433,6 +433,14 @@ test_that(".validate_chromExtract_input works correctly", {
                                      by = c("msLevel", "dataOrigin")),
         "must be present"
     )
+
+    ## unique
+    expect_error(
+        .validate_chromExtract_input(bad_be, peak_tbl,
+                                     by = "msLevel"),
+        "must uniquely identify rows"
+    )
+
 })
 
 test_that(".match_chromdata_peaktable aligns correctly", {
@@ -550,4 +558,6 @@ test_that(".impute() works correctly and without warnings", {
     })
     expect_true(all(is.na(res_allna)))
 })
+
+
 

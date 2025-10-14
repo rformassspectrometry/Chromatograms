@@ -14,6 +14,7 @@
 \alias{peaksVariables,Chromatograms-method}
 \alias{rtime,Chromatograms-method}
 \alias{rtime<-,Chromatograms-method}
+\alias{lengths,Chromatograms-method}
 \title{Chromatographic peaks data}
 \usage{
 \S4method{imputePeaksData}{Chromatograms}(
@@ -53,6 +54,8 @@
 \S4method{rtime}{Chromatograms}(object, ...)
 
 \S4method{rtime}{Chromatograms}(object) <- value
+
+\S4method{lengths}{Chromatograms}(x)
 }
 \arguments{
 \item{object}{A \link{Chromatograms} object.}

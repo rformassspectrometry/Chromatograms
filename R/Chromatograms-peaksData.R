@@ -287,3 +287,17 @@ setReplaceMethod("rtime",
                  }
 )
 
+#' @rdname peaksData
+setMethod("lengths", signature = "Chromatograms", function(x) {
+    queue <- .processingQueue(object)
+    if (length(queue)) {
+        bd <- .run_process_queue(.backend(object),
+                                 queue = queue,
+                                 f = f,
+                                 BPPARAM = BPPARAM
+        )
+        return(lengths(bd))
+    }
+    lengths(.backend(object))
+})
+
