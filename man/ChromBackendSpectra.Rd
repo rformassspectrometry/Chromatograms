@@ -14,6 +14,7 @@ ChromBackendSpectra()
   factorize.by = c("msLevel", "dataOrigin"),
   summarize.method = c("sum", "max"),
   chromData = fillCoreChromVariables(),
+  spectraVariables = character(),
   ...
 )
 
@@ -38,6 +39,10 @@ like \code{rtMin}, \code{rtMax}, \code{mzMin}, and \code{mzMax} must be provided
 contain \code{NA} values. Use \code{-Inf/Inf} for unspecified values. The
 \code{"dataOrigin"} column must match the \code{Spectra} object's
 \code{"dataOrigin"}.}
+
+\item{spectraVariables}{A \code{character} vector specifying which variables
+from the \code{Spectra} object should be added to the chromData. These
+will be mapped using the \code{chromSpectraIndex} variable.}
 
 \item{...}{Additional parameters.}
 }

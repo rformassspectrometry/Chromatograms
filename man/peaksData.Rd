@@ -110,6 +110,8 @@ for more information.}
 \item{drop}{\code{logical(1)} For \code{peaksData()}, default to \code{FALSE}. If \code{TRUE},
 and one column is called by the user, the method returns a list of
 vector of the single column requested.}
+
+\item{x}{For \code{lengths()}: A \code{Chromatograms} object.}
 }
 \value{
 Refer to the individual function description for information on the

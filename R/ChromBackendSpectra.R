@@ -61,6 +61,10 @@ NULL
 #'
 #' @param spectra A `Spectra` object.
 #'
+#' @param spectraVariables A `character` vector specifying which variables
+#'        from the `Spectra` object should be added to the chromData. These
+#'        will be mapped using the `chromSpectraIndex` variable.
+#'
 #' @param summarize.method A `character` string specifying intensity summary:
 #'        `"sum"` (default) or `"max"`.
 #'
@@ -155,6 +159,7 @@ setMethod("backendInitialize", "ChromBackendSpectra",
                    factorize.by = c("msLevel" , "dataOrigin"),
                    summarize.method = c("sum", "max"),
                    chromData = fillCoreChromVariables(),
+                   spectraVariables = character(),
                    ...) {
               summarize.method <- match.arg(summarize.method)
               object@summaryFun <- if (summarize.method == "sum") sumi else maxi
@@ -177,7 +182,8 @@ setMethod("backendInitialize", "ChromBackendSpectra",
                        "available.")
               ## Spectra object are not expected to be ordered by rtime,
               ## so we fix that below.
-              spectra <- lapply(split(spectra, spectra$dataOrigin), function(x) {
+              spectra <- lapply(split(spectra, spectra$dataOrigin),
+                                function(x) {
                   x[order(x$rtime)]
               })
               spectra <- concatenateSpectra(spectra)
@@ -185,6 +191,12 @@ setMethod("backendInitialize", "ChromBackendSpectra",
               object@spectra <- spectra
 
               object <- factorize(object, factorize.by = factorize.by)
+
+              ## map additional spectraVariables if any
+              if (length(spectraVariables)) {
+                  object <- .map_spectra_vars(object,
+                                              spectraVariables = spectraVariables)
+              }
               callNextMethod(object, chromData = .chromData(object))
               }
           )

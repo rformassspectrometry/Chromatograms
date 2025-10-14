@@ -559,5 +559,37 @@ test_that(".impute() works correctly and without warnings", {
     expect_true(all(is.na(res_allna)))
 })
 
+test_that(".map_spectra_vars() correctly maps spectra variables", {
+    vars <- c("scanIndex", "mtbls_id")
+
+    mapped <- .map_spectra_vars(be_sp, vars)
+
+    expect_s4_class(mapped, "ChromBackendSpectra")
+    cd <- chromData(mapped)
+
+    expect_true(all(vars %in% names(cd)))
+
+    expect_true(all(vapply(cd$mtbls_id, function(x) length(unique(x)) == 1,
+                           logical(1))))
+
+    expect_true(all(vapply(cd$scanIndex, function(x) length(x) >= 1,
+                           logical(1))))
+
+    expect_identical(
+        rownames(cd),
+        rownames(chromData(be_sp))
+    )
+    expect_error(
+        .map_spectra_vars(be_sp, c("scanIndex", "fake_var")),
+        "must exist in 'spectra'"
+    )
+
+    cd_names <- names(chromData(be_sp))
+    fake_var <- cd_names[1L]  # pick a real chromData column
+    expect_error(
+        .map_spectra_vars(be_sp, fake_var),
+        "must already exist in 'chromData'"
+    )
+})
 
 

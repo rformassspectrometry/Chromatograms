@@ -75,6 +75,8 @@
 #' @param window For `imputePeaksData`: `integer`, for the gaussian method:
 #'        Half-width of Gaussian kernel window (e.g., 2 gives window size 5)
 #'
+#' @param x For `lengths()`: A `Chromatograms` object.
+#'
 #' @param ... Additional arguments passed to the method.
 #'
 #'
@@ -289,15 +291,16 @@ setReplaceMethod("rtime",
 
 #' @rdname peaksData
 setMethod("lengths", signature = "Chromatograms", function(x) {
-    queue <- .processingQueue(object)
+    queue <- .processingQueue(x)
+    f <- processingChunkFactor(x)
     if (length(queue)) {
-        bd <- .run_process_queue(.backend(object),
+        bd <- .run_process_queue(.backend(x),
                                  queue = queue,
                                  f = f,
-                                 BPPARAM = BPPARAM
+                                 BPPARAM = bpparam()
         )
         return(lengths(bd))
     }
-    lengths(.backend(object))
+    lengths(.backend(x))
 })
 

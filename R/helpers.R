@@ -501,6 +501,36 @@
     x
 }
 
+## Used in:
+## - BackendInitialize, chrombackendSPectra method
+#' @noRd
+.map_spectra_vars <- function(object, spectraVariables) {
+    ## check variable validity�
+    spectra <- .spectra(object)
+    cd <- .chromData(object)
+    if (!all(spectraVariables %in% spectraVariables(spectra)))
+        stop("All 'spectraVariables' must exist in 'spectra'.")
+    if (any(spectraVariables %in% colnames(cd)))
+        stop("None of the 'spectraVariables' must already exist in 'chromData'.")
+    idx <- spectra$chromSpectraIndex
+    spd <- spectraData(spectra, columns = spectraVariables)
+
+    ## aggregate all unique values per chromatogram
+    aggregated <- as.data.frame(
+        lapply(spectraVariables, function(var)
+            tapply(spd[[var]], idx, unique, simplify = FALSE)),
+        stringsAsFactors = FALSE
+    )
+    names(aggregated) <- spectraVariables
+
+    ## match order and combine
+    aggregated <- aggregated[as.character(cd$chromSpectraIndex), , drop = FALSE]
+    cd <- cbind(cd, aggregated)
+    rownames(cd) <- NULL
+    object@chromData <- cd
+    object
+}
+
 
 ## Below are internal accessors functions, these are used ubiquitously in the
 ## package. They directly access the slots. these are NOT to be used by general
