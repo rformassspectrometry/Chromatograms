@@ -91,14 +91,16 @@ NULL
 #' maximum retention time (and m/z in the case of `chromBackendSpectra`)
 #' boundaries, and identifiers that uniquely match chromatograms in the object.
 #'
-#' The resulting **new** `Chromatograms` object contains only chromatograms overlapping
-#' the specified regions, with updated metadata reflecting the extracted
-#' boundaries.
+#' The resulting **new** `Chromatograms` object contains only chromatograms
+#' overlapping the specified regions, with updated metadata reflecting the
+#' extracted boundaries.
 #'
 #' This function is most commonly used to subset chromatographic data around
 #' detected peaks or predefined time/mass ranges, for example to reprocess,
 #' visualize, or quantify extracted chromatograms corresponding to known
-#' features.
+#' features. It's important to notes that filtering by m/z is only supported
+#' when using a `ChromBackendSpectra` backend. if the `mzMin` and `mzMax`
+#' columns are provided when using other backends, they will be ignored.
 #'
 #'
 #' @param BPPARAM Parallel setup configuration. See [BiocParallel::bpparam()]
@@ -157,6 +159,10 @@ NULL
 #'        A `character` vector with the name of the function to be used to
 #'        summaries the spectra data intensity. The available methods are "sum"
 #'        and "max". The default is "sum".
+#'
+#' @param spectraVariables A `character` vector specifying which variables
+#'        from the `Spectra` object should be added to the chromData. These
+#'        will be mapped using the `chromSpectraIndex` variable.
 #'
 #' @param value The value to replace the variable with.
 #'
@@ -297,12 +303,15 @@ setMethod(
     "Chromatograms", "Spectra",
     function(object, summarize.method = c("sum", "max"),
              chromData = data.frame(),
-             factorize.by = c("msLevel", "dataOrigin"), ...) {
+             factorize.by = c("msLevel", "dataOrigin"),
+             spectraVariables = character(),  ...) {
         bd <- backendInitialize(ChromBackendSpectra(),
                                 spectra = object,
                                 factorize.by = factorize.by,
                                 chromData = chromData,
-                                summarize.method = summarize.method
+                                summarize.method = summarize.method,
+                                spectraVariables = spectraVariables,
+                                ...
         )
         new("Chromatograms",
             backend = bd,

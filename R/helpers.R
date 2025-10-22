@@ -515,10 +515,16 @@
     idx <- spectra$chromSpectraIndex
     spd <- spectraData(spectra, columns = spectraVariables)
 
-    ## aggregate all unique values per chromatogram
+    ## Aggregate and simplify singletons
     aggregated <- as.data.frame(
-        lapply(spectraVariables, function(var)
-            tapply(spd[[var]], idx, unique, simplify = FALSE)),
+        lapply(spectraVariables, function(var) {
+            res <- tapply(spd[[var]], idx, unique, simplify = FALSE)
+            ## If each element is length 1, unlist to atomic vector
+            if (all(lengths(res) == 1L)) {
+                res <- unlist(res, use.names = TRUE)
+            }
+            res
+        }),
         stringsAsFactors = FALSE
     )
     names(aggregated) <- spectraVariables

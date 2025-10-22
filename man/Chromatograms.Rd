@@ -24,6 +24,7 @@
   summarize.method = c("sum", "max"),
   chromData = data.frame(),
   factorize.by = c("msLevel", "dataOrigin"),
+  spectraVariables = character(),
   ...
 )
 
@@ -72,6 +73,10 @@ variables will be created.}
 the \code{Spectra} object and the \code{chromData} slot that should be used
 to factorize the \code{Spectra} object data to generate the
 chromatographic data.}
+
+\item{spectraVariables}{A \code{character} vector specifying which variables
+from the \code{Spectra} object should be added to the chromData. These
+will be mapped using the \code{chromSpectraIndex} variable.}
 
 \item{backend}{\link{ChromBackend} object providing the raw data for the
 \code{Chromatograms} object.}

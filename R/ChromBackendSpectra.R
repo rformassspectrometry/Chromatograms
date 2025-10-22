@@ -275,17 +275,17 @@ setMethod(
             return(callNextMethod())
         }
         ## Ensure chromSpectraIndex only contains relevant levels needed
-        valid_levels <- chromSpectraIndex(object)
-        if (!all(levels(.spectra(object)$chromSpectraIndex) %in%
-            valid_levels)) {
+        valid_f <- chromSpectraIndex(object)
+        current_vals <- as.character(.spectra(object)$chromSpectraIndex)
+        if (!setequal(unique(current_vals), levels(valid_f))) {
             object@spectra$chromSpectraIndex <- factor(
-                .spectra(object)$chromSpectraIndex,
-                levels = valid_levels
+                current_vals,
+                levels = levels(valid_f)
             )
         }
         ## Process peaks data
         pd <- mapply(.process_peaks_data,
-            cd = split(chromData(object), valid_levels),
+            cd = split(chromData(object), valid_f),
             s = split(
                 .spectra(object),
                 .spectra(object)$chromSpectraIndex
