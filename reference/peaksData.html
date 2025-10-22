@@ -26,7 +26,7 @@ to the sections below for more details."><!-- mathjax --><script src="https://cd
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">Chromatograms</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.7</span>
       </span>
     </div>
 
@@ -85,6 +85,31 @@ to the sections below for more details.</p>
 
     <div id="ref-usage">
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="co"># S4 method for class 'Chromatograms'</span></span>
+<span><span class="fu">imputePeaksData</span><span class="op">(</span></span>
+<span>  <span class="va">object</span>,</span>
+<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"linear"</span>, <span class="st">"spline"</span>, <span class="st">"gaussian"</span>, <span class="st">"loess"</span><span class="op">)</span>,</span>
+<span>  span <span class="op">=</span> <span class="fl">0.3</span>,</span>
+<span>  sd <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  window <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S4 method for class 'Chromatograms'</span></span>
+<span><span class="fu">filterPeaksData</span><span class="op">(</span></span>
+<span>  <span class="va">object</span>,</span>
+<span>  variables <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  ranges <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  match <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"any"</span>, <span class="st">"all"</span><span class="op">)</span>,</span>
+<span>  keep <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S4 method for class 'Chromatograms'</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">intensity</a></span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S4 method for class 'Chromatograms'</span></span>
+<span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">intensity</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
+<span></span>
+<span><span class="co"># S4 method for class 'Chromatograms'</span></span>
 <span><span class="fu">peaksData</span><span class="op">(</span></span>
 <span>  <span class="va">object</span>,</span>
 <span>  columns <span class="op">=</span> <span class="fu">peaksVariables</span><span class="op">(</span><span class="va">object</span><span class="op">)</span>,</span>
@@ -107,19 +132,7 @@ to the sections below for more details.</p>
 <span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">rtime</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'Chromatograms'</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">intensity</a></span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># S4 method for class 'Chromatograms'</span></span>
-<span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">intensity</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
-<span></span>
-<span><span class="co"># S4 method for class 'Chromatograms'</span></span>
-<span><span class="fu">filterPeaksData</span><span class="op">(</span></span>
-<span>  <span class="va">object</span>,</span>
-<span>  variables <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  ranges <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  match <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"any"</span>, <span class="st">"all"</span><span class="op">)</span>,</span>
-<span>  keep <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/lengths.html" class="external-link">lengths</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -130,37 +143,29 @@ to the sections below for more details.</p>
 <dd><p>A <a href="Chromatograms.html">Chromatograms</a> object.</p></dd>
 
 
-<dt id="arg-columns">columns<a class="anchor" aria-label="anchor" href="#arg-columns"></a></dt>
-<dd><p>For <code>peaksData()</code>: optional <code>character</code> with column
-names (peaks variables) that should be included in the
-returned <code>list</code> of <code>data.frame</code>. By default, all columns are returned.
-Available variables can be found by calling <code>peaksVariables()</code> on the
-object.</p></dd>
+<dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
+<dd><p>For <code>imputePeaksData()</code>: <code>character(1)</code>: Imputation
+method ("linear", "spline", "gaussian", "loess")</p></dd>
 
 
-<dt id="arg-f">f<a class="anchor" aria-label="anchor" href="#arg-f"></a></dt>
-<dd><p><code>factor</code> defining the grouping to split the <code>Chromatograms</code> object.</p></dd>
+<dt id="arg-span">span<a class="anchor" aria-label="anchor" href="#arg-span"></a></dt>
+<dd><p>For <code>imputePeaksData</code>: <code>numeric(1)</code>, for the loess method:
+Smoothing parameter (only used if method == "loess")</p></dd>
 
 
-<dt id="arg-bpparam">BPPARAM<a class="anchor" aria-label="anchor" href="#arg-bpparam"></a></dt>
-<dd><p>Parallel setup configuration. See <code><a href="https://rdrr.io/pkg/BiocParallel/man/register.html" class="external-link">BiocParallel::bpparam()</a></code>
-for more information.</p></dd>
+<dt id="arg-sd">sd<a class="anchor" aria-label="anchor" href="#arg-sd"></a></dt>
+<dd><p>For <code>imputePeaksData</code>: <code>numeric(1)</code>, for the gaussian method:
+Standard deviation for Gaussian kernel
+(only used if method == "gaussian")</p></dd>
 
 
-<dt id="arg-drop">drop<a class="anchor" aria-label="anchor" href="#arg-drop"></a></dt>
-<dd><p><code>logical(1)</code> For <code>peaksData()</code>, default to <code>FALSE</code>. If <code>TRUE</code>,
-and one column is called by the user, the method returns a list of
-vector of the single column requested.</p></dd>
+<dt id="arg-window">window<a class="anchor" aria-label="anchor" href="#arg-window"></a></dt>
+<dd><p>For <code>imputePeaksData</code>: <code>integer</code>, for the gaussian method:
+Half-width of Gaussian kernel window (e.g., 2 gives window size 5)</p></dd>
 
 
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Additional arguments passed to the method.</p></dd>
-
-
-<dt id="arg-value">value<a class="anchor" aria-label="anchor" href="#arg-value"></a></dt>
-<dd><p>For <code><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">rtime()</a></code> and <code><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">intensity()</a></code>: <code>numeric</code> vector with the
-values to replace the current values. The length of the vector must
-match the number of peaks data pairs in the <code>Chromatograms</code> object.</p></dd>
 
 
 <dt id="arg-variables">variables<a class="anchor" aria-label="anchor" href="#arg-variables"></a></dt>
@@ -186,6 +191,39 @@ the default), or for any of them (<code>match = "any"</code>).</p></dd>
 <dd><p>For <code>filterPeaksData()</code>: <code>logical(1)</code> defining whether to
 keep (<code>keep = TRUE</code>) or remove (<code>keep = FALSE</code>) the chromatographic
 peaks data that match the condition.</p></dd>
+
+
+<dt id="arg-value">value<a class="anchor" aria-label="anchor" href="#arg-value"></a></dt>
+<dd><p>For <code><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">rtime()</a></code> and <code><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">intensity()</a></code>: <code>numeric</code> vector with the
+values to replace the current values. The length of the vector must
+match the number of peaks data pairs in the <code>Chromatograms</code> object.</p></dd>
+
+
+<dt id="arg-columns">columns<a class="anchor" aria-label="anchor" href="#arg-columns"></a></dt>
+<dd><p>For <code>peaksData()</code>: optional <code>character</code> with column
+names (peaks variables) that should be included in the
+returned <code>list</code> of <code>data.frame</code>. By default, all columns are returned.
+Available variables can be found by calling <code>peaksVariables()</code> on the
+object.</p></dd>
+
+
+<dt id="arg-f">f<a class="anchor" aria-label="anchor" href="#arg-f"></a></dt>
+<dd><p><code>factor</code> defining the grouping to split the <code>Chromatograms</code> object.</p></dd>
+
+
+<dt id="arg-bpparam">BPPARAM<a class="anchor" aria-label="anchor" href="#arg-bpparam"></a></dt>
+<dd><p>Parallel setup configuration. See <code><a href="https://rdrr.io/pkg/BiocParallel/man/register.html" class="external-link">BiocParallel::bpparam()</a></code>
+for more information.</p></dd>
+
+
+<dt id="arg-drop">drop<a class="anchor" aria-label="anchor" href="#arg-drop"></a></dt>
+<dd><p><code>logical(1)</code> For <code>peaksData()</code>, default to <code>FALSE</code>. If <code>TRUE</code>,
+and one column is called by the user, the method returns a list of
+vector of the single column requested.</p></dd>
+
+
+<dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
+<dd><p>For <code><a href="https://rdrr.io/r/base/lengths.html" class="external-link">lengths()</a></code>: A <code>Chromatograms</code> object.</p></dd>
 
 </dl></div>
     <div id="value">
@@ -216,6 +254,18 @@ filtered, but the filtered data will not be saved in the backend. This means
 the original mzml files will not be affected by computations performed on
 the <a href="Chromatograms.html">Chromatograms</a>.</p>
     </div>
+    <div id="impute-peaks-variables">
+    <h2>Impute Peaks Variables</h2>
+
+
+
+<p><code>imputePeaksData</code> will impute missing values in a <code>Chromatograms</code>'s peaks data
+(i.e., <code>peaksData</code>). This functions replace missing peaks data values with
+specified imputation methods using various methods such as linear
+interpolation, spline interpolation, Gaussian kernel smoothing, or LOESS
+smoothing. This method modifies the peaks data in place and returns the
+same <code>Chromatograms</code> object with imputed values.</p>
+    </div>
     <div id="see-also">
     <h2>See also</h2>
     <div class="dont-index"><p><a href="Chromatograms.html">Chromatograms</a> for a general description of the <code>Chromatograms</code>
@@ -236,7 +286,7 @@ see <a href="processingQueue.html">processingQueue</a>.</p></div>
 <span class="r-in"><span><span class="va">cdata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>    msLevel <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">1L</span>, <span class="fl">1L</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>    mz <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">112.2</span>, <span class="fl">123.3</span>, <span class="fl">134.4</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    chromIndex <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">2L</span>, <span class="fl">3L</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    dataOrigin <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mem1"</span>, <span class="st">"mem2"</span>, <span class="st">"mem3"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">pdata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
@@ -322,15 +372,15 @@ see <a href="processingQueue.html">processingQueue</a>.</p></div>
 <span class="r-in"><span><span class="fu">filterPeaksData</span><span class="op">(</span><span class="va">chr</span>, variables <span class="op">=</span> <span class="st">"rtime"</span>, ranges <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12.5</span>, <span class="fl">13.5</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chromatographic data (Chromatograms) with 3 chromatograms in a ChromBackendMemory backend:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   chromIndex msLevel    mz</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1          1       1 112.2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2          2       1 123.3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3          3       1 134.4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ... 0 more  chromatogram variables/columns</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1         NA       1 112.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2         NA       1 123.3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3         NA       1 134.4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ... 3 more  chromatogram variables/columns</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ... 2 peaksData variables</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Lazy evaluation queue: 1 processing step(s)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Processing:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Filter: remove peaks based on the variables: rtimethe ranges: 12.5, 13.5and the match condition: any [Wed Sep 24 09:27:58 2025]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Filter: remove peaks based on the variables: rtimethe ranges: 12.5, 13.5and the match condition: all [Wed Sep 24 09:27:58 2025] </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Filter: remove peaks based on the variables: rtimethe ranges: 12.5, 13.5and the match condition: any [Wed Oct 22 08:40:23 2025]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Filter: remove peaks based on the variables: rtimethe ranges: 12.5, 13.5and the match condition: all [Wed Oct 22 08:40:23 2025] </span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

@@ -21,7 +21,7 @@ decribed in the ChromBackend class documentation."><!-- mathjax --><script src="
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">Chromatograms</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.7</span>
       </span>
     </div>
 
@@ -83,6 +83,7 @@ decribed in the <a href="ChromBackend.html">ChromBackend</a> class documentation
 <span>  summarize.method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sum"</span>, <span class="st">"max"</span><span class="op">)</span>,</span>
 <span>  chromData <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  factorize.by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"msLevel"</span>, <span class="st">"dataOrigin"</span><span class="op">)</span>,</span>
+<span>  spectraVariables <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/character.html" class="external-link">character</a></span><span class="op">(</span><span class="op">)</span>,</span>
 <span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span>
 <span></span>
@@ -111,7 +112,10 @@ decribed in the <a href="ChromBackend.html">ChromBackend</a> class documentation
 <span><span class="va">x</span><span class="op">[[</span><span class="va">i</span>, <span class="va">j</span>, <span class="va">...</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'Chromatograms'</span></span>
-<span><span class="fu"><a href="ChromBackend.html">factorize</a></span><span class="op">(</span><span class="va">object</span>, factorize.by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"msLevel"</span>, <span class="st">"dataOrigin"</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="ChromBackend.html">factorize</a></span><span class="op">(</span><span class="va">object</span>, factorize.by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"msLevel"</span>, <span class="st">"dataOrigin"</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S4 method for class 'Chromatograms'</span></span>
+<span><span class="fu">chromExtract</span><span class="op">(</span><span class="va">object</span>, <span class="va">peak.table</span>, <span class="va">by</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -153,6 +157,12 @@ to factorize the <code>Spectra</code> object data to generate the
 chromatographic data.</p></dd>
 
 
+<dt id="arg-spectravariables">spectraVariables<a class="anchor" aria-label="anchor" href="#arg-spectravariables"></a></dt>
+<dd><p>A <code>character</code> vector specifying which variables
+from the <code>Spectra</code> object should be added to the chromData. These
+will be mapped using the <code>chromSpectraIndex</code> variable.</p></dd>
+
+
 <dt id="arg-backend">backend<a class="anchor" aria-label="anchor" href="#arg-backend"></a></dt>
 <dd><p><a href="ChromBackend.html">ChromBackend</a> object providing the raw data for the
 <code>Chromatograms</code> object.</p></dd>
@@ -190,6 +200,29 @@ access.</p></dd>
 
 <dt id="arg-drop">drop<a class="anchor" aria-label="anchor" href="#arg-drop"></a></dt>
 <dd><p>For <code>[</code>: <code>logical(1)</code> default to <code>FALSE</code>.</p></dd>
+
+
+<dt id="arg-peak-table">peak.table<a class="anchor" aria-label="anchor" href="#arg-peak-table"></a></dt>
+<dd><p>For <code>chromExtract()</code> A <code>data frame</code> containing the
+following minimum columns:
+- rtMin: Minimum retention time for each peak. Cannot be NA.
+- rtMax: Maximum retention time for each peak. Cannot be NA.
+- mzMin: Minimum m/z value for each peak.
+- mzMax: Maximum m/z value for each peak.
+Additionally, the <code>peak.table</code> must include columns that uniquely
+identify chromatograms in the <code>object</code>. Common choices are
+"msLevel" and/or "dataOrigin". These columns must also be present
+in the <code>chromData</code> of the <code>object</code>. Any extra columns in
+<code>peak.table</code> will be added to the <code>chromData</code> of the newly created
+object.</p></dd>
+
+
+<dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
+<dd><p>A <code>character</code> vector naming one or more columns that uniquely
+identify chromatograms in both <code>peak.table</code> and
+<code>chromData(object)</code>. The combination of these columns must be unique
+within <code>chromData(object)</code>. Typically includes <code>"dataOrigin"</code>,
+<code>"msLevel"</code>, or both.</p></dd>
 
 </dl></div>
     <div id="value">
@@ -259,6 +292,45 @@ processing of the data and reduces the memory demand. To read more about the
 <code>processingQueue</code>, and how to parallelize your processes, see the
 <a href="processingQueue.html">processingQueue</a> documentation.</p>
     </div>
+    <div id="subsetting-and-accessing-data">
+    <h2>Subsetting and accessing data</h2>
+
+
+<p>The <code>Chromatograms</code> class supports subsetting by chromatogram (i.e. rows) using
+the <code>[</code> operator. The <code>[</code> operator does not support subsetting by columns.
+Specific chromatograms or peaks variables can be accessed using the <code>[[</code>
+operator or the <code>$</code> operator. The <code>[[</code> operator can also be used to
+replace specific chromatograms or peaks variables.</p>
+    </div>
+    <div id="changing-the-backend">
+    <h2>Changing the backend</h2>
+
+
+<p>The <code><a href="https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html" class="external-link">setBackend()</a></code> function can be used to change the backend of a
+<code>Chromatograms</code> object. This can be useful to switch to a backend that
+better suits the needs of the user, for example switching to a memory-based
+backend for smaller datasets or to a file-based backend for larger datasets.
+The <code><a href="https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html" class="external-link">setBackend()</a></code> function supports parallelization of the backend
+conversion using the <code>BPPARAM</code> parameter.</p>
+    </div>
+    <div id="extracting-chromatograms-based-on-a-peak-table">
+    <h2>Extracting chromatograms based on a peak table</h2>
+
+
+
+<p>The <code>chromExtract()</code> function allows users to extract specific regions of
+interest from a <code>Chromatograms</code> object based on a user-provided peak table.
+Each row in the <code>peak.table</code> defines a region to extract, using minimum and
+maximum retention time (and m/z in the case of <code>chromBackendSpectra</code>)
+boundaries, and identifiers that uniquely match chromatograms in the object.</p>
+<p>The resulting <strong>new</strong> <code>Chromatograms</code> object contains only chromatograms overlapping
+the specified regions, with updated metadata reflecting the extracted
+boundaries.</p>
+<p>This function is most commonly used to subset chromatographic data around
+detected peaks or predefined time/mass ranges, for example to reprocess,
+visualize, or quantify extracted chromatograms corresponding to known
+features.</p>
+    </div>
     <div id="see-also">
     <h2>See also</h2>
     <div class="dont-index"><p><a href="chromData.html">chromData</a> for a general description of the chromatographic
@@ -284,6 +356,7 @@ processings and parallelization for larger dataset.</p></div>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Used data files from the assay's column "Raw Spectral Data File" since none were available in column "Derived Spectral Data File".</span>
 <span class="r-in"><span><span class="va">s</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Spectra/man/Spectra.html" class="external-link">Spectra</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">s</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html" class="external-link">setBackend</a></span><span class="op">(</span><span class="va">s</span>, <span class="fu"><a href="https://rdrr.io/pkg/Spectra/man/MsBackend.html" class="external-link">MsBackendMemory</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">be</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html" class="external-link">backendInitialize</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/methods/new.html" class="external-link">new</a></span><span class="op">(</span><span class="st">"ChromBackendSpectra"</span><span class="op">)</span>, <span class="va">s</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">chr</span> <span class="op">&lt;-</span> <span class="fu">Chromatograms</span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
@@ -291,8 +364,8 @@ processings and parallelization for larger dataset.</p></div>
 <span class="r-in"><span><span class="va">chr</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chromatographic data (Chromatograms) with 2 chromatograms in a ChromBackendSpectra backend:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   chromIndex msLevel  mz</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1          1       1 Inf</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2          2       1 Inf</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1         NA       1 Inf</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2         NA       1 Inf</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ... 7 more  chromatogram variables/columns</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ... 2 peaksData variables</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
@@ -306,7 +379,6 @@ processings and parallelization for larger dataset.</p></div>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## Replace data of a specific variable</span></span></span>
 <span class="r-in"><span><span class="va">chr</span><span class="op">$</span><span class="va">msLevel</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2L</span>, <span class="fl">2L</span>, <span class="fl">2L</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> Please keep in mind the 'ChromBackendSpectra' backend is read-only. The chromData slot will be modified but the changes will not affect the Spectra object. You will need to run `factorize()` to update the 'chromSpectraIndex' column.</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## Can re factorize the data</span></span></span>
 <span class="r-in"><span><span class="va">chr</span> <span class="op">&lt;-</span> <span class="fu"><a href="ChromBackend.html">factorize</a></span><span class="op">(</span><span class="va">chr</span><span class="op">)</span></span></span>
@@ -317,13 +389,13 @@ processings and parallelization for larger dataset.</p></div>
 <span class="r-in"><span><span class="va">chr</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chromatographic data (Chromatograms) with 3 chromatograms in a ChromBackendMemory backend:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   chromIndex msLevel  mz</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1          1       2 Inf</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2          2       2 Inf</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3          3       2 Inf</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ... 9 more  chromatogram variables/columns</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1         NA       2 Inf</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2         NA       2 Inf</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3         NA       2 Inf</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ... 12 more  chromatogram variables/columns</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ... 2 peaksData variables</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Processing:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Switch backend from ChromBackendSpectra to ChromBackendMemory [Wed Sep 24 09:27:57 2025] </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Switch backend from ChromBackendSpectra to ChromBackendMemory [Wed Oct 22 08:40:22 2025] </span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>

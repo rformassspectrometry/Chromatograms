@@ -43,7 +43,7 @@ Filter the peak data based on the provided ranges for the given variables."><!--
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">Chromatograms</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.7</span>
       </span>
     </div>
 
@@ -133,6 +133,9 @@ functionality for reading chromatographic data from <code>Spectra</code> objects
 <span></span>
 <span><span class="co"># S4 method for class 'ChromBackend'</span></span>
 <span><span class="fu"><a href="chromData.html">chromData</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
+<span></span>
+<span><span class="co"># S4 method for class 'ChromBackend'</span></span>
+<span><span class="fu"><a href="Chromatograms.html">chromExtract</a></span><span class="op">(</span><span class="va">object</span>, <span class="va">peak.table</span>, <span class="va">by</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'ChromBackend'</span></span>
 <span><span class="fu">factorize</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
@@ -303,7 +306,17 @@ functionality for reading chromatographic data from <code>Spectra</code> objects
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'ChromBackend'</span></span>
-<span><span class="fu">supportsSetBackend</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">supportsSetBackend</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S4 method for class 'ChromBackend'</span></span>
+<span><span class="fu"><a href="peaksData.html">imputePeaksData</a></span><span class="op">(</span></span>
+<span>  <span class="va">object</span>,</span>
+<span>  method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"linear"</span>, <span class="st">"spline"</span>, <span class="st">"gaussian"</span>, <span class="st">"loess"</span><span class="op">)</span>,</span>
+<span>  span <span class="op">=</span> <span class="fl">0.3</span>,</span>
+<span>  sd <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  window <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -343,6 +356,29 @@ returned <code>data.frame</code>. By default, all columns are returned.</p></dd>
 <code>FALSE</code>. If <code>TRUE</code>, and one column is requested by the user, the
 method should return a vector (or list of vector for <code><a href="peaksData.html">peaksData()</a></code>)
 of the single column requested.</p></dd>
+
+
+<dt id="arg-peak-table">peak.table<a class="anchor" aria-label="anchor" href="#arg-peak-table"></a></dt>
+<dd><p>For <code><a href="Chromatograms.html">chromExtract()</a></code> A <code>data frame</code> containing the
+following minimum columns:
+- rtMin: Minimum retention time for each peak. Cannot be NA.
+- rtMax: Maximum retention time for each peak. Cannot be NA.
+- mzMin: Minimum m/z value for each peak.
+- mzMax: Maximum m/z value for each peak.
+Additionally, the <code>peak.table</code> must include columns that uniquely
+identify chromatograms in the <code>object</code>. Common choices are
+"msLevel" and/or "dataOrigin". These columns must also be present
+in the <code>chromData</code> of the <code>object</code>. Any extra columns in
+<code>peak.table</code> will be added to the <code>chromData</code> of the newly created
+object.</p></dd>
+
+
+<dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
+<dd><p>for <code><a href="Chromatograms.html">chromExtract() </a></code>A <code>character</code> vector specifying one or more
+column names that are present in both <code>peak.table</code> and
+<code>chromData(object)</code>. These columns uniquely identify chromatograms.
+The combination of these columns must be unique in
+<code>chromData(object)</code>. Can be of length 1 or greater.</p></dd>
 
 
 <dt id="arg-i">i<a class="anchor" aria-label="anchor" href="#arg-i"></a></dt>
@@ -387,17 +423,32 @@ defining whether the condition has to match for all provided
 defining whether to keep (<code>keep = TRUE</code>) or remove (<code>keep = FALSE</code>)
 the chromatogram data that match the condition.</p></dd>
 
+
+<dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
+<dd><p>For <code><a href="peaksData.html">imputePeaksData()</a></code>: <code>character(1)</code>: Imputation
+method ("linear", "spline", "gaussian", "loess")</p></dd>
+
+
+<dt id="arg-span">span<a class="anchor" aria-label="anchor" href="#arg-span"></a></dt>
+<dd><p>For <code>imputePeaksData</code>: <code>numeric(1)</code>, for the loess method:
+Smoothing parameter (only used if method == "loess")</p></dd>
+
+
+<dt id="arg-sd">sd<a class="anchor" aria-label="anchor" href="#arg-sd"></a></dt>
+<dd><p>For <code>imputePeaksData</code>: <code>numeric(1)</code>, for the gaussian method:
+Standard deviation for Gaussian kernel
+(only used if method == "gaussian")</p></dd>
+
+
+<dt id="arg-window">window<a class="anchor" aria-label="anchor" href="#arg-window"></a></dt>
+<dd><p>For <code>imputePeaksData</code>: <code>integer</code>, for the gaussian method:
+Half-width of Gaussian kernel window (e.g., 2 gives window size 5)</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
     <p>Refer to the individual function description for information on the
 return value.</p>
-    </div>
-    <div id="note">
-    <h2>Note</h2>
-    <p>This function replaces the peaksData() of the input object. Therefore
-backend with <code>readOnly == TRUE</code> (i.e. ChromBackendmzR) will need to have a
-carefully implemented <code>peaksData(object) &lt;-</code> method.</p>
     </div>
     <div id="core-chromatogram-variables">
     <h2>Core chromatogram variables</h2>
@@ -415,11 +466,11 @@ returned for each chromatogram.</p>
 <p>The <code>coreChromVariables()</code> function returns the core chromatogram variables
 along with their expected (defined) data type.</p>
 <p>The core chromatogram variables (in alphabetical order) are:</p><ul><li><p><code>chromIndex</code>: an <code>integer</code> with the index of the chromatogram in the
-original source file (e.g. <em>mzML</em> file).</p></li>
+original source file (e.g. <em>mzML</em> file). In backedn with no original
+source file, this variable should be set to <code>NA_integer_</code>.</p></li>
 <li><p><code>collisionEnergy</code>: for SRM data, <code>numeric</code> with the collision energy of
 the precursor.</p></li>
 <li><p><code>dataOrigin</code>: optional <code>character</code> with the origin of a chromatogram.</p></li>
-<li><p><code>dataOrigin</code>: <code>character</code> defining where the data is (currently) stored.</p></li>
 <li><p><code>msLevel</code>: <code>integer</code> defining the MS level of the data.</p></li>
 <li><p><code>mz</code>: optional <code>numeric</code> with the (target) m/z value for the
 chromatographic data.</p></li>
@@ -506,6 +557,12 @@ New backends should be implemented such as if empty, the method returns a
 <code>data.frame</code> with 0 rows and the columns defined by <code><a href="chromData.html">chromVariables()</a></code>.
 By default, the function <em>should</em> return at minimum the
 coreChromVariables, even if NAs.</p></li>
+<li><p><code><a href="Chromatograms.html">chromExtract()</a></code>: return A new <code>Chrombackend</code> object containing separated
+chromatographic area as individual chromatograms. The chromatographic areas
+are defined by the <code>peak.table</code> parameter. The new object will contain
+chromatograms that match the conditions defined in <code>peak.table</code>. If no
+chromatograms match the conditions, an empty <code>ChromBackend</code> object
+should be returned.</p></li>
 <li><p><code>extractByIndex()</code>: function to subset a backend to selected elements
 defined by the provided index. Similar to <code>[</code>, this method should allow
 extracting (or to subset) the data in any order. In contrast to <code>[</code>,
@@ -580,6 +637,11 @@ of length equal to the number of chromatograms and the number of values
 within each list element identical to the number of data pairs in each
 chromatogram. Note that just writeable backends need to support this
 method.</p></li>
+<li><p><code><a href="peaksData.html">imputePeaksData()</a></code>: Imputes missing intensity values in the
+chromatographic peaks data using various methods such as linear
+interpolation, spline interpolation, Gaussian kernel smoothing, or LOESS
+smoothing. This method modifies the peaks data in place and returns the
+same <code>ChromBackend</code> object with imputed values.</p></li>
 <li><p><code>isReadOnly()</code>: returns a <code>logical(1)</code> whether the backend is <em>read
 only</em> or does allow also to write/update data. Defaults to FALSE.</p></li>
 <li><p><code>isEmpty()</code>: returns a <code>logical</code> of length equal to the number of
@@ -675,7 +737,7 @@ implementation is provided in the respective vignette.</p>
 <span class="r-in"><span><span class="va">cdata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>    msLevel <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">1L</span>, <span class="fl">1L</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>    mz <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">112.2</span>, <span class="fl">123.3</span>, <span class="fl">134.4</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>    chromIndex <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">2L</span>, <span class="fl">3L</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    dataOrigin <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mem1"</span>, <span class="st">"mem2"</span>, <span class="st">"mem3"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="va">pdata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span></span>
@@ -697,10 +759,10 @@ implementation is provided in the respective vignette.</p>
 <span class="r-in"><span><span class="va">be</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ChromBackendMemory with 3 chromatograms</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   chromIndex msLevel    mz</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1          1       1 112.2</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2          2       1 123.3</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3          3       1 134.4</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> ... 0 more  chromatogram variables/columns</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1         NA       1 112.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2         NA       1 123.3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3         NA       1 134.4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ... 3 more  chromatogram variables/columns</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ... 2 peaksData variables</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## Data can be accessed with the accessor methods</span></span></span>
@@ -771,8 +833,8 @@ implementation is provided in the respective vignette.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## List available chromatographic variables</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="chromData.html">chromVariables</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "msLevel"         "mz"              "chromIndex"      "collisionEnergy"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "dataOrigin"      "mzMin"           "mzMax"           "precursorMz"    </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "msLevel"         "mz"              "dataOrigin"      "chromIndex"     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "collisionEnergy" "mzMin"           "mzMax"           "precursorMz"    </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "precursorMzMin"  "precursorMzMax"  "productMz"       "productMzMin"   </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [13] "productMzMax"   </span>
 <span class="r-in"><span></span></span>
@@ -781,11 +843,11 @@ implementation is provided in the respective vignette.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "rtime"     "intensity"</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## Extract multiple chromatographic variables</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="chromData.html">chromData</a></span><span class="op">(</span><span class="va">be</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"chromIndex"</span>, <span class="st">"mz"</span>, <span class="st">"msLevel"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   chromIndex    mz msLevel</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1          1 112.2       1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2          2 123.3       1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3          3 134.4       1</span>
+<span class="r-in"><span><span class="fu"><a href="chromData.html">chromData</a></span><span class="op">(</span><span class="va">be</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"dataOrigin"</span>, <span class="st">"mz"</span>, <span class="st">"msLevel"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   dataOrigin    mz msLevel</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       mem1 112.2       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       mem2 123.3       1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3       mem3 134.4       1</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## Single variables can also be accessed and replaced</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="chromData.html">mz</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></span>
