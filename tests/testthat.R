@@ -1,7 +1,7 @@
 library(testthat)
 library(Chromatograms)
 library(Spectra)
-library(MsBackendMetaboLights)
+library(MsBackendMetaboLights) ## remove MsbackendMetaboLights dependency for test and examples
 
 ### Test ChromBackendSpectra
 be <- backendInitialize(MsBackendMetaboLights(),
@@ -9,6 +9,7 @@ be <- backendInitialize(MsBackendMetaboLights(),
     filePattern = c("63B.cdf")
 )
 s <- Spectra(be)
+s <- setBackend(s, MsBackendMemory())
 be_empty <- new("ChromBackendSpectra")
 be <- backendInitialize(be_empty, s)
 test_suite <- system.file("test_backends", "test_ChromBackend",
@@ -38,7 +39,7 @@ c_mzr <- Chromatograms(be)
 cdata <- data.frame(
     msLevel = c(1L, 1L, 1L),
     mz = c(112.2, 123.3, 134.4),
-    chromIndex = c(1L, 2L, 3L)
+    dataOrigin = c("mem1", "mem2", "mem3")
 )
 pdata <- list(
     data.frame(

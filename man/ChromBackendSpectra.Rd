@@ -14,6 +14,7 @@ ChromBackendSpectra()
   factorize.by = c("msLevel", "dataOrigin"),
   summarize.method = c("sum", "max"),
   chromData = fillCoreChromVariables(),
+  spectraVariables = character(),
   ...
 )
 
@@ -34,10 +35,14 @@ If \code{chromData} is provided, it must contain these columns.}
 
 \item{chromData}{A \code{data.frame} with chromatographic data for use in
 \code{backendInitialize()}. If missing, a default is generated. Columns
-like \code{rtmin}, \code{rtmax}, \code{mzmin}, and \code{mzmax} must be provided and not
+like \code{rtMin}, \code{rtMax}, \code{mzMin}, and \code{mzMax} must be provided and not
 contain \code{NA} values. Use \code{-Inf/Inf} for unspecified values. The
 \code{"dataOrigin"} column must match the \code{Spectra} object's
 \code{"dataOrigin"}.}
+
+\item{spectraVariables}{A \code{character} vector specifying which variables
+from the \code{Spectra} object should be added to the chromData. These
+will be mapped using the \code{chromSpectraIndex} variable.}
 
 \item{...}{Additional parameters.}
 }
@@ -55,7 +60,7 @@ It can be initialized with a \code{Spectra} object, which is stored in the
 containing chromatographic metadata, stored in \code{chromData}. This metadata
 filters the \code{Spectra} object and generates \code{peaksData}. If \code{chromData} is
 not provided, a default \code{data.frame} is created from the \code{Spectra} data.
-An "rtmin", "rtmax", "mzmin", and "mzmax" column will be created by
+An "rtMin", "rtMax", "mzMin", and "mzMax" column will be created by
 condensing the \code{Spectra} data corresponding to each unique combination of
 the \code{factorize.by} variables.
 
@@ -99,6 +104,8 @@ be <- backendInitialize(MsBackendMetaboLights(),
 )
 s <- Spectra(be)
 
+s <- setBackend(s, MsBackendMemory())
+
 ## Initialize ChromBackendSpectra
 be_empty <- new("ChromBackendSpectra")
 be <- backendInitialize(be_empty, s)
@@ -119,7 +126,7 @@ chromData(be)
 
 ## Another possibilities is to create eics from the Spectra object.
 ## Here we create an EIC with a specific m/z and retention time window.
-df <- data.frame(mzmin = 100.01, mzmax = 100.02 , rtmin = 50, rtmax = 100)
+df <- data.frame(mzMin = 100.01, mzMax = 100.02 , rtMin = 50, rtMax = 100)
 be <- backendInitialize(be_empty, s, summarize.method = "sum")
 chromData(be) <- cbind(chromData(be), df)
 

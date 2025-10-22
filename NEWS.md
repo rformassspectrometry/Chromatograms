@@ -1,4 +1,14 @@
-# Version 0.99.6
+# Version 0.99.7
+
+## Changes in 0.99.7
+
+- Add `chromExtract()` method to generate a new `Chromatograms` object from an
+  existing one by extracting a subset of chromatograms based on retention 
+  times (optionally m/z) boundaries.
+- Add `imputePeaksData()` method to impute missing values in the 
+  chromatographic peaks data.
+- Fix `factorize()` so that the parameter `factorize.by` can take a `character`
+  vector of length 1. 
 
 ## Changes in 0.99.6
 

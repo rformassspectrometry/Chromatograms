@@ -8,6 +8,12 @@ test_that("ChromBackendSpectra works", {
         fillCoreChromVariables(be_sp@chromData)
     ))
     expect_false(supportsSetBackend(be_sp))
+
+    ## works ofr single column factorisation too
+    expect_silent(be_tmp <- factorize(be_sp, factorize.by = "dataOrigin"))
+    expect_true(is(be_tmp, "ChromBackendSpectra"))
+    expect_true(all(.chromData(be_tmp)$dataOrigin ==
+                    .chromData(be_tmp)$chromSpectraIndex))
 })
 
 test_that("backendInitialize works", {
@@ -52,13 +58,13 @@ test_that("backendInitialize works", {
         ),
         "should be one of"
     )
-    df <- data.frame(chromIndex = 1:3, msLevel = 1:3, mz = 1:3,
+    df <- data.frame(msLevel = 1:3, mz = 1:3,
                      dataOrigin = dataOrigin(s)[1])
     bd_tmp <- backendInitialize(ChromBackendSpectra(), spectra = s,
                                 chromData = df,
                                 factorize.by = c("msLevel", "dataOrigin"))
     expect_identical(bd_tmp@chromData[, colnames(df)], df)
-    expect_true(all(c("rtmin", "rtmax", "mzmin", "mzmax", "chromSpectraIndex") %in%
+    expect_true(all(c("rtMin", "rtMax", "mzMin", "mzMax", "chromSpectraIndex") %in%
                 colnames(bd_tmp@chromData)))
 })
 
@@ -127,3 +133,34 @@ test_that("chromSpectraIndex works", {
 test_that("backendParallelFactor works", {
     expect_identical(backendParallelFactor(be_sp), factor())
 })
+
+test_that("chromExtract works for ChromBackendSpectra", {
+    tmp <- be_sp
+    do <- dataOrigin(tmp)[1:2]
+    peak_tbl <- data.frame(
+        rtMin = c(1, 100),
+        rtMax = c(56, 600),
+        mzMin = c(100, 140),
+        mzMax = c(130, 160),
+        msLevel = c(1L, 1L),
+        dataOrigin = do,
+        extra_cols = c("peak1", "peak2")
+    )
+
+    out <- chromExtract(tmp, peak_tbl, by = c("msLevel", "dataOrigin"))
+
+    # Output should be a ChromBackendSpectra
+    expect_s4_class(out, "ChromBackendSpectra")
+
+    # chromData should match rows in peak.table
+    expect_equal(nrow(.chromData(out)), nrow(peak_tbl))
+
+    # spectra should be preserved
+    expect_true(!is.null(out@spectra))
+    expect_true(!nrow(.peaksData(out)[[1]]) > 0)
+
+    # Ensure replacement of mz columns occurred
+    expect_true(all(c("mzMin", "mzMax", "extra_cols") %in% names(.chromData(out))))
+    expect_equal(length(.peaksData(out)), nrow(peak_tbl))
+})
+

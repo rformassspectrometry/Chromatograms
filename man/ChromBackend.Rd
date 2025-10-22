@@ -18,6 +18,7 @@
 \alias{backendMerge,ChromBackend-method}
 \alias{chromData,ChromBackend-method}
 \alias{chromData<-,ChromBackend-method}
+\alias{chromExtract,ChromBackend-method}
 \alias{factorize,ChromBackend-method}
 \alias{peaksData,ChromBackend-method}
 \alias{peaksData<-,ChromBackend-method}
@@ -68,6 +69,7 @@
 \alias{filterChromData,ChromBackend-method}
 \alias{filterPeaksData,ChromBackend-method}
 \alias{supportsSetBackend,ChromBackend-method}
+\alias{imputePeaksData,ChromBackend-method}
 \title{Chromatographic MS Data Backends}
 \usage{
 coreChromVariables()
@@ -83,6 +85,8 @@ corePeaksVariables()
 \S4method{chromData}{ChromBackend}(object, columns = chromVariables(object), drop = FALSE)
 
 \S4method{chromData}{ChromBackend}(object) <- value
+
+\S4method{chromExtract}{ChromBackend}(object, peak.table, by)
 
 \S4method{factorize}{ChromBackend}(object, ...)
 
@@ -201,6 +205,15 @@ corePeaksVariables()
 )
 
 \S4method{supportsSetBackend}{ChromBackend}(object, ...)
+
+\S4method{imputePeaksData}{ChromBackend}(
+  object,
+  method = c("linear", "spline", "gaussian", "loess"),
+  span = 0.3,
+  sd = 1,
+  window = 2,
+  ...
+)
 }
 \arguments{
 \item{x}{Object extending \code{ChromBackend}.}
@@ -223,6 +236,25 @@ returned \code{data.frame}. By default, all columns are returned.}
 \code{FALSE}. If \code{TRUE}, and one column is requested by the user, the
 method should return a vector (or list of vector for \code{peaksData()})
 of the single column requested.}
+
+\item{peak.table}{For \code{chromExtract()} A \verb{data frame} containing the
+following minimum columns:
+- rtMin: Minimum retention time for each peak. Cannot be NA.
+- rtMax: Maximum retention time for each peak. Cannot be NA.
+- mzMin: Minimum m/z value for each peak.
+- mzMax: Maximum m/z value for each peak.
+Additionally, the \code{peak.table} must include columns that uniquely
+identify chromatograms in the \code{object}. Common choices are
+"msLevel" and/or "dataOrigin". These columns must also be present
+in the \code{chromData} of the \code{object}. Any extra columns in
+\code{peak.table} will be added to the \code{chromData} of the newly created
+object.}
+
+\item{by}{for \code{chromExtract() }A \code{character} vector specifying one or more
+column names that are present in both \code{peak.table} and
+\code{chromData(object)}. These columns uniquely identify chromatograms.
+The combination of these columns must be unique in
+\code{chromData(object)}. Can be of length 1 or greater.}
 
 \item{i}{For \code{[}: \code{integer}, \code{logical} or \code{character} to subset the object.}
 
@@ -250,6 +282,19 @@ defining whether the condition has to match for all provided
 \item{keep}{For \code{filterChromData()}: \code{logical(1)}
 defining whether to keep (\code{keep = TRUE}) or remove (\code{keep = FALSE})
 the chromatogram data that match the condition.}
+
+\item{method}{For \code{imputePeaksData()}: \code{character(1)}: Imputation
+method ("linear", "spline", "gaussian", "loess")}
+
+\item{span}{For \code{imputePeaksData}: \code{numeric(1)}, for the loess method:
+Smoothing parameter (only used if method == "loess")}
+
+\item{sd}{For \code{imputePeaksData}: \code{numeric(1)}, for the gaussian method:
+Standard deviation for Gaussian kernel
+(only used if method == "gaussian")}
+
+\item{window}{For \code{imputePeaksData}: \code{integer}, for the gaussian method:
+Half-width of Gaussian kernel window (e.g., 2 gives window size 5)}
 }
 \value{
 Refer to the individual function description for information on the
@@ -289,11 +334,6 @@ functionality for reading chromatographic data from \code{Spectra} objects.
 
 Filter the peak data based on the provided ranges for the given variables.
 }
-\note{
-This function replaces the peaksData() of the input object. Therefore
-backend with \code{readOnly == TRUE} (i.e. ChromBackendmzR) will need to have a
-carefully implemented \verb{peaksData(object) <-} method.
-}
 \section{Core chromatogram variables}{
 
 
@@ -313,11 +353,11 @@ along with their expected (defined) data type.
 The core chromatogram variables (in alphabetical order) are:
 \itemize{
 \item \code{chromIndex}: an \code{integer} with the index of the chromatogram in the
-original source file (e.g. \emph{mzML} file).
+original source file (e.g. \emph{mzML} file). In backedn with no original
+source file, this variable should be set to \code{NA_integer_}.
 \item \code{collisionEnergy}: for SRM data, \code{numeric} with the collision energy of
 the precursor.
 \item \code{dataOrigin}: optional \code{character} with the origin of a chromatogram.
-\item \code{dataOrigin}: \code{character} defining where the data is (currently) stored.
 \item \code{msLevel}: \code{integer} defining the MS level of the data.
 \item \code{mz}: optional \code{numeric} with the (target) m/z value for the
 chromatographic data.
@@ -413,6 +453,12 @@ New backends should be implemented such as if empty, the method returns a
 \code{data.frame} with 0 rows and the columns defined by \code{chromVariables()}.
 By default, the function \emph{should} return at minimum the
 coreChromVariables, even if NAs.
+\item \code{chromExtract()}: return A new \code{Chrombackend} object containing separated
+chromatographic area as individual chromatograms. The chromatographic areas
+are defined by the \code{peak.table} parameter. The new object will contain
+chromatograms that match the conditions defined in \code{peak.table}. If no
+chromatograms match the conditions, an empty \code{ChromBackend} object
+should be returned.
 \item \code{extractByIndex()}: function to subset a backend to selected elements
 defined by the provided index. Similar to \code{[}, this method should allow
 extracting (or to subset) the data in any order. In contrast to \code{[},
@@ -489,6 +535,11 @@ of length equal to the number of chromatograms and the number of values
 within each list element identical to the number of data pairs in each
 chromatogram. Note that just writeable backends need to support this
 method.
+\item \code{imputePeaksData()}: Imputes missing intensity values in the
+chromatographic peaks data using various methods such as linear
+interpolation, spline interpolation, Gaussian kernel smoothing, or LOESS
+smoothing. This method modifies the peaks data in place and returns the
+same \code{ChromBackend} object with imputed values.
 \item \code{isReadOnly()}: returns a \code{logical(1)} whether the backend is \emph{read
 only} or does allow also to write/update data. Defaults to FALSE.
 \item \code{isEmpty()}: returns a \code{logical} of length equal to the number of
@@ -579,7 +630,7 @@ be <- ChromBackendMemory()
 cdata <- data.frame(
     msLevel = c(1L, 1L, 1L),
     mz = c(112.2, 123.3, 134.4),
-    chromIndex = c(1L, 2L, 3L)
+    dataOrigin = c("mem1", "mem2", "mem3")
 )
 
 pdata <- list(
@@ -624,7 +675,7 @@ chromVariables(be)
 peaksVariables(be)
 
 ## Extract multiple chromatographic variables
-chromData(be, c("chromIndex", "mz", "msLevel"))
+chromData(be, c("dataOrigin", "mz", "msLevel"))
 
 ## Single variables can also be accessed and replaced
 mz(be)

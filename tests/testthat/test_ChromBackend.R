@@ -50,6 +50,9 @@ test_that("ChromBackend methods throw errors", {
     expect_error(rtime(dm) <- c(1, 1, 1), "Not implemented for ")
     expect_error(factorize(dm), "Not implemented for ")
     expect_error(extractByIndex(dm, 1), "not implemented for ")
+    expect_error(chromExtract(dm, data.frame(), "dataorigin"),
+                 "Not implemented for ")
+    expect_error(imputePeaksData(dm), "Not implemented for ")
 
 
     expect_identical(chromVariables(dm), names(coreChromVariables()))
@@ -82,4 +85,5 @@ test_that("ChromBackend methods throw errors", {
         "needs to be twice"
     )
     expect_false(supportsSetBackend(dm))
+
 })

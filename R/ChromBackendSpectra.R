@@ -17,7 +17,7 @@ NULL
 #' containing chromatographic metadata, stored in `chromData`. This metadata
 #' filters the `Spectra` object and generates `peaksData`. If `chromData` is
 #' not provided, a default `data.frame` is created from the `Spectra` data.
-#' An "rtmin", "rtmax", "mzmin", and "mzmax" column will be created by
+#' An "rtMin", "rtMax", "mzMin", and "mzMax" column will be created by
 #' condensing the `Spectra` data corresponding to each unique combination of
 #' the `factorize.by` variables.
 #'
@@ -47,7 +47,7 @@ NULL
 #'
 #' @param chromData A `data.frame` with chromatographic data for use in
 #'        `backendInitialize()`. If missing, a default is generated. Columns
-#'        like `rtmin`, `rtmax`, `mzmin`, and `mzmax` must be provided and not
+#'        like `rtMin`, `rtMax`, `mzMin`, and `mzMax` must be provided and not
 #'        contain `NA` values. Use `-Inf/Inf` for unspecified values. The
 #'        `"dataOrigin"` column must match the `Spectra` object's
 #'        `"dataOrigin"`.
@@ -60,6 +60,10 @@ NULL
 #' @param object A `ChromBackendSpectra` object.
 #'
 #' @param spectra A `Spectra` object.
+#'
+#' @param spectraVariables A `character` vector specifying which variables
+#'        from the `Spectra` object should be added to the chromData. These
+#'        will be mapped using the `chromSpectraIndex` variable.
 #'
 #' @param summarize.method A `character` string specifying intensity summary:
 #'        `"sum"` (default) or `"max"`.
@@ -74,7 +78,7 @@ NULL
 #'         return value.
 #'
 #' @importClassesFrom Spectra Spectra
-#' @importFrom Spectra Spectra spectraVariables spectraData
+#' @importFrom Spectra Spectra spectraVariables spectraData concatenateSpectra
 #'
 #' @examples
 #' library(Spectra)
@@ -86,6 +90,8 @@ NULL
 #'     filePattern = c("63B.cdf")
 #' )
 #' s <- Spectra(be)
+#'
+#' s <- setBackend(s, MsBackendMemory())
 #'
 #' ## Initialize ChromBackendSpectra
 #' be_empty <- new("ChromBackendSpectra")
@@ -107,7 +113,7 @@ NULL
 #'
 #' ## Another possibilities is to create eics from the Spectra object.
 #' ## Here we create an EIC with a specific m/z and retention time window.
-#' df <- data.frame(mzmin = 100.01, mzmax = 100.02 , rtmin = 50, rtmax = 100)
+#' df <- data.frame(mzMin = 100.01, mzMax = 100.02 , rtMin = 50, rtMax = 100)
 #' be <- backendInitialize(be_empty, s, summarize.method = "sum")
 #' chromData(be) <- cbind(chromData(be), df)
 #'
@@ -153,12 +159,14 @@ setMethod("backendInitialize", "ChromBackendSpectra",
                    factorize.by = c("msLevel" , "dataOrigin"),
                    summarize.method = c("sum", "max"),
                    chromData = fillCoreChromVariables(),
+                   spectraVariables = character(),
                    ...) {
               summarize.method <- match.arg(summarize.method)
               object@summaryFun <- if (summarize.method == "sum") sumi else maxi
               if (!is(spectra, "Spectra"))
                   stop("'spectra' must be a 'Spectra' object.")
               if (!length(spectra)) return(object)
+
               if (!all(factorize.by %in% spectraVariables(spectra)))
                   stop("All 'factorize.by' variables must exist in 'spectra'.")
               if (!is.data.frame(chromData))
@@ -172,9 +180,23 @@ setMethod("backendInitialize", "ChromBackendSpectra",
                        "in 'chromData'. If no chromData was provided, ",
                        "it needs to be part of the `coreChromVariables()` ",
                        "available.")
+              ## Spectra object are not expected to be ordered by rtime,
+              ## so we fix that below.
+              spectra <- lapply(split(spectra, spectra$dataOrigin),
+                                function(x) {
+                  x[order(x$rtime)]
+              })
+              spectra <- concatenateSpectra(spectra)
               object@chromData <- chromData
               object@spectra <- spectra
+
               object <- factorize(object, factorize.by = factorize.by)
+
+              ## map additional spectraVariables if any
+              if (length(spectraVariables)) {
+                  object <- .map_spectra_vars(object,
+                                              spectraVariables = spectraVariables)
+              }
               callNextMethod(object, chromData = .chromData(object))
               }
           )
@@ -206,23 +228,21 @@ setMethod("factorize", "ChromBackendSpectra",
                      spectraVariables(.spectra(object))))
                   stop("All 'factorize.by' variables must be in the ",
                        "Spectra object.")
-           spectra_f <- factor(
-                  do.call(
-                      paste,
-                      c(as.list(
-                          spectraData(.spectra(object))[,
-                                                               factorize.by]),
-                        sep = "_")))
+           spectra_f <- interaction(as.list(
+               spectraData(.spectra(object))[,
+                                                    factorize.by, drop = FALSE]),
+               drop = TRUE, sep = "_")
 
-          if (nrow(chromData(object))) {
+           cd <- .chromData(object)
+          if (nrow(cd)) {
               if (!all(factorize.by %in% chromVariables(object)))
                   stop("All 'factorize.by' variables must be in chromData.")
-              object@chromData$chromSpectraIndex <- factor(do.call(
-                  paste, c(.chromData(object)[, factorize.by], sep = "_")))
-
-              levels(spectra_f) <- levels(.chromData(object)$chromSpectraIndex)
+              cd$chromSpectraIndex <- interaction(cd[, factorize.by,
+                                                     drop = FALSE],
+                                                  drop = TRUE, sep = "_")
+              levels(spectra_f) <- levels(cd$chromSpectraIndex)
               object@spectra$chromSpectraIndex <- droplevels(spectra_f)
-              object@chromData <- .ensure_rt_mz_columns(.chromData(object),
+              object@chromData <- .ensure_rt_mz_columns(cd,
                                                         .spectra(object),
                                                         spectra_f)
           } else {
@@ -230,7 +250,6 @@ setMethod("factorize", "ChromBackendSpectra",
               full_sp <- do.call(rbindFill,
                                  lapply(split(.spectra(object), spectra_f),
                                         .spectra_format_chromData))
-              full_sp$chromIndex <- seq_len(nrow(full_sp))
               rownames(full_sp) <- NULL
               object@chromData <- full_sp
               }
@@ -256,17 +275,17 @@ setMethod(
             return(callNextMethod())
         }
         ## Ensure chromSpectraIndex only contains relevant levels needed
-        valid_levels <- chromSpectraIndex(object)
-        if (!all(levels(.spectra(object)$chromSpectraIndex) %in%
-            valid_levels)) {
+        valid_f <- chromSpectraIndex(object)
+        current_vals <- as.character(.spectra(object)$chromSpectraIndex)
+        if (!setequal(unique(current_vals), levels(valid_f))) {
             object@spectra$chromSpectraIndex <- factor(
-                .spectra(object)$chromSpectraIndex,
-                levels = valid_levels
+                current_vals,
+                levels = levels(valid_f)
             )
         }
         ## Process peaks data
         pd <- mapply(.process_peaks_data,
-            cd = split(chromData(object), valid_levels),
+            cd = split(chromData(object), valid_f),
             s = split(
                 .spectra(object),
                 .spectra(object)$chromSpectraIndex
@@ -293,16 +312,7 @@ setReplaceMethod("peaksData", "ChromBackendSpectra", function(object, value) {
     object
 })
 
-#' @rdname hidden_aliases
-setReplaceMethod("chromData", "ChromBackendSpectra", function(object, value) {
-    message(
-        "Please keep in mind the 'ChromBackendSpectra' backend ",
-        "is read-only. The chromData slot will be modified but the ",
-        "changes will not affect the Spectra object. You will need to ",
-        "run `factorize()` to update the 'chromSpectraIndex' column."
-    )
-    callNextMethod()
-})
+
 
 #' @rdname hidden_aliases
 #' @export
@@ -319,3 +329,48 @@ setMethod("[", "ChromBackendSpectra", function(x, i, j, ...) {
         return(ChromBackendSpectra())
     callNextMethod()
 })
+
+#' @rdname hidden_aliases
+setMethod("chromExtract", "ChromBackendSpectra",
+          function(object, peak.table, by, ...) {
+              required_cols <- c("rtMin", "rtMax", "mzMin", "mzMax", by)
+              .validate_chromExtract_input(
+                  object = object,
+                  peak.table = peak.table,
+                  by = by, required_cols = required_cols
+              )
+
+              matched <- .match_chromdata_peaktable(
+                  object = object,
+                  peak.table = peak.table,
+                  by = by
+              )
+              cd <- .chromData(matched$object)
+              chrom_keys <- matched$chrom_keys
+              peak_keys  <- matched$peak_keys
+              cd_split <- split(cd, chrom_keys) ##  UT need to check that
+              pk_split <- split(peak.table, peak_keys)
+
+              ## Check overlapping columns
+              overl_cols <- .check_overl_columns(peak.table = peak.table,
+                                                 object = object,
+                                                 required_cols = required_cols)
+
+              ## Merge peak.table into chromData safely.
+              new_cdata <- mapply(function(cd_row, pks) { ## could switch to bpmapply ?
+                  d <- suppressWarnings(cbind(cd_row, pks[!overl_cols]))
+                  d[, names(peak.table)[overl_cols]] <- pks[, overl_cols]
+                  d
+              }, cd_row = cd_split,
+              pks = pk_split, SIMPLIFY = FALSE)
+
+              new_cdata <- do.call(rbind, new_cdata)
+              rownames(new_cdata) <- NULL
+
+              object@chromData <- new_cdata
+              object@peaksData <- replicate(nrow(new_cdata),
+                                            .EMPTY_PEAKS_DATA,
+                                            simplify = FALSE)
+              object
+          })
+

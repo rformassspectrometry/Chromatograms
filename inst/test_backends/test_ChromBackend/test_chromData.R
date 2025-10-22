@@ -206,12 +206,13 @@ test_that("$ works", {
 })
 
 test_that("[ works", {
+    be$randomIdx <- seq_len(length(be))
     be1 <- be[1]
     expect_equal(nrow(chromData(be1)), 1)
-    expect_equal(chromData(be1)$chromIndex, 1)
+    expect_equal(chromData(be1)$randomIdx, 1)
     be12 <- be[1:2]
     expect_equal(nrow(chromData(be12)), 2)
-    expect_equal(chromData(be12)$chromIndex, c(1, 2))
+    expect_equal(chromData(be12)$randomIdx, c(1, 2))
 
     # Handles empty integer
     be0 <- be[integer()]

@@ -53,7 +53,7 @@ cbm <- ChromBackendMemory()
 cdata <- data.frame(
     msLevel = c(1L, 1L, 1L),
     mz = c(112.2, 123.3, 134.4),
-    chromIndex = c(1L, 2L, 3L)
+    dataOrigin = c("mem1", "mem2", "mem3")
 )
 
 pdata <- list(

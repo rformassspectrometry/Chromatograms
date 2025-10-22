@@ -73,7 +73,7 @@
     }
 
     if (!all(diff(df$rtime) > 0)) {
-        return("'rtime' column is not strictly increasing.")
+        return("'rtime' column is not strictly increasing.") ## does it need to strictly increase ?
     }
 
     return(NULL)
@@ -259,7 +259,8 @@
     orientation = 1, ...) {
     v <- peaksData(x)[[1L]]
     rts <- v$rtime
-    ints <- orientation * v[, "intensity"]
+    raw_ints <- v[, "intensity"]
+    ints <- orientation * raw_ints
     if (!length(xlim)) {
         xlim <- range(rts, na.rm = TRUE)
     }
@@ -290,7 +291,6 @@
     }
     plot.xy(xy.coords(rts, ints), type = type, col = col, ...)
 }
-
 #' Used In:
 #' - `peaksData` for `ChromBackendSpectra` class.
 #' @importFrom Spectra peaksData filterRanges
@@ -298,7 +298,7 @@
 .process_peaks_data <- function(cd, s, columns, fun, drop) {
     s <- filterRanges(s,
         spectraVariables = rep("rtime", nrow(cd)),
-        ranges = as.vector(rbind(cd$rtmin, cd$rtmax)),
+        ranges = as.vector(rbind(cd$rtMin, cd$rtMax)),
         match = "any"
     )
     pd <- peaksData(s, columns = c("mz", "intensity"))
@@ -306,7 +306,8 @@
     do_int <- "intensity" %in% columns
     rt <- rtime(s)
     lapply(seq_len(nrow(cd)), function(i) {
-        keep <- between(rt, c(cd$rtmin[i], cd$rtmax[i]))
+        ## only keep the first rt if there is duplication
+        keep <- between(rt, c(cd$rtMin[i], cd$rtMax[i])) & !duplicated(rt)
         df <- as.data.frame(matrix(ncol = 0, nrow = sum(keep)))
         if (do_rt) {
             df$rtime <- rt[keep]
@@ -329,8 +330,8 @@
 .spectra_format_chromData <- function(sps) {
     data.frame(
         msLevel = unique(sps$msLevel),
-        rtmin = min(sps$rtime, na.rm = TRUE),
-        rtmax = max(sps$rtime, na.rm = TRUE),
+        rtMin = min(sps$rtime, na.rm = TRUE),
+        rtMax = max(sps$rtime, na.rm = TRUE),
         mzMin = -Inf,
         mzMax = Inf,
         mz = Inf,
@@ -346,42 +347,202 @@
 #' - `factorize()` for `ChrombackendSpectra`
 #' @noRd
 .ensure_rt_mz_columns <- function(chrom_data, spectra, spectra_f) {
-    if (!all(c("mzmin", "mzmax") %in% colnames(chrom_data))) {
-        if ("mzmin" %in% colnames(chrom_data) ||
-            "mzmax" %in% colnames(chrom_data)) {
-            stop("Both 'mzmin' and 'mzmax' must be present if one",
+    if (!all(c("mzMin", "mzMax") %in% colnames(chrom_data))) {
+        if ("mzMin" %in% colnames(chrom_data) ||
+            "mzMax" %in% colnames(chrom_data)) {
+            stop("Both 'mzMin' and 'mzMax' must be present if one",
                  " is provided.")
         } else {
-            chrom_data$mzmin <- -Inf
-            chrom_data$mzmax <- Inf
+            chrom_data$mzMin <- -Inf
+            chrom_data$mzMax <- Inf
         }
     }
-    if (!all(c("rtmin", "rtmax") %in% colnames(chrom_data))) {
-        if ("rtmin" %in% colnames(chrom_data) || "rtmax" %in%
+    if (!all(c("rtMin", "rtMax") %in% colnames(chrom_data))) {
+        if ("rtMin" %in% colnames(chrom_data) || "rtMax" %in%
             colnames(chrom_data)) {
-            stop("Both 'rtmin' and 'rtmax' must be present if one",
+            stop("Both 'rtMin' and 'rtMax' must be present if one",
                  " is provided.")
         } else {
             rt_range <- lapply(split(spectra$rtime, spectra_f), function(rt) {
-                list(rtmin = min(rt, na.rm = TRUE),
-                     rtmax = max(rt, na.rm = TRUE))
+                list(rtMin = min(rt, na.rm = TRUE),
+                     rtMax = max(rt, na.rm = TRUE))
             })
             rt_values <- do.call(rbind, rt_range)
-            chrom_data$rtmin <- rt_values[, "rtmin"]
-            chrom_data$rtmax <- rt_values[, "rtmax"]
+            chrom_data$rtMin <- rt_values[, "rtMin"]
+            chrom_data$rtMax <- rt_values[, "rtMax"]
         }
     }
     chrom_data
 }
+
+#' Used in:
+#' - `chromExtract()`.
+#' @noRd
+.validate_chromExtract_input <- function(object,
+                                         peak.table,
+                                         by,
+                                         required_cols = c("rtMin", "rtMax",
+                                                           by)) {
+    cd <- .chromData(object)
+    if (!all(required_cols %in% names(peak.table))) {
+        stop("`peak.table` must contain columns: ", paste(required_cols,
+                                                          collapse = ", "), ".")
+    }
+
+    if (anyNA(peak.table$rtMin) || anyNA(peak.table$rtMax)) {
+        stop("Columns 'rtMin' and 'rtMax' in `peak.table` cannot ",
+             "contain NA values.")
+    }
+    if (!all(by %in% names(cd))) {
+        stop("All 'by' columns must be present in chromData(object).")
+    }
+    if (nrow(cd) != nrow(unique(cd[, by, drop = FALSE]))) {
+        stop("Combinations of 'by' columns must uniquely identify rows ",
+             "in chromData.")
+    }
+}
+
+
+#' Used in:
+#' - `chromExract()`
+#' @noRd
+.match_chromdata_peaktable <- function(object, peak.table, by) {
+    cd <- .chromData(object)
+    chrom_keys <- interaction(cd[, by, drop = FALSE], drop = TRUE)
+    peak_keys  <- interaction(peak.table[, by, drop = FALSE], drop = TRUE)
+
+    # ensure all peak.table keys exist in chromData
+    missing_keys <- setdiff(levels(peak_keys), levels(chrom_keys))
+    if (length(missing_keys)) {
+        stop("Some combinations in `peak.table` do not exist in chromData: ",
+             paste(missing_keys, collapse = ", "))
+    }
+
+    ## Subset chromdata and only keep the row of interest.
+    keep_idx <- chrom_keys %in% peak_keys
+    object <- object[keep_idx]
+    chrom_keys <- droplevels(chrom_keys[keep_idx])
+
+    # align factor levels (so splitting matches between cd and peak.table)
+    shared_levels <- intersect(levels(peak_keys), levels(chrom_keys))
+    chrom_keys <- factor(as.character(chrom_keys), levels = shared_levels)
+    peak_keys  <- factor(as.character(peak_keys),  levels = shared_levels)
+
+    list(object = object, chrom_keys = chrom_keys, peak_keys = peak_keys)
+
+}
+
+#' Used in:
+#' - `chromExtract()`
+#' @noRd
+.check_overl_columns <- function(object, peak.table, required_cols) {
+    overl_cols <- names(peak.table) %in% chromVariables(object)
+    extra_cols <- setdiff(names(peak.table)[overl_cols], required_cols)
+    if (length(extra_cols)) {
+        warning( "The following columns in `peak.table` already exist in ",
+                 "`chromData` and will be replaced in the output: ",
+                 paste(extra_cols, collapse = ", ")
+        )
+    }
+    overl_cols
+}
+
+
+#' Used in:
+#' - `imputePeaksData()`
+#' @importFrom stats approx filter loess spline dnorm sd predict
+#' @noRd
+.impute <- function(x, method,
+                    window = 2, span = 0.25, sd = 1) {
+    if (all(is.na(x))) return(x)
+
+    na_idx <- which(is.na(x))
+    if (length(na_idx) == 0) return(x)
+
+    not_na_idx <- which(!is.na(x))
+    x_out <- seq_along(x)
+
+    x[na_idx] <- switch(method,
+        linear = approx(not_na_idx, x[not_na_idx],
+                        xout = na_idx, rule = 2)$y,
+
+        spline = spline(not_na_idx, x[not_na_idx],
+                        xout = na_idx, method = "natural")$y,
+        gaussian = {
+            # Create symmetric Gaussian kernel
+            kernel_range <- -window:window
+            w <- dnorm(kernel_range, mean = 0, sd = sd)
+            w <- w / sum(w)
+
+            # Fill missing with linear approx to allow smoothing
+            x_filled <- x
+            x_filled[is.na(x_filled)] <- approx(not_na_idx, x[not_na_idx],
+                                                xout = which(is.na(x_filled)),
+                                                rule = 2)$y
+            smoothed <- filter(x_filled, filter = w, sides = 2,
+                               circular = FALSE)
+            smoothed[na_idx]
+        },
+        loess = {
+            fit <- loess(x[not_na_idx] ~ not_na_idx, span = span)
+            predict(fit, newdata = na_idx)
+        }
+    )
+    # Fallback for any remaining NAs
+    na_remaining <- is.na(x)
+    if (any(na_remaining)) {
+        warning("Method chosen could not fill all NAs. ",
+                "Falling back to linear interpolation ",
+                "for these positions.")
+        x[na_remaining] <- approx(not_na_idx, x[not_na_idx],
+                                         xout = which(na_remaining),
+                                         rule = 2)$y
+    }
+    x
+}
+
+## Used in:
+## - BackendInitialize, chrombackendSPectra method
+#' @noRd
+.map_spectra_vars <- function(object, spectraVariables) {
+    ## check variable validity�
+    spectra <- .spectra(object)
+    cd <- .chromData(object)
+    if (!all(spectraVariables %in% spectraVariables(spectra)))
+        stop("All 'spectraVariables' must exist in 'spectra'.")
+    if (any(spectraVariables %in% colnames(cd)))
+        stop("None of the 'spectraVariables' must already exist in 'chromData'.")
+    idx <- spectra$chromSpectraIndex
+    spd <- spectraData(spectra, columns = spectraVariables)
+
+    ## Aggregate and simplify singletons
+    aggregated <- as.data.frame(
+        lapply(spectraVariables, function(var) {
+            res <- tapply(spd[[var]], idx, unique, simplify = FALSE)
+            ## If each element is length 1, unlist to atomic vector
+            if (all(lengths(res) == 1L)) {
+                res <- unlist(res, use.names = TRUE)
+            }
+            res
+        }),
+        stringsAsFactors = FALSE
+    )
+    names(aggregated) <- spectraVariables
+
+    ## match order and combine
+    aggregated <- aggregated[as.character(cd$chromSpectraIndex), , drop = FALSE]
+    cd <- cbind(cd, aggregated)
+    rownames(cd) <- NULL
+    object@chromData <- cd
+    object
+}
+
 
 ## Below are internal accessors functions, these are used ubiquitously in the
 ## package. They directly access the slots. these are NOT to be used by general
 ## users.
 #' @noRd
 .backend <- function(object) {
-    if (!is(object, "Chromatograms")) {
-        stop("'object' must be of class 'Chromatograms'.")
-    }
     object@backend
 }
 .peaksData <- function(object) {
@@ -403,26 +564,14 @@
     stop("'object' must be of class 'Chromatograms' or 'ChromBackend'.")
 }
 .inMemory <- function(object) {
-    if (!is(object, "ChromBackend")) {
-        stop("'object' must be of class 'Chrombackend'.")
-    }
     object@inMemory
 }
 .processing <- function(object) {
-    if (!is(object, "Chromatograms")) {
-        stop("'object' must be of class 'Chromatograms'.")
-    }
     object@processing
 }
 .processingQueue <- function(object) {
-    if (!is(object, "Chromatograms")) {
-        stop("'object' must be of class 'Chromatograms'.")
-    }
     object@processingQueue
 }
 .spectra <- function(object) {
-    if (!is(object, "ChromBackendSpectra")) {
-        stop("'object' must be of class 'ChromBackendSpectra'.")
-    }
     object@spectra
 }

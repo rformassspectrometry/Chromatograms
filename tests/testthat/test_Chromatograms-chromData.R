@@ -9,11 +9,14 @@ test_that("Chromatograms, chromData, chromData<- works", {
 })
 
 test_that("Chromatograms, chromIndex, chromIndex<- works", {
-    expect_equal(chromIndex(c_full), c(1, 2, 3))
+    expect_equal(
+        chromIndex(c_full),
+        rep(NA_integer_, length(c_full))
+    )
     res <- c_full
     chromIndex(res) <- c(3L, 3L, 1L)
     expect_equal(chromIndex(res), c(3, 3, 1))
-    expect_true(all(chromIndex(res) != c(1, 2, 3)))
+    expect_false(all(is.na(chromIndex(res))))
 })
 
 test_that("Chromatograms, collisionEnergy, collisionEnergy<- works", {
@@ -117,6 +120,7 @@ test_that("Chromatograms, productMzMax, productMzMax<- works", {
 
 
 test_that("filterChromData handles various edge cases", {
+    c_full$randomIdx <- c(1, 2, 3)
     expect_identical(
         filterChromData(c_full,
             variables = c("mz"), ranges = numeric(),
@@ -137,7 +141,7 @@ test_that("filterChromData handles various edge cases", {
     expect_equal(nrow(chromData(res)), 0)
     expect_error(
         filterChromData(c_full,
-            variables = c("mz", "chromIndex"),
+            variables = c("mz", "randomIdx"),
             ranges = c(100, 200), match = "any"
         ),
         "be twice the length of the "
@@ -162,22 +166,22 @@ test_that("filterChromData handles various edge cases", {
     )
     expect_equal(nrow(chromData(res)), 0)
     res <- filterChromData(c_full,
-        variables = c("mz", "chromIndex"),
+        variables = c("mz", "randomIdx"),
         ranges = c(134, 150, 1, 2), match = "any"
     )
     expect_true(nrow(chromData(res)) > 0)
     res <- filterChromData(c_full,
-        variables = c("mz", "chromIndex"),
+        variables = c("mz", "randomIdx"),
         ranges = c(134, 150, 1, 2), match = "all"
     )
     expect_true(nrow(chromData(res)) <= nrow(chromData(c_full)))
     res <- filterChromData(c_full,
-        variables = c("mz", "chromIndex"),
+        variables = c("mz", "randomIdx"),
         ranges = c(100, 200, 1, 3), match = "any"
     )
     expect_equal(nrow(chromData(res)), 3)
     res <- filterChromData(c_full,
-        variables = c("mz", "chromIndex"),
+        variables = c("mz", "randomIdx"),
         ranges = c(500, 600, 10, 20), match = "all"
     )
     expect_equal(nrow(chromData(res)), 0)
@@ -193,3 +197,4 @@ test_that("filterChromData handles various edge cases", {
     )
     expect_equal(nrow(chromData(res)), 1)
 })
+

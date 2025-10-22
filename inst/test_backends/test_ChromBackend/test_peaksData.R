@@ -91,5 +91,13 @@ test_that("[ works", {
     expect_equal(nrow(peaksData(be0)[[1]]), 0)
 })
 
-
+test_that("imputePeaksData works", {
+    be1 <- be[1]
+    res <- intensity(be)[[1]]
+    res[1] <- NA
+    intensity(be1) <- list(res)
+    expect_true(any(is.na(intensity(be1)[[1]])))
+    be1 <- imputePeaksData(be1, method = "linear")
+    expect_false(any(is.na(intensity(be1)[[1]])))
+    })
 

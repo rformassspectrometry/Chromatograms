@@ -49,7 +49,7 @@ NULL
 #' cdata <- data.frame(
 #'     msLevel = c(1L, 1L, 1L),
 #'     mz = c(112.2, 123.3, 134.4),
-#'     chromIndex = c(1L, 2L, 3L)
+#'     dataOrigin = c("mem1", "mem2", "mem3")
 #' )
 #'
 #' pdata <- list(
@@ -296,4 +296,49 @@ setReplaceMethod("$", "ChromBackendMemory", function(x, name, value) {
         chromData(x)[, name] <- value
     }
     x
+})
+
+#' @rdname hidden_aliases
+setMethod("chromExtract", "ChromBackendMemory", function(object, peak.table, by) {
+    required_cols <- c("rtMin", "rtMax", by)
+    .validate_chromExtract_input(
+        object = object,
+        peak.table = peak.table,
+        by = by, required_cols = required_cols
+    )
+
+    matched <- .match_chromdata_peaktable(
+        object = object,
+        peak.table = peak.table,
+        by = by
+    )
+    object <- matched$object
+    chrom_keys <- matched$chrom_keys
+    peak_keys  <- matched$peak_keys
+    obj_sp <- split(object, chrom_keys) ##  UT need to check that
+    pk_split <- split(peak.table, peak_keys)
+
+    overl_cols <- .check_overl_columns(peak.table = peak.table,
+                                        object = object,
+                                        required_cols = required_cols)
+    new_data <- mapply(function(obj, pks) { ## could switch to bpmapply ?
+        d <- .chromData(obj)
+        d <- suppressWarnings(cbind(d, pks[!overl_cols]))
+        d[, names(peak.table)[overl_cols]] <- pks[, overl_cols]
+        p <- vector("list", nrow(d))
+        for (z in seq(nrow(d))) {
+            rt <- rtime(obj)[[1]]
+            inrt <- rt >= d$rtMin[z] & rt <= d$rtMax[z]
+            p[[z]] <- peaksData(obj)[[1]][inrt, , drop = FALSE]
+        }
+        list(cd = d, pd = p)
+    }, obj = obj_sp,
+    pks = pk_split, SIMPLIFY = FALSE)
+
+    new_cdata <- do.call(rbind, lapply(new_data, `[[`, "cd"))
+    rownames(new_cdata) <- NULL
+    new_pdata <- unlist(lapply(new_data, `[[`, "pd"), recursive = FALSE)
+    backendInitialize(new("ChromBackendMemory"),
+                      chromData = new_cdata, peaksData = new_pdata)
+
 })

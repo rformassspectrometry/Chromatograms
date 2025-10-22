@@ -184,3 +184,46 @@ setMethod("[", "ChromBackendMzR", function(x, i, j, ...) {
     }
     callNextMethod()
 })
+
+#' @rdname hidden_aliases
+setMethod("chromExtract", "ChromBackendMzR",
+          function(object, peak.table, by, ...) {
+              required_cols <- c("rtMin", "rtMax", by)
+              .validate_chromExtract_input(
+                  object = object,
+                  peak.table = peak.table,
+                  by = by, required_cols = required_cols
+              )
+
+              matched <- .match_chromdata_peaktable(
+                  object = object,
+                  peak.table = peak.table,
+                  by = by
+              )
+              cd <- .chromData(matched$object)
+              chrom_keys <- matched$chrom_keys
+              peak_keys  <- matched$peak_keys
+              cd_split <- split(cd, chrom_keys) ##  UT need to check that
+              pk_split <- split(peak.table, peak_keys)
+
+              ## Check overlapping columns
+              overl_cols <- .check_overl_columns(peak.table = peak.table,
+                                                 object = object,
+                                                 required_cols = required_cols)
+
+              ## Merge peak.table into chromData safely.
+              new_cdata <- mapply(function(cd_row, pks) { ## could switch to bpmapply ?
+                  d <- suppressWarnings(cbind(cd_row, pks[!overl_cols]))
+                  d[, names(peak.table)[overl_cols]] <- pks[, overl_cols]
+                  d
+              }, cd_row = cd_split,
+              pks = pk_split, SIMPLIFY = FALSE)
+
+              new_cdata <- do.call(rbind, new_cdata)
+              rownames(new_cdata) <- NULL
+              object@chromData <- new_cdata
+              object@peaksData <- replicate(nrow(new_cdata),
+                                            .EMPTY_PEAKS_DATA,
+                                            simplify = FALSE)
+              return(object)
+          })

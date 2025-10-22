@@ -10,6 +10,7 @@ NULL
 #' @aliases [<-,Chromatograms-method
 #' @aliases [[,Chromatograms-method
 #' @aliases [[<-,Chromatograms-method
+#' @aliases chromExtract
 #'
 #' @description
 #' The `Chromatograms` class encapsules chromatographic data and related
@@ -67,11 +68,52 @@ NULL
 #' `processingQueue`, and how to parallelize your processes, see the
 #' [processingQueue] documentation.
 #'
+#' @section Subsetting and accessing data:
+#' The `Chromatograms` class supports subsetting by chromatogram (i.e. rows) using
+#' the `[` operator. The `[` operator does not support subsetting by columns.
+#' Specific chromatograms or peaks variables can be accessed using the `[[`
+#' operator or the `$` operator. The `[[` operator can also be used to
+#' replace specific chromatograms or peaks variables.
+#'
+#' @section Changing the backend:
+#' The `setBackend()` function can be used to change the backend of a
+#' `Chromatograms` object. This can be useful to switch to a backend that
+#' better suits the needs of the user, for example switching to a memory-based
+#' backend for smaller datasets or to a file-based backend for larger datasets.
+#' The `setBackend()` function supports parallelization of the backend
+#' conversion using the `BPPARAM` parameter.
+#'
+#' @section Extracting chromatograms based on a peak table:
+#'
+#' The `chromExtract()` function allows users to extract specific regions of
+#' interest from a `Chromatograms` object based on a user-provided peak table.
+#' Each row in the `peak.table` defines a region to extract, using minimum and
+#' maximum retention time (and m/z in the case of `chromBackendSpectra`)
+#' boundaries, and identifiers that uniquely match chromatograms in the object.
+#'
+#' The resulting **new** `Chromatograms` object contains only chromatograms
+#' overlapping the specified regions, with updated metadata reflecting the
+#' extracted boundaries.
+#'
+#' This function is most commonly used to subset chromatographic data around
+#' detected peaks or predefined time/mass ranges, for example to reprocess,
+#' visualize, or quantify extracted chromatograms corresponding to known
+#' features. It's important to notes that filtering by m/z is only supported
+#' when using a `ChromBackendSpectra` backend. if the `mzMin` and `mzMax`
+#' columns are provided when using other backends, they will be ignored.
+#'
+#'
 #' @param BPPARAM Parallel setup configuration. See [BiocParallel::bpparam()]
 #'        for more information.
 #'
 #' @param backend [ChromBackend] object providing the raw data for the
 #'        `Chromatograms` object.
+#'
+#' @param by A `character` vector naming one or more columns that uniquely
+#'        identify chromatograms in both `peak.table` and
+#'        `chromData(object)`. The combination of these columns must be unique
+#'        within `chromData(object)`. Typically includes `"dataOrigin"`,
+#'        `"msLevel"`, or both.
 #'
 #' @param chromData For `Chromatograms()` build from a `Spectra` object backend,
 #'        a `data.frame` with the chromatographic data. If not provided
@@ -96,6 +138,19 @@ NULL
 #'
 #' @param object A [Chromatograms] object.
 #'
+#' @param peak.table For `chromExtract()` A `data frame` containing the
+#'        following minimum columns:
+#'          - rtMin: Minimum retention time for each peak. Cannot be NA.
+#'          - rtMax: Maximum retention time for each peak. Cannot be NA.
+#'          - mzMin: Minimum m/z value for each peak.
+#'          - mzMax: Maximum m/z value for each peak.
+#'        Additionally, the `peak.table` must include columns that uniquely
+#'        identify chromatograms in the `object`. Common choices are
+#'        "msLevel" and/or "dataOrigin". These columns must also be present
+#'        in the `chromData` of the `object`. Any extra columns in
+#'        `peak.table` will be added to the `chromData` of the newly created
+#'        object.
+#'
 #' @param processingQueue [list] a list of processing steps (i.e. functions) to
 #'        be applied to the chromatographic data. The processing steps are
 #'        applied in the order they are listed in the `processingQueue`.
@@ -104,6 +159,10 @@ NULL
 #'        A `character` vector with the name of the function to be used to
 #'        summaries the spectra data intensity. The available methods are "sum"
 #'        and "max". The default is "sum".
+#'
+#' @param spectraVariables A `character` vector specifying which variables
+#'        from the `Spectra` object should be added to the chromData. These
+#'        will be mapped using the `chromSpectraIndex` variable.
 #'
 #' @param value The value to replace the variable with.
 #'
@@ -138,6 +197,7 @@ NULL
 #'     filePattern = c("63B.cdf")
 #' )
 #' s <- Spectra(be)
+#' s <- setBackend(s, MsBackendMemory())
 #' be <- backendInitialize(new("ChromBackendSpectra"), s)
 #' chr <- Chromatograms(be)
 #'
@@ -170,37 +230,37 @@ setClassUnion("ChromBackendOrMissing", c("ChromBackend", "missing"))
 #' @slot backend [ChromBackend] the *backend* object providing the raw data for
 #'       the `Chromatograms` object.
 #'
-#' @slot processingQueue [list] a list of processing steps to be applied to the
+#' @slot processingQueue `list` a list of processing steps to be applied to the
 #'       `Chromatograms`. Each element in the list is a function that
 #'       processes the data. The processing steps are applied in
 #'       the order they are listed in the `processingQueue`.
 #'
-#' @slot processing [character] a character vector with the names of the
+#' @slot processing `character` a character vector with the names of the
 #'       processing steps that have been applied to the `Chromatograms` object.
 #'       This is mainly used in the "show" method to display the processing
 #'       steps that have been applied to the `Chromatograms` object.
 #'
-#' @slot processingChunkSize [numeric(1)] the number of chromatograms to be
+#' @slot processingChunkSize `numeric(1)` the number of chromatograms to be
 #'       processed in a single chunk. This is useful for processing large
 #'       data sets in smaller chunks to avoid memory issues.
 #'
-#' @slot version [character(1)] the version of the `Chromatograms` object.
+#' @slot version `character(1)` the version of the `Chromatograms` object.
 #'
 #' @noRd
 setClass("Chromatograms",
-    slots = c(
-        backend = "ChromBackend",
-        processingQueue = "list",
-        processing = "character",
-        processingChunkSize = "numeric",
-        version = "character"
-    ),
-    prototype = prototype(
-        version = "0.1",
-        processingChunkSize = Inf,
-        processingQueue = list(),
-        processing = character()
-    )
+         slots = c(
+             backend = "ChromBackend",
+             processingQueue = "list",
+             processing = "character",
+             processingChunkSize = "numeric",
+             version = "character"
+         ),
+         prototype = prototype(
+             version = "0.1",
+             processingChunkSize = Inf,
+             processingQueue = list(),
+             processing = character()
+         )
 )
 
 setValidity("Chromatograms", function(object) {
@@ -225,7 +285,7 @@ setValidity("Chromatograms", function(object) {
 setMethod(
     "Chromatograms", "ChromBackendOrMissing",
     function(object = ChromBackendMemory(),
-    processingQueue = list(), ...) {
+             processingQueue = list(), ...) {
         if (missing(object)) {
             object <- ChromBackendMemory()
         }
@@ -242,13 +302,16 @@ setMethod(
 setMethod(
     "Chromatograms", "Spectra",
     function(object, summarize.method = c("sum", "max"),
-    chromData = data.frame(),
-    factorize.by = c("msLevel", "dataOrigin"), ...) {
+             chromData = data.frame(),
+             factorize.by = c("msLevel", "dataOrigin"),
+             spectraVariables = character(),  ...) {
         bd <- backendInitialize(ChromBackendSpectra(),
-            spectra = object,
-            factorize.by = factorize.by,
-            chromData = chromData,
-            summarize.method = summarize.method
+                                spectra = object,
+                                factorize.by = factorize.by,
+                                chromData = chromData,
+                                summarize.method = summarize.method,
+                                spectraVariables = spectraVariables,
+                                ...
         )
         new("Chromatograms",
             backend = bd,
@@ -313,7 +376,7 @@ setMethod(
 setMethod(
     "setBackend", c("Chromatograms", "ChromBackend"),
     function(object, backend, f = processingChunkFactor(object),
-    BPPARAM = SerialParam(), ...) {
+             BPPARAM = SerialParam(), ...) {
         backend_class <- class(.backend(object))
         BPPARAM <- backendBpparam(.backend(object), BPPARAM)
         BPPARAM <- backendBpparam(backend, BPPARAM)
@@ -322,23 +385,27 @@ setMethod(
         }
         if (!length(f) || length(levels(f)) == 1 || !length(object)) {
             bd_new <- backendInitialize(backend,
-                peaksData = peaksData(object),
-                chromData = chromData(object)
+                                        peaksData = peaksData(object),
+                                        chromData = chromData(object)
             )
         } else {
             bd_new <- bplapply(
                 split(.backend(object), f = f),
                 function(z, ...) {
                     backendInitialize(backend,
-                        peaksData = peaksData(z),
-                        chromData = chromData(z),
-                        BPPARAM = SerialParam()
+                                      peaksData = peaksData(z),
+                                      chromData = chromData(z),
+                                      BPPARAM = SerialParam()
                     )
                 }, ...,
                 BPPARAM = BPPARAM
             )
             bd_new <- backendMerge(bd_new)
         }
+        if (any(colnames(chromData(bd_new)) %in% c("rtMin", "rtMax")))
+            chromData(bd_new) <- chromData(bd_new)[,
+                                 !colnames(chromData(bd_new)) %in%
+                                     c("rtMin", "rtMax")]
         object@backend <- bd_new
         object@processing <- .logging(
             object@processing,
@@ -428,3 +495,13 @@ setMethod(
         object
     }
 )
+
+#' @rdname Chromatograms
+#' @export
+setMethod("chromExtract", "Chromatograms",  function(object, peak.table, by, ...) {
+    new_bd <- chromExtract(.backend(object), peak.table, by, ...)
+    return(Chromatograms(new_bd))
+})
+
+
+
