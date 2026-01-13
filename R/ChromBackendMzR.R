@@ -24,7 +24,7 @@ NULL
 #'
 #' Implementing functionalities with the `ChromBackendMzR` backend should be
 #' simplified as much as possible and reuse the methods already implemented for
-#' `ChromBackendMemory` when possible.
+#' `ChromBackendMemory` when possible. 
 #'
 #' @param BPPARAM Parallel setup configuration. See [BiocParallel::bpparam()]
 #'        for more information.
