@@ -354,33 +354,37 @@ test_that("ensure_rt_mz_columns correctly handles mz and rt columns", {
             paste,
             c(as.list(Spectra::spectraData(s)[, c("msLevel", "dataOrigin")]),
               sep = "_")))
-    chrom_data <- data.frame(msLevel = c(1,2,3))
+    levs <- levels(spectra_f)
+    chrom_data <- data.frame(msLevel = c(1,2,3), 
+                             chromSpectraIndex = levs[1:3])
     chrom_data <- .ensure_rt_mz_columns(chrom_data, spectra, spectra_f)
     expect_equal(chrom_data$mzMin, c(-Inf, -Inf, -Inf))
     expect_equal(chrom_data$mzMax, c(Inf, Inf, Inf))
 
-    chrom_data <- data.frame(mzMin = c(100))
+    chrom_data <- data.frame(mzMin = c(100), chromSpectraIndex = levs[1])
     expect_error(.ensure_rt_mz_columns(chrom_data, spectra, spectra_f),
                  "must be present if one is provided.")
 
-    chrom_data <- data.frame(mzMax = c(200))
+    chrom_data <- data.frame(mzMax = c(200), chromSpectraIndex = levs[1])
     expect_error(.ensure_rt_mz_columns(chrom_data, spectra, spectra_f),
                  "must be present if one is provided.")
-    chrom_data <- data.frame(msLevel = c(1,2,3))
+    chrom_data <- data.frame(msLevel = c(1,2,3),
+                             chromSpectraIndex = levs[1:3])
     chrom_data <- .ensure_rt_mz_columns(chrom_data, spectra, spectra_f)
     s_plit <- split(spectra, spectra_f)
     expect_equal(chrom_data$rtMin[[1]], min(s_plit[[1]]$rtime, na.rm = TRUE))
     expect_equal(chrom_data$rtMax[[1]], max(s_plit[[1]]$rtime, na.rm = TRUE))
 
-    chrom_data <- data.frame(rtMin = c(10))
+    chrom_data <- data.frame(rtMin = c(10), chromSpectraIndex = levs[1])
     expect_error(.ensure_rt_mz_columns(chrom_data, spectra, spectra_f),
                  " must be present if one is provided.")
-    chrom_data <- data.frame(rtMax = c(50))
+    chrom_data <- data.frame(rtMax = c(50), chromSpectraIndex = levs[1])
     expect_error(.ensure_rt_mz_columns(chrom_data, spectra, spectra_f),
                  "must be present if one is provided.")
 
     chrom_data <- data.frame(mzMin = c(100), mzMax = c(200),
-                             rtMin = c(10), rtMax = c(50))
+                             rtMin = c(10), rtMax = c(50),
+                             chromSpectraIndex = levs[1])
     chrom_data <- .ensure_rt_mz_columns(chrom_data, spectra, spectra_f)
     expect_equal(chrom_data$mzMin, 100)
     expect_equal(chrom_data$mzMax, 200)

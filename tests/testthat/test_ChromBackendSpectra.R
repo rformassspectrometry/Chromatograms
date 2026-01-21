@@ -119,6 +119,93 @@ test_that("factorize() works", {
                  "must be in chromData")
 })
 
+test_that("factorize() fills rt columns with numeric vectors", {
+    sp <- Spectra::Spectra(S4Vectors::DataFrame(
+        mz = replicate(4, c(1, 2), simplify = FALSE),
+        intensity = replicate(4, c(10, 20), simplify = FALSE),
+        rtime = c(20, 10, 5, 15),
+        msLevel = rep(1L, 4),
+        dataOrigin = c("A", "A", "B", "B")
+    ))
+
+    cb <- ChromBackendSpectra()
+    cb@spectra <- sp
+    cb@chromData <- data.frame(
+        msLevel = 1L,
+        dataOrigin = c("B", "A")
+    )
+    cb@spectraSortIndex <- order(sp$dataOrigin, sp$rtime)
+
+    cb <- factorize(cb, factorize.by = "dataOrigin")
+
+    expect_type(cb@chromData$rtMin, "double")
+    expect_type(cb@chromData$rtMax, "double")
+    expect_false(is.list(cb@chromData$rtMin))
+    expect_equal(cb@chromData$rtMin, c(5, 10))
+    expect_equal(cb@chromData$rtMax, c(15, 20))
+})
+
+test_that("spectraSortIndex is set and used for sorting", {
+    sp <- Spectra::Spectra(S4Vectors::DataFrame(
+        mz = replicate(4, c(1, 2), simplify = FALSE),
+        intensity = replicate(4, c(10, 20), simplify = FALSE),
+        rtime = c(3, 1, 4, 2),
+        msLevel = rep(1L, 4),
+        dataOrigin = c("B", "A", "B", "A")
+    ))
+
+    cb <- ChromBackendSpectra()
+    cb@spectra <- sp
+    csi <- interaction(
+        as.list(Spectra::spectraData(sp)[, c("msLevel", "dataOrigin"), drop = FALSE]),
+        drop = TRUE, sep = "_"
+    )
+    cb@spectra$chromSpectraIndex <- csi
+    cb@chromData <- fillCoreChromVariables(data.frame(
+        msLevel = c(1L, 1L),
+        dataOrigin = c("A", "B"),
+        chromSpectraIndex = c("1_A", "1_B")
+    ))
+    cb@spectraSortIndex <- order(sp$dataOrigin, sp$rtime)
+
+    expect_identical(cb@spectraSortIndex, order(sp$dataOrigin, sp$rtime))
+})
+
+test_that("[ maintains spectra and spectraSortIndex", {
+    sp <- Spectra::Spectra(S4Vectors::DataFrame(
+        mz = replicate(4, c(1, 2), simplify = FALSE),
+        intensity = replicate(4, c(10, 20), simplify = FALSE),
+        rtime = c(3, 1, 4, 2),
+        msLevel = rep(1L, 4),
+        dataOrigin = c("B", "A", "B", "A")
+    ))
+
+    cb <- ChromBackendSpectra()
+    cb@spectra <- sp
+    csi <- interaction(
+        as.list(Spectra::spectraData(sp)[, c("msLevel", "dataOrigin"), drop = FALSE]),
+        drop = TRUE, sep = "_"
+    )
+    cb@spectra$chromSpectraIndex <- csi
+    cb@chromData <- fillCoreChromVariables(data.frame(
+        msLevel = c(1L, 1L),
+        dataOrigin = c("A", "B"),
+        chromSpectraIndex = c("1_A", "1_B")
+    ))
+    cb@spectraSortIndex <- order(sp$dataOrigin, sp$rtime)
+
+    keep <- chromSpectraIndex(cb) == "1_A"
+    cb_sub <- cb[keep]
+
+    expect_s4_class(cb_sub, "ChromBackendSpectra")
+    expect_identical(length(cb_sub), 1L)
+    expect_true(all(cb_sub@spectra$dataOrigin == "A"))
+    expect_identical(
+        cb_sub@spectraSortIndex,
+        order(cb_sub@spectra$dataOrigin, cb_sub@spectra$rtime)
+    )
+})
+
 test_that("chromSpectraIndex works", {
     expect_error(
         chromSpectraIndex(1),

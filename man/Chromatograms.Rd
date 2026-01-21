@@ -218,14 +218,16 @@ Each row in the \code{peak.table} defines a region to extract, using minimum and
 maximum retention time (and m/z in the case of \code{chromBackendSpectra})
 boundaries, and identifiers that uniquely match chromatograms in the object.
 
-The resulting \strong{new} \code{Chromatograms} object contains only chromatograms overlapping
-the specified regions, with updated metadata reflecting the extracted
-boundaries.
+The resulting \strong{new} \code{Chromatograms} object contains only chromatograms
+overlapping the specified regions, with updated metadata reflecting the
+extracted boundaries.
 
 This function is most commonly used to subset chromatographic data around
 detected peaks or predefined time/mass ranges, for example to reprocess,
 visualize, or quantify extracted chromatograms corresponding to known
-features.
+features. It's important to notes that filtering by m/z is only supported
+when using a \code{ChromBackendSpectra} backend. if the \code{mzMin} and \code{mzMax}
+columns are provided when using other backends, they will be ignored.
 }
 
 \examples{

@@ -28,6 +28,93 @@ test_that("Chromatograms works", {
     expect_identical(.processingQueue(c_sp), list())
 })
 
+test_that("Chromatograms constructor from Spectra works with all parameters", {
+    ## Basic construction with defaults
+    chr <- Chromatograms(s)
+    expect_s4_class(chr, "Chromatograms")
+    expect_s4_class(.backend(chr), "ChromBackendSpectra")
+    expect_equal(length(chr), 3L)
+    
+    ## With summarize.method = "sum" (default)
+    chr_sum <- Chromatograms(s, summarize.method = "sum")
+    expect_s4_class(chr_sum, "Chromatograms")
+    expect_identical(.backend(chr_sum)@summaryFun, sumi)
+    
+    ## With summarize.method = "max"
+    chr_max <- Chromatograms(s, summarize.method = "max")
+    expect_s4_class(chr_max, "Chromatograms")
+    expect_identical(.backend(chr_max)@summaryFun, maxi)
+    
+    ## With empty chromData (should create default)
+    chr_empty_cd <- Chromatograms(s, chromData = data.frame())
+    expect_s4_class(chr_empty_cd, "Chromatograms")
+    expect_true(nrow(chromData(chr_empty_cd)) > 0)
+    expect_true(all(coreChromVariables() %in% colnames(chromData(chr_empty_cd))))
+    
+    ## With custom chromData
+    custom_cd <- data.frame(
+        msLevel = 1L,
+        dataOrigin = unique(s$dataOrigin),
+        customCol = "test"
+    )
+    chr_custom <- Chromatograms(s, chromData = custom_cd)
+    expect_s4_class(chr_custom, "Chromatograms")
+    expect_true("customCol" %in% colnames(chromData(chr_custom)))
+    expect_equal(chromData(chr_custom)$customCol, "test")
+    
+    ## With custom factorize.by
+    chr_factby <- Chromatograms(s, factorize.by = "dataOrigin")
+    expect_s4_class(chr_factby, "Chromatograms")
+    expect_true(all(chromData(chr_factby)$dataOrigin == 
+                    chromData(chr_factby)$chromSpectraIndex))
+    
+    ## With spectraVariables
+    chr_specvars <- Chromatograms(s, spectraVariables = c("polarity"))
+    expect_s4_class(chr_specvars, "Chromatograms")
+    if ("polarity" %in% Spectra::spectraVariables(s)) {
+        expect_true("polarity" %in% colnames(chromData(chr_specvars)))
+    }
+})
+
+test_that("Chromatograms constructor from ChromBackend works", {
+    ## From ChromBackendMemory
+    chr_mem <- Chromatograms(be)
+    expect_s4_class(chr_mem, "Chromatograms")
+    expect_s4_class(.backend(chr_mem), "ChromBackendMemory")
+    expect_equal(length(chr_mem), length(be))
+    
+    ## From ChromBackendMzR
+    chr_mzr <- Chromatograms(be_mzr)
+    expect_s4_class(chr_mzr, "Chromatograms")
+    expect_s4_class(.backend(chr_mzr), "ChromBackendMzR")
+    expect_equal(length(chr_mzr), length(be_mzr))
+    
+    ## From ChromBackendSpectra
+    chr_spec <- Chromatograms(be_sp)
+    expect_s4_class(chr_spec, "Chromatograms")
+    expect_s4_class(.backend(chr_spec), "ChromBackendSpectra")
+    expect_equal(length(chr_spec), length(be_sp))
+    
+    ## With processingQueue
+    pq <- list(function(x) x)
+    chr_pq <- Chromatograms(be, processingQueue = pq)
+    expect_equal(length(.processingQueue(chr_pq)), 1)
+})
+
+test_that("Chromatograms constructor handles edge cases", {
+    ## Empty Spectra
+    empty_s <- Spectra()
+    chr_empty <- Chromatograms(empty_s)
+    expect_s4_class(chr_empty, "Chromatograms")
+    expect_equal(length(chr_empty), 0)
+    
+    ## Missing object (creates empty ChromBackendMemory)
+    chr_missing <- Chromatograms()
+    expect_s4_class(chr_missing, "Chromatograms")
+    expect_s4_class(.backend(chr_missing), "ChromBackendMemory")
+    expect_equal(length(chr_missing), 0)
+})
+
 test_that("show, Chromatograms - ChromBackendMemory works", {
     expect_output(show(c_full), "ChromBackendMemory")
     res <- c_full

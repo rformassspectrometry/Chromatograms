@@ -328,19 +328,27 @@
 #' - `backendInitialize()` for `ChrombackendSpectra`
 #' @noRd
 .spectra_format_chromData <- function(sps) {
-    data.frame(
+    res <- data.frame(
         msLevel = unique(sps$msLevel),
         rtMin = min(sps$rtime, na.rm = TRUE),
         rtMax = max(sps$rtime, na.rm = TRUE),
         mzMin = -Inf,
         mzMax = Inf,
         mz = Inf,
-        polarity = sps$polarity[1],
-        scanWindowLowerLimit = sps$scanWindowLowerLimit[1],
-        scanWindowUpperLimit = sps$scanWindowUpperLimit[1],
         dataOrigin = unique(sps$dataOrigin),
         chromSpectraIndex = unique(sps$chromSpectraIndex)
     )
+    ## Add optional columns if present
+    if ("polarity" %in% Spectra::spectraVariables(sps)) {
+        res$polarity <- sps$polarity[1]
+    }
+    if ("scanWindowLowerLimit" %in% Spectra::spectraVariables(sps)) {
+        res$scanWindowLowerLimit <- sps$scanWindowLowerLimit[1]
+    }
+    if ("scanWindowUpperLimit" %in% Spectra::spectraVariables(sps)) {
+        res$scanWindowUpperLimit <- sps$scanWindowUpperLimit[1]
+    }
+    res
 }
 
 #' Used in:
@@ -363,13 +371,16 @@
             stop("Both 'rtMin' and 'rtMax' must be present if one",
                  " is provided.")
         } else {
-            rt_range <- lapply(split(spectra$rtime, spectra_f), function(rt) {
-                list(rtMin = min(rt, na.rm = TRUE),
-                     rtMax = max(rt, na.rm = TRUE))
-            })
-            rt_values <- do.call(rbind, rt_range)
-            chrom_data$rtMin <- rt_values[, "rtMin"]
-            chrom_data$rtMax <- rt_values[, "rtMax"]
+            levs <- levels(spectra_f)
+            if (is.null(levs)) {
+                levs <- unique(as.character(spectra_f))
+            }
+            rt_mat <- vapply(levs, function(lvl) {
+                range(spectra$rtime[spectra_f == lvl], na.rm = TRUE)
+            }, numeric(2))
+            chrom_idx <- as.character(chrom_data$chromSpectraIndex)
+            chrom_data$rtMin <- rt_mat[1, chrom_idx]
+            chrom_data$rtMax <- rt_mat[2, chrom_idx]
         }
     }
     chrom_data

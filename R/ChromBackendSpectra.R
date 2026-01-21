@@ -131,7 +131,8 @@ ChromBackendSpectra <- setClass(
     slots = c(
         inMemory = "logical",
         spectra = "Spectra",
-        summaryFun = "function"
+        summaryFun = "function",
+        spectraSortIndex = "integer"
     ),
     prototype = prototype(
         chromData = fillCoreChromVariables(data.frame()),
@@ -140,7 +141,8 @@ ChromBackendSpectra <- setClass(
         spectra = Spectra(),
         version = "0.1",
         inMemory = FALSE,
-        summaryFun = sumi
+        summaryFun = sumi,
+        spectraSortIndex = integer()
     )
 )
 
@@ -181,12 +183,13 @@ setMethod("backendInitialize", "ChromBackendSpectra",
                        "it needs to be part of the `coreChromVariables()` ",
                        "available.")
               ## Spectra object are not expected to be ordered by rtime,
-              ## so we fix that below.
-              spectra <- lapply(split(spectra, spectra$dataOrigin),
-                                function(x) {
-                  x[order(x$rtime)]
-              })
-              spectra <- concatenateSpectra(spectra)
+              ## so we store a sort index instead of concatenating.
+              ## This allows us to keep disk-backed backends intact.
+              sort_idx <- order(
+                  spectra$dataOrigin,
+                  spectra$rtime
+              )
+              object@spectraSortIndex <- sort_idx
               object@chromData <- chromData
               object@spectra <- spectra
 
@@ -242,9 +245,12 @@ setMethod("factorize", "ChromBackendSpectra",
                                                   drop = TRUE, sep = "_")
               levels(spectra_f) <- levels(cd$chromSpectraIndex)
               object@spectra$chromSpectraIndex <- droplevels(spectra_f)
+              ## Use sorted spectra for .ensure_rt_mz_columns
+              sorted_spectra <- .spectra(object)[object@spectraSortIndex]
+              sorted_spectra_f <- spectra_f[object@spectraSortIndex]
               object@chromData <- .ensure_rt_mz_columns(cd,
-                                                        .spectra(object),
-                                                        spectra_f)
+                                                        sorted_spectra,
+                                                        sorted_spectra_f)
           } else {
               object@spectra$chromSpectraIndex <- spectra_f
               full_sp <- do.call(rbindFill,
@@ -276,9 +282,11 @@ setMethod(
         }
         ## Ensure chromSpectraIndex only contains relevant levels needed
         valid_f <- chromSpectraIndex(object)
-        current_vals <- as.character(.spectra(object)$chromSpectraIndex)
+        ## Apply the sort index to spectra for processing
+        sorted_spectra <- .spectra(object)[object@spectraSortIndex]
+        current_vals <- as.character(sorted_spectra$chromSpectraIndex)
         if (!setequal(unique(current_vals), levels(valid_f))) {
-            object@spectra$chromSpectraIndex <- factor(
+            sorted_spectra$chromSpectraIndex <- factor(
                 current_vals,
                 levels = levels(valid_f)
             )
@@ -287,8 +295,8 @@ setMethod(
         pd <- mapply(.process_peaks_data,
             cd = split(chromData(object), valid_f),
             s = split(
-                .spectra(object),
-                .spectra(object)$chromSpectraIndex
+                sorted_spectra,
+                sorted_spectra$chromSpectraIndex
             ),
             MoreArgs = list(
                 columns = columns,
