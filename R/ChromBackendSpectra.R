@@ -246,7 +246,6 @@ setMethod("factorize", "ChromBackendSpectra",
                   stop("All 'factorize.by' variables must be in the ",
                        "Spectra object.")
             
-            ## Create interaction factor from spectra
             spectra_f <- interaction(as.list(
                spectraData(.spectra(object))[,
                                             factorize.by, drop = FALSE]),
@@ -263,15 +262,12 @@ setMethod("factorize", "ChromBackendSpectra",
                                                         drop = FALSE],
                                                      drop = TRUE, sep = "_")
                 
-                ## Align spectra factor to chromData levels
                 object@spectra$chromSpectraIndex <- factor(as.character(spectra_f),
                                                            levels = levels(cd$chromSpectraIndex))
                 
-                ## Use sorted spectra for calculating retention time ranges
                 sorted_spectra <- .spectra(object)[object@spectraSortIndex]
                 sorted_spectra_f <- spectra_f[object@spectraSortIndex]
                 
-                ## Ensure rt/mz columns are properly set
                 object@chromData <- .ensure_rt_mz_columns(cd,
                                                           sorted_spectra,
                                                           sorted_spectra_f)
@@ -285,7 +281,6 @@ setMethod("factorize", "ChromBackendSpectra",
                 object@chromData <- full_sp
             }
             
-            ## Recalculate spectraSortIndex based on the current spectra ordering
             object@spectraSortIndex <- order(
                 object@spectra$dataOrigin,
                 object@spectra$rtime
