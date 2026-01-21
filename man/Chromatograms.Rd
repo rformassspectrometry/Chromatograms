@@ -127,7 +127,16 @@ The \code{Chromatograms} class encapsules chromatographic data and related
 metadata. The chromatographic data is represented by a \emph{backend} extending
 the virtual \link{ChromBackend} class which provides the raw data to the
 \code{Chromatograms} object. Different backends and their properties are
-decribed in the \link{ChromBackend} class documentation.
+described in the \link{ChromBackend} class documentation.
+
+\strong{Available Backends}: The package provides several backends:
+\itemize{
+\item \code{ChromBackendMemory}: Stores data in memory (default, ideal for small datasets).
+\item \code{ChromBackendMzR}: Reads peaks data from raw MS files on demand.
+\item \code{ChromBackendSpectra}: Generates chromatographic data from a \code{Spectra} object.
+This backend supports both in-memory and file-backed \code{Spectra} objects, using
+an internal \code{spectraSortIndex} to avoid physically reordering the spectra.
+}
 }
 \note{
 This needs to be discussed, if we want for example to be able to set a

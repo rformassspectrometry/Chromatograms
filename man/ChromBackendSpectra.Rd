@@ -87,11 +87,22 @@ No \code{peaksData} is stored until the user calls a function that generates it
 replacement is unsupported — modifications are temporary to optimize memory.
 The \code{inMemory} slot indicates this with \code{TRUE}.
 
+\strong{Spectra Sort Index}: The \code{ChromBackendSpectra} backend maintains a
+\code{spectraSortIndex} slot that stores a sort order for the internal \code{Spectra}
+object based on \code{dataOrigin} and \code{rtime}. This avoids the need to physically
+reorder disk-backed \code{Spectra} objects, which would require loading all data
+into memory. The sort index is automatically recalculated whenever the
+\code{factorize()} method is called, ensuring it remains valid and consistent.
+
+\strong{Factorize and Subsetting}: The \code{factorize()} method updates the
+\code{chromSpectraIndex} in both \code{chromData} and the \code{spectra} object to reflect
+the current grouping, and recalculates \code{spectraSortIndex} to maintain the
+correct sort order. The \code{[} subsetting operator properly handles subsetting
+of both \code{chromData}, \code{peaksData}, and \code{spectra}, while updating the
+\code{spectraSortIndex} to reference valid positions in the subsetted data.
+
 \code{ChromBackendSpectra} should reuse \code{ChromBackendMemory} methods whenever
 possible to keep implementations simple.
-}
-\note{
-ensure that it returns a factor
 }
 \examples{
 library(Spectra)

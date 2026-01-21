@@ -516,13 +516,18 @@
 ## - BackendInitialize, chrombackendSPectra method
 #' @noRd
 .map_spectra_vars <- function(object, spectraVariables) {
-    ## check variable validity�
+    ## check variable validity
     spectra <- .spectra(object)
     cd <- .chromData(object)
     if (!all(spectraVariables %in% spectraVariables(spectra)))
         stop("All 'spectraVariables' must exist in 'spectra'.")
-    if (any(spectraVariables %in% colnames(cd)))
-        stop("None of the 'spectraVariables' must already exist in 'chromData'.")
+    if (any(spectraVariables %in% colnames(cd))) {
+        existing <- intersect(spectraVariables, colnames(cd))
+        non_replaceable <- vapply(existing, function(v) !all(is.na(cd[[v]])), logical(1))
+        if (any(non_replaceable)) {
+            stop("None of the 'spectraVariables' must already exist in 'chromData'.")
+        }
+    }
     idx <- spectra$chromSpectraIndex
     spd <- spectraData(spectra, columns = spectraVariables)
 

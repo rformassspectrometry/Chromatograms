@@ -1,3 +1,13 @@
+# Version 1.1.1
+
+- Aligned the package with the Bioconductor 3.22 release.
+- Expanded the vignette to cover ChromBackendSpectra usage, chromatogram
+  extraction with `chromExtract()`, and imputation workflows via
+  `imputePeaksData()`.
+- Added `spectraSortIndex()` for `ChromBackendSpectra` to compute the desired
+  retention-time order on demand, avoiding the need to keep on-disk `Spectra`
+  objects sorted in memory.
+
 # Version 0.99.7
 
 ## Changes in 0.99.7

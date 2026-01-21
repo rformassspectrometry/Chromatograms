@@ -17,7 +17,14 @@ NULL
 #' metadata. The chromatographic data is represented by a *backend* extending
 #' the virtual [ChromBackend] class which provides the raw data to the
 #' `Chromatograms` object. Different backends and their properties are
-#' decribed in the [ChromBackend] class documentation.
+#' described in the [ChromBackend] class documentation.
+#'
+#' **Available Backends**: The package provides several backends:
+#' - `ChromBackendMemory`: Stores data in memory (default, ideal for small datasets).
+#' - `ChromBackendMzR`: Reads peaks data from raw MS files on demand.
+#' - `ChromBackendSpectra`: Generates chromatographic data from a `Spectra` object.
+#'   This backend supports both in-memory and file-backed `Spectra` objects, using
+#'   an internal `spectraSortIndex` to avoid physically reordering the spectra.
 #'
 #' @section Creation of objects:
 #'

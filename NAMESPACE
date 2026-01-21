@@ -3,6 +3,7 @@
 export(ChromBackendMemory)
 export(ChromBackendMzR)
 export(ChromBackendSpectra)
+export(chromSpectraIndex)
 export(coreChromVariables)
 export(corePeaksVariables)
 export(fillCoreChromVariables)

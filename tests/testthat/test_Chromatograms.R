@@ -49,7 +49,8 @@ test_that("Chromatograms constructor from Spectra works with all parameters", {
     chr_empty_cd <- Chromatograms(s, chromData = data.frame())
     expect_s4_class(chr_empty_cd, "Chromatograms")
     expect_true(nrow(chromData(chr_empty_cd)) > 0)
-    expect_true(all(coreChromVariables() %in% colnames(chromData(chr_empty_cd))))
+    expect_true(all(names(coreChromVariables()) %in% 
+      chromVariables(chr_empty_cd)))
     
     ## With custom chromData
     custom_cd <- data.frame(
@@ -60,7 +61,7 @@ test_that("Chromatograms constructor from Spectra works with all parameters", {
     chr_custom <- Chromatograms(s, chromData = custom_cd)
     expect_s4_class(chr_custom, "Chromatograms")
     expect_true("customCol" %in% colnames(chromData(chr_custom)))
-    expect_equal(chromData(chr_custom)$customCol, "test")
+    expect_equal(chromData(chr_custom)$customCol, rep("test", length(unique(s$dataOrigin))))
     
     ## With custom factorize.by
     chr_factby <- Chromatograms(s, factorize.by = "dataOrigin")
@@ -69,11 +70,28 @@ test_that("Chromatograms constructor from Spectra works with all parameters", {
                     chromData(chr_factby)$chromSpectraIndex))
     
     ## With spectraVariables
-    chr_specvars <- Chromatograms(s, spectraVariables = c("polarity"))
+    expect_error(Chromatograms(s, spectraVariables = "polarity"),
+                 "must already exist in 'chromData'")
+
+
+    chr_specvars <- Chromatograms(s, spectraVariables = c("precursorMz"))
     expect_s4_class(chr_specvars, "Chromatograms")
-    if ("polarity" %in% Spectra::spectraVariables(s)) {
-        expect_true("polarity" %in% colnames(chromData(chr_specvars)))
+    if ("precursorMz" %in% Spectra::spectraVariables(s)) {
+      expect_true("precursorMz" %in% colnames(chromData(chr_specvars)))
     }
+
+    ## spectraVariables should replace all-NA columns in provided chromData
+    sp_small <- Spectra::Spectra(S4Vectors::DataFrame(
+        rtime = c(1, 2),
+        msLevel = c(1L, 1L),
+        dataOrigin = c("A", "A"),
+        polarity = c(1L, 1L)
+    ))
+    cd_na <- data.frame(msLevel = 1L, dataOrigin = "A", polarity = NA_integer_)
+    chr_specvars_replace <- Chromatograms(sp_small, chromData = cd_na,
+                                          spectraVariables = c("polarity"))
+    expect_s4_class(chr_specvars_replace, "Chromatograms")
+    expect_identical(chromData(chr_specvars_replace)$polarity, 1L)
 })
 
 test_that("Chromatograms constructor from ChromBackend works", {
@@ -96,7 +114,7 @@ test_that("Chromatograms constructor from ChromBackend works", {
     expect_equal(length(chr_spec), length(be_sp))
     
     ## With processingQueue
-    pq <- list(function(x) x)
+    pq <- list(ProcessingStep("smooth", list(method = "SavitzkyGolay", halfWindowSize = 2L)))
     chr_pq <- Chromatograms(be, processingQueue = pq)
     expect_equal(length(.processingQueue(chr_pq)), 1)
 })
@@ -224,4 +242,3 @@ test_that("chromExtract, Chromatograms works correctly", {
                  "Some combinations in")
 
 })
-

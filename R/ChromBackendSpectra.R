@@ -42,6 +42,20 @@ NULL
 #' replacement is unsupported — modifications are temporary to optimize memory.
 #' The `inMemory` slot indicates this with `TRUE`.
 #'
+#' **Spectra Sort Index**: The `ChromBackendSpectra` backend maintains a
+#' `spectraSortIndex` slot that stores a sort order for the internal `Spectra`
+#' object based on `dataOrigin` and `rtime`. This avoids the need to physically
+#' reorder disk-backed `Spectra` objects, which would require loading all data
+#' into memory. The sort index is automatically recalculated whenever the
+#' `factorize()` method is called, ensuring it remains valid and consistent.
+#'
+#' **Factorize and Subsetting**: The `factorize()` method updates the
+#' `chromSpectraIndex` in both `chromData` and the `spectra` object to reflect
+#' the current grouping, and recalculates `spectraSortIndex` to maintain the
+#' correct sort order. The `[` subsetting operator properly handles subsetting
+#' of both `chromData`, `peaksData`, and `spectra`, while updating the
+#' `spectraSortIndex` to reference valid positions in the subsetted data.
+#'
 #' `ChromBackendSpectra` should reuse `ChromBackendMemory` methods whenever
 #' possible to keep implementations simple.
 #'
@@ -213,7 +227,7 @@ setMethod("show", "ChromBackendSpectra", function(object) {
 })
 
 #' @rdname ChromBackendSpectra
-#' @note ensure that it returns a factor
+#' @export
 chromSpectraIndex <- function(object) {
     if (!is(object, "ChromBackendSpectra"))
         stop("The object must be a 'ChromBackendSpectra' object.")
@@ -231,35 +245,53 @@ setMethod("factorize", "ChromBackendSpectra",
                      spectraVariables(.spectra(object))))
                   stop("All 'factorize.by' variables must be in the ",
                        "Spectra object.")
-           spectra_f <- interaction(as.list(
+            
+            ## Create interaction factor from spectra
+            spectra_f <- interaction(as.list(
                spectraData(.spectra(object))[,
-                                                    factorize.by, drop = FALSE]),
+                                            factorize.by, drop = FALSE]),
                drop = TRUE, sep = "_")
 
-           cd <- .chromData(object)
-          if (nrow(cd)) {
-              if (!all(factorize.by %in% chromVariables(object)))
-                  stop("All 'factorize.by' variables must be in chromData.")
-              cd$chromSpectraIndex <- interaction(cd[, factorize.by,
-                                                     drop = FALSE],
-                                                  drop = TRUE, sep = "_")
-              levels(spectra_f) <- levels(cd$chromSpectraIndex)
-              object@spectra$chromSpectraIndex <- droplevels(spectra_f)
-              ## Use sorted spectra for .ensure_rt_mz_columns
-              sorted_spectra <- .spectra(object)[object@spectraSortIndex]
-              sorted_spectra_f <- spectra_f[object@spectraSortIndex]
-              object@chromData <- .ensure_rt_mz_columns(cd,
-                                                        sorted_spectra,
-                                                        sorted_spectra_f)
-          } else {
-              object@spectra$chromSpectraIndex <- spectra_f
-              full_sp <- do.call(rbindFill,
-                                 lapply(split(.spectra(object), spectra_f),
-                                        .spectra_format_chromData))
-              rownames(full_sp) <- NULL
-              object@chromData <- full_sp
-              }
-          object
+            cd <- .chromData(object)
+            
+            if (nrow(cd)) {
+                ## chromData exists: validate and align spectra to it
+                if (!all(factorize.by %in% chromVariables(object)))
+                    stop("All 'factorize.by' variables must be in chromData.")
+                
+                cd$chromSpectraIndex <- interaction(cd[, factorize.by,
+                                                        drop = FALSE],
+                                                     drop = TRUE, sep = "_")
+                
+                ## Align spectra factor to chromData levels
+                object@spectra$chromSpectraIndex <- factor(as.character(spectra_f),
+                                                           levels = levels(cd$chromSpectraIndex))
+                
+                ## Use sorted spectra for calculating retention time ranges
+                sorted_spectra <- .spectra(object)[object@spectraSortIndex]
+                sorted_spectra_f <- spectra_f[object@spectraSortIndex]
+                
+                ## Ensure rt/mz columns are properly set
+                object@chromData <- .ensure_rt_mz_columns(cd,
+                                                          sorted_spectra,
+                                                          sorted_spectra_f)
+            } else {
+                ## chromData is empty: create it from spectra
+                object@spectra$chromSpectraIndex <- spectra_f
+                full_sp <- do.call(rbindFill,
+                                   lapply(split(.spectra(object), spectra_f),
+                                          .spectra_format_chromData))
+                rownames(full_sp) <- NULL
+                object@chromData <- full_sp
+            }
+            
+            ## Recalculate spectraSortIndex based on the current spectra ordering
+            object@spectraSortIndex <- order(
+                object@spectra$dataOrigin,
+                object@spectra$rtime
+            )
+            
+            object
           })
 
 #' @rdname hidden_aliases
@@ -331,11 +363,38 @@ setMethod(
 
 #' @rdname hidden_aliases
 #' @importMethodsFrom S4Vectors [ [[
+#' @importFrom MsCoreUtils i2index
 #' @export
 setMethod("[", "ChromBackendSpectra", function(x, i, j, ...) {
     if (!length(i))
         return(ChromBackendSpectra())
-    callNextMethod()
+    
+    i <- i2index(i, length = length(x))
+    
+    ## Subset chromData and peaksData via parent method
+    x@chromData <- .chromData(x)[i, , drop = FALSE]
+    x@peaksData <- .peaksData(x)[i]
+    
+    ## Determine which spectra to keep based on chromSpectraIndex
+    kept_indices <- chromSpectraIndex(x)[i]
+    spectra_keep <- x@spectra$chromSpectraIndex %in% kept_indices
+    
+    ## Subset the spectra object
+    x@spectra <- x@spectra[spectra_keep]
+    
+    ## Update spectraSortIndex to reflect the new ordering after subsetting
+    old_positions_kept <- which(spectra_keep)
+    mapping <- match(old_positions_kept, seq_along(spectra_keep)[spectra_keep])
+
+    kept_sort_positions <- x@spectraSortIndex %in% old_positions_kept
+    x@spectraSortIndex <- mapping[match(x@spectraSortIndex[kept_sort_positions], 
+                                        old_positions_kept)]
+    
+    ## Ensure chromSpectraIndex levels are still consistent
+    x@chromData$chromSpectraIndex <- droplevels(x@chromData$chromSpectraIndex)
+    x@spectra$chromSpectraIndex <- droplevels(x@spectra$chromSpectraIndex)
+    
+    x
 })
 
 #' @rdname hidden_aliases

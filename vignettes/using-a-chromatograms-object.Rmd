@@ -90,15 +90,18 @@ could be used instead. The default backends are:
   chromatographic peaks (retention time and intensity values) from the
   original mzML files on-demand.
 
-- `ChromBackendSpectra`: this backend is used to generate chromatographic data
-  from a `Spectra` object. I can be use to create TIC, BPC or EICs.
+- `ChromBackendSpectra`: this backend generates chromatographic data from a
+  `Spectra` object. It can be used to create Total Ion Chromatograms (TIC),
+  Base Peak Chromatograms (BPC), or Extracted Ion Chromatograms (EICs). It
+  supports both in-memory and file-backed `Spectra` objects.
 
 All backends provide a consistent interface through the `Chromatograms` object,
 regardless of where or how the data is stored. The `ChromBackendSpectra` has
 a special feature: it uses an internal sort index (`spectraSortIndex`) to
 maintain retention time order without physically reordering the underlying
 `Spectra` object. This is particularly important for disk-backed `Spectra`
-objects, as it avoids loading all data into memory.
+objects, as it avoids loading all data into memory. The sort index is
+automatically maintained during subsetting and factorization operations.
 
 ## Chromatographic peaks data
 
@@ -223,22 +226,8 @@ the `Chromatograms` object's methods and functions.
 It is also possible to create a `Chromatograms` object directly from a
 `Spectra` object. This is particularly useful when you want to generate total
 ion chromatograms (TIC), base peak chromatograms (BPC), or extracted ion
-chromatograms (EIC) from spectral data:
-
-```{r, eval=FALSE}
-library(Spectra)
-
-## Create TIC (default)
-chr_tic <- Chromatograms(sp, summarize.method = "sum")
-
-## Create BPC
-chr_bpc <- Chromatograms(sp, summarize.method = "max")
-
-## Create with custom factorization
-chr_custom <- Chromatograms(sp, 
-                           factorize.by = "dataOrigin",
-                           summarize.method = "sum")
-```
+chromatograms (EIC) from spectral data. A worked example is provided in the
+[plotting](#plotting-chromatograms-from-a-spectra-object) section below.
 
 Basic information about the `Chromatograms` object can be accessed using
 functions such as `length()`, which tell us how many chromatograms are
@@ -548,18 +537,30 @@ Different backends are suited for different use cases:
 
 # Plotting chromatograms from a `Spectra` object
 
-For this purpose let's create a `Chromatograms` object from public spectral
-data.
+For this purpose let's create a lightweight in-memory `Spectra` object and
+derive a `Chromatograms` from it. This avoids any external downloads while
+still illustrating the `ChromBackendSpectra` workflow.
 
 ```{r, message=FALSE}
 library(Spectra)
-library(MsBackendMetaboLights)
-be <- backendInitialize(MsBackendMetaboLights(),
-    mtblsId = "MTBLS39",
-    filePattern = c("63B.cdf")
+library(IRanges)
+sp <- Spectra(
+  DataFrame(
+    rtime = c(100, 110, 120, 130, 140),
+    msLevel = c(1L, 1L, 1L, 1L, 1L),
+    dataOrigin = rep("example", 5L),
+    mz = NumericList(
+      c(100, 101), c(100, 101), c(100, 101), c(100, 101), c(100, 101),
+      compress = FALSE
+    ),
+    intensity = NumericList(
+      c(10, 20), c(15, 25), c(30, 5), c(12, 18), c(40, 2),
+      compress = FALSE
+    )
+  ),
+  source = MsBackendDataFrame()
 )
-sp <- Spectra(be)
-sp <- setBackend(sp, MsBackendMemory())
+
 chr_s <- Chromatograms(sp)
 ```
 
