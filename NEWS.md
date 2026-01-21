@@ -1,4 +1,6 @@
-# Version 1.1.1
+# Version 1.1
+
+## Changes in 1.1.1
 
 - Aligned the package with the Bioconductor 3.22 release.
 - Expanded the vignette to cover ChromBackendSpectra usage, chromatogram
@@ -8,7 +10,7 @@
   retention-time order on demand, avoiding the need to keep on-disk `Spectra`
   objects sorted in memory.
 
-# Version 0.99.7
+# Version 0.99
 
 ## Changes in 0.99.7
 

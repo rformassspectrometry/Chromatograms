@@ -21,6 +21,14 @@ NULL
 #' condensing the `Spectra` data corresponding to each unique combination of
 #' the `factorize.by` variables.
 #'
+#' By "factorization" we mean the process of grouping spectra
+#' into chromatograms based on specified variables. For example, using
+#' `factorize.by = c("msLevel", "dataOrigin")` means that all MS1 spectra from
+#' file "A" form one chromatogram, all MS2 spectra from file "A" form another,
+#' and so on. Each unique combination of the factorization variables creates
+#' a separate chromatogram. This is essential for organizing spectral data into
+#' meaningful chromatographic traces that can be visualized and analyzed.
+#'
 #' The *dataOrigin* core chromatogram variable should reflect the *dataOrigin*
 #' of the `Spectra` object. The `factorize.by` parameter defines the variables
 #' for grouping `Spectra` data into chromatographic data. The default is
@@ -44,10 +52,14 @@ NULL
 #'
 #' **Spectra Sort Index**: The `ChromBackendSpectra` backend maintains a
 #' `spectraSortIndex` slot that stores a sort order for the internal `Spectra`
-#' object based on `dataOrigin` and `rtime`. This avoids the need to physically
-#' reorder disk-backed `Spectra` objects, which would require loading all data
-#' into memory. The sort index is automatically recalculated whenever the
-#' `factorize()` method is called, ensuring it remains valid and consistent.
+#' object based on `dataOrigin` and `rtime`. To optimize performance, the sort
+#' index is only computed and stored when the spectra are unsorted; if already
+#' sorted (which is typical for most real-world data), `spectraSortIndex` remains
+#' empty (`integer()`). This avoids unnecessary subsetting operations. The sort
+#' index is automatically recalculated whenever the `factorize()` method is called,
+#' ensuring it remains valid and consistent. This approach avoids the need to
+#' physically reorder disk-backed `Spectra` objects, which would require loading
+#' all data into memory.
 #'
 #' **Factorize and Subsetting**: The `factorize()` method updates the
 #' `chromSpectraIndex` in both `chromData` and the `spectra` object to reflect
@@ -67,8 +79,10 @@ NULL
 #'        `"dataOrigin"`.
 #'
 #' @param factorize.by A `character` vector of variables for grouping `Spectra`
-#'        data into chromatographic data.
-#'        Default: `c("msLevel", "dataOrigin")`.
+#'        data into chromatographic data (i.e., creating separate chromatograms
+#'        for each unique combination of these variables).
+#'        Default: `c("msLevel", "dataOrigin")`, which creates one chromatogram
+#'        per MS level per data file.
 #'        If `chromData` is provided, it must contain these columns.
 #'
 #' @param object A `ChromBackendSpectra` object.
@@ -182,12 +196,10 @@ setMethod("backendInitialize", "ChromBackendSpectra",
               if (!is(spectra, "Spectra"))
                   stop("'spectra' must be a 'Spectra' object.")
               if (!length(spectra)) return(object)
-
               if (!all(factorize.by %in% spectraVariables(spectra)))
                   stop("All 'factorize.by' variables must exist in 'spectra'.")
               if (!is.data.frame(chromData))
                   stop("'chromData' must be a 'data.frame'.")
-
               if(!nrow(chromData))
                   chromData <- fillCoreChromVariables(data.frame())
               else  validChromData(chromData)
@@ -199,16 +211,17 @@ setMethod("backendInitialize", "ChromBackendSpectra",
               ## Spectra object are not expected to be ordered by rtime,
               ## so we store a sort index instead of concatenating.
               ## This allows us to keep disk-backed backends intact.
+              ## Only store sort index if data is actually unsorted (optimization).
               sort_idx <- order(
                   spectra$dataOrigin,
                   spectra$rtime
               )
-              object@spectraSortIndex <- sort_idx
+              if (!identical(sort_idx, seq_along(spectra))) {
+                  object@spectraSortIndex <- sort_idx
+              }
               object@chromData <- chromData
               object@spectra <- spectra
-
               object <- factorize(object, factorize.by = factorize.by)
-
               ## map additional spectraVariables if any
               if (length(spectraVariables)) {
                   object <- .map_spectra_vars(object,
@@ -245,29 +258,29 @@ setMethod("factorize", "ChromBackendSpectra",
                      spectraVariables(.spectra(object))))
                   stop("All 'factorize.by' variables must be in the ",
                        "Spectra object.")
-            
             spectra_f <- interaction(as.list(
                spectraData(.spectra(object))[,
                                             factorize.by, drop = FALSE]),
                drop = TRUE, sep = "_")
-
             cd <- .chromData(object)
             
             if (nrow(cd)) {
                 ## chromData exists: validate and align spectra to it
                 if (!all(factorize.by %in% chromVariables(object)))
                     stop("All 'factorize.by' variables must be in chromData.")
-                
                 cd$chromSpectraIndex <- interaction(cd[, factorize.by,
                                                         drop = FALSE],
                                                      drop = TRUE, sep = "_")
-                
                 object@spectra$chromSpectraIndex <- factor(as.character(spectra_f),
                                                            levels = levels(cd$chromSpectraIndex))
-                
-                sorted_spectra <- .spectra(object)[object@spectraSortIndex]
-                sorted_spectra_f <- spectra_f[object@spectraSortIndex]
-                
+                ## Apply sort index for processing if needed
+                if (length(object@spectraSortIndex)) {
+                    sorted_spectra <- .spectra(object)[object@spectraSortIndex]
+                    sorted_spectra_f <- spectra_f[object@spectraSortIndex]
+                } else {
+                    sorted_spectra <- .spectra(object)
+                    sorted_spectra_f <- spectra_f
+                }
                 object@chromData <- .ensure_rt_mz_columns(cd,
                                                           sorted_spectra,
                                                           sorted_spectra_f)
@@ -280,12 +293,16 @@ setMethod("factorize", "ChromBackendSpectra",
                 rownames(full_sp) <- NULL
                 object@chromData <- full_sp
             }
-            
-            object@spectraSortIndex <- order(
+            ## Recalculate sort index: only store if data is unsorted (optimization)
+            sort_idx <- order(
                 object@spectra$dataOrigin,
                 object@spectra$rtime
             )
-            
+            if (!identical(sort_idx, seq_along(object@spectra))) {
+                object@spectraSortIndex <- sort_idx
+            } else {
+                object@spectraSortIndex <- integer()
+            }
             object
           })
 
@@ -309,8 +326,12 @@ setMethod(
         }
         ## Ensure chromSpectraIndex only contains relevant levels needed
         valid_f <- chromSpectraIndex(object)
-        ## Apply the sort index to spectra for processing
-        sorted_spectra <- .spectra(object)[object@spectraSortIndex]
+        ## Apply the sort index to spectra for processing (only if unsorted)
+        if (length(object@spectraSortIndex)) {
+            sorted_spectra <- .spectra(object)[object@spectraSortIndex]
+        } else {
+            sorted_spectra <- .spectra(object)
+        }
         current_vals <- as.character(sorted_spectra$chromSpectraIndex)
         if (!setequal(unique(current_vals), levels(valid_f))) {
             sorted_spectra$chromSpectraIndex <- factor(
@@ -359,36 +380,35 @@ setMethod(
 #' @rdname hidden_aliases
 #' @importMethodsFrom S4Vectors [ [[
 #' @importFrom MsCoreUtils i2index
+#' @importFrom stats setNames
 #' @export
 setMethod("[", "ChromBackendSpectra", function(x, i, j, ...) {
     if (!length(i))
         return(ChromBackendSpectra())
     
     i <- i2index(i, length = length(x))
-    
-    ## Subset chromData and peaksData via parent method
+    kept_indices <- chromSpectraIndex(x)[i]
     x@chromData <- .chromData(x)[i, , drop = FALSE]
     x@peaksData <- .peaksData(x)[i]
-    
-    ## Determine which spectra to keep based on chromSpectraIndex
-    kept_indices <- chromSpectraIndex(x)[i]
     spectra_keep <- x@spectra$chromSpectraIndex %in% kept_indices
-    
-    ## Subset the spectra object
     x@spectra <- x@spectra[spectra_keep]
     
-    ## Update spectraSortIndex to reflect the new ordering after subsetting
-    old_positions_kept <- which(spectra_keep)
-    mapping <- match(old_positions_kept, seq_along(spectra_keep)[spectra_keep])
-
-    kept_sort_positions <- x@spectraSortIndex %in% old_positions_kept
-    x@spectraSortIndex <- mapping[match(x@spectraSortIndex[kept_sort_positions], 
-                                        old_positions_kept)]
+    ## Update spectraSortIndex: remap old positions to new positions
+    if (length(x@spectraSortIndex)) {
+        old_positions_kept <- which(spectra_keep)
+        ## Create mapping from old position to new position
+        ## e.g., if we kept positions c(2, 5, 7), they become c(1, 2, 3)
+        position_mapping <- setNames(seq_along(old_positions_kept), 
+                                     old_positions_kept)
+        ## Keep only sort indices that reference kept positions
+        kept_sort_positions <- x@spectraSortIndex %in% old_positions_kept
+        x@spectraSortIndex <- as.integer(
+            position_mapping[as.character(x@spectraSortIndex[kept_sort_positions])]
+        )
+    }
     
-    ## Ensure chromSpectraIndex levels are still consistent
     x@chromData$chromSpectraIndex <- droplevels(x@chromData$chromSpectraIndex)
     x@spectra$chromSpectraIndex <- droplevels(x@spectra$chromSpectraIndex)
-    
     x
 })
 

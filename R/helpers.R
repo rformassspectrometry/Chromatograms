@@ -296,11 +296,22 @@
 #' @importFrom Spectra peaksData filterRanges
 #' @noRd
 .process_peaks_data <- function(cd, s, columns, fun, drop) {
-    s <- filterRanges(s,
-        spectraVariables = rep("rtime", nrow(cd)),
-        ranges = as.vector(rbind(cd$rtMin, cd$rtMax)),
-        match = "any"
-    )
+    ## Handle single spectrum case: filterRanges fails with length(s) == 1
+    if (length(s) > 1) {
+        s <- filterRanges(s,
+            spectraVariables = rep("rtime", nrow(cd)),
+            ranges = as.vector(rbind(cd$rtMin, cd$rtMax)),
+            match = "any"
+        )
+    } else {
+        ## For single spectrum, manually filter by rtime range
+        if (length(s) == 1) {
+            rt_in_range <- s$rtime >= min(cd$rtMin) & s$rtime <= max(cd$rtMax)
+            if (!rt_in_range) {
+                s <- s[integer(0)]  ## Return empty Spectra
+            }
+        }
+    }
     pd <- peaksData(s, columns = c("mz", "intensity"))
     do_rt <- "rtime" %in% columns
     do_int <- "intensity" %in% columns
@@ -339,13 +350,13 @@
         chromSpectraIndex = unique(sps$chromSpectraIndex)
     )
     ## Add optional columns if present
-    if ("polarity" %in% Spectra::spectraVariables(sps)) {
+    if ("polarity" %in% spectraVariables(sps)) {
         res$polarity <- sps$polarity[1]
     }
-    if ("scanWindowLowerLimit" %in% Spectra::spectraVariables(sps)) {
+    if ("scanWindowLowerLimit" %in% spectraVariables(sps)) {
         res$scanWindowLowerLimit <- sps$scanWindowLowerLimit[1]
     }
-    if ("scanWindowUpperLimit" %in% Spectra::spectraVariables(sps)) {
+    if ("scanWindowUpperLimit" %in% spectraVariables(sps)) {
         res$scanWindowUpperLimit <- sps$scanWindowUpperLimit[1]
     }
     res

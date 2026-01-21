@@ -45,11 +45,7 @@ parameter and a \code{list} of \code{data.frame} entries for peaks data using th
 }
 \examples{
 
-## Create a ChromBackendMemory object
-cbm <- ChromBackendMemory()
-
-## Initialize the ChromBackendMemory object with a data.frame of
-## chromatographic data  and a list of data.frame of peaks data
+## Method 1: Initialize backend directly
 cdata <- data.frame(
     msLevel = c(1L, 1L, 1L),
     mz = c(112.2, 123.3, 134.4),
@@ -71,8 +67,13 @@ pdata <- list(
     )
 )
 
+cbm <- ChromBackendMemory()
 cbm <- backendInitialize(cbm, chromData = cdata, peaksData = pdata)
 cbm
+
+## Method 2: Use Chromatograms constructor (recommended)
+chr <- Chromatograms(ChromBackendMemory(), chromData = cdata, peaksData = pdata)
+chr
 
 }
 \author{

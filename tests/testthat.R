@@ -2,6 +2,8 @@ library(testthat)
 library(Chromatograms)
 library(Spectra)
 library(MsBackendMetaboLights) ## remove MsbackendMetaboLights dependency for test and examples
+library(IRanges)
+library(S4Vectors)
 
 ### Test ChromBackendSpectra
 be <- backendInitialize(MsBackendMetaboLights(),

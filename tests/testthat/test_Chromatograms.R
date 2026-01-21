@@ -95,28 +95,51 @@ test_that("Chromatograms constructor from Spectra works with all parameters", {
 })
 
 test_that("Chromatograms constructor from ChromBackend works", {
-    ## From ChromBackendMemory
-    chr_mem <- Chromatograms(be)
-    expect_s4_class(chr_mem, "Chromatograms")
-    expect_s4_class(.backend(chr_mem), "ChromBackendMemory")
-    expect_equal(length(chr_mem), length(be))
-    
-    ## From ChromBackendMzR
-    chr_mzr <- Chromatograms(be_mzr)
-    expect_s4_class(chr_mzr, "Chromatograms")
-    expect_s4_class(.backend(chr_mzr), "ChromBackendMzR")
-    expect_equal(length(chr_mzr), length(be_mzr))
-    
-    ## From ChromBackendSpectra
-    chr_spec <- Chromatograms(be_sp)
-    expect_s4_class(chr_spec, "Chromatograms")
-    expect_s4_class(.backend(chr_spec), "ChromBackendSpectra")
-    expect_equal(length(chr_spec), length(be_sp))
-    
-    ## With processingQueue
-    pq <- list(ProcessingStep("smooth", list(method = "SavitzkyGolay", halfWindowSize = 2L)))
-    chr_pq <- Chromatograms(be, processingQueue = pq)
-    expect_equal(length(.processingQueue(chr_pq)), 1)
+  ## From ChromBackendMemory - already initialized
+  chr_mem <- Chromatograms(be)
+  expect_s4_class(chr_mem, "Chromatograms")
+  expect_s4_class(.backend(chr_mem), "ChromBackendMemory")
+  expect_equal(length(chr_mem), length(be))
+  
+  ## From empty ChromBackendMemory with chromData and peaksData parameters
+  cdata <- data.frame(
+      msLevel = c(1L, 1L, 1L),
+      mz = c(112.2, 123.3, 134.4),
+      dataOrigin = c("mem1", "mem1", "mem1")
+  )
+  pdata <- list(
+      data.frame(rtime = c(2.1, 2.5, 3.0, 3.4, 3.9),
+                 intensity = c(100, 250, 400, 300, 150)),
+      data.frame(rtime = numeric(), intensity = numeric()),
+      data.frame(rtime = c(5.1, 5.8, 6.3, 6.9, 7.5),
+                 intensity = c(80, 500, 1200, 600, 120))
+  )
+  chr <- Chromatograms(ChromBackendMemory(), chromData = cdata, peaksData = pdata)
+  expect_s4_class(chr, "Chromatograms")
+  expect_s4_class(.backend(chr), "ChromBackendMemory")
+  expect_equal(length(chr), 3L)
+  expect_identical(chromData(chr)$mz, cdata$mz)
+  expect_identical(peaksData(chr), pdata)
+  
+  ## From ChromBackendMzR
+  chr_mzr <- Chromatograms(be_mzr)
+  expect_s4_class(chr_mzr, "Chromatograms")
+  expect_s4_class(.backend(chr_mzr), "ChromBackendMzR")
+  expect_equal(length(chr_mzr), length(be_mzr))
+
+  ## From ChromBackendSpectra
+  chr_spec <- Chromatograms(be_sp)
+  expect_s4_class(chr_spec, "Chromatograms")
+  expect_s4_class(.backend(chr_spec), "ChromBackendSpectra")
+  expect_equal(length(chr_spec), length(be_sp))
+
+  ## With processingQueue
+  pq <- list(ProcessingStep(
+    "smooth",
+    list(method = "SavitzkyGolay", halfWindowSize = 2L)
+  ))
+  chr_pq <- Chromatograms(be, processingQueue = pq)
+  expect_equal(length(.processingQueue(chr_pq)), 1)
 })
 
 test_that("Chromatograms constructor handles edge cases", {

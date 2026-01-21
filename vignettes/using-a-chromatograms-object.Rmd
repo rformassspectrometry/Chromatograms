@@ -93,7 +93,9 @@ could be used instead. The default backends are:
 - `ChromBackendSpectra`: this backend generates chromatographic data from a
   `Spectra` object. It can be used to create Total Ion Chromatograms (TIC),
   Base Peak Chromatograms (BPC), or Extracted Ion Chromatograms (EICs). It
-  supports both in-memory and file-backed `Spectra` objects.
+  supports both in-memory and file-backed `Spectra` objects. The backend uses
+  **factorization** to group spectra into chromatograms based on variables like
+  MS level and data origin (see details below).
 
 All backends provide a consistent interface through the `Chromatograms` object,
 regardless of where or how the data is stored. The `ChromBackendSpectra` has
@@ -365,6 +367,24 @@ the underlying `Spectra` object and its sort index are also properly subset and
 updated. This ensures that peak data extraction remains efficient even after
 subsetting operations.
 
+### Re-factorizing after metadata changes
+
+If you modify the chromatogram metadata (particularly the factorization columns
+like `msLevel` or `dataOrigin`), you may need to re-factorize the data to update
+the groupings. This can be done using the `factorize()` function:
+
+```{r, eval=FALSE}
+## Modify metadata
+chr_s$msLevel <- rep(2L, length(chr_s))
+
+## Re-factorize to update the groupings
+chr_s <- factorize(chr_s@backend)
+chr_s <- Chromatograms(chr_s)
+```
+
+This recalculates which spectra belong to which chromatograms based on the
+updated metadata.
+
 
 # Lazy Processing and Parallelization
 
@@ -572,9 +592,30 @@ chr_s
 ```
 
 The `ChromBackendSpectra` backend provides flexibility in how chromatograms are
-generated from spectral data. By default, separate chromatograms are created for
-each combination of MS level and data origin. You can control this behavior with
-the `factorize.by` parameter.
+generated from spectral data through a process called **factorization**.
+
+## Understanding Factorization
+
+Factorization is the process of grouping individual spectra into chromatograms
+based on one or more variables. Think of it as creating separate "bins" where
+each bin becomes one chromatogram.
+
+By default, the `factorize.by` parameter is set to `c("msLevel", "dataOrigin")`,
+which means:
+
+- All MS1 spectra from file "A" → Chromatogram 1
+- All MS2 spectra from file "A" → Chromatogram 2  
+- All MS1 spectra from file "B" → Chromatogram 3
+- All MS2 spectra from file "B" → Chromatogram 4
+
+Each unique combination of the factorization variables creates a separate
+chromatogram. This allows you to organize your spectral data into meaningful
+chromatographic traces that can be visualized and analyzed together.
+
+You can customize the factorization behavior by changing the `factorize.by`
+parameter. For example, using only `factorize.by = "dataOrigin"` would create
+one chromatogram per file (combining all MS levels), while adding more variables
+would create more granular groupings.
 
 Additionally, you can provide custom chromatogram metadata to define specific
 m/z and retention time ranges:

@@ -195,36 +195,50 @@ NULL
 #'
 #' @examples
 #'
+#' ## Create a Chromatograms object with ChromBackendMemory
+#' cdata <- data.frame(
+#'     msLevel = c(1L, 1L, 1L),
+#'     mz = c(112.2, 123.3, 134.4),
+#'     dataOrigin = c("mem1", "mem2", "mem3")
+#' )
+#' pdata <- list(
+#'     data.frame(rtime = c(2.1, 2.5, 3.0, 3.4, 3.9),
+#'                intensity = c(100, 250, 400, 300, 150)),
+#'     data.frame(rtime = c(3.5, 4.0, 4.5),
+#'                intensity = c(80, 120, 90)),
+#'     data.frame(rtime = c(5.1, 5.8, 6.3, 6.9, 7.5),
+#'                intensity = c(80, 500, 1200, 600, 120))
+#' )
+#' chr <- Chromatograms(ChromBackendMemory(), chromData = cdata, peaksData = pdata)
+#' chr
+#'
+#' ## Create a Chromatograms object from a Spectra object
 #' library(MsBackendMetaboLights)
 #' library(Spectra)
 #'
-#' ## Create a Chromatograms object from a Spectra object.
 #' be <- backendInitialize(MsBackendMetaboLights(),
 #'     mtblsId = "MTBLS39",
 #'     filePattern = c("63B.cdf")
 #' )
 #' s <- Spectra(be)
 #' s <- setBackend(s, MsBackendMemory())
-#' be <- backendInitialize(new("ChromBackendSpectra"), s)
-#' chr <- Chromatograms(be)
+#' chr <- Chromatograms(s)
 #'
 #' ## Subset
 #' chr[1:2]
 #'
-#' ## access a specific variables
+#' ## Access a specific variable
 #' chr[["msLevel"]]
 #' chr$msLevel
 #'
 #' ## Replace data of a specific variable
 #' chr$msLevel <- c(2L, 2L, 2L)
 #'
-#' ## Can re factorize the data
+#' ## Re-factorize the data
 #' chr <- factorize(chr)
 #'
-#' ## Can also change the backend into memory
+#' ## Change the backend to memory
 #' chr <- setBackend(chr, ChromBackendMemory())
-#'
-#' chr
 #'
 NULL
 
@@ -296,10 +310,16 @@ setMethod(
         if (missing(object)) {
             object <- ChromBackendMemory()
         }
-        new("Chromatograms",
+        ## Extract backend-specific parameters from ... and initialize backend
+        dots <- list(...)
+        if (length(dots) > 0 && length(object) == 0) {
+            ## Backend is empty, initialize it with provided parameters
+            object <- do.call(backendInitialize, c(list(object), dots))
+            dots <- list()
+        }
+        do.call(new, c(list("Chromatograms",
             backend = object,
-            processingQueue = processingQueue, ...
-        )
+            processingQueue = processingQueue), dots))
     }
 )
 

@@ -26,8 +26,10 @@ chromSpectraIndex(object)
 \item{spectra}{A \code{Spectra} object.}
 
 \item{factorize.by}{A \code{character} vector of variables for grouping \code{Spectra}
-data into chromatographic data.
-Default: \code{c("msLevel", "dataOrigin")}.
+data into chromatographic data (i.e., creating separate chromatograms
+for each unique combination of these variables).
+Default: \code{c("msLevel", "dataOrigin")}, which creates one chromatogram
+per MS level per data file.
 If \code{chromData} is provided, it must contain these columns.}
 
 \item{summarize.method}{A \code{character} string specifying intensity summary:
@@ -64,6 +66,14 @@ An "rtMin", "rtMax", "mzMin", and "mzMax" column will be created by
 condensing the \code{Spectra} data corresponding to each unique combination of
 the \code{factorize.by} variables.
 
+By "factorization" we mean the process of grouping spectra
+into chromatograms based on specified variables. For example, using
+\code{factorize.by = c("msLevel", "dataOrigin")} means that all MS1 spectra from
+file "A" form one chromatogram, all MS2 spectra from file "A" form another,
+and so on. Each unique combination of the factorization variables creates
+a separate chromatogram. This is essential for organizing spectral data into
+meaningful chromatographic traces that can be visualized and analyzed.
+
 The \emph{dataOrigin} core chromatogram variable should reflect the \emph{dataOrigin}
 of the \code{Spectra} object. The \code{factorize.by} parameter defines the variables
 for grouping \code{Spectra} data into chromatographic data. The default is
@@ -89,10 +99,14 @@ The \code{inMemory} slot indicates this with \code{TRUE}.
 
 \strong{Spectra Sort Index}: The \code{ChromBackendSpectra} backend maintains a
 \code{spectraSortIndex} slot that stores a sort order for the internal \code{Spectra}
-object based on \code{dataOrigin} and \code{rtime}. This avoids the need to physically
-reorder disk-backed \code{Spectra} objects, which would require loading all data
-into memory. The sort index is automatically recalculated whenever the
-\code{factorize()} method is called, ensuring it remains valid and consistent.
+object based on \code{dataOrigin} and \code{rtime}. To optimize performance, the sort
+index is only computed and stored when the spectra are unsorted; if already
+sorted (which is typical for most real-world data), \code{spectraSortIndex} remains
+empty (\code{integer()}). This avoids unnecessary subsetting operations. The sort
+index is automatically recalculated whenever the \code{factorize()} method is called,
+ensuring it remains valid and consistent. This approach avoids the need to
+physically reorder disk-backed \code{Spectra} objects, which would require loading
+all data into memory.
 
 \strong{Factorize and Subsetting}: The \code{factorize()} method updates the
 \code{chromSpectraIndex} in both \code{chromData} and the \code{spectra} object to reflect
