@@ -18,13 +18,13 @@ NULL
 #'
 #' Note that the `ChromBackendMzR` backend is read-only and does not support
 #' direct modification of chromatographic data. However, it does support
-#' `peaksData` slot replacement, which will modify the `peaksData` slot but not
+#' `peaksData` slot replacement, which will modify the `@peaksData` slot but not
 #' the local mzML files. This is indicated by the "inMemory" slot being set to
 #' TRUE.
 #'
 #' Implementing functionalities with the `ChromBackendMzR` backend should be
 #' simplified as much as possible and reuse the methods already implemented for
-#' `ChromBackendMemory` when possible. 
+#' `ChromBackendMemory` when possible.
 #'
 #' @param BPPARAM Parallel setup configuration. See [BiocParallel::bpparam()]
 #'        for more information.
@@ -55,23 +55,24 @@ NULL
 NULL
 
 #' @noRd
-setClass("ChromBackendMzR",
-    contains = "ChromBackendMemory",
-    slots = c(inMemory = "logical"),
-    prototype = prototype(
-        chromData = fillCoreChromVariables(data.frame()),
-        peaksData = list(.EMPTY_PEAKS_DATA),
-        readonly = FALSE,
-        version = "0.1",
-        inMemory = FALSE
-    )
+setClass(
+  "ChromBackendMzR",
+  contains = "ChromBackendMemory",
+  slots = c(inMemory = "logical"),
+  prototype = prototype(
+    chromData = fillCoreChromVariables(data.frame()),
+    peaksData = list(.EMPTY_PEAKS_DATA),
+    readonly = FALSE,
+    version = "0.1",
+    inMemory = FALSE
+  )
 )
 
 #' @rdname ChromBackendMzR
 #' @export ChromBackendMzR
 ChromBackendMzR <- function() {
-    .check_mzR_package()
-    new("ChromBackendMzR")
+  .check_mzR_package()
+  new("ChromBackendMzR")
 }
 
 #' @rdname ChromBackendMzR
@@ -79,48 +80,55 @@ ChromBackendMzR <- function() {
 #' @importFrom MsCoreUtils rbindFill
 #' @export
 setMethod(
-    "backendInitialize", "ChromBackendMzR",
-    function(object, files = character(), BPPARAM = bpparam(), ...) {
-        if (!length(files)) {
-            return(object)
-        }
-        if (!is.character(files)) {
-            stop(
-                "Parameter 'files' must be a character vector of ",
-                "file paths"
-            )
-        }
-        files <- normalizePath(files, mustWork = FALSE)
-        chromData <- do.call(
-            rbindFill,
-            bplapply(files, FUN = function(fl) {
-                cbind(.mzR_format_chromData(fl))
-            }, BPPARAM = BPPARAM)
-        )
-        callNextMethod(object, chromData = chromData, ...)
+  "backendInitialize",
+  "ChromBackendMzR",
+  function(object, files = character(), BPPARAM = bpparam(), ...) {
+    if (!length(files)) {
+      return(object)
     }
+    if (!is.character(files)) {
+      stop(
+        "Parameter 'files' must be a character vector of ",
+        "file paths"
+      )
+    }
+    files <- normalizePath(files, mustWork = FALSE)
+    chromData <- do.call(
+      rbindFill,
+      bplapply(
+        files,
+        FUN = function(fl) {
+          cbind(.mzR_format_chromData(fl))
+        },
+        BPPARAM = BPPARAM
+      )
+    )
+    callNextMethod(object, chromData = chromData, ...)
+  }
 )
 
 #' @rdname hidden_aliases
 #' @export
 setMethod("show", "ChromBackendMzR", function(object) {
-    callNextMethod()
-    fls <- unique(dataOrigin(object))
-    if (length(fls)) {
-        to <- min(3, length(fls))
-        cat("\nfile(s):\n", paste(basename(fls[seq_len(to)]), collapse = "\n"),
-            "\n",
-            sep = ""
-        )
-        if (length(fls) > 3) cat(" ...", length(fls) - 3, "more files\n")
-    }
-    if (object@inMemory) cat("\nPeaks data is cached in memory\n")
+  callNextMethod()
+  fls <- unique(dataOrigin(object))
+  if (length(fls)) {
+    to <- min(3, length(fls))
+    cat(
+      "\nfile(s):\n",
+      paste(basename(fls[seq_len(to)]), collapse = "\n"),
+      "\n",
+      sep = ""
+    )
+    if (length(fls) > 3) cat(" ...", length(fls) - 3, "more files\n")
+  }
+  if (object@inMemory) cat("\nPeaks data is cached in memory\n")
 })
 
 #' @rdname hidden_aliases
 #' @importMethodsFrom ProtGenerics backendParallelFactor
 setMethod("backendParallelFactor", "ChromBackendMzR", function(object, ...) {
-    factor(dataOrigin(object), levels = unique(dataOrigin(object)))
+  factor(dataOrigin(object), levels = unique(dataOrigin(object)))
 })
 
 #' @rdname hidden_aliases
@@ -129,47 +137,64 @@ setMethod("isReadOnly", "ChromBackendMzR", function(object) TRUE)
 
 #' @rdname hidden_aliases
 #' @importFrom BiocParallel bplapply
-setMethod("peaksData", "ChromBackendMzR",
-          function(object, columns = peaksVariables(object), drop = FALSE,
-                   BPPARAM = SerialParam(), ...) {
-              if (.inMemory(object) || !length(object)) return(callNextMethod())
-              pv <- peaksVariables(object)
-              if (!any(columns %in% pv))
-                  stop("Some of the requested peaks variables are not",
-                       " available")
-              ret <- all(pv %in% columns)
-              f <- factor(dataOrigin(object),
-                          levels = unique(dataOrigin(object)))
-              pd <- bplapply(split(object, f = f),
-                 function(ob) {
-                     chr <- .get_chrom_data(fl = .chromData(ob)$dataOrigin[1L],
-                                            idx = chromIndex(ob))
-                     if (ret) chr
-                     else lapply(chr, `[`, , columns, drop = drop)
-                 }, BPPARAM = BPPARAM)
-              unsplit(pd, f = f)
-          })
+setMethod(
+  "peaksData",
+  "ChromBackendMzR",
+  function(
+    object,
+    columns = peaksVariables(object),
+    drop = FALSE,
+    BPPARAM = SerialParam(),
+    ...
+  ) {
+    if (.inMemory(object) || !length(object)) {
+      return(callNextMethod())
+    }
+    pv <- peaksVariables(object)
+    if (!any(columns %in% pv)) {
+      stop("Some of the requested peaks variables are not", " available")
+    }
+    ret <- all(pv %in% columns)
+    f <- factor(dataOrigin(object), levels = unique(dataOrigin(object)))
+    pd <- bplapply(
+      split(object, f = f),
+      function(ob) {
+        chr <- .get_chrom_data(
+          fl = .chromData(ob)$dataOrigin[1L],
+          idx = chromIndex(ob)
+        )
+        if (ret) {
+          chr
+        } else {
+          lapply(chr, `[`, , columns, drop = drop)
+        }
+      },
+      BPPARAM = BPPARAM
+    )
+    unsplit(pd, f = f)
+  }
+)
 
 #' @rdname hidden_aliases
 setReplaceMethod("peaksData", "ChromBackendMzR", function(object, value) {
-    message(
-        "Please keep in mind the 'ChromBackendMzR' backend is read-only.",
-        " The peaksData slot will be modified but the changes will not",
-        " affect the local mzML files."
-    )
-    object <- callNextMethod()
-    object@inMemory <- TRUE
-    object
+  message(
+    "Please keep in mind the 'ChromBackendMzR' backend is read-only.",
+    " The peaksData slot will be modified but the changes will not",
+    " affect the local mzML files."
+  )
+  object <- callNextMethod()
+  object@inMemory <- TRUE
+  object
 })
 
 #' @rdname hidden_aliases
 setReplaceMethod("chromData", "ChromBackendMzR", function(object, value) {
-    message(
-        "Please keep in mind the 'ChromBackendMzR' backend is read-only.",
-        " The chromData slot will be modified but the changes will not",
-        " affect the local mzML files."
-    )
-    callNextMethod()
+  message(
+    "Please keep in mind the 'ChromBackendMzR' backend is read-only.",
+    " The chromData slot will be modified but the changes will not",
+    " affect the local mzML files."
+  )
+  callNextMethod()
 })
 
 #' @rdname hidden_aliases
@@ -179,51 +204,64 @@ setMethod("supportsSetBackend", "ChromBackendMzR", function(object, ...) FALSE)
 #' @rdname hidden_aliases
 #' @importMethodsFrom S4Vectors [ [<-
 setMethod("[", "ChromBackendMzR", function(x, i, j, ...) {
-    if (!length(i)) {
-        return(ChromBackendMzR())
-    }
-    callNextMethod()
+  if (!length(i)) {
+    return(ChromBackendMzR())
+  }
+  callNextMethod()
 })
 
 #' @rdname hidden_aliases
-setMethod("chromExtract", "ChromBackendMzR",
-          function(object, peak.table, by, ...) {
-              required_cols <- c("rtMin", "rtMax", by)
-              .validate_chromExtract_input(
-                  object = object,
-                  peak.table = peak.table,
-                  by = by, required_cols = required_cols
-              )
+setMethod(
+  "chromExtract",
+  "ChromBackendMzR",
+  function(object, peak.table, by, ...) {
+    required_cols <- c("rtMin", "rtMax", by)
+    .validate_chromExtract_input(
+      object = object,
+      peak.table = peak.table,
+      by = by,
+      required_cols = required_cols
+    )
 
-              matched <- .match_chromdata_peaktable(
-                  object = object,
-                  peak.table = peak.table,
-                  by = by
-              )
-              cd <- .chromData(matched$object)
-              chrom_keys <- matched$chrom_keys
-              peak_keys  <- matched$peak_keys
-              cd_split <- split(cd, chrom_keys) ##  UT need to check that
-              pk_split <- split(peak.table, peak_keys)
+    matched <- .match_chromdata_peaktable(
+      object = object,
+      peak.table = peak.table,
+      by = by
+    )
+    cd <- .chromData(matched$object)
+    chrom_keys <- matched$chrom_keys
+    peak_keys <- matched$peak_keys
+    cd_split <- split(cd, chrom_keys) ##  UT need to check that
+    pk_split <- split(peak.table, peak_keys)
 
-              ## Check overlapping columns
-              overl_cols <- .check_overl_columns(peak.table = peak.table,
-                                                 object = object,
-                                                 required_cols = required_cols)
+    ## Check overlapping columns
+    overl_cols <- .check_overl_columns(
+      peak.table = peak.table,
+      object = object,
+      required_cols = required_cols
+    )
 
-              ## Merge peak.table into chromData safely.
-              new_cdata <- mapply(function(cd_row, pks) { ## could switch to bpmapply ?
-                  d <- suppressWarnings(cbind(cd_row, pks[!overl_cols]))
-                  d[, names(peak.table)[overl_cols]] <- pks[, overl_cols]
-                  d
-              }, cd_row = cd_split,
-              pks = pk_split, SIMPLIFY = FALSE)
+    ## Merge peak.table into chromData safely.
+    new_cdata <- mapply(
+      function(cd_row, pks) {
+        ## could switch to bpmapply ?
+        d <- suppressWarnings(cbind(cd_row, pks[!overl_cols]))
+        d[, names(peak.table)[overl_cols]] <- pks[, overl_cols]
+        d
+      },
+      cd_row = cd_split,
+      pks = pk_split,
+      SIMPLIFY = FALSE
+    )
 
-              new_cdata <- do.call(rbind, new_cdata)
-              rownames(new_cdata) <- NULL
-              object@chromData <- new_cdata
-              object@peaksData <- replicate(nrow(new_cdata),
-                                            .EMPTY_PEAKS_DATA,
-                                            simplify = FALSE)
-              return(object)
-          })
+    new_cdata <- do.call(rbind, new_cdata)
+    rownames(new_cdata) <- NULL
+    object@chromData <- new_cdata
+    object@peaksData <- replicate(
+      nrow(new_cdata),
+      .EMPTY_PEAKS_DATA,
+      simplify = FALSE
+    )
+    return(object)
+  }
+)

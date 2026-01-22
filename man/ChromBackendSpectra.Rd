@@ -25,12 +25,12 @@ chromSpectraIndex(object)
 
 \item{spectra}{A \code{Spectra} object.}
 
-\item{factorize.by}{A \code{character} vector of variables for grouping \code{Spectra}
-data into chromatographic data (i.e., creating separate chromatograms
-for each unique combination of these variables).
+\item{factorize.by}{A \code{character} vector of \code{spectraVariables} for grouping
+\code{Spectra} data into chromatographic data (i.e., creating separate
+chromatograms for each unique combination of these variables).
 Default: \code{c("msLevel", "dataOrigin")}, which creates one chromatogram
 per MS level per data file.
-If \code{chromData} is provided, it must contain these columns.}
+If \code{chromData} is provided, it \strong{must} also contain these columns.}
 
 \item{summarize.method}{A \code{character} string specifying intensity summary:
 \code{"sum"} (default) or \code{"max"}.}
@@ -59,7 +59,7 @@ summarizing chromatographic data from \code{\link[Spectra:Spectra]{Spectra::Spec
 
 It can be initialized with a \code{Spectra} object, which is stored in the
 \code{spectra} slot of the backend. Users can also provide a \code{data.frame}
-containing chromatographic metadata, stored in \code{chromData}. This metadata
+containing chromatographic metadata, stored in \verb{@chromData}. This metadata
 filters the \code{Spectra} object and generates \code{peaksData}. If \code{chromData} is
 not provided, a default \code{data.frame} is created from the \code{Spectra} data.
 An "rtMin", "rtMax", "mzMin", and "mzMax" column will be created by
@@ -79,7 +79,7 @@ of the \code{Spectra} object. The \code{factorize.by} parameter defines the vari
 for grouping \code{Spectra} data into chromatographic data. The default is
 \code{c("msLevel", "dataOrigin")}, which will define separate chromatograms for
 each combination of \code{msLevel} and \code{dataOrigin}. These variables must be in
-both \code{Spectra} and \code{chromData} (if provided).
+both the \code{spectraData()} of the \code{Spectra} and \code{chromData} (if provided).
 
 The \code{summarize.method} parameter defines how spectral data intensity is
 summarized:
@@ -93,9 +93,9 @@ method must be called to update \code{chromSpectraIndex}.
 }
 \details{
 No \code{peaksData} is stored until the user calls a function that generates it
-(e.g., \code{rtime()}, \code{peaksData()}, \code{intensity()}). The \code{peaksData} slot
+(e.g., \code{rtime()}, \code{peaksData()}, \code{intensity()}). The \verb{@peaksData} slot
 replacement is unsupported — modifications are temporary to optimize memory.
-The \code{inMemory} slot indicates this with \code{TRUE}.
+The \verb{@inMemory} slot indicates this with \code{TRUE}.
 
 \strong{Spectra Sort Index}: The \code{ChromBackendSpectra} backend maintains a
 \code{spectraSortIndex} slot that stores a sort order for the internal \code{Spectra}
@@ -109,10 +109,10 @@ physically reorder disk-backed \code{Spectra} objects, which would require loadi
 all data into memory.
 
 \strong{Factorize and Subsetting}: The \code{factorize()} method updates the
-\code{chromSpectraIndex} in both \code{chromData} and the \code{spectra} object to reflect
+\code{chromSpectraIndex} in both \code{chromData} and the \verb{@spectra} to reflect
 the current grouping, and recalculates \code{spectraSortIndex} to maintain the
 correct sort order. The \code{[} subsetting operator properly handles subsetting
-of both \code{chromData}, \code{peaksData}, and \code{spectra}, while updating the
+of both \verb{@chromData}, \verb{@peaksData}, and \verb{@spectra}, while updating the
 \code{spectraSortIndex} to reference valid positions in the subsetted data.
 
 \code{ChromBackendSpectra} should reuse \code{ChromBackendMemory} methods whenever

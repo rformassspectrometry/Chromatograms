@@ -173,14 +173,14 @@ is one chromatogram.
 The \emph{chromatograms variables} information in the \code{Chromatograms} object can
 be accessed using the \code{chromData()} function. Specific chromatograms
 variables can be accessed by either precising the \code{"columns"} parameter in
-\code{chromData()} or using \code{$}. \code{chromData} can be accessed, replaced but
+\code{chromData()} or using \code{$}. \verb{@chromData} can be accessed, replaced but
 also filtered/subsetted. Refer to the \link{chromData} documentation for more
 details.
 
 The \emph{peaks data variables} information in the \code{Chromatograms} object can be
 accessed using the \code{peaksData()} function. Specific peaks variables can be
 accessed by either precising the \code{"columns"} parameter in \code{peaksData()} or
-using \code{$}. \code{peaksData} can be accessed, replaced but also
+using \code{$}. \verb{@peaksData} can be accessed, replaced but also
 filtered/subsetted. Refer to the \link{peaksData} documentation for more details.
 }
 
@@ -189,7 +189,7 @@ filtered/subsetted. Refer to the \link{peaksData} documentation for more details
 
 Functions that process the chromatograms data in some ways can be applied to
 the object either directly or by using the \code{processingQueue} mechanism. The
-\code{processingQueue} is a list of processing steps that are stored within the
+\verb{@processingQueue} is a list of processing steps that are stored within the
 object and only applied when needed. This was created so that the data can be
 processed in a single step and is very useful for larger datasets. This is
 even more true as this processing queue will call function that can be

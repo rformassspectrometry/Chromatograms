@@ -378,8 +378,9 @@ the groupings. This can be done using the `factorize()` function:
 chr_s$msLevel <- rep(2L, length(chr_s))
 
 ## Re-factorize to update the groupings
-chr_s <- factorize(chr_s@backend)
-chr_s <- Chromatograms(chr_s)
+chr_s <- factorize(chr_s)
+
+chromData(chr_s)
 ```
 
 This recalculates which spectra belong to which chromatograms based on the
@@ -604,7 +605,7 @@ By default, the `factorize.by` parameter is set to `c("msLevel", "dataOrigin")`,
 which means:
 
 - All MS1 spectra from file "A" → Chromatogram 1
-- All MS2 spectra from file "A" → Chromatogram 2  
+- All MS2 spectra from file "A" → Chromatogram 2
 - All MS1 spectra from file "B" → Chromatogram 3
 - All MS2 spectra from file "B" → Chromatogram 4
 
@@ -686,7 +687,7 @@ peak_table <- data.frame(
 )
 
 ## Extract those regions
-chr_extracted <- chromExtract(chr, peak_table, 
+chr_extracted <- chromExtract(chr, peak_table,
                               by = c("msLevel", "chromIndex"))
 
 chr_extracted
@@ -718,7 +719,7 @@ peak_table_mz <- data.frame(
 )
 
 ## Extract EICs for these features
-chr_eics <- chromExtract(chr_s, peak_table_mz, 
+chr_eics <- chromExtract(chr_s, peak_table_mz,
                         by = c("msLevel", "dataOrigin"))
 
 chr_eics
@@ -780,7 +781,7 @@ Now let's examine the raw data and apply different imputation methods:
 ## Create copies for comparison
 chr_linear <- imputePeaksData(chr_eic, method = "linear")
 chr_spline <- imputePeaksData(chr_eic, method = "spline")
-chr_gaussian <- imputePeaksData(chr_eic, method = "gaussian", 
+chr_gaussian <- imputePeaksData(chr_eic, method = "gaussian",
                                 window = 5, sd = 2)
 chr_loess <- imputePeaksData(chr_eic, method = "loess", span = 0.3)
 
