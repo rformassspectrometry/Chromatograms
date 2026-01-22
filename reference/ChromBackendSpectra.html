@@ -4,18 +4,25 @@ all its slots and methods while providing additional functionality for
 summarizing chromatographic data from Spectra::Spectra() objects.
 It can be initialized with a Spectra object, which is stored in the
 spectra slot of the backend. Users can also provide a data.frame
-containing chromatographic metadata, stored in chromData. This metadata
+containing chromatographic metadata, stored in @chromData. This metadata
 filters the Spectra object and generates peaksData. If chromData is
 not provided, a default data.frame is created from the Spectra data.
 An "rtMin", "rtMax", "mzMin", and "mzMax" column will be created by
 condensing the Spectra data corresponding to each unique combination of
 the factorize.by variables.
+By "factorization" we mean the process of grouping spectra
+into chromatograms based on specified variables. For example, using
+factorize.by = c("msLevel", "dataOrigin") means that all MS1 spectra from
+file "A" form one chromatogram, all MS2 spectra from file "A" form another,
+and so on. Each unique combination of the factorization variables creates
+a separate chromatogram. This is essential for organizing spectral data into
+meaningful chromatographic traces that can be visualized and analyzed.
 The dataOrigin core chromatogram variable should reflect the dataOrigin
 of the Spectra object. The factorize.by parameter defines the variables
 for grouping Spectra data into chromatographic data. The default is
 c("msLevel", "dataOrigin"), which will define separate chromatograms for
 each combination of msLevel and dataOrigin. These variables must be in
-both Spectra and chromData (if provided).
+both the spectraData() of the Spectra and chromData (if provided).
 The summarize.method parameter defines how spectral data intensity is
 summarized:
 "sum": Sums intensity to create a Total Ion Chromatogram (TIC).
@@ -41,7 +48,7 @@ method must be called to update chromSpectraIndex.'><!-- mathjax --><script src=
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">Chromatograms</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.1</span>
       </span>
     </div>
 
@@ -91,18 +98,25 @@ all its slots and methods while providing additional functionality for
 summarizing chromatographic data from <code><a href="https://rdrr.io/pkg/Spectra/man/Spectra.html" class="external-link">Spectra::Spectra()</a></code> objects.</p>
 <p>It can be initialized with a <code>Spectra</code> object, which is stored in the
 <code>spectra</code> slot of the backend. Users can also provide a <code>data.frame</code>
-containing chromatographic metadata, stored in <code>chromData</code>. This metadata
+containing chromatographic metadata, stored in <code>@chromData</code>. This metadata
 filters the <code>Spectra</code> object and generates <code>peaksData</code>. If <code>chromData</code> is
 not provided, a default <code>data.frame</code> is created from the <code>Spectra</code> data.
 An "rtMin", "rtMax", "mzMin", and "mzMax" column will be created by
 condensing the <code>Spectra</code> data corresponding to each unique combination of
 the <code>factorize.by</code> variables.</p>
+<p>By "factorization" we mean the process of grouping spectra
+into chromatograms based on specified variables. For example, using
+<code>factorize.by = c("msLevel", "dataOrigin")</code> means that all MS1 spectra from
+file "A" form one chromatogram, all MS2 spectra from file "A" form another,
+and so on. Each unique combination of the factorization variables creates
+a separate chromatogram. This is essential for organizing spectral data into
+meaningful chromatographic traces that can be visualized and analyzed.</p>
 <p>The <em>dataOrigin</em> core chromatogram variable should reflect the <em>dataOrigin</em>
 of the <code>Spectra</code> object. The <code>factorize.by</code> parameter defines the variables
 for grouping <code>Spectra</code> data into chromatographic data. The default is
 <code>c("msLevel", "dataOrigin")</code>, which will define separate chromatograms for
 each combination of <code>msLevel</code> and <code>dataOrigin</code>. These variables must be in
-both <code>Spectra</code> and <code>chromData</code> (if provided).</p>
+both the <code>spectraData()</code> of the <code>Spectra</code> and <code>chromData</code> (if provided).</p>
 <p>The <code>summarize.method</code> parameter defines how spectral data intensity is
 summarized:</p><ul><li><p><strong>"sum"</strong>: Sums intensity to create a Total Ion Chromatogram (TIC).</p></li>
 <li><p><strong>"max"</strong>: Takes max intensity for a Base Peak Chromatogram (BPC).</p></li>
@@ -140,10 +154,12 @@ method must be called to update <code>chromSpectraIndex</code>.</p>
 
 
 <dt id="arg-factorize-by">factorize.by<a class="anchor" aria-label="anchor" href="#arg-factorize-by"></a></dt>
-<dd><p>A <code>character</code> vector of variables for grouping <code>Spectra</code>
-data into chromatographic data.
-Default: <code>c("msLevel", "dataOrigin")</code>.
-If <code>chromData</code> is provided, it must contain these columns.</p></dd>
+<dd><p>A <code>character</code> vector of <code>spectraVariables</code> for grouping
+<code>Spectra</code> data into chromatographic data (i.e., creating separate
+chromatograms for each unique combination of these variables).
+Default: <code>c("msLevel", "dataOrigin")</code>, which creates one chromatogram
+per MS level per data file.
+If <code>chromData</code> is provided, it <strong>must</strong> also contain these columns.</p></dd>
 
 
 <dt id="arg-summarize-method">summarize.method<a class="anchor" aria-label="anchor" href="#arg-summarize-method"></a></dt>
@@ -178,15 +194,27 @@ return value.</p>
     <div id="details">
     <h2>Details</h2>
     <p>No <code>peaksData</code> is stored until the user calls a function that generates it
-(e.g., <code><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">rtime()</a></code>, <code><a href="peaksData.html">peaksData()</a></code>, <code><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">intensity()</a></code>). The <code>peaksData</code> slot
+(e.g., <code><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">rtime()</a></code>, <code><a href="peaksData.html">peaksData()</a></code>, <code><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">intensity()</a></code>). The <code>@peaksData</code> slot
 replacement is unsupported — modifications are temporary to optimize memory.
-The <code>inMemory</code> slot indicates this with <code>TRUE</code>.</p>
+The <code>@inMemory</code> slot indicates this with <code>TRUE</code>.</p>
+<p><strong>Spectra Sort Index</strong>: The <code>ChromBackendSpectra</code> backend maintains a
+<code>spectraSortIndex</code> slot that stores a sort order for the internal <code>Spectra</code>
+object based on <code>dataOrigin</code> and <code>rtime</code>. To optimize performance, the sort
+index is only computed and stored when the spectra are unsorted; if already
+sorted (which is typical for most real-world data), <code>spectraSortIndex</code> remains
+empty (<code><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer()</a></code>). This avoids unnecessary subsetting operations. The sort
+index is automatically recalculated whenever the <code><a href="ChromBackend.html">factorize()</a></code> method is called,
+ensuring it remains valid and consistent. This approach avoids the need to
+physically reorder disk-backed <code>Spectra</code> objects, which would require loading
+all data into memory.</p>
+<p><strong>Factorize and Subsetting</strong>: The <code><a href="ChromBackend.html">factorize()</a></code> method updates the
+<code>chromSpectraIndex</code> in both <code>chromData</code> and the <code>@spectra</code> to reflect
+the current grouping, and recalculates <code>spectraSortIndex</code> to maintain the
+correct sort order. The <code>[</code> subsetting operator properly handles subsetting
+of both <code>@chromData</code>, <code>@peaksData</code>, and <code>@spectra</code>, while updating the
+<code>spectraSortIndex</code> to reference valid positions in the subsetted data.</p>
 <p><code>ChromBackendSpectra</code> should reuse <code>ChromBackendMemory</code> methods whenever
 possible to keep implementations simple.</p>
-    </div>
-    <div id="note">
-    <h2>Note</h2>
-    <p>ensure that it returns a factor</p>
     </div>
     <div id="author">
     <h2>Author</h2>
@@ -261,22 +289,26 @@ possible to keep implementations simple.</p>
 <span class="r-in"><span><span class="co">## Can now see the details of this bpc by looking at the chromData of our</span></span></span>
 <span class="r-in"><span><span class="co">## object</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="chromData.html">chromData</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   msLevel    rtMin    rtMax mzMin mzMax  mz polarity</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1       1 0.296192 2695.833  -Inf   Inf Inf       -1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2       1 0.295936 2697.736  -Inf   Inf Inf       -1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3       1 3.660864 2698.993  -Inf   Inf Inf       -1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   msLevel    rtMin    rtMax mzMin mzMax  mz</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1       1 0.296192 2695.833  -Inf   Inf Inf</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2       1 0.295936 2697.736  -Inf   Inf Inf</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3       1 3.660864 2698.993  -Inf   Inf Inf</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                       dataOrigin</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1 /github/home/.cache/R/BiocFileCache/AM063B.cdf</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2 /github/home/.cache/R/BiocFileCache/CS063B.cdf</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3 /github/home/.cache/R/BiocFileCache/MN063B.cdf</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                                  chromSpectraIndex chromIndex collisionEnergy</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1 1_/github/home/.cache/R/BiocFileCache/AM063B.cdf         NA              NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 1_/github/home/.cache/R/BiocFileCache/CS063B.cdf         NA              NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 1_/github/home/.cache/R/BiocFileCache/MN063B.cdf         NA              NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   precursorMz precursorMzMin precursorMzMax productMz productMzMin productMzMax</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1          NA             NA             NA        NA           NA           NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2          NA             NA             NA        NA           NA           NA</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3          NA             NA             NA        NA           NA           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                  chromSpectraIndex polarity chromIndex</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 1_/github/home/.cache/R/BiocFileCache/AM063B.cdf       -1         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 1_/github/home/.cache/R/BiocFileCache/CS063B.cdf       -1         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 1_/github/home/.cache/R/BiocFileCache/MN063B.cdf       -1         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   collisionEnergy precursorMz precursorMzMin precursorMzMax productMz</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1              NA          NA             NA             NA        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2              NA          NA             NA             NA        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3              NA          NA             NA             NA        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   productMzMin productMzMax</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1           NA           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           NA           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3           NA           NA</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## Another possibilities is to create eics from the Spectra object.</span></span></span>
 <span class="r-in"><span><span class="co">## Here we create an EIC with a specific m/z and retention time window.</span></span></span>
@@ -1963,7 +1995,7 @@ possible to keep implementations simple.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.9000.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.9000.</p>
 </div>
 
       </footer></div>

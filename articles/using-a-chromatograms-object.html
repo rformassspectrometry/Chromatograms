@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">Chromatograms</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.1</span>
       </span>
     </div>
 
@@ -102,7 +102,7 @@ document.addEventListener("DOMContentLoaded", function() {
     if (links[i].hostname != window.location.hostname)
       links[i].target = '_blank';
 });
-</script><p><strong>Package</strong>: Chromatograms 0.99.7 <br><strong>Compiled</strong>: Wed Oct 22 08:40:38 2025</p>
+</script><p><strong>Package</strong>: Chromatograms 1.1.1 <br><strong>Compiled</strong>: Thu Jan 22 18:34:46 2026</p>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
@@ -172,13 +172,26 @@ and metadata. Since all data is kept in memory, this backend has a
 relatively large memory footprint (depending on the data) and is thus
 not suggested for very large experiments.</p></li>
 <li><p><code>ChromBackendMzR</code>: this backend keeps only the
-chromatographic metadata variables in memory and relies on the <em><a href="https://bioconductor.org/packages/3.22/mzR" class="external-link">mzR</a></em> package
+chromatographic metadata variables in memory and relies on the <em><a href="https://bioconductor.org/packages/3.23/mzR" class="external-link">mzR</a></em> package
 to read chromatographic peaks (retention time and intensity values) from
 the original mzML files on-demand.</p></li>
-<li><p><code>ChromBackendSpectra</code>: this backend is used to
-generate chromatographic data from a <code>Spectra</code> object. I can
-be use to create TIC, BPC or EICs.</p></li>
+<li><p><code>ChromBackendSpectra</code>: this backend generates
+chromatographic data from a <code>Spectra</code> object. It can be used
+to create Total Ion Chromatograms (TIC), Base Peak Chromatograms (BPC),
+or Extracted Ion Chromatograms (EICs). It supports both in-memory and
+file-backed <code>Spectra</code> objects. The backend uses
+<strong>factorization</strong> to group spectra into chromatograms based
+on variables like MS level and data origin (see details below).</p></li>
 </ul>
+<p>All backends provide a consistent interface through the
+<code>Chromatograms</code> object, regardless of where or how the data
+is stored. The <code>ChromBackendSpectra</code> has a special feature:
+it uses an internal sort index (<code>spectraSortIndex</code>) to
+maintain retention time order without physically reordering the
+underlying <code>Spectra</code> object. This is particularly important
+for disk-backed <code>Spectra</code> objects, as it avoids loading all
+data into memory. The sort index is automatically maintained during
+subsetting and factorization operations.</p>
 </div>
 <div class="section level3">
 <h3 id="chromatographic-peaks-data">Chromatographic peaks data<a class="anchor" aria-label="anchor" href="#chromatographic-peaks-data"></a>
@@ -315,7 +328,7 @@ the retention time and intensity in a list of data.frames.</p>
 spectrometry raw files in mzML/mzXML or CDF format. Below, we create a
 <code>Chromatograms</code> object from an mzML file and define to use a
 <code>ChromBackendMzR</code> backend to <em>store</em> the data (note
-that this requires the <em><a href="https://bioconductor.org/packages/3.22/mzR" class="external-link">mzR</a></em> package
+that this requires the <em><a href="https://bioconductor.org/packages/3.23/mzR" class="external-link">mzR</a></em> package
 to be installed). This backend, specifically designed for raw LC-MS
 data, keeps only a subset of chromatogram variables in memory while
 reading the retention time and intensity values from the original data
@@ -336,6 +349,12 @@ more details on backends and their properties.</p>
 contains the chromatograms from the mzML file <code>MRM_file</code>. The
 chromatograms can be accessed and manipulated using the
 <code>Chromatograms</code> object’s methods and functions.</p>
+<p>It is also possible to create a <code>Chromatograms</code> object
+directly from a <code>Spectra</code> object. This is particularly useful
+when you want to generate total ion chromatograms (TIC), base peak
+chromatograms (BPC), or extracted ion chromatograms (EIC) from spectral
+data. A worked example is provided in the <a href="#plotting-chromatograms-from-a-spectra-object">plotting</a>
+section below.</p>
 <p>Basic information about the <code>Chromatograms</code> object can be
 accessed using functions such as <code><a href="https://rdrr.io/r/base/length.html" class="external-link">length()</a></code>, which tell us
 how many chromatograms are contained in the object:</p>
@@ -504,6 +523,30 @@ number of chromatograms in the object.</p>
 <pre><code><span><span class="co">## [1] 2</span></span></code></pre>
 <p>The number of chromatograms in the <code>Chromatograms</code> object
 is reduced.</p>
+<p>Note that for <code>ChromBackendSpectra</code>, when you subset the
+<code>Chromatograms</code> object, the underlying <code>Spectra</code>
+object and its sort index are also properly subset and updated. This
+ensures that peak data extraction remains efficient even after
+subsetting operations.</p>
+<div class="section level4">
+<h4 id="re-factorizing-after-metadata-changes">Re-factorizing after metadata changes<a class="anchor" aria-label="anchor" href="#re-factorizing-after-metadata-changes"></a>
+</h4>
+<p>If you modify the chromatogram metadata (particularly the
+factorization columns like <code>msLevel</code> or
+<code>dataOrigin</code>), you may need to re-factorize the data to
+update the groupings. This can be done using the
+<code><a href="../reference/ChromBackend.html">factorize()</a></code> function:</p>
+<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## Modify metadata</span></span>
+<span><span class="va">chr_s</span><span class="op">$</span><span class="va">msLevel</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fl">2L</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">chr_s</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## Re-factorize to update the groupings</span></span>
+<span><span class="va">chr_s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/ChromBackend.html">factorize</a></span><span class="op">(</span><span class="va">chr_s</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">chr_s</span><span class="op">)</span></span></code></pre></div>
+<p>This recalculates which spectra belong to which chromatograms based
+on the updated metadata.</p>
+</div>
 </div>
 </div>
 <div class="section level2">
@@ -535,7 +578,7 @@ and the chromatogram metadata. Below we demonstrate how to add a custom
 function to the processing queue of a <code>Chromatograms</code> object.
 Below we define a function that divides the intensities of each peak by
 a value which can be passed with argument <code>y</code>.</p>
-<div class="sourceCode" id="cb34"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb35"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## Define a function that takes the backend as an input, divides the intensity</span></span>
 <span><span class="co">## by parameter y and returns it. Note that ... is required in</span></span>
 <span><span class="co">## the function's definition.</span></span>
@@ -558,14 +601,14 @@ a value which can be passed with argument <code>y</code>.</p>
 evaluation queue. Calling <code><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">intensity()</a></code> on this object will
 now return intensities that are half of the intensities of the original
 objects <code>chr</code>.</p>
-<div class="sourceCode" id="cb36"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">intensity</a></span><span class="op">(</span><span class="va">chr_2</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [[1]]</span></span>
 <span><span class="co">## [1] 0.5 1.0 1.5 2.0 2.5 3.0 3.5</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## [[2]]</span></span>
 <span><span class="co">## [1] 0.5 1.0 1.5 2.0 2.5 3.0 3.5</span></span></code></pre>
-<div class="sourceCode" id="cb38"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">intensity</a></span><span class="op">(</span><span class="va">chr</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [[1]]</span></span>
 <span><span class="co">## [1] 1 2 3 4 5 6 7</span></span>
@@ -578,15 +621,15 @@ apply the processing queue to the peak data and write that back to the
 data storage with the <code><a href="https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html" class="external-link">applyProcessing()</a></code> function. Below we
 use this to make all data manipulations on peak data of the
 <code>sps_rep</code> object persistent.</p>
-<div class="sourceCode" id="cb40"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb41"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">chr_2</span><span class="op">@</span><span class="va">processingQueue</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 1</span></span></code></pre>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb43"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">chr_2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html" class="external-link">applyProcessing</a></span><span class="op">(</span><span class="va">chr_2</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">chr_2</span><span class="op">@</span><span class="va">processingQueue</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] 0</span></span></code></pre>
-<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb45"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">chr_2</span></span></code></pre></div>
 <pre><code><span><span class="co">## Chromatographic data (Chromatograms) with 2 chromatograms in a ChromBackendMemory backend:</span></span>
 <span><span class="co">##   chromIndex msLevel    mz</span></span>
@@ -595,7 +638,7 @@ use this to make all data manipulations on peak data of the
 <span><span class="co">## ... 11 more  chromatogram variables/columns</span></span>
 <span><span class="co">## ... 2 peaksData variables</span></span>
 <span><span class="co">## Processing:</span></span>
-<span><span class="co">##  Applied processing queue with 1 steps [Wed Oct 22 08:40:42 2025]</span></span></code></pre>
+<span><span class="co">##  Applied processing queue with 1 steps [Thu Jan 22 18:34:51 2026]</span></span></code></pre>
 <p>Before <code><a href="https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html" class="external-link">applyProcessing()</a></code> the lazy evaluation queue
 contained 2 processing steps, which were then applied to the peak data
 and <em>written</em> to the data storage. Note that calling
@@ -619,7 +662,7 @@ should be loaded and processed in each iteration. The
 how the data will be split. Below, we use this function to assess how
 chunk-wise processing would be performed with two
 <code>Chromatograms</code> objects:</p>
-<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html" class="external-link">processingChunkFactor</a></span><span class="op">(</span><span class="va">chr</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## factor()</span></span>
 <span><span class="co">## Levels:</span></span></code></pre>
@@ -628,7 +671,7 @@ empty <code><a href="https://rdrr.io/r/base/factor.html" class="external-link">f
 will be performed. We next evaluate whether the
 <code>Chromatograms</code> with the <code>ChromBackendMzR</code> on-disk
 backend would use chunk-wise processing.</p>
-<div class="sourceCode" id="cb48"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb49"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html" class="external-link">processingChunkFactor</a></span><span class="op">(</span><span class="va">chr_mzr</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## [1] /__w/_temp/Library/msdata/proteomics/MRM-standmix-5.mzML.gz</span></span>
@@ -643,7 +686,7 @@ chromatograms will be processed in one go. however the length would be
 higher if more than one file is used. As this data is quite big (138
 chromatograms), we can set the <code>processingChunkSize</code> to 10 to
 process the data in chunks of 10 chromatograms.</p>
-<div class="sourceCode" id="cb50"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html" class="external-link">processingChunkSize</a></span><span class="op">(</span><span class="va">chr_mzr</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="fl">10</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html" class="external-link">processingChunkFactor</a></span><span class="op">(</span><span class="va">chr_mzr</span><span class="op">)</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
@@ -673,10 +716,10 @@ actual data handling. It is also possible to change the backend of a
 <code><a href="https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html" class="external-link">setBackend()</a></code> function. As of now it is only possible to
 change the <code>ChrombackendMzR</code> to an in-memory backend such as
 <code>ChromBackendMemory</code>.</p>
-<div class="sourceCode" id="cb52"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb53"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/object.size.html" class="external-link">object.size</a></span><span class="op">(</span><span class="va">chr_mzr</span><span class="op">)</span>, units <span class="op">=</span> <span class="st">"Mb"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## 0.1 Mb</span></span></code></pre>
-<div class="sourceCode" id="cb54"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb55"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">chr_mzr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html" class="external-link">setBackend</a></span><span class="op">(</span><span class="va">chr_mzr</span>, <span class="fu"><a href="../reference/ChromBackendMemory.html">ChromBackendMemory</a></span><span class="op">(</span><span class="op">)</span>, BPPARAM <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocParallel/man/SerialParam-class.html" class="external-link">SerialParam</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">chr_mzr</span></span></code></pre></div>
@@ -691,8 +734,8 @@ change the <code>ChrombackendMzR</code> to an in-memory backend such as
 <span><span class="co">## ... 6 more  chromatogram variables/columns</span></span>
 <span><span class="co">## ... 2 peaksData variables</span></span>
 <span><span class="co">## Processing:</span></span>
-<span><span class="co">##  Switch backend from ChromBackendMzR to ChromBackendMemory [Wed Oct 22 08:40:43 2025]</span></span></code></pre>
-<div class="sourceCode" id="cb56"><pre class="downlit sourceCode r">
+<span><span class="co">##  Switch backend from ChromBackendMzR to ChromBackendMemory [Thu Jan 22 18:34:52 2026]</span></span></code></pre>
+<div class="sourceCode" id="cb57"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">chr_mzr</span><span class="op">@</span><span class="va">backend</span><span class="op">@</span><span class="va">peaksData</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># data is now in memory</span></span></code></pre></div>
 <pre><code><span><span class="co">##          rtime intensity</span></span>
 <span><span class="co">## 1 1.666667e-05  45.37833</span></span>
@@ -704,42 +747,125 @@ change the <code>ChrombackendMzR</code> to an in-memory backend such as
 <p>With the call the full peak data was imported from the original mzML
 files into the object. This has obviously an impact on the object’s
 size, which is now much larger than before.</p>
-<div class="sourceCode" id="cb58"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb59"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/utils/object.size.html" class="external-link">object.size</a></span><span class="op">(</span><span class="va">chr_mzr</span><span class="op">)</span>, units <span class="op">=</span> <span class="st">"Mb"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">## 2.8 Mb</span></span></code></pre>
+<div class="section level3">
+<h3 id="choosing-the-right-backend">Choosing the right backend<a class="anchor" aria-label="anchor" href="#choosing-the-right-backend"></a>
+</h3>
+<p>Different backends are suited for different use cases:</p>
+<ul>
+<li><p><strong><code>ChromBackendMemory</code></strong>: Best for small
+to medium datasets where fast access is needed. All data is kept in
+memory, providing the fastest access but higher memory
+consumption.</p></li>
+<li><p><strong><code>ChromBackendMzR</code></strong>: Ideal for large
+datasets stored in mzML/mzXML/CDF files. Only metadata is kept in
+memory, while peak data is read on-demand, significantly reducing memory
+footprint at the cost of slower data access.</p></li>
+<li><p><strong><code>ChromBackendSpectra</code></strong>: Perfect for
+generating chromatograms from spectral data, especially when creating
+TICs, BPCs, or EICs from existing <code>Spectra</code> objects. The
+backend intelligently handles both in-memory and disk-backed
+<code>Spectra</code> objects through its internal sorting mechanism,
+avoiding unnecessary memory consumption while maintaining good
+performance.</p></li>
+</ul>
+</div>
 </div>
 <div class="section level2">
 <h2 id="plotting-chromatograms-from-a-spectra-object">Plotting chromatograms from a <code>Spectra</code> object<a class="anchor" aria-label="anchor" href="#plotting-chromatograms-from-a-spectra-object"></a>
 </h2>
-<p>For this purpose let’s create a <code>Chromatograms</code> object
-from public spectral data.</p>
-<div class="sourceCode" id="cb60"><pre class="downlit sourceCode r">
+<p>For this purpose let’s create a lightweight in-memory
+<code>Spectra</code> object and derive a <code>Chromatograms</code> from
+it. This avoids any external downloads while still illustrating the
+<code>ChromBackendSpectra</code> workflow.</p>
+<div class="sourceCode" id="cb61"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/RforMassSpectrometry/Spectra" class="external-link">Spectra</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/RforMassSpectrometry/MsBackendMetaboLights" class="external-link">MsBackendMetaboLights</a></span><span class="op">)</span></span>
-<span><span class="va">be</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html" class="external-link">backendInitialize</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/pkg/MsBackendMetaboLights/man/MsBackendMetaboLights.html" class="external-link">MsBackendMetaboLights</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>    mtblsId <span class="op">=</span> <span class="st">"MTBLS39"</span>,</span>
-<span>    filePattern <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"63B.cdf"</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://bioconductor.org/packages/IRanges" class="external-link">IRanges</a></span><span class="op">)</span></span>
+<span><span class="va">sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Spectra/man/Spectra.html" class="external-link">Spectra</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/pkg/S4Vectors/man/DataFrame-class.html" class="external-link">DataFrame</a></span><span class="op">(</span></span>
+<span>    rtime <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">110</span>, <span class="fl">120</span>, <span class="fl">130</span>, <span class="fl">140</span><span class="op">)</span>,</span>
+<span>    msLevel <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">1L</span>, <span class="fl">1L</span>, <span class="fl">1L</span>, <span class="fl">1L</span><span class="op">)</span>,</span>
+<span>    dataOrigin <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"example"</span>, <span class="fl">5L</span><span class="op">)</span>,</span>
+<span>    mz <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/IRanges/man/AtomicList-class.html" class="external-link">NumericList</a></span><span class="op">(</span></span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">101</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">101</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">101</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">101</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">101</span><span class="op">)</span>,</span>
+<span>      compress <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>    <span class="op">)</span>,</span>
+<span>    intensity <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/IRanges/man/AtomicList-class.html" class="external-link">NumericList</a></span><span class="op">(</span></span>
+<span>      <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">20</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">15</span>, <span class="fl">25</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">30</span>, <span class="fl">5</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">18</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">40</span>, <span class="fl">2</span><span class="op">)</span>,</span>
+<span>      compress <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>    <span class="op">)</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  source <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/Spectra/man/MsBackend.html" class="external-link">MsBackendDataFrame</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/Spectra/man/Spectra.html" class="external-link">Spectra</a></span><span class="op">(</span><span class="va">be</span><span class="op">)</span></span>
-<span><span class="va">sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html" class="external-link">setBackend</a></span><span class="op">(</span><span class="va">sp</span>, <span class="fu"><a href="https://rdrr.io/pkg/Spectra/man/MsBackend.html" class="external-link">MsBackendMemory</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">chr_s</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Chromatograms.html">Chromatograms</a></span><span class="op">(</span><span class="va">sp</span><span class="op">)</span></span></code></pre></div>
 <p>We now have a <code>Chromatograms</code> object <code>chr_s</code>
 with a <code>ChromBackendSpectra</code> backend. one chromatogram was
 generated per file.</p>
-<div class="sourceCode" id="cb61"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb62"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">chr_s</span></span></code></pre></div>
-<pre><code><span><span class="co">## Chromatographic data (Chromatograms) with 3 chromatograms in a ChromBackendSpectra backend:</span></span>
+<pre><code><span><span class="co">## Chromatographic data (Chromatograms) with 1 chromatograms in a ChromBackendSpectra backend:</span></span>
 <span><span class="co">##   chromIndex msLevel  mz</span></span>
 <span><span class="co">## 1         NA       1 Inf</span></span>
-<span><span class="co">## 2         NA       1 Inf</span></span>
-<span><span class="co">## 3         NA       1 Inf</span></span>
-<span><span class="co">## ... 7 more  chromatogram variables/columns</span></span>
+<span><span class="co">## ... 6 more  chromatogram variables/columns</span></span>
 <span><span class="co">## ... 2 peaksData variables</span></span>
 <span><span class="co">## </span></span>
-<span><span class="co">## The Spectra object contains 1651 spectra</span></span></code></pre>
+<span><span class="co">## The Spectra object contains 5 spectra</span></span></code></pre>
+<p>The <code>ChromBackendSpectra</code> backend provides flexibility in
+how chromatograms are generated from spectral data through a process
+called <strong>factorization</strong>.</p>
+<div class="section level3">
+<h3 id="understanding-factorization">Understanding Factorization<a class="anchor" aria-label="anchor" href="#understanding-factorization"></a>
+</h3>
+<p>Factorization is the process of grouping individual spectra into
+chromatograms based on one or more variables. Think of it as creating
+separate “bins” where each bin becomes one chromatogram.</p>
+<p>By default, the <code>factorize.by</code> parameter is set to
+<code>c("msLevel", "dataOrigin")</code>, which means:</p>
+<ul>
+<li>All MS1 spectra from file “A” → Chromatogram 1</li>
+<li>All MS2 spectra from file “A” → Chromatogram 2</li>
+<li>All MS1 spectra from file “B” → Chromatogram 3</li>
+<li>All MS2 spectra from file “B” → Chromatogram 4</li>
+</ul>
+<p>Each unique combination of the factorization variables creates a
+separate chromatogram. This allows you to organize your spectral data
+into meaningful chromatographic traces that can be visualized and
+analyzed together.</p>
+<p>You can customize the factorization behavior by changing the
+<code>factorize.by</code> parameter. For example, using only
+<code>factorize.by = "dataOrigin"</code> would create one chromatogram
+per file (combining all MS levels), while adding more variables would
+create more granular groupings.</p>
+<p>Additionally, you can provide custom chromatogram metadata to define
+specific m/z and retention time ranges:</p>
+<div class="sourceCode" id="cb64"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## Create custom metadata for EIC extraction</span></span>
+<span><span class="va">custom_cd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    msLevel <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">1L</span><span class="op">)</span>,</span>
+<span>    dataOrigin <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="../reference/chromData.html">dataOrigin</a></span><span class="op">(</span><span class="va">sp</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="fl">2</span><span class="op">)</span>,</span>
+<span>    mzMin <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">200</span><span class="op">)</span>,</span>
+<span>    mzMax <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100.5</span>, <span class="fl">200.5</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">chr_custom</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Chromatograms.html">Chromatograms</a></span><span class="op">(</span><span class="va">sp</span>, chromData <span class="op">=</span> <span class="va">custom_cd</span><span class="op">)</span></span>
+<span><span class="va">chr_custom</span></span></code></pre></div>
+<pre><code><span><span class="co">## Chromatographic data (Chromatograms) with 2 chromatograms in a ChromBackendSpectra backend:</span></span>
+<span><span class="co">##   chromIndex msLevel mz</span></span>
+<span><span class="co">## 1         NA       1 NA</span></span>
+<span><span class="co">## 2         NA       1 NA</span></span>
+<span><span class="co">## ... 6 more  chromatogram variables/columns</span></span>
+<span><span class="co">## ... 2 peaksData variables</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## The Spectra object contains 5 spectra</span></span></code></pre>
+<p>This approach allows you to pre-define the chromatographic regions
+you want to extract, which is useful for targeted analysis
+workflows.</p>
 <p>Now, let’s say we want to plot specific area of the
 chromatograms.</p>
-<div class="sourceCode" id="cb63"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb66"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">chr_s</span><span class="op">)</span><span class="op">$</span><span class="va">rtmin</span> <span class="op">&lt;-</span> <span class="fl">125</span></span>
 <span><span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">chr_s</span><span class="op">)</span><span class="op">$</span><span class="va">rtmax</span> <span class="op">&lt;-</span> <span class="fl">180</span></span>
 <span><span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">chr_s</span><span class="op">)</span><span class="op">$</span><span class="va">mzmin</span> <span class="op">&lt;-</span> <span class="fl">100</span></span>
@@ -748,35 +874,298 @@ chromatograms.</p>
 plot the chromatograms and their peaks data. The
 <code><a href="../reference/plotChromatograms.html">plotChromatograms()</a></code> function can be used to plot each
 single chromatograms into its own plot.</p>
-<div class="sourceCode" id="cb64"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb67"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">RColorBrewer</span><span class="op">)</span></span>
 <span><span class="va">col3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/RColorBrewer/man/ColorBrewer.html" class="external-link">brewer.pal</a></span><span class="op">(</span><span class="fl">3</span>, <span class="st">"Dark2"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/plotChromatograms.html">plotChromatograms</a></span><span class="op">(</span><span class="va">chr_s</span>, col <span class="op">=</span> <span class="va">col3</span><span class="op">)</span></span></code></pre></div>
-<p><img src="using-a-chromatograms-object_files/figure-html/unnamed-chunk-23-1.png" class="r-plt" width="700"></p>
+<p><img src="using-a-chromatograms-object_files/figure-html/unnamed-chunk-25-1.png" class="r-plt" alt="" width="700"></p>
 <p>On the overhand if the users wants to easily compare the
 chromatograms, the <code><a href="../reference/plotChromatograms.html">plotChromatogramsOverlay()</a></code> function can
 be used to overlay all chromatograms into one plot.</p>
-<div class="sourceCode" id="cb65"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb68"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/plotChromatograms.html">plotChromatogramsOverlay</a></span><span class="op">(</span><span class="va">chr_s</span>, col <span class="op">=</span> <span class="va">col3</span><span class="op">)</span></span></code></pre></div>
-<p><img src="using-a-chromatograms-object_files/figure-html/unnamed-chunk-24-1.png" class="r-plt" width="700"></p>
+<p><img src="using-a-chromatograms-object_files/figure-html/unnamed-chunk-26-1.png" class="r-plt" alt="" width="700"></p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="extracting-chromatographic-regions-of-interest">Extracting chromatographic regions of interest<a class="anchor" aria-label="anchor" href="#extracting-chromatographic-regions-of-interest"></a>
+</h2>
+<p>The <code><a href="../reference/Chromatograms.html">chromExtract()</a></code> function allows you to extract
+specific regions of interest from a <code>Chromatograms</code> object
+based on a peak table. This is particularly useful when you want to
+focus on specific retention time windows or m/z ranges that correspond
+to detected peaks or features of interest.</p>
 <div class="section level3">
-<h3 id="impute-missing-values">Impute missing values<a class="anchor" aria-label="anchor" href="#impute-missing-values"></a>
+<h3 id="basic-extraction-by-retention-time">Basic extraction by retention time<a class="anchor" aria-label="anchor" href="#basic-extraction-by-retention-time"></a>
 </h3>
-<p>TBD</p>
+<p>For backends like <code>ChromBackendMemory</code> and
+<code>ChromBackendMzR</code>, you can extract regions based on retention
+time ranges:</p>
+<div class="sourceCode" id="cb69"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## Define peaks of interest with retention time windows</span></span>
+<span><span class="va">peak_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    rtMin <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">8</span>, <span class="fl">11</span><span class="op">)</span>,</span>
+<span>    rtMax <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">10</span>, <span class="fl">13</span><span class="op">)</span>,</span>
+<span>    msLevel <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2L</span>, <span class="fl">2L</span><span class="op">)</span>,</span>
+<span>    chromIndex <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">2L</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## Extract those regions</span></span>
+<span><span class="va">chr_extracted</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Chromatograms.html">chromExtract</a></span><span class="op">(</span><span class="va">chr</span>, <span class="va">peak_table</span>,</span>
+<span>                              by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"msLevel"</span>, <span class="st">"chromIndex"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">chr_extracted</span></span></code></pre></div>
+<pre><code><span><span class="co">## Chromatographic data (Chromatograms) with 2 chromatograms in a ChromBackendMemory backend:</span></span>
+<span><span class="co">##   chromIndex msLevel    mz</span></span>
+<span><span class="co">## 1          1       2 112.2</span></span>
+<span><span class="co">## 2          2       2 123.3</span></span>
+<span><span class="co">## ... 3 more  chromatogram variables/columns</span></span>
+<span><span class="co">## ... 2 peaksData variables</span></span></code></pre>
+<p>The resulting <code>Chromatograms</code> object contains only the
+data within the specified retention time windows. Note that extra
+columns in <code>peak_table</code> are added to the chromatogram
+metadata:</p>
+<div class="sourceCode" id="cb71"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">chr_extracted</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##   msLevel    mz chromIndex  extra rtMin rtMax collisionEnergy dataOrigin mzMin</span></span>
+<span><span class="co">## 1       2 112.2          1 extra1     8    10              NA       &lt;NA&gt;    NA</span></span>
+<span><span class="co">## 2       2 123.3          2 extra2    11    13              NA       &lt;NA&gt;    NA</span></span>
+<span><span class="co">##   mzMax precursorMz precursorMzMin precursorMzMax productMz productMzMin</span></span>
+<span><span class="co">## 1    NA          NA             NA             NA        NA           NA</span></span>
+<span><span class="co">## 2    NA          NA             NA             NA        NA           NA</span></span>
+<span><span class="co">##   productMzMax</span></span>
+<span><span class="co">## 1           NA</span></span>
+<span><span class="co">## 2           NA</span></span></code></pre>
 </div>
 <div class="section level3">
-<h3 id="extracting-chromatographic-area-of-interest-">Extracting chromatographic area of interest.<a class="anchor" aria-label="anchor" href="#extracting-chromatographic-area-of-interest-"></a>
+<h3 id="extraction-with-mz-filtering-chrombackendspectra-only">Extraction with m/z filtering (ChromBackendSpectra only)<a class="anchor" aria-label="anchor" href="#extraction-with-mz-filtering-chrombackendspectra-only"></a>
 </h3>
-<p>TBD</p>
+<p>When using <code>ChromBackendSpectra</code>, you can also filter by
+m/z ranges, which is useful for extracting ion chromatograms (EICs) for
+specific mass windows:</p>
+<div class="sourceCode" id="cb73"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## Define peak table with both retention time and m/z windows</span></span>
+<span><span class="va">peak_table_mz</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    rtMin <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">125</span>, <span class="fl">125</span><span class="op">)</span>,</span>
+<span>    rtMax <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">180</span>, <span class="fl">180</span><span class="op">)</span>,</span>
+<span>    mzMin <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100</span>, <span class="fl">140</span><span class="op">)</span>,</span>
+<span>    mzMax <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">100.5</span>, <span class="fl">140.5</span><span class="op">)</span>,</span>
+<span>    msLevel <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">1L</span><span class="op">)</span>,</span>
+<span>    dataOrigin <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="../reference/chromData.html">dataOrigin</a></span><span class="op">(</span><span class="va">chr_s</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="fl">2</span><span class="op">)</span>,</span>
+<span>    featureID <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"feature_1"</span>, <span class="st">"feature_2"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## Extract EICs for these features</span></span>
+<span><span class="va">chr_eics</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Chromatograms.html">chromExtract</a></span><span class="op">(</span><span class="va">chr_s</span>, <span class="va">peak_table_mz</span>,</span>
+<span>                        by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"msLevel"</span>, <span class="st">"dataOrigin"</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">chr_eics</span></span></code></pre></div>
+<pre><code><span><span class="co">## Chromatographic data (Chromatograms) with 2 chromatograms in a ChromBackendSpectra backend:</span></span>
+<span><span class="co">##   chromIndex msLevel  mz</span></span>
+<span><span class="co">## 1         NA       1 Inf</span></span>
+<span><span class="co">## 2         NA       1 Inf</span></span>
+<span><span class="co">## ... 18 more  chromatogram variables/columns</span></span>
+<span><span class="co">## ... 2 peaksData variables</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## The Spectra object contains 5 spectra</span></span></code></pre>
+<p>Notice that the custom column <code>featureID</code> from the peak
+table is now part of the chromatogram metadata:</p>
+<div class="sourceCode" id="cb75"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/chromData.html">chromData</a></span><span class="op">(</span><span class="va">chr_eics</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">##   msLevel rtMin rtMax mzMin mzMax  mz dataOrigin chromSpectraIndex chromIndex</span></span>
+<span><span class="co">## 1       1   125   180   100 100.5 Inf    example         1_example         NA</span></span>
+<span><span class="co">## 2       1   125   180   140 140.5 Inf    example         1_example         NA</span></span>
+<span><span class="co">##   collisionEnergy precursorMz precursorMzMin precursorMzMax productMz</span></span>
+<span><span class="co">## 1              NA          NA             NA             NA        NA</span></span>
+<span><span class="co">## 2              NA          NA             NA             NA        NA</span></span>
+<span><span class="co">##   productMzMin productMzMax rtmin rtmax mzmin mzmax featureID</span></span>
+<span><span class="co">## 1           NA           NA   125   180   100 100.5 feature_1</span></span>
+<span><span class="co">## 2           NA           NA   125   180   100 100.5 feature_2</span></span></code></pre>
+<p>This is particularly useful for linking extracted chromatograms back
+to feature tables or peak detection results.</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="imputing-missing-values-in-chromatograms">Imputing missing values in chromatograms<a class="anchor" aria-label="anchor" href="#imputing-missing-values-in-chromatograms"></a>
+</h2>
+<p>Real chromatographic data often has gaps or missing intensity values
+at certain retention times, which can occur due to instrumental
+limitations, data processing artifacts, or sparse sampling. The
+<code><a href="../reference/peaksData.html">imputePeaksData()</a></code> function provides several methods to
+interpolate these missing values, which can improve downstream analysis
+and visualization.</p>
+<div class="section level3">
+<h3 id="available-imputation-methods">Available imputation methods<a class="anchor" aria-label="anchor" href="#available-imputation-methods"></a>
+</h3>
+<p>The package provides four imputation methods:</p>
+<ul>
+<li>
+<strong>“linear”</strong>: Linear interpolation between known
+values. Fast and simple, good for data with regular gaps.</li>
+<li>
+<strong>“spline”</strong>: Cubic spline interpolation. Provides
+smooth curves but may introduce artifacts.</li>
+<li>
+<strong>“gaussian”</strong>: Gaussian kernel smoothing. Uses a
+Gaussian kernel to estimate values based on neighboring points.</li>
+<li>
+<strong>“loess”</strong>: Locally weighted scatter plot smoothing.
+Provides robust smoothing with local polynomial regression.</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="example-imputing-an-extracted-ion-chromatogram-eic">Example: Imputing an extracted ion chromatogram (EIC)<a class="anchor" aria-label="anchor" href="#example-imputing-an-extracted-ion-chromatogram-eic"></a>
+</h3>
+<p>Let’s extract a narrow m/z range EIC and then apply different
+imputation methods:</p>
+<div class="sourceCode" id="cb77"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## Create a specific EIC</span></span>
+<span><span class="va">eic_table</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    rtMin <span class="op">=</span> <span class="fl">125</span>,</span>
+<span>    rtMax <span class="op">=</span> <span class="fl">180</span>,</span>
+<span>    mzMin <span class="op">=</span> <span class="fl">100.01</span>,</span>
+<span>    mzMax <span class="op">=</span> <span class="fl">100.02</span>,</span>
+<span>    msLevel <span class="op">=</span> <span class="fl">1L</span>,</span>
+<span>    dataOrigin <span class="op">=</span> <span class="fu"><a href="../reference/chromData.html">dataOrigin</a></span><span class="op">(</span><span class="va">chr_s</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">chr_eic</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Chromatograms.html">chromExtract</a></span><span class="op">(</span><span class="va">chr_s</span>, <span class="va">eic_table</span>, by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"msLevel"</span>, <span class="st">"dataOrigin"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">chr_eic</span></span></code></pre></div>
+<pre><code><span><span class="co">## Chromatographic data (Chromatograms) with 1 chromatograms in a ChromBackendSpectra backend:</span></span>
+<span><span class="co">##   chromIndex msLevel  mz</span></span>
+<span><span class="co">## 1         NA       1 Inf</span></span>
+<span><span class="co">## ... 17 more  chromatogram variables/columns</span></span>
+<span><span class="co">## ... 2 peaksData variables</span></span>
+<span><span class="co">## </span></span>
+<span><span class="co">## The Spectra object contains 5 spectra</span></span></code></pre>
+<p>Now let’s examine the raw data and apply different imputation
+methods:</p>
+<div class="sourceCode" id="cb79"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## Create copies for comparison</span></span>
+<span><span class="va">chr_linear</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/peaksData.html">imputePeaksData</a></span><span class="op">(</span><span class="va">chr_eic</span>, method <span class="op">=</span> <span class="st">"linear"</span><span class="op">)</span></span>
+<span><span class="va">chr_spline</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/peaksData.html">imputePeaksData</a></span><span class="op">(</span><span class="va">chr_eic</span>, method <span class="op">=</span> <span class="st">"spline"</span><span class="op">)</span></span>
+<span><span class="va">chr_gaussian</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/peaksData.html">imputePeaksData</a></span><span class="op">(</span><span class="va">chr_eic</span>, method <span class="op">=</span> <span class="st">"gaussian"</span>,</span>
+<span>                                window <span class="op">=</span> <span class="fl">5</span>, sd <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
+<span><span class="va">chr_loess</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/peaksData.html">imputePeaksData</a></span><span class="op">(</span><span class="va">chr_eic</span>, method <span class="op">=</span> <span class="st">"loess"</span>, span <span class="op">=</span> <span class="fl">0.3</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## Plot all methods for comparison</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mfrow <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">2</span><span class="op">)</span>, mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">4</span>, <span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## Original data</span></span>
+<span><span class="fu"><a href="../reference/plotChromatograms.html">plotChromatograms</a></span><span class="op">(</span><span class="va">chr_eic</span>, main <span class="op">=</span> <span class="st">"Original EIC"</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## Warning in max(abs(ints), na.rm = TRUE): no non-missing arguments to max;</span></span>
+<span><span class="co">## returning -Inf</span></span></code></pre>
+<div class="sourceCode" id="cb81"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## Linear interpolation</span></span>
+<span><span class="fu"><a href="../reference/plotChromatograms.html">plotChromatograms</a></span><span class="op">(</span><span class="va">chr_linear</span>, main <span class="op">=</span> <span class="st">"Linear Imputation"</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## The `peaksData` slot will be modified but the changes will not affect the Spectra object.</span></span></code></pre>
+<pre><code><span><span class="co">## Warning in max(abs(ints), na.rm = TRUE): no non-missing arguments to max;</span></span>
+<span><span class="co">## returning -Inf</span></span></code></pre>
+<div class="sourceCode" id="cb84"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## Spline interpolation</span></span>
+<span><span class="fu"><a href="../reference/plotChromatograms.html">plotChromatograms</a></span><span class="op">(</span><span class="va">chr_spline</span>, main <span class="op">=</span> <span class="st">"Spline Imputation"</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## The `peaksData` slot will be modified but the changes will not affect the Spectra object.</span></span></code></pre>
+<pre><code><span><span class="co">## Warning in max(abs(ints), na.rm = TRUE): no non-missing arguments to max;</span></span>
+<span><span class="co">## returning -Inf</span></span></code></pre>
+<div class="sourceCode" id="cb87"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## Gaussian smoothing</span></span>
+<span><span class="fu"><a href="../reference/plotChromatograms.html">plotChromatograms</a></span><span class="op">(</span><span class="va">chr_gaussian</span>, main <span class="op">=</span> <span class="st">"Gaussian Smoothing (window=5, sd=2)"</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## The `peaksData` slot will be modified but the changes will not affect the Spectra object.</span></span></code></pre>
+<pre><code><span><span class="co">## Warning in max(abs(ints), na.rm = TRUE): no non-missing arguments to max;</span></span>
+<span><span class="co">## returning -Inf</span></span></code></pre>
+<div class="sourceCode" id="cb90"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## LOESS smoothing</span></span>
+<span><span class="fu"><a href="../reference/plotChromatograms.html">plotChromatograms</a></span><span class="op">(</span><span class="va">chr_loess</span>, main <span class="op">=</span> <span class="st">"LOESS Smoothing (span=0.3)"</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## The `peaksData` slot will be modified but the changes will not affect the Spectra object.</span></span></code></pre>
+<pre><code><span><span class="co">## Warning in max(abs(ints), na.rm = TRUE): no non-missing arguments to max;</span></span>
+<span><span class="co">## returning -Inf</span></span></code></pre>
+<p><img src="using-a-chromatograms-object_files/figure-html/unnamed-chunk-32-1.png" class="r-plt" alt="" width="768"></p>
+</div>
+<div class="section level3">
+<h3 id="selecting-the-right-imputation-method">Selecting the right imputation method<a class="anchor" aria-label="anchor" href="#selecting-the-right-imputation-method"></a>
+</h3>
+<p>The choice of imputation method depends on your data characteristics
+and analysis goals:</p>
+<ul>
+<li>Use <strong>“linear”</strong> for quick interpolation of small gaps
+in regularly sampled data.</li>
+<li>Use <strong>“spline”</strong> for smooth curves when data is fairly
+regular, but be aware it can overshoot.</li>
+<li>Use <strong>“gaussian”</strong> for local smoothing that preserves
+peak shapes while filling gaps.</li>
+<li>Use <strong>“loess”</strong> when you want robust smoothing that
+adapts to local data density.</li>
+</ul>
+</div>
+<div class="section level3">
+<h3 id="imputation-in-lazy-evaluation-pipelines">Imputation in lazy evaluation pipelines<a class="anchor" aria-label="anchor" href="#imputation-in-lazy-evaluation-pipelines"></a>
+</h3>
+<p>For on-disk backends like <code>ChromBackendMzR</code>, imputation is
+particularly useful when combined with the lazy evaluation queue. The
+imputation function is added to the processing queue and is only applied
+when peak data is actually accessed:</p>
+<div class="sourceCode" id="cb93"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## For on-disk backends, add imputation to the lazy queue</span></span>
+<span><span class="va">chr_mzr_imputed</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/peaksData.html">imputePeaksData</a></span><span class="op">(</span></span>
+<span>  <span class="va">chr_mzr</span>,</span>
+<span>  method <span class="op">=</span> <span class="st">"gaussian"</span>,</span>
+<span>  window <span class="op">=</span> <span class="fl">5</span>,</span>
+<span>  sd <span class="op">=</span> <span class="fl">2</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">chr_mzr_imputed</span></span></code></pre></div>
+<pre><code><span><span class="co">## Chromatographic data (Chromatograms) with 138 chromatograms in a ChromBackendMemory backend:</span></span>
+<span><span class="co">##   chromIndex msLevel mz</span></span>
+<span><span class="co">## 1          1      NA NA</span></span>
+<span><span class="co">## 2          2      NA NA</span></span>
+<span><span class="co">## 3          3      NA NA</span></span>
+<span><span class="co">## 4          4      NA NA</span></span>
+<span><span class="co">## 5          5      NA NA</span></span>
+<span><span class="co">## 6          6      NA NA</span></span>
+<span><span class="co">## ... 6 more  chromatogram variables/columns</span></span>
+<span><span class="co">## ... 2 peaksData variables</span></span>
+<span><span class="co">## Lazy evaluation queue: 1 processing step(s)</span></span>
+<span><span class="co">## Processing:</span></span>
+<span><span class="co">##  Switch backend from ChromBackendMzR to ChromBackendMemory [Thu Jan 22 18:34:52 2026]</span></span>
+<span><span class="co">##  Impute: replace missing peaks data using the 'gaussian' method [Thu Jan 22 18:34:54 2026]</span></span></code></pre>
+<p>The imputation is <strong>not</strong> performed immediately.
+Instead, it’s stored in the processing queue. When you call
+<code><a href="../reference/peaksData.html">peaksData()</a></code> on the object, the raw data is read from the
+file and then imputation is applied on-the-fly:</p>
+<div class="sourceCode" id="cb95"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## This reads from disk and applies imputation in one step</span></span>
+<span><span class="va">peak_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/peaksData.html">peaksData</a></span><span class="op">(</span><span class="va">chr_mzr_imputed</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<p>This approach is highly efficient for large datasets because:</p>
+<ol style="list-style-type: decimal">
+<li>Data is only read from disk when needed</li>
+<li>Imputation is applied on-the-fly during data access</li>
+<li>No temporary files are created</li>
+<li>Memory usage remains minimal</li>
+</ol>
+<p>You can verify the processing queue contains your imputation
+step:</p>
+<div class="sourceCode" id="cb96"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">chr_mzr_imputed</span><span class="op">@</span><span class="va">processingQueue</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## [1] 1</span></span></code></pre>
+<p>And if you want to make the imputation permanent (for in-memory
+backends), use <code><a href="https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html" class="external-link">applyProcessing()</a></code>:</p>
+<div class="sourceCode" id="cb98"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co">## For in-memory backends, you can persist the imputation</span></span>
+<span><span class="va">chr_in_memory</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html" class="external-link">setBackend</a></span><span class="op">(</span><span class="va">chr_mzr_imputed</span>, <span class="fu"><a href="../reference/ChromBackendMemory.html">ChromBackendMemory</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">chr_in_memory</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html" class="external-link">applyProcessing</a></span><span class="op">(</span><span class="va">chr_in_memory</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Now imputation is permanently applied</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">chr_in_memory</span><span class="op">@</span><span class="va">processingQueue</span><span class="op">)</span></span></code></pre></div>
+<pre><code><span><span class="co">## [1] 0</span></span></code></pre>
 </div>
 </div>
 <div class="section level2">
 <h2 id="session-information">Session information<a class="anchor" aria-label="anchor" href="#session-information"></a>
 </h2>
-<div class="sourceCode" id="cb66"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb100"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## R version 4.5.1 (2025-06-13)</span></span>
+<pre><code><span><span class="co">## R Under development (unstable) (2026-01-18 r89306)</span></span>
 <span><span class="co">## Platform: x86_64-pc-linux-gnu</span></span>
 <span><span class="co">## Running under: Ubuntu 24.04.3 LTS</span></span>
 <span><span class="co">## </span></span>
@@ -800,35 +1189,26 @@ be used to overlay all chromatograms into one plot.</p>
 <span><span class="co">## [8] base     </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## other attached packages:</span></span>
-<span><span class="co">##  [1] RColorBrewer_1.1-3          MsBackendMetaboLights_1.3.1</span></span>
-<span><span class="co">##  [3] Spectra_1.19.11             S4Vectors_0.47.4           </span></span>
-<span><span class="co">##  [5] BiocGenerics_0.55.4         generics_0.1.4             </span></span>
-<span><span class="co">##  [7] Chromatograms_0.99.7        ProtGenerics_1.41.0        </span></span>
-<span><span class="co">##  [9] BiocParallel_1.43.4         BiocStyle_2.37.1           </span></span>
+<span><span class="co">##  [1] RColorBrewer_1.1-3  IRanges_2.45.0      Spectra_1.21.1     </span></span>
+<span><span class="co">##  [4] S4Vectors_0.49.0    BiocGenerics_0.57.0 generics_0.1.4     </span></span>
+<span><span class="co">##  [7] Chromatograms_1.1.1 ProtGenerics_1.43.0 BiocParallel_1.45.0</span></span>
+<span><span class="co">## [10] BiocStyle_2.39.0   </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## loaded via a namespace (and not attached):</span></span>
-<span><span class="co">##  [1] xfun_0.53              bslib_0.9.0            httr2_1.2.1           </span></span>
-<span><span class="co">##  [4] htmlwidgets_1.6.4      Biobase_2.69.1         vctrs_0.6.5           </span></span>
-<span><span class="co">##  [7] tools_4.5.1            curl_7.0.0             parallel_4.5.1        </span></span>
-<span><span class="co">## [10] tibble_3.3.0           RSQLite_2.4.3          cluster_2.1.8.1       </span></span>
-<span><span class="co">## [13] blob_1.2.4             pkgconfig_2.0.3        dbplyr_2.5.1          </span></span>
-<span><span class="co">## [16] desc_1.4.3             lifecycle_1.0.4        compiler_4.5.1        </span></span>
-<span><span class="co">## [19] progress_1.2.3         textshaping_1.0.4      codetools_0.2-20      </span></span>
-<span><span class="co">## [22] ncdf4_1.24             clue_0.3-66            htmltools_0.5.8.1     </span></span>
-<span><span class="co">## [25] sass_0.4.10            yaml_2.3.10            crayon_1.5.3          </span></span>
-<span><span class="co">## [28] pkgdown_2.1.3.9000     pillar_1.11.1          jquerylib_0.1.4       </span></span>
-<span><span class="co">## [31] MASS_7.3-65            cachem_1.1.0           MetaboCoreUtils_1.17.1</span></span>
-<span><span class="co">## [34] tidyselect_1.2.1       digest_0.6.37          purrr_1.1.0           </span></span>
-<span><span class="co">## [37] dplyr_1.1.4            bookdown_0.45          fastmap_1.2.0         </span></span>
-<span><span class="co">## [40] cli_3.6.5              magrittr_2.0.4         withr_3.0.2           </span></span>
-<span><span class="co">## [43] prettyunits_1.2.0      filelock_1.0.3         rappdirs_0.3.3        </span></span>
-<span><span class="co">## [46] bit64_4.6.0-1          rmarkdown_2.30         bit_4.6.0             </span></span>
-<span><span class="co">## [49] hms_1.1.4              ragg_1.5.0             memoise_2.0.1         </span></span>
-<span><span class="co">## [52] evaluate_1.0.5         knitr_1.50             IRanges_2.43.5        </span></span>
-<span><span class="co">## [55] BiocFileCache_2.99.6   rlang_1.1.6            Rcpp_1.1.0            </span></span>
-<span><span class="co">## [58] glue_1.8.0             DBI_1.2.3              BiocManager_1.30.26   </span></span>
-<span><span class="co">## [61] mzR_2.43.3             jsonlite_2.0.0         R6_2.6.1              </span></span>
-<span><span class="co">## [64] systemfonts_1.3.1      fs_1.6.6               MsCoreUtils_1.21.0</span></span></code></pre>
+<span><span class="co">##  [1] jsonlite_2.0.0         compiler_4.6.0         BiocManager_1.30.27   </span></span>
+<span><span class="co">##  [4] Rcpp_1.1.1             Biobase_2.71.0         parallel_4.6.0        </span></span>
+<span><span class="co">##  [7] cluster_2.1.8.1        jquerylib_0.1.4        systemfonts_1.3.1     </span></span>
+<span><span class="co">## [10] textshaping_1.0.4      yaml_2.3.12            fastmap_1.2.0         </span></span>
+<span><span class="co">## [13] R6_2.6.1               knitr_1.51             htmlwidgets_1.6.4     </span></span>
+<span><span class="co">## [16] MASS_7.3-65            bookdown_0.46          desc_1.4.3            </span></span>
+<span><span class="co">## [19] bslib_0.9.0            rlang_1.1.7            cachem_1.1.0          </span></span>
+<span><span class="co">## [22] xfun_0.56              fs_1.6.6               MsCoreUtils_1.23.2    </span></span>
+<span><span class="co">## [25] sass_0.4.10            otel_0.2.0             cli_3.6.5             </span></span>
+<span><span class="co">## [28] pkgdown_2.2.0.9000     ncdf4_1.24             digest_0.6.39         </span></span>
+<span><span class="co">## [31] mzR_2.45.0             MetaboCoreUtils_1.19.1 lifecycle_1.0.5       </span></span>
+<span><span class="co">## [34] clue_0.3-66            evaluate_1.0.5         codetools_0.2-20      </span></span>
+<span><span class="co">## [37] ragg_1.5.0             rmarkdown_2.30         tools_4.6.0           </span></span>
+<span><span class="co">## [40] htmltools_0.5.9</span></span></code></pre>
 </div>
   </div>
 
@@ -847,7 +1227,7 @@ be used to overlay all chromatograms into one plot.</p>
 
 <div class="pkgdown">
   <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.9000.</p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.9000.</p>
 </div>
 
       </footer>

@@ -26,7 +26,7 @@ to the sections below for more details."><!-- mathjax --><script src="https://cd
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">Chromatograms</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.1</span>
       </span>
     </div>
 
@@ -236,7 +236,7 @@ return value.</p>
 
 
 
-<p>Functions that filter a <code>Chromatograms</code>'s peaks data (i.e., <code>peaksData</code>).
+<p>Functions that filter a <code>Chromatograms</code>'s peaks data (i.e., <code>@peaksData</code>).
 These functions remove peaks data that do not meet the
 specified conditions. If a chromatogram in a <code>Chromatograms</code> object is
 filtered, only the corresponding peaks variable pairs (i.e., rows) in the
@@ -251,7 +251,7 @@ in the object, but it removes the specified peaks data (e.g., "rtime" and
 </ul><p>In the case of a read-only backend, (such as the <a href="ChromBackendMzR.html">ChromBackendMzR</a>), the
 replacement of the peaks data is not possible. The peaks data can be
 filtered, but the filtered data will not be saved in the backend. This means
-the original mzml files will not be affected by computations performed on
+the original mzML files will not be affected by computations performed on
 the <a href="Chromatograms.html">Chromatograms</a>.</p>
     </div>
     <div id="impute-peaks-variables">
@@ -260,7 +260,7 @@ the <a href="Chromatograms.html">Chromatograms</a>.</p>
 
 
 <p><code>imputePeaksData</code> will impute missing values in a <code>Chromatograms</code>'s peaks data
-(i.e., <code>peaksData</code>). This functions replace missing peaks data values with
+(i.e., <code>@peaksData</code>). This functions replace missing peaks data values with
 specified imputation methods using various methods such as linear
 interpolation, spline interpolation, Gaussian kernel smoothing, or LOESS
 smoothing. This method modifies the peaks data in place and returns the
@@ -379,8 +379,8 @@ see <a href="processingQueue.html">processingQueue</a>.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ... 2 peaksData variables</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Lazy evaluation queue: 1 processing step(s)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Processing:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Filter: remove peaks based on the variables: rtimethe ranges: 12.5, 13.5and the match condition: any [Wed Oct 22 08:40:23 2025]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Filter: remove peaks based on the variables: rtimethe ranges: 12.5, 13.5and the match condition: all [Wed Oct 22 08:40:23 2025] </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Filter: remove peaks based on the variables: rtimethe ranges: 12.5, 13.5and the match condition: any [Thu Jan 22 18:34:32 2026]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Filter: remove peaks based on the variables: rtimethe ranges: 12.5, 13.5and the match condition: all [Thu Jan 22 18:34:32 2026] </span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
@@ -396,7 +396,7 @@ see <a href="processingQueue.html">processingQueue</a>.</p></div>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.9000.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.9000.</p>
 </div>
 
       </footer></div>

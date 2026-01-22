@@ -22,7 +22,7 @@ peaksData() functions."><!-- mathjax --><script src="https://cdnjs.cloudflare.co
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">Chromatograms</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.99.7</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.1</span>
       </span>
     </div>
 
@@ -128,11 +128,7 @@ return value.</p>
     <div id="ref-examples">
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co">## Create a ChromBackendMemory object</span></span></span>
-<span class="r-in"><span><span class="va">cbm</span> <span class="op">&lt;-</span> <span class="fu">ChromBackendMemory</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co">## Initialize the ChromBackendMemory object with a data.frame of</span></span></span>
-<span class="r-in"><span><span class="co">## chromatographic data  and a list of data.frame of peaks data</span></span></span>
+<span class="r-in"><span><span class="co">## Method 1: Initialize backend directly</span></span></span>
 <span class="r-in"><span><span class="va">cdata</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span></span>
 <span class="r-in"><span>    msLevel <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">1L</span>, <span class="fl">1L</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>    mz <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">112.2</span>, <span class="fl">123.3</span>, <span class="fl">134.4</span><span class="op">)</span>,</span></span>
@@ -154,9 +150,21 @@ return value.</p>
 <span class="r-in"><span>    <span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">cbm</span> <span class="op">&lt;-</span> <span class="fu">ChromBackendMemory</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">cbm</span> <span class="op">&lt;-</span> <span class="fu">backendInitialize</span><span class="op">(</span><span class="va">cbm</span>, chromData <span class="op">=</span> <span class="va">cdata</span>, peaksData <span class="op">=</span> <span class="va">pdata</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="va">cbm</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ChromBackendMemory with 3 chromatograms</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   chromIndex msLevel    mz</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1         NA       1 112.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2         NA       1 123.3</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3         NA       1 134.4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ... 3 more  chromatogram variables/columns</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> ... 2 peaksData variables</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## Method 2: Use Chromatograms constructor (recommended)</span></span></span>
+<span class="r-in"><span><span class="va">chr</span> <span class="op">&lt;-</span> <span class="fu"><a href="Chromatograms.html">Chromatograms</a></span><span class="op">(</span><span class="fu">ChromBackendMemory</span><span class="op">(</span><span class="op">)</span>, chromData <span class="op">=</span> <span class="va">cdata</span>, peaksData <span class="op">=</span> <span class="va">pdata</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">chr</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Chromatographic data (Chromatograms) with 3 chromatograms in a ChromBackendMemory backend:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>   chromIndex msLevel    mz</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1         NA       1 112.2</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2         NA       1 123.3</span>
@@ -178,7 +186,7 @@ return value.</p>
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.9000.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.9000.</p>
 </div>
 
       </footer></div>
