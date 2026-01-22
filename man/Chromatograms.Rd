@@ -127,7 +127,16 @@ The \code{Chromatograms} class encapsules chromatographic data and related
 metadata. The chromatographic data is represented by a \emph{backend} extending
 the virtual \link{ChromBackend} class which provides the raw data to the
 \code{Chromatograms} object. Different backends and their properties are
-decribed in the \link{ChromBackend} class documentation.
+described in the \link{ChromBackend} class documentation.
+
+\strong{Available Backends}: The package provides several backends:
+\itemize{
+\item \code{ChromBackendMemory}: Stores data in memory (default, ideal for small datasets).
+\item \code{ChromBackendMzR}: Reads peaks data from raw MS files on demand.
+\item \code{ChromBackendSpectra}: Generates chromatographic data from a \code{Spectra} object.
+This backend supports both in-memory and file-backed \code{Spectra} objects, using
+an internal \code{spectraSortIndex} to avoid physically reordering the spectra.
+}
 }
 \note{
 This needs to be discussed, if we want for example to be able to set a
@@ -164,14 +173,14 @@ is one chromatogram.
 The \emph{chromatograms variables} information in the \code{Chromatograms} object can
 be accessed using the \code{chromData()} function. Specific chromatograms
 variables can be accessed by either precising the \code{"columns"} parameter in
-\code{chromData()} or using \code{$}. \code{chromData} can be accessed, replaced but
+\code{chromData()} or using \code{$}. \verb{@chromData} can be accessed, replaced but
 also filtered/subsetted. Refer to the \link{chromData} documentation for more
 details.
 
 The \emph{peaks data variables} information in the \code{Chromatograms} object can be
 accessed using the \code{peaksData()} function. Specific peaks variables can be
 accessed by either precising the \code{"columns"} parameter in \code{peaksData()} or
-using \code{$}. \code{peaksData} can be accessed, replaced but also
+using \code{$}. \verb{@peaksData} can be accessed, replaced but also
 filtered/subsetted. Refer to the \link{peaksData} documentation for more details.
 }
 
@@ -180,7 +189,7 @@ filtered/subsetted. Refer to the \link{peaksData} documentation for more details
 
 Functions that process the chromatograms data in some ways can be applied to
 the object either directly or by using the \code{processingQueue} mechanism. The
-\code{processingQueue} is a list of processing steps that are stored within the
+\verb{@processingQueue} is a list of processing steps that are stored within the
 object and only applied when needed. This was created so that the data can be
 processed in a single step and is very useful for larger datasets. This is
 even more true as this processing queue will call function that can be
@@ -218,48 +227,64 @@ Each row in the \code{peak.table} defines a region to extract, using minimum and
 maximum retention time (and m/z in the case of \code{chromBackendSpectra})
 boundaries, and identifiers that uniquely match chromatograms in the object.
 
-The resulting \strong{new} \code{Chromatograms} object contains only chromatograms overlapping
-the specified regions, with updated metadata reflecting the extracted
-boundaries.
+The resulting \strong{new} \code{Chromatograms} object contains only chromatograms
+overlapping the specified regions, with updated metadata reflecting the
+extracted boundaries.
 
 This function is most commonly used to subset chromatographic data around
 detected peaks or predefined time/mass ranges, for example to reprocess,
 visualize, or quantify extracted chromatograms corresponding to known
-features.
+features. It's important to notes that filtering by m/z is only supported
+when using a \code{ChromBackendSpectra} backend. if the \code{mzMin} and \code{mzMax}
+columns are provided when using other backends, they will be ignored.
 }
 
 \examples{
 
+## Create a Chromatograms object with ChromBackendMemory
+cdata <- data.frame(
+    msLevel = c(1L, 1L, 1L),
+    mz = c(112.2, 123.3, 134.4),
+    dataOrigin = c("mem1", "mem2", "mem3")
+)
+pdata <- list(
+    data.frame(rtime = c(2.1, 2.5, 3.0, 3.4, 3.9),
+               intensity = c(100, 250, 400, 300, 150)),
+    data.frame(rtime = c(3.5, 4.0, 4.5),
+               intensity = c(80, 120, 90)),
+    data.frame(rtime = c(5.1, 5.8, 6.3, 6.9, 7.5),
+               intensity = c(80, 500, 1200, 600, 120))
+)
+chr <- Chromatograms(ChromBackendMemory(), chromData = cdata, peaksData = pdata)
+chr
+
+## Create a Chromatograms object from a Spectra object
 library(MsBackendMetaboLights)
 library(Spectra)
 
-## Create a Chromatograms object from a Spectra object.
 be <- backendInitialize(MsBackendMetaboLights(),
     mtblsId = "MTBLS39",
     filePattern = c("63B.cdf")
 )
 s <- Spectra(be)
 s <- setBackend(s, MsBackendMemory())
-be <- backendInitialize(new("ChromBackendSpectra"), s)
-chr <- Chromatograms(be)
+chr <- Chromatograms(s)
 
 ## Subset
 chr[1:2]
 
-## access a specific variables
+## Access a specific variable
 chr[["msLevel"]]
 chr$msLevel
 
 ## Replace data of a specific variable
 chr$msLevel <- c(2L, 2L, 2L)
 
-## Can re factorize the data
+## Re-factorize the data
 chr <- factorize(chr)
 
-## Can also change the backend into memory
+## Change the backend to memory
 chr <- setBackend(chr, ChromBackendMemory())
-
-chr
 
 }
 \seealso{

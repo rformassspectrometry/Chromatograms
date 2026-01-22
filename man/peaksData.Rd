@@ -134,7 +134,7 @@ to the sections below for more details.
 \section{Filter Peaks Variables}{
 
 
-Functions that filter a \code{Chromatograms}'s peaks data (i.e., \code{peaksData}).
+Functions that filter a \code{Chromatograms}'s peaks data (i.e., \verb{@peaksData}).
 These functions remove peaks data that do not meet the
 specified conditions. If a chromatogram in a \code{Chromatograms} object is
 filtered, only the corresponding peaks variable pairs (i.e., rows) in the
@@ -154,7 +154,7 @@ in the object, but it removes the specified peaks data (e.g., "rtime" and
 In the case of a read-only backend, (such as the \link{ChromBackendMzR}), the
 replacement of the peaks data is not possible. The peaks data can be
 filtered, but the filtered data will not be saved in the backend. This means
-the original mzml files will not be affected by computations performed on
+the original mzML files will not be affected by computations performed on
 the \link{Chromatograms}.
 }
 
@@ -162,7 +162,7 @@ the \link{Chromatograms}.
 
 
 \code{imputePeaksData} will impute missing values in a \code{Chromatograms}'s peaks data
-(i.e., \code{peaksData}). This functions replace missing peaks data values with
+(i.e., \verb{@peaksData}). This functions replace missing peaks data values with
 specified imputation methods using various methods such as linear
 interpolation, spline interpolation, Gaussian kernel smoothing, or LOESS
 smoothing. This method modifies the peaks data in place and returns the

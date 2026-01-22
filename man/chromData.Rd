@@ -180,7 +180,7 @@ The \emph{chromatograms variables} information can be accessed using the
 \code{chromData()} function. it is also possible to access specific
 chromatograms variables using \code{$}.
 
-\code{chromData} can be accessed, replaced but also filtered/subsetted. Refer to
+\verb{@chromData} can be accessed, replaced but also filtered/subsetted. Refer to
 the sections below for more details.
 }
 \section{Chromatograms variables and accessor functions}{
@@ -221,9 +221,9 @@ the product's isolation window.
 
 
 Functions that filter \code{Chromatograms} based on chromatograms variables
-(i.e, \code{chromData} ) will remove chromatographic data that do not meet the
+(i.e, \verb{@chromData} ) will remove chromatographic data that do not meet the
 specified conditions. This means that if a chromatogram is filtered out, its
-corresponding \code{chromData} and \code{peaksData} will be removed from the object
+corresponding \verb{@chromData} and \verb{@peaksData} will be removed from the object
 immediately.
 
 The available functions to filter chromatogram data are:

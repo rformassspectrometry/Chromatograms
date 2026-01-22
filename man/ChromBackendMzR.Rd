@@ -34,7 +34,7 @@ file path of the mzML file from which the chromatographic data was read.
 
 Note that the \code{ChromBackendMzR} backend is read-only and does not support
 direct modification of chromatographic data. However, it does support
-\code{peaksData} slot replacement, which will modify the \code{peaksData} slot but not
+\code{peaksData} slot replacement, which will modify the \verb{@peaksData} slot but not
 the local mzML files. This is indicated by the "inMemory" slot being set to
 TRUE.
 

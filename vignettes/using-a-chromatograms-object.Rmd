@@ -90,8 +90,20 @@ could be used instead. The default backends are:
   chromatographic peaks (retention time and intensity values) from the
   original mzML files on-demand.
 
-- `ChromBackendSpectra`: this backend is used to generate chromatographic data
-  from a `Spectra` object. I can be use to create TIC, BPC or EICs.
+- `ChromBackendSpectra`: this backend generates chromatographic data from a
+  `Spectra` object. It can be used to create Total Ion Chromatograms (TIC),
+  Base Peak Chromatograms (BPC), or Extracted Ion Chromatograms (EICs). It
+  supports both in-memory and file-backed `Spectra` objects. The backend uses
+  **factorization** to group spectra into chromatograms based on variables like
+  MS level and data origin (see details below).
+
+All backends provide a consistent interface through the `Chromatograms` object,
+regardless of where or how the data is stored. The `ChromBackendSpectra` has
+a special feature: it uses an internal sort index (`spectraSortIndex`) to
+maintain retention time order without physically reordering the underlying
+`Spectra` object. This is particularly important for disk-backed `Spectra`
+objects, as it avoids loading all data into memory. The sort index is
+automatically maintained during subsetting and factorization operations.
 
 ## Chromatographic peaks data
 
@@ -212,6 +224,12 @@ chr_mzr <- Chromatograms(be)
 The `Chromatograms` object `chr_mzr` now contains the chromatograms from the
 mzML file `MRM_file`. The chromatograms can be accessed and manipulated using
 the `Chromatograms` object's methods and functions.
+
+It is also possible to create a `Chromatograms` object directly from a
+`Spectra` object. This is particularly useful when you want to generate total
+ion chromatograms (TIC), base peak chromatograms (BPC), or extracted ion
+chromatograms (EIC) from spectral data. A worked example is provided in the
+[plotting](#plotting-chromatograms-from-a-spectra-object) section below.
 
 Basic information about the `Chromatograms` object can be accessed using
 functions such as `length()`, which tell us how many chromatograms are
@@ -343,6 +361,30 @@ length(chr)
 ```
 
 The number of chromatograms in the `Chromatograms` object is reduced.
+
+Note that for `ChromBackendSpectra`, when you subset the `Chromatograms` object,
+the underlying `Spectra` object and its sort index are also properly subset and
+updated. This ensures that peak data extraction remains efficient even after
+subsetting operations.
+
+### Re-factorizing after metadata changes
+
+If you modify the chromatogram metadata (particularly the factorization columns
+like `msLevel` or `dataOrigin`), you may need to re-factorize the data to update
+the groupings. This can be done using the `factorize()` function:
+
+```{r, eval=FALSE}
+## Modify metadata
+chr_s$msLevel <- rep(2L, length(chr_s))
+
+## Re-factorize to update the groupings
+chr_s <- factorize(chr_s)
+
+chromData(chr_s)
+```
+
+This recalculates which spectra belong to which chromatograms based on the
+updated metadata.
 
 
 # Lazy Processing and Parallelization
@@ -495,21 +537,51 @@ much larger than before.
 print(object.size(chr_mzr), units = "Mb")
 ```
 
+## Choosing the right backend
+
+Different backends are suited for different use cases:
+
+- **`ChromBackendMemory`**: Best for small to medium datasets where fast access
+  is needed. All data is kept in memory, providing the fastest access but higher
+  memory consumption.
+
+- **`ChromBackendMzR`**: Ideal for large datasets stored in mzML/mzXML/CDF files.
+  Only metadata is kept in memory, while peak data is read on-demand, significantly
+  reducing memory footprint at the cost of slower data access.
+
+- **`ChromBackendSpectra`**: Perfect for generating chromatograms from spectral
+  data, especially when creating TICs, BPCs, or EICs from existing `Spectra`
+  objects. The backend intelligently handles both in-memory and disk-backed
+  `Spectra` objects through its internal sorting mechanism, avoiding unnecessary
+  memory consumption while maintaining good performance.
+
 
 # Plotting chromatograms from a `Spectra` object
 
-For this purpose let's create a `Chromatograms` object from public spectral
-data.
+For this purpose let's create a lightweight in-memory `Spectra` object and
+derive a `Chromatograms` from it. This avoids any external downloads while
+still illustrating the `ChromBackendSpectra` workflow.
 
 ```{r, message=FALSE}
 library(Spectra)
-library(MsBackendMetaboLights)
-be <- backendInitialize(MsBackendMetaboLights(),
-    mtblsId = "MTBLS39",
-    filePattern = c("63B.cdf")
+library(IRanges)
+sp <- Spectra(
+  DataFrame(
+    rtime = c(100, 110, 120, 130, 140),
+    msLevel = c(1L, 1L, 1L, 1L, 1L),
+    dataOrigin = rep("example", 5L),
+    mz = NumericList(
+      c(100, 101), c(100, 101), c(100, 101), c(100, 101), c(100, 101),
+      compress = FALSE
+    ),
+    intensity = NumericList(
+      c(10, 20), c(15, 25), c(30, 5), c(12, 18), c(40, 2),
+      compress = FALSE
+    )
+  ),
+  source = MsBackendDataFrame()
 )
-sp <- Spectra(be)
-sp <- setBackend(sp, MsBackendMemory())
+
 chr_s <- Chromatograms(sp)
 ```
 
@@ -519,6 +591,51 @@ backend. one chromatogram was generated per file.
 ```{r}
 chr_s
 ```
+
+The `ChromBackendSpectra` backend provides flexibility in how chromatograms are
+generated from spectral data through a process called **factorization**.
+
+## Understanding Factorization
+
+Factorization is the process of grouping individual spectra into chromatograms
+based on one or more variables. Think of it as creating separate "bins" where
+each bin becomes one chromatogram.
+
+By default, the `factorize.by` parameter is set to `c("msLevel", "dataOrigin")`,
+which means:
+
+- All MS1 spectra from file "A" → Chromatogram 1
+- All MS2 spectra from file "A" → Chromatogram 2
+- All MS1 spectra from file "B" → Chromatogram 3
+- All MS2 spectra from file "B" → Chromatogram 4
+
+Each unique combination of the factorization variables creates a separate
+chromatogram. This allows you to organize your spectral data into meaningful
+chromatographic traces that can be visualized and analyzed together.
+
+You can customize the factorization behavior by changing the `factorize.by`
+parameter. For example, using only `factorize.by = "dataOrigin"` would create
+one chromatogram per file (combining all MS levels), while adding more variables
+would create more granular groupings.
+
+Additionally, you can provide custom chromatogram metadata to define specific
+m/z and retention time ranges:
+
+```{r}
+## Create custom metadata for EIC extraction
+custom_cd <- data.frame(
+    msLevel = c(1L, 1L),
+    dataOrigin = rep(dataOrigin(sp)[1], 2),
+    mzMin = c(100, 200),
+    mzMax = c(100.5, 200.5)
+)
+
+chr_custom <- Chromatograms(sp, chromData = custom_cd)
+chr_custom
+```
+
+This approach allows you to pre-define the chromatographic regions you want to
+extract, which is useful for targeted analysis workflows.
 
 Now, let's say we want to plot specific area of the chromatograms.
 
@@ -548,14 +665,210 @@ into one plot.
 plotChromatogramsOverlay(chr_s, col = col3)
 ```
 
-## Impute missing values 
+# Extracting chromatographic regions of interest
 
-TBD
+The `chromExtract()` function allows you to extract specific regions of interest
+from a `Chromatograms` object based on a peak table. This is particularly useful
+when you want to focus on specific retention time windows or m/z ranges that
+correspond to detected peaks or features of interest.
 
+## Basic extraction by retention time
 
-## Extracting chromatographic area of interest. 
+For backends like `ChromBackendMemory` and `ChromBackendMzR`, you can extract
+regions based on retention time ranges:
 
-TBD
+```{r}
+## Define peaks of interest with retention time windows
+peak_table <- data.frame(
+    rtMin = c(8, 11),
+    rtMax = c(10, 13),
+    msLevel = c(2L, 2L),
+    chromIndex = c(1L, 2L)
+)
+
+## Extract those regions
+chr_extracted <- chromExtract(chr, peak_table,
+                              by = c("msLevel", "chromIndex"))
+
+chr_extracted
+```
+
+The resulting `Chromatograms` object contains only the data within the specified
+retention time windows. Note that extra columns in `peak_table` are added to
+the chromatogram metadata:
+
+```{r}
+chromData(chr_extracted)
+```
+
+## Extraction with m/z filtering (ChromBackendSpectra only)
+
+When using `ChromBackendSpectra`, you can also filter by m/z ranges, which is
+useful for extracting ion chromatograms (EICs) for specific mass windows:
+
+```{r}
+## Define peak table with both retention time and m/z windows
+peak_table_mz <- data.frame(
+    rtMin = c(125, 125),
+    rtMax = c(180, 180),
+    mzMin = c(100, 140),
+    mzMax = c(100.5, 140.5),
+    msLevel = c(1L, 1L),
+    dataOrigin = rep(dataOrigin(chr_s)[1], 2),
+    featureID = c("feature_1", "feature_2")
+)
+
+## Extract EICs for these features
+chr_eics <- chromExtract(chr_s, peak_table_mz,
+                        by = c("msLevel", "dataOrigin"))
+
+chr_eics
+```
+
+Notice that the custom column `featureID` from the peak table is now part of
+the chromatogram metadata:
+
+```{r}
+chromData(chr_eics)
+```
+
+This is particularly useful for linking extracted chromatograms back to
+feature tables or peak detection results.
+
+# Imputing missing values in chromatograms
+
+Real chromatographic data often has gaps or missing intensity values at certain
+retention times, which can occur due to instrumental limitations, data processing
+artifacts, or sparse sampling. The `imputePeaksData()` function provides several
+methods to interpolate these missing values, which can improve downstream
+analysis and visualization.
+
+## Available imputation methods
+
+The package provides four imputation methods:
+
+- **"linear"**: Linear interpolation between known values. Fast and simple, good
+  for data with regular gaps.
+- **"spline"**: Cubic spline interpolation. Provides smooth curves but may
+  introduce artifacts.
+- **"gaussian"**: Gaussian kernel smoothing. Uses a Gaussian kernel to estimate
+  values based on neighboring points.
+- **"loess"**: Locally weighted scatter plot smoothing. Provides robust smoothing
+  with local polynomial regression.
+
+## Example: Imputing an extracted ion chromatogram (EIC)
+
+Let's extract a narrow m/z range EIC and then apply different imputation methods:
+
+```{r}
+## Create a specific EIC
+eic_table <- data.frame(
+    rtMin = 125,
+    rtMax = 180,
+    mzMin = 100.01,
+    mzMax = 100.02,
+    msLevel = 1L,
+    dataOrigin = dataOrigin(chr_s)[1]
+)
+
+chr_eic <- chromExtract(chr_s, eic_table, by = c("msLevel", "dataOrigin"))
+chr_eic
+```
+
+Now let's examine the raw data and apply different imputation methods:
+
+```{r, fig.height=10, fig.width=8}
+## Create copies for comparison
+chr_linear <- imputePeaksData(chr_eic, method = "linear")
+chr_spline <- imputePeaksData(chr_eic, method = "spline")
+chr_gaussian <- imputePeaksData(chr_eic, method = "gaussian",
+                                window = 5, sd = 2)
+chr_loess <- imputePeaksData(chr_eic, method = "loess", span = 0.3)
+
+## Plot all methods for comparison
+par(mfrow = c(3, 2), mar = c(4, 4, 2, 1))
+
+## Original data
+plotChromatograms(chr_eic, main = "Original EIC")
+
+## Linear interpolation
+plotChromatograms(chr_linear, main = "Linear Imputation")
+
+## Spline interpolation
+plotChromatograms(chr_spline, main = "Spline Imputation")
+
+## Gaussian smoothing
+plotChromatograms(chr_gaussian, main = "Gaussian Smoothing (window=5, sd=2)")
+
+## LOESS smoothing
+plotChromatograms(chr_loess, main = "LOESS Smoothing (span=0.3)")
+```
+
+## Selecting the right imputation method
+
+The choice of imputation method depends on your data characteristics and
+analysis goals:
+
+- Use **"linear"** for quick interpolation of small gaps in regularly sampled
+  data.
+- Use **"spline"** for smooth curves when data is fairly regular, but be aware
+  it can overshoot.
+- Use **"gaussian"** for local smoothing that preserves peak shapes while
+  filling gaps.
+- Use **"loess"** when you want robust smoothing that adapts to local data
+  density.
+
+## Imputation in lazy evaluation pipelines
+
+For on-disk backends like `ChromBackendMzR`, imputation is particularly useful
+when combined with the lazy evaluation queue. The imputation function is added
+to the processing queue and is only applied when peak data is actually accessed:
+
+```{r}
+## For on-disk backends, add imputation to the lazy queue
+chr_mzr_imputed <- imputePeaksData(
+  chr_mzr,
+  method = "gaussian",
+  window = 5,
+  sd = 2
+)
+
+chr_mzr_imputed
+```
+
+The imputation is **not** performed immediately. Instead, it's stored in the
+processing queue. When you call `peaksData()` on the object, the raw data is
+read from the file and then imputation is applied on-the-fly:
+
+```{r}
+## This reads from disk and applies imputation in one step
+peak_data <- peaksData(chr_mzr_imputed[1])
+```
+
+This approach is highly efficient for large datasets because:
+
+1. Data is only read from disk when needed
+2. Imputation is applied on-the-fly during data access
+3. No temporary files are created
+4. Memory usage remains minimal
+
+You can verify the processing queue contains your imputation step:
+
+```{r}
+length(chr_mzr_imputed@processingQueue)
+```
+
+And if you want to make the imputation permanent (for in-memory backends),
+use `applyProcessing()`:
+
+```{r}
+## For in-memory backends, you can persist the imputation
+chr_in_memory <- setBackend(chr_mzr_imputed, ChromBackendMemory())
+chr_in_memory <- applyProcessing(chr_in_memory)
+
+# Now imputation is permanently applied
+length(chr_in_memory@processingQueue)
+```
 
 # Session information
 
