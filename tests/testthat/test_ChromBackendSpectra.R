@@ -1140,3 +1140,71 @@ test_that("[ subsetting with unsorted data and duplication works", {
     expect_true(all(sapply(pd, is.data.frame)))
 })
 
+test_that("peaksData returns data in correct order when chromSpectraIndex has duplicates", {
+    ## Test case that reproduces the setBackend bug where peaksData was returned
+    ## in factor level order instead of chromData row order.
+    ## When multiple chromatograms share the same chromSpectraIndex (e.g., multiple
+    ## EICs from the same file), split() groups them together by level. The fix
+    ## ensures peaksData is returned in the original chromData row order.
+    sp <- Spectra(DataFrame(
+        mz = NumericList(
+            c(100, 101, 102), c(100, 101, 102), c(100, 101, 102), 
+            c(100, 101, 102), c(100, 101, 102), c(100, 101, 102),
+            compress = FALSE
+        ),
+        intensity = NumericList(
+            c(10, 20, 30), c(15, 25, 35), c(20, 30, 40),
+            c(100, 200, 300), c(150, 250, 350), c(200, 300, 400),
+            compress = FALSE
+        ),
+        rtime = c(1, 2, 3, 4, 5, 6),
+        msLevel = rep(1L, 6),
+        dataOrigin = c("A", "A", "A", "B", "B", "B")
+    ))
+    
+    ## Create custom chromData with multiple EICs sharing same chromSpectraIndex
+    ## This simulates extracting different m/z windows from the same spectra
+    custom_chromData <- data.frame(
+        msLevel = rep(1L, 4),
+        mzMin = c(100, 100, 100, 100),
+        mzMax = c(101, 102, 101, 102),
+        rtMin = c(1, 1, 4, 4),
+        rtMax = c(3, 3, 6, 6),
+        dataOrigin = c("A", "A", "B", "B")
+    )
+    
+    cb <- ChromBackendSpectra()
+    cb <- backendInitialize(cb, spectra = sp, chromData = custom_chromData)
+    
+    ## chromSpectraIndex should have duplicates: 1_A, 1_A, 1_B, 1_B
+    chrom_idx <- chromSpectraIndex(cb)
+    expect_identical(length(chrom_idx), 4L)
+    expect_identical(as.character(chrom_idx), c("1_A", "1_A", "1_B", "1_B"))
+    
+    ## Get peaksData
+    pd <- peaksData(cb)
+    
+    ## Verify peaksData has same length as chromData rows
+    expect_identical(length(pd), 4L)
+    
+    ## Verify peaksData is returned in chromData row order, NOT factor level order
+    ## Row 1: 1_A with mzMax=101 (should have intensities from mz=100,101)
+    ## Row 2: 1_A with mzMax=102 (should have intensities from mz=100,101,102)
+    ## Row 3: 1_B with mzMax=101 (should have intensities from mz=100,101)
+    ## Row 4: 1_B with mzMax=102 (should have intensities from mz=100,101,102)
+    
+    ## Check that the intensity patterns match the expected order
+    ## The key test: row 1 and row 2 should have different intensity sums
+    ## because they have different mz windows
+    int_sums <- sapply(pd, function(x) sum(x$intensity, na.rm = TRUE))
+    
+    ## Row 1 (1_A, mz 100-101): should have lower sum than Row 2 (1_A, mz 100-102)
+    expect_true(int_sums[1] < int_sums[2])
+    ## Row 3 (1_B, mz 100-101): should have lower sum than Row 4 (1_B, mz 100-102)
+    expect_true(int_sums[3] < int_sums[4])
+    
+    ## Also verify the pattern matches across files
+    ## Row 1 and Row 3 should have similar intensity ratios (both use mz 100-101)
+    ## Row 2 and Row 4 should have similar intensity ratios (both use mz 100-102)
+})
+

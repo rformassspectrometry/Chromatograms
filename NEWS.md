@@ -1,5 +1,13 @@
 # Version 1.1
 
+## Changes in 1.1.2
+
+- Fix `peaksData()` for `ChromBackendSpectra` to return data in the correct
+  row order when multiple chromatograms share the same `chromSpectraIndex`.
+  This bug caused `setBackend()` to produce mismatched `chromData` and
+  `peaksData` when converting from `ChromBackendSpectra` to
+  `ChromBackendMemory` with objects containing multiple EICs.
+
 ## Changes in 1.1.1
 
 - Aligned the package with the Bioconductor 3.22 release.

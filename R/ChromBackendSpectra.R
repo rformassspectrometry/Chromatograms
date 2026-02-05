@@ -380,6 +380,10 @@ setMethod(
         levels = levels(valid_f)
       )
     }
+    ## Track original row indices to restore order after split/mapply
+    ## split() groups by factor levels, which may reorder the data
+    orig_idx <- seq_along(valid_f)
+    split_idx <- split(orig_idx, valid_f)
     ## Process peaks data
     pd <- mapply(
       .process_peaks_data,
@@ -395,7 +399,11 @@ setMethod(
       ),
       SIMPLIFY = FALSE
     )
-    unlist(pd, use.names = FALSE, recursive = FALSE)
+    pd_flat <- unlist(pd, use.names = FALSE, recursive = FALSE)
+    ## Restore original row order: split_idx tells us which original rows
+    ## are in each group, so unlist(split_idx) gives the order after split
+    reorder_idx <- order(unlist(split_idx, use.names = FALSE))
+    pd_flat[reorder_idx]
   }
 )
 
