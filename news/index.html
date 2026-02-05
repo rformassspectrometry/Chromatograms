@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">Chromatograms</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.2</span>
       </span>
     </div>
 
@@ -63,7 +63,11 @@
     <div class="section level2">
 <h2 class="page-header" data-toc-text="1.1" id="version-11">Version 1.1<a class="anchor" aria-label="anchor" href="#version-11"></a></h2>
 <div class="section level3">
-<h3 id="changes-in-1-1">Changes in 1.1.1<a class="anchor" aria-label="anchor" href="#changes-in-1-1"></a></h3>
+<h3 id="changes-in-1-1">Changes in 1.1.2<a class="anchor" aria-label="anchor" href="#changes-in-1-1"></a></h3>
+<ul><li>Fix <code><a href="../reference/peaksData.html">peaksData()</a></code> for <code>ChromBackendSpectra</code> to return data in the correct row order when multiple chromatograms share the same <code>chromSpectraIndex</code>. This bug caused <code><a href="https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html" class="external-link">setBackend()</a></code> to produce mismatched <code>chromData</code> and <code>peaksData</code> when converting from <code>ChromBackendSpectra</code> to <code>ChromBackendMemory</code> with objects containing multiple EICs.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="changes-in-1-1-1">Changes in 1.1.1<a class="anchor" aria-label="anchor" href="#changes-in-1-1-1"></a></h3>
 <ul><li>Aligned the package with the Bioconductor 3.22 release.</li>
 <li>Expanded the vignette to cover ChromBackendSpectra usage, chromatogram extraction with <code><a href="../reference/Chromatograms.html">chromExtract()</a></code>, and imputation workflows via <code><a href="../reference/peaksData.html">imputePeaksData()</a></code>.</li>
 <li>Added <code>spectraSortIndex()</code> for <code>ChromBackendSpectra</code> to compute the desired retention-time order on demand, avoiding the need to keep on-disk <code>Spectra</code> objects sorted in memory.</li>
