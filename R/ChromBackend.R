@@ -175,6 +175,12 @@
 #'        ranges to filter the `object`. These paired values need to be in the
 #'        same order as the `variables` parameter (see below).
 #'
+#' @param extrapolate For `imputePeaksData`: `logical(1)` (default `FALSE`).
+#'        If `TRUE`, missing values at the beginning and end of a chromatogram
+#'        (outside the range of observed values) will be extrapolated. If
+#'        `FALSE`, only interpolation is performed and leading/trailing `NA`
+#'        values remain `NA`.
+#'
 #' @param sd For `imputePeaksData`: `numeric(1)`, for the gaussian method:
 #'        Standard deviation for Gaussian kernel
 #'        (only used if method == "gaussian")
@@ -1175,6 +1181,7 @@ setMethod("imputePeaksData", signature(object = "ChromBackend"),
                    span = 0.3,
                    sd = 1,
                    window = 2,
+                   extrapolate = FALSE,
                    ...) {
 
               method <- match.arg(method)
@@ -1182,6 +1189,7 @@ setMethod("imputePeaksData", signature(object = "ChromBackend"),
                   return(object)
               object$intensity <- lapply(object$intensity, .impute,
                            method = method,
-                           span = span, window = window, sd = sd)
+                           span = span, window = window, sd = sd,
+                           extrapolate = extrapolate)
               object
           })

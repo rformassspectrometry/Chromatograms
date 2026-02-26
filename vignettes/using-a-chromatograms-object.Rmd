@@ -756,6 +756,16 @@ The package provides four imputation methods:
 - **"loess"**: Locally weighted scatter plot smoothing. Provides robust smoothing
   with local polynomial regression.
 
+## Extrapolation vs. Interpolation
+
+By default, `imputePeaksData()` performs only interpolation (fills gaps between
+observed values). You can control this behavior with the `extrapolate` parameter:
+ 
+- `extrapolate = FALSE` (default): Only interpolation is performed. Leading and
+  trailing `NA` values (outside the range of observed data) remain as `NA`.
+- `extrapolate = TRUE`: Both interpolation and extrapolation are performed.
+  All `NA` values are filled.
+
 ## Example: Imputing an extracted ion chromatogram (EIC)
 
 Let's extract a narrow m/z range EIC and then apply different imputation methods:

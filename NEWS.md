@@ -1,5 +1,16 @@
 # Version 1.1
 
+## Changes in 1.1.3
+
+- Add `concatenateChromatograms()` function and `c()` method to combine
+  multiple `Chromatograms` objects into a single object. Also add `split()`
+  method to split a `Chromatograms` object based on a grouping factor.
+
+- Add `extrapolate` parameter to `imputePeaksData()` (default `FALSE`).
+  When `TRUE`, leading/trailing `NA` values outside the range of observed
+  data are extrapolated. When `FALSE` (default), only interpolation is
+  performed and edge `NA` values remain as `NA`.
+
 ## Changes in 1.1.2
 
 - Fix `peaksData()` for `ChromBackendSpectra` to return data in the correct

@@ -531,7 +531,8 @@
 #' - `imputePeaksData()`
 #' @importFrom stats approx filter loess spline dnorm sd predict
 #' @noRd
-.impute <- function(x, method, window = 2, span = 0.25, sd = 1) {
+.impute <- function(x, method, window = 2, span = 0.25, sd = 1,
+                    extrapolate = FALSE) {
   if (all(is.na(x))) {
     return(x)
   }
@@ -544,16 +545,28 @@
   not_na_idx <- which(!is.na(x))
   x_out <- seq_along(x)
 
+  # rule = 2 extrapolates, rule = 1 returns NA outside range
+  approx_rule <- if (extrapolate) 2L else 1L
+
   x[na_idx] <- switch(
     method,
-    linear = approx(not_na_idx, x[not_na_idx], xout = na_idx, rule = 2)$y,
+    linear = approx(not_na_idx, x[not_na_idx], xout = na_idx,
+                    rule = approx_rule)$y,
 
-    spline = spline(
-      not_na_idx,
-      x[not_na_idx],
-      xout = na_idx,
-      method = "natural"
-    )$y,
+    spline = {
+      vals <- spline(
+        not_na_idx,
+        x[not_na_idx],
+        xout = na_idx,
+        method = "natural"
+      )$y
+      if (!extrapolate) {
+        # Set values outside data range to NA
+        outside <- na_idx < min(not_na_idx) | na_idx > max(not_na_idx)
+        vals[outside] <- NA
+      }
+      vals
+    },
     gaussian = {
       # Create symmetric Gaussian kernel
       kernel_range <- -window:window
@@ -566,19 +579,24 @@
         not_na_idx,
         x[not_na_idx],
         xout = which(is.na(x_filled)),
-        rule = 2
+        rule = approx_rule
       )$y
       smoothed <- filter(x_filled, filter = w, sides = 2, circular = FALSE)
       smoothed[na_idx]
     },
     loess = {
       fit <- loess(x[not_na_idx] ~ not_na_idx, span = span)
-      predict(fit, newdata = na_idx)
+      vals <- predict(fit, newdata = na_idx)
+      if (!extrapolate) {
+        outside <- na_idx < min(not_na_idx) | na_idx > max(not_na_idx)
+        vals[outside] <- NA
+      }
+      vals
     }
   )
-  # Fallback for any remaining NAs
+  # Fallback for any remaining NAs (only if extrapolate = TRUE)
   na_remaining <- is.na(x)
-  if (any(na_remaining)) {
+  if (extrapolate && any(na_remaining)) {
     warning(
       "Method chosen could not fill all NAs. ",
       "Falling back to linear interpolation ",
