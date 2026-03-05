@@ -2,6 +2,10 @@
 
 ## Changes in 1.1.3
 
+- Add `filterEmptyChromatograms()` function to remove empty chromatograms
+  (i.e., chromatograms without peaks) from a `Chromatograms` or
+  `ChromBackend` object.
+
 - Add `concatenateChromatograms()` function and `c()` method to combine
   multiple `Chromatograms` objects into a single object. Also add `split()`
   method to split a `Chromatograms` object based on a grouping factor.
@@ -34,12 +38,12 @@
 ## Changes in 0.99.7
 
 - Add `chromExtract()` method to generate a new `Chromatograms` object from an
-  existing one by extracting a subset of chromatograms based on retention 
+  existing one by extracting a subset of chromatograms based on retention
   times (optionally m/z) boundaries.
-- Add `imputePeaksData()` method to impute missing values in the 
+- Add `imputePeaksData()` method to impute missing values in the
   chromatographic peaks data.
 - Fix `factorize()` so that the parameter `factorize.by` can take a `character`
-  vector of length 1. 
+  vector of length 1.
 
 ## Changes in 0.99.6
 

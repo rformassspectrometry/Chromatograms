@@ -67,6 +67,7 @@
 \alias{rtime<-,ChromBackend-method}
 \alias{split,ChromBackend,ANY-method}
 \alias{filterChromData,ChromBackend-method}
+\alias{filterEmptyChromatograms,ChromBackend-method}
 \alias{filterPeaksData,ChromBackend-method}
 \alias{supportsSetBackend,ChromBackend-method}
 \alias{imputePeaksData,ChromBackend-method}
@@ -195,6 +196,8 @@ corePeaksVariables()
   match = c("any", "all"),
   keep = TRUE
 )
+
+\S4method{filterEmptyChromatograms}{ChromBackend}(object, ...)
 
 \S4method{filterPeaksData}{ChromBackend}(
   object,
@@ -533,6 +536,9 @@ based on the provided numerical \code{ranges}. The method should return a
 \code{ChromBackend} object with the chromatograms that match the condition.
 This function will results in an object with less chromatogram than the
 original.
+\item \code{filterEmptyChromatograms()}: removes empty chromatograms (i.e.
+chromatograms without peaks). Implementation of this method is optional
+since a default implementation for \code{ChromBackend} is available.
 \item \code{intensity()}: gets the intensity values from the chromatograms. Returns
 a \code{list} of \code{numeric} vectors (intensity values for each
 chromatogram). The length of the list is equal to the number of

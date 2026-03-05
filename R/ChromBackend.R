@@ -332,6 +332,10 @@
 #'   This function will results in an object with less chromatogram than the
 #'   original.
 #'
+#' - `filterEmptyChromatograms()`: removes empty chromatograms (i.e.
+#'   chromatograms without peaks). Implementation of this method is optional
+#'   since a default implementation for `ChromBackend` is available.
+#'
 #' - `intensity()`: gets the intensity values from the chromatograms. Returns
 #'   a `list` of `numeric` vectors (intensity values for each
 #'   chromatogram). The length of the list is equal to the number of
@@ -1113,6 +1117,17 @@ setMethod(
             if (length(idx)) return(object[-idx])
             else return(object)
         }
+    }
+)
+
+#' @exportMethod filterEmptyChromatograms
+#'
+#' @rdname ChromBackend
+setMethod(
+    "filterEmptyChromatograms", "ChromBackend",
+    function(object, ...) {
+        if (!length(object)) return(object)
+        object[as.logical(lengths(object))]
     }
 )
 

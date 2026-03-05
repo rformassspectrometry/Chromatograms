@@ -11,6 +11,7 @@ NULL
 #' @aliases [[,Chromatograms-method
 #' @aliases [[<-,Chromatograms-method
 #' @aliases chromExtract
+#' @aliases filterEmptyChromatograms
 #'
 #' @description
 #' The `Chromatograms` class encapsules chromatographic data and related
@@ -89,6 +90,12 @@ NULL
 #' backend for smaller datasets or to a file-based backend for larger datasets.
 #' The `setBackend()` function supports parallelization of the backend
 #' conversion using the `BPPARAM` parameter.
+#'
+#' @section Filtering chromatograms:
+#'
+#' - `filterEmptyChromatograms()`: removes empty chromatograms (i.e.
+#'   chromatograms without peaks) from the object. Returns the filtered
+#'   `Chromatograms` object (with chromatograms in their original order).
 #'
 #' @section Extracting chromatograms based on a peak table:
 #'
@@ -570,6 +577,25 @@ setMethod(
   function(object, peak.table, by, ...) {
     new_bd <- chromExtract(.backend(object), peak.table, by, ...)
     return(Chromatograms(new_bd))
+  }
+)
+
+#' @rdname Chromatograms
+#' @export
+setMethod(
+  "filterEmptyChromatograms",
+  "Chromatograms",
+  function(object, ...) {
+    if (!length(object)) return(object)
+    object@backend <- extractByIndex(
+      .backend(object),
+      which(as.logical(lengths(object)))
+    )
+    object@processing <- .logging(
+      object@processing,
+      "Filter: removed empty chromatograms."
+    )
+    object
   }
 )
 

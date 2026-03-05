@@ -238,7 +238,7 @@ test_that("setBackend preserves peaksData order with duplicate chromSpectraIndex
     msLevel = rep(1L, 6),
     dataOrigin = c("A", "A", "A", "B", "B", "B")
   ))
-  
+
   ## Create multiple EICs from same spectra (sharing chromSpectraIndex)
   custom_chromData <- data.frame(
     msLevel = rep(1L, 4),
@@ -248,33 +248,33 @@ test_that("setBackend preserves peaksData order with duplicate chromSpectraIndex
     rtMax = c(3, 3, 6, 6),
     dataOrigin = c("A", "A", "B", "B")
   )
-  
+
   chr <- Chromatograms(sp, chromData = custom_chromData)
-  
+
   ## Get peaksData before setBackend
   pd_before <- peaksData(chr)
-  
+
   ## Convert to memory backend
   chr_mem <- setBackend(chr, ChromBackendMemory())
-  
+
   ## Get peaksData after setBackend
   pd_after <- peaksData(chr_mem)
-  
+
   ## peaksData should be identical before and after setBackend
   expect_identical(length(pd_before), length(pd_after))
-  
+
   ## Each element should have the same intensity values
   for (i in seq_along(pd_before)) {
     expect_identical(pd_before[[i]]$intensity, pd_after[[i]]$intensity)
     expect_identical(pd_before[[i]]$rtime, pd_after[[i]]$rtime)
   }
-  
+
   ## Verify subsetting after setBackend works correctly
   ## This tests the scenario where subsetting after setBackend returns wrong data
   chr_sub <- chr_mem[2]  # Get second chromatogram (1_A with mzMax=102)
   pd_sub <- peaksData(chr_sub)
   expect_identical(pd_sub[[1]]$intensity, pd_before[[2]]$intensity)
-  
+
   chr_sub4 <- chr_mem[4]  # Get fourth chromatogram (1_B with mzMax=102)
   pd_sub4 <- peaksData(chr_sub4)
   expect_identical(pd_sub4[[1]]$intensity, pd_before[[4]]$intensity)
@@ -459,6 +459,61 @@ test_that("concatenateChromatograms works", {
   res_empty <- concatenateChromatograms(list())
   expect_s4_class(res_empty, "Chromatograms")
   expect_equal(length(res_empty), 0L)
+})
+
+test_that("filterEmptyChromatograms,Chromatograms works", {
+    ## Empty Chromatograms object: returns empty without adding processing log
+    res <- filterEmptyChromatograms(c_empty)
+    expect_true(is(res, "Chromatograms"))
+    expect_equal(length(res), 0)
+    expect_equal(length(res@processing), 0)
+
+    ## All chromatograms have peaks data, none should be removed
+    res <- filterEmptyChromatograms(c_full)
+    expect_equal(length(res), length(c_full))
+    expect_true(length(res@processing) == 1)
+
+    ## Create object with some empty chromatograms
+    cdata_mix <- data.frame(
+        msLevel = c(1L, 1L, 1L, 1L),
+        mz = c(100, 200, 300, 400),
+        dataOrigin = c("a", "b", "c", "d")
+    )
+    pdata_mix <- list(
+        data.frame(rtime = c(1, 2, 3), intensity = c(10, 20, 30)),
+        data.frame(rtime = numeric(), intensity = numeric()),
+        data.frame(rtime = c(4, 5), intensity = c(40, 50)),
+        data.frame(rtime = numeric(), intensity = numeric())
+    )
+    chr_mix <- Chromatograms(
+        ChromBackendMemory(),
+        chromData = cdata_mix,
+        peaksData = pdata_mix
+    )
+    expect_equal(length(chr_mix), 4)
+    res <- filterEmptyChromatograms(chr_mix)
+    expect_equal(length(res), 2)
+    expect_equal(mz(res), c(100, 300))
+    expect_true(all(lengths(res) > 0))
+    expect_true(length(res@processing) == 1)
+
+    ## All empty
+    pdata_empty <- list(
+        data.frame(rtime = numeric(), intensity = numeric()),
+        data.frame(rtime = numeric(), intensity = numeric())
+    )
+    cdata_empty <- data.frame(
+        msLevel = c(1L, 1L),
+        mz = c(100, 200),
+        dataOrigin = c("a", "b")
+    )
+    chr_all_empty <- Chromatograms(
+        ChromBackendMemory(),
+        chromData = cdata_empty,
+        peaksData = pdata_empty
+    )
+    res <- filterEmptyChromatograms(chr_all_empty)
+    expect_equal(length(res), 0)
 })
 
 test_that("split, Chromatograms works", {
