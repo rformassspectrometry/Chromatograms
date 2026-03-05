@@ -32,7 +32,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">Chromatograms</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.3</span>
       </span>
     </div>
 
@@ -102,7 +102,7 @@ document.addEventListener("DOMContentLoaded", function() {
     if (links[i].hostname != window.location.hostname)
       links[i].target = '_blank';
 });
-</script><p><strong>Package</strong>: Chromatograms 1.1.2 <br><strong>Compiled</strong>: Thu Feb 5 15:51:06 2026</p>
+</script><p><strong>Package</strong>: Chromatograms 1.1.3 <br><strong>Compiled</strong>: Thu Mar 5 13:35:43 2026</p>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
@@ -638,7 +638,7 @@ use this to make all data manipulations on peak data of the
 <span><span class="co">## ... 11 more  chromatogram variables/columns</span></span>
 <span><span class="co">## ... 2 peaksData variables</span></span>
 <span><span class="co">## Processing:</span></span>
-<span><span class="co">##  Applied processing queue with 1 steps [Thu Feb  5 15:51:11 2026]</span></span></code></pre>
+<span><span class="co">##  Applied processing queue with 1 steps [Thu Mar  5 13:35:47 2026]</span></span></code></pre>
 <p>Before <code><a href="https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html" class="external-link">applyProcessing()</a></code> the lazy evaluation queue
 contained 2 processing steps, which were then applied to the peak data
 and <em>written</em> to the data storage. Note that calling
@@ -734,7 +734,7 @@ change the <code>ChrombackendMzR</code> to an in-memory backend such as
 <span><span class="co">## ... 6 more  chromatogram variables/columns</span></span>
 <span><span class="co">## ... 2 peaksData variables</span></span>
 <span><span class="co">## Processing:</span></span>
-<span><span class="co">##  Switch backend from ChromBackendMzR to ChromBackendMemory [Thu Feb  5 15:51:12 2026]</span></span></code></pre>
+<span><span class="co">##  Switch backend from ChromBackendMzR to ChromBackendMemory [Thu Mar  5 13:35:49 2026]</span></span></code></pre>
 <div class="sourceCode" id="cb57"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">chr_mzr</span><span class="op">@</span><span class="va">backend</span><span class="op">@</span><span class="va">peaksData</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># data is now in memory</span></span></code></pre></div>
 <pre><code><span><span class="co">##          rtime intensity</span></span>
@@ -1015,6 +1015,22 @@ Provides robust smoothing with local polynomial regression.</li>
 </ul>
 </div>
 <div class="section level3">
+<h3 id="extrapolation-vs--interpolation">Extrapolation vs. Interpolation<a class="anchor" aria-label="anchor" href="#extrapolation-vs--interpolation"></a>
+</h3>
+<p>By default, <code><a href="../reference/peaksData.html">imputePeaksData()</a></code> performs only
+interpolation (fills gaps between observed values). You can control this
+behavior with the <code>extrapolate</code> parameter:</p>
+<ul>
+<li>
+<code>extrapolate = FALSE</code> (default): Only interpolation is
+performed. Leading and trailing <code>NA</code> values (outside the
+range of observed data) remain as <code>NA</code>.</li>
+<li>
+<code>extrapolate = TRUE</code>: Both interpolation and
+extrapolation are performed. All <code>NA</code> values are filled.</li>
+</ul>
+</div>
+<div class="section level3">
 <h3 id="example-imputing-an-extracted-ion-chromatogram-eic">Example: Imputing an extracted ion chromatogram (EIC)<a class="anchor" aria-label="anchor" href="#example-imputing-an-extracted-ion-chromatogram-eic"></a>
 </h3>
 <p>Let’s extract a narrow m/z range EIC and then apply different
@@ -1127,8 +1143,8 @@ when peak data is actually accessed:</p>
 <span><span class="co">## ... 2 peaksData variables</span></span>
 <span><span class="co">## Lazy evaluation queue: 1 processing step(s)</span></span>
 <span><span class="co">## Processing:</span></span>
-<span><span class="co">##  Switch backend from ChromBackendMzR to ChromBackendMemory [Thu Feb  5 15:51:12 2026]</span></span>
-<span><span class="co">##  Impute: replace missing peaks data using the 'gaussian' method [Thu Feb  5 15:51:14 2026]</span></span></code></pre>
+<span><span class="co">##  Switch backend from ChromBackendMzR to ChromBackendMemory [Thu Mar  5 13:35:49 2026]</span></span>
+<span><span class="co">##  Impute: replace missing peaks data using the 'gaussian' method [Thu Mar  5 13:35:51 2026]</span></span></code></pre>
 <p>The imputation is <strong>not</strong> performed immediately.
 Instead, it’s stored in the processing queue. When you call
 <code><a href="../reference/peaksData.html">peaksData()</a></code> on the object, the raw data is read from the
@@ -1165,9 +1181,9 @@ backends), use <code><a href="https://rdrr.io/pkg/ProtGenerics/man/processingQue
 </h2>
 <div class="sourceCode" id="cb100"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## R Under development (unstable) (2026-02-01 r89366)</span></span>
+<pre><code><span><span class="co">## R Under development (unstable) (2026-03-01 r89508)</span></span>
 <span><span class="co">## Platform: x86_64-pc-linux-gnu</span></span>
-<span><span class="co">## Running under: Ubuntu 24.04.3 LTS</span></span>
+<span><span class="co">## Running under: Ubuntu 24.04.4 LTS</span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## Matrix products: default</span></span>
 <span><span class="co">## BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 </span></span>
@@ -1191,7 +1207,7 @@ backends), use <code><a href="https://rdrr.io/pkg/ProtGenerics/man/processingQue
 <span><span class="co">## other attached packages:</span></span>
 <span><span class="co">##  [1] RColorBrewer_1.1-3  IRanges_2.45.0      Spectra_1.21.1     </span></span>
 <span><span class="co">##  [4] S4Vectors_0.49.0    BiocGenerics_0.57.0 generics_0.1.4     </span></span>
-<span><span class="co">##  [7] Chromatograms_1.1.2 ProtGenerics_1.43.0 BiocParallel_1.45.0</span></span>
+<span><span class="co">##  [7] Chromatograms_1.1.3 ProtGenerics_1.43.0 BiocParallel_1.45.0</span></span>
 <span><span class="co">## [10] BiocStyle_2.39.0   </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## loaded via a namespace (and not attached):</span></span>
@@ -1205,8 +1221,8 @@ backends), use <code><a href="https://rdrr.io/pkg/ProtGenerics/man/processingQue
 <span><span class="co">## [22] xfun_0.56              fs_1.6.6               MsCoreUtils_1.23.2    </span></span>
 <span><span class="co">## [25] sass_0.4.10            otel_0.2.0             cli_3.6.5             </span></span>
 <span><span class="co">## [28] pkgdown_2.2.0.9000     ncdf4_1.24             digest_0.6.39         </span></span>
-<span><span class="co">## [31] mzR_2.45.0             MetaboCoreUtils_1.19.1 lifecycle_1.0.5       </span></span>
-<span><span class="co">## [34] clue_0.3-66            evaluate_1.0.5         codetools_0.2-20      </span></span>
+<span><span class="co">## [31] mzR_2.45.0             MetaboCoreUtils_1.19.2 lifecycle_1.0.5       </span></span>
+<span><span class="co">## [34] clue_0.3-67            evaluate_1.0.5         codetools_0.2-20      </span></span>
 <span><span class="co">## [37] ragg_1.5.0             rmarkdown_2.30         tools_4.6.0           </span></span>
 <span><span class="co">## [40] htmltools_0.5.9</span></span></code></pre>
 </div>

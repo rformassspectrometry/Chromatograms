@@ -29,7 +29,7 @@ an internal spectraSortIndex to avoid physically reordering the spectra.
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">Chromatograms</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.3</span>
       </span>
     </div>
 
@@ -128,7 +128,10 @@ an internal <code>spectraSortIndex</code> to avoid physically reordering the spe
 <span><span class="fu"><a href="ChromBackend.html">factorize</a></span><span class="op">(</span><span class="va">object</span>, factorize.by <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"msLevel"</span>, <span class="st">"dataOrigin"</span><span class="op">)</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'Chromatograms'</span></span>
-<span><span class="fu">chromExtract</span><span class="op">(</span><span class="va">object</span>, <span class="va">peak.table</span>, <span class="va">by</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">chromExtract</span><span class="op">(</span><span class="va">object</span>, <span class="va">peak.table</span>, <span class="va">by</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S4 method for class 'Chromatograms'</span></span>
+<span><span class="fu">filterEmptyChromatograms</span><span class="op">(</span><span class="va">object</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -326,6 +329,14 @@ backend for smaller datasets or to a file-based backend for larger datasets.
 The <code><a href="https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html" class="external-link">setBackend()</a></code> function supports parallelization of the backend
 conversion using the <code>BPPARAM</code> parameter.</p>
     </div>
+    <div id="filtering-chromatograms">
+    <h2>Filtering chromatograms</h2>
+
+
+<ul><li><p><code>filterEmptyChromatograms()</code>: removes empty chromatograms (i.e.
+chromatograms without peaks) from the object. Returns the filtered
+<code>Chromatograms</code> object (with chromatograms in their original order).</p></li>
+</ul></div>
     <div id="extracting-chromatograms-based-on-a-peak-table">
     <h2>Extracting chromatograms based on a peak table</h2>
 
