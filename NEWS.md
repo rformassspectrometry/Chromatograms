@@ -1,5 +1,20 @@
 # Version 1.1
 
+## Changes in 1.1.3
+
+- Add `filterEmptyChromatograms()` function to remove empty chromatograms
+  (i.e., chromatograms without peaks) from a `Chromatograms` or
+  `ChromBackend` object.
+
+- Add `concatenateChromatograms()` function and `c()` method to combine
+  multiple `Chromatograms` objects into a single object. Also add `split()`
+  method to split a `Chromatograms` object based on a grouping factor.
+
+- Add `extrapolate` parameter to `imputePeaksData()` (default `FALSE`).
+  When `TRUE`, leading/trailing `NA` values outside the range of observed
+  data are extrapolated. When `FALSE` (default), only interpolation is
+  performed and edge `NA` values remain as `NA`.
+
 ## Changes in 1.1.2
 
 - Fix `peaksData()` for `ChromBackendSpectra` to return data in the correct
@@ -23,12 +38,12 @@
 ## Changes in 0.99.7
 
 - Add `chromExtract()` method to generate a new `Chromatograms` object from an
-  existing one by extracting a subset of chromatograms based on retention 
+  existing one by extracting a subset of chromatograms based on retention
   times (optionally m/z) boundaries.
-- Add `imputePeaksData()` method to impute missing values in the 
+- Add `imputePeaksData()` method to impute missing values in the
   chromatographic peaks data.
 - Fix `factorize()` so that the parameter `factorize.by` can take a `character`
-  vector of length 1. 
+  vector of length 1.
 
 ## Changes in 0.99.6
 

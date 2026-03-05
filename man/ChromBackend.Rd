@@ -67,6 +67,7 @@
 \alias{rtime<-,ChromBackend-method}
 \alias{split,ChromBackend,ANY-method}
 \alias{filterChromData,ChromBackend-method}
+\alias{filterEmptyChromatograms,ChromBackend-method}
 \alias{filterPeaksData,ChromBackend-method}
 \alias{supportsSetBackend,ChromBackend-method}
 \alias{imputePeaksData,ChromBackend-method}
@@ -196,6 +197,8 @@ corePeaksVariables()
   keep = TRUE
 )
 
+\S4method{filterEmptyChromatograms}{ChromBackend}(object, ...)
+
 \S4method{filterPeaksData}{ChromBackend}(
   object,
   variables = character(),
@@ -212,6 +215,7 @@ corePeaksVariables()
   span = 0.3,
   sd = 1,
   window = 2,
+  extrapolate = FALSE,
   ...
 )
 }
@@ -295,6 +299,12 @@ Standard deviation for Gaussian kernel
 
 \item{window}{For \code{imputePeaksData}: \code{integer}, for the gaussian method:
 Half-width of Gaussian kernel window (e.g., 2 gives window size 5)}
+
+\item{extrapolate}{For \code{imputePeaksData}: \code{logical(1)} (default \code{FALSE}).
+If \code{TRUE}, missing values at the beginning and end of a chromatogram
+(outside the range of observed values) will be extrapolated. If
+\code{FALSE}, only interpolation is performed and leading/trailing \code{NA}
+values remain \code{NA}.}
 }
 \value{
 Refer to the individual function description for information on the
@@ -526,6 +536,9 @@ based on the provided numerical \code{ranges}. The method should return a
 \code{ChromBackend} object with the chromatograms that match the condition.
 This function will results in an object with less chromatogram than the
 original.
+\item \code{filterEmptyChromatograms()}: removes empty chromatograms (i.e.
+chromatograms without peaks). Implementation of this method is optional
+since a default implementation for \code{ChromBackend} is available.
 \item \code{intensity()}: gets the intensity values from the chromatograms. Returns
 a \code{list} of \code{numeric} vectors (intensity values for each
 chromatogram). The length of the list is equal to the number of

@@ -331,7 +331,7 @@ test_that("imputePeaksData() works correctly for ChromBackendMemory", {
     methods <- c("linear", "spline")
     for (m in methods) {
         expect_silent({
-            be_imp <- imputePeaksData(tmp, method = m)
+            be_imp <- imputePeaksData(tmp, method = m, extrapolate = TRUE)
         })
 
         ## No more NAs
@@ -343,7 +343,8 @@ test_that("imputePeaksData() works correctly for ChromBackendMemory", {
     }
 
     ## checking Gaussian specifically as it should give a warning.
-    expect_warning(be_imp <- imputePeaksData(tmp, method = "gaussian"),
+    expect_warning(be_imp <- imputePeaksData(tmp, method = "gaussian",
+                                             extrapolate = TRUE),
                    "could not fill all NAs")
     ## No more NAs
     expect_false(any(is.na(unlist(intensity(be_imp)))),
@@ -353,7 +354,8 @@ test_that("imputePeaksData() works correctly for ChromBackendMemory", {
     expect_equal(names(chromData(be_imp)), names(chromData(be)))
 
     ## check loess specifically as it should give a warning.
-    expect_warning(be_imp <- imputePeaksData(tmp, method = "loess"),
+    expect_warning(be_imp <- imputePeaksData(tmp, method = "loess",
+                                             extrapolate = TRUE),
                    "Falling back to linear interpolation")
     ## No more NAs
     expect_false(any(is.na(unlist(intensity(be_imp)))),
@@ -362,6 +364,36 @@ test_that("imputePeaksData() works correctly for ChromBackendMemory", {
     expect_equal(length(be_imp), length(tmp))
     expect_equal(names(chromData(be_imp)), names(chromData(be)))
 
+    ## Test extrapolate = FALSE (default): leading/trailing NAs should remain NA
+    ## but interior NAs should be interpolated
+    pdata_edge <- list(
+        data.frame(
+            rtime = 1:10,
+            intensity = c(NA, NA, 100, NA, 140, 160, 180, NA, NA, NA)
+        )
+    )
+    tmp_edge <- backendInitialize(be_empty, chromData = cdata[1, , drop = FALSE],
+                                  peaksData = pdata_edge)
+
+    ## extrapolate = FALSE (default) - leading/trailing NAs remain, interior filled
+    be_imp_interp <- imputePeaksData(tmp_edge, method = "linear")
+    ints <- intensity(be_imp_interp)[[1]]
+    # leading NAs should remain NA
+    expect_true(is.na(ints[1]))
+    expect_true(is.na(ints[2]))
+    # trailing NAs should remain NA
+    expect_true(is.na(ints[8]))
+    expect_true(is.na(ints[9]))
+    expect_true(is.na(ints[10]))
+    # interior NA at position 4 should be interpolated (no longer NA)
+    expect_false(is.na(ints[4]))
+    # all interior values (positions 3-7) should have no NAs
+    expect_false(any(is.na(ints[3:7])))
+
+    ## extrapolate = TRUE - no NAs remain
+    be_imp_extrap <- imputePeaksData(tmp_edge, method = "linear",
+                                     extrapolate = TRUE)
+    expect_false(any(is.na(intensity(be_imp_extrap)[[1]])))
 
     ## Empty backend
     expect_silent({

@@ -11,6 +11,7 @@ NULL
 #' @aliases [[,Chromatograms-method
 #' @aliases [[<-,Chromatograms-method
 #' @aliases chromExtract
+#' @aliases filterEmptyChromatograms
 #'
 #' @description
 #' The `Chromatograms` class encapsules chromatographic data and related
@@ -89,6 +90,12 @@ NULL
 #' backend for smaller datasets or to a file-based backend for larger datasets.
 #' The `setBackend()` function supports parallelization of the backend
 #' conversion using the `BPPARAM` parameter.
+#'
+#' @section Filtering chromatograms:
+#'
+#' - `filterEmptyChromatograms()`: removes empty chromatograms (i.e.
+#'   chromatograms without peaks) from the object. Returns the filtered
+#'   `Chromatograms` object (with chromatograms in their original order).
 #'
 #' @section Extracting chromatograms based on a peak table:
 #'
@@ -572,3 +579,183 @@ setMethod(
     return(Chromatograms(new_bd))
   }
 )
+
+#' @rdname Chromatograms
+#' @export
+setMethod(
+  "filterEmptyChromatograms",
+  "Chromatograms",
+  function(object, ...) {
+    if (!length(object)) return(object)
+    object@backend <- extractByIndex(
+      .backend(object),
+      which(as.logical(lengths(object)))
+    )
+    object@processing <- .logging(
+      object@processing,
+      "Filter: removed empty chromatograms."
+    )
+    object
+  }
+)
+
+
+#' @title Merging, combining and splitting Chromatograms
+#'
+#' @name concatenateChromatograms
+#'
+#' @aliases c,Chromatograms-method
+#' @aliases concatenateChromatograms
+#' @aliases split,Chromatograms,ANY-method
+#'
+#' @description
+#'
+#' Various functions are available to combine or split data from one or more
+#' `Chromatograms` objects. These are:
+#'
+#' - `c()` and `concatenateChromatograms()`: combines several `Chromatograms`
+#'   objects into a single object. The resulting `Chromatograms` contains all
+#'   data from all individual `Chromatograms`, i.e. the union of all their
+#'   chromatograms variables. Concatenation will fail if the processing queue
+#'   of any of the `Chromatograms` objects is not empty or if different backends
+#'   are used for the `Chromatograms` objects. In such cases it is suggested to
+#'   first change the backends of all `Chromatograms` to the same type of
+#'   backend (using the [setBackend()] function) and to eventually (if needed)
+#'   apply the processing queue using the [applyProcessing()] function.
+#'
+#' - `split()`: splits the `Chromatograms` object based on a provided grouping
+#'   factor returning a `list` of `Chromatograms` objects.
+#'
+#' @param x A `Chromatograms` object.
+#'
+#' @param f `factor` defining the grouping to split the `Chromatograms` object.
+#'
+#' @param drop For `split()`: not considered.
+#'
+#' @param ... For `c()` and `concatenateChromatograms()`: `Chromatograms`
+#'        objects or a `list` of `Chromatograms` objects.
+#'
+#' @return
+#'
+#' - `c()` and `concatenateChromatograms()`: a single `Chromatograms` object
+#'   containing the data from all input objects.
+#'
+#' - `split()`: a `list` of `Chromatograms` objects.
+#'
+#' @examples
+#'
+#' ## Create two Chromatograms objects
+#' cdata1 <- data.frame(
+#'     msLevel = c(1L, 1L),
+#'     mz = c(112.2, 123.3),
+#'     dataOrigin = c("file1", "file1")
+#' )
+#' pdata1 <- list(
+#'     data.frame(rtime = c(1.0, 2.0, 3.0), intensity = c(100, 200, 150)),
+#'     data.frame(rtime = c(1.0, 2.0, 3.0), intensity = c(80, 120, 90))
+#' )
+#' chr1 <- Chromatograms(
+#'     ChromBackendMemory(),
+#'     chromData = cdata1,
+#'     peaksData = pdata1
+#' )
+#'
+#' cdata2 <- data.frame(
+#'     msLevel = c(2L, 2L),
+#'     mz = c(134.4, 145.5),
+#'     dataOrigin = c("file2", "file2")
+#' )
+#' pdata2 <- list(
+#'     data.frame(rtime = c(4.0, 5.0, 6.0), intensity = c(300, 400, 350)),
+#'     data.frame(rtime = c(4.0, 5.0, 6.0), intensity = c(200, 250, 180))
+#' )
+#' chr2 <- Chromatograms(
+#'     ChromBackendMemory(),
+#'     chromData = cdata2,
+#'     peaksData = pdata2
+#' )
+#'
+#' ## Combine using c()
+#' chr_combined <- c(chr1, chr2)
+#' chr_combined
+#'
+#' ## Combine using concatenateChromatograms
+#' chr_combined2 <- concatenateChromatograms(chr1, chr2)
+#'
+#' ## Combine a list of Chromatograms
+#' chr_list <- list(chr1, chr2)
+#' chr_combined3 <- concatenateChromatograms(chr_list)
+#'
+#' ## Split by msLevel
+#' chr_split <- split(chr_combined, f = chr_combined$msLevel)
+#' chr_split
+#'
+NULL
+
+#' Internal function to concatenate a list of Chromatograms objects.
+#'
+#' @param x `list` of `Chromatograms` objects.
+#'
+#' @return `Chromatograms`.
+#'
+#' @author Philippine Louail, Johannes Rainer
+#'
+#' @noRd
+.concatenate_chromatograms <- function(x) {
+  cls <- vapply(x, class, character(1))
+  if (any(cls != "Chromatograms")) {
+    stop("Can only concatenate 'Chromatograms' objects")
+  }
+  x <- x[lengths(x) > 0]
+  if (length(x) == 0) {
+    return(Chromatograms())
+  }
+  if (length(x) == 1) {
+    return(x[[1L]])
+  }
+  pqs <- lapply(x, function(z) z@processingQueue)
+  if (any(lengths(pqs))) {
+    stop(
+      "Can not concatenate 'Chromatograms' objects with non-empty ",
+      "processing queue. Consider calling 'applyProcessing' before."
+    )
+  }
+  procs <- unique(unlist(lapply(x, function(z) z@processing)))
+  object <- new(
+    "Chromatograms",
+    backend = backendMerge(lapply(x, function(z) z@backend)),
+    processing = c(
+      procs,
+      paste0("Merged ", length(x), " Chromatograms into one [", date(), "]")
+    )
+  )
+  validObject(object)
+  object
+}
+
+#' @export
+#'
+#' @rdname concatenateChromatograms
+concatenateChromatograms <- function(x, ...) {
+  if (is.list(x)) {
+    .concatenate_chromatograms(unlist(unname(c(x, list(...)))))
+  } else {
+    .concatenate_chromatograms(unlist(unname(list(x, ...))))
+  }
+}
+
+#' @rdname concatenateChromatograms
+#'
+#' @exportMethod c
+setMethod("c", "Chromatograms", function(x, ...) {
+  .concatenate_chromatograms(unname(list(unname(x), ...)))
+})
+
+#' @rdname concatenateChromatograms
+setMethod("split", "Chromatograms", function(x, f, drop = FALSE, ...) {
+  bcknds <- split(x@backend, f, ...)
+  lapply(bcknds, function(b) {
+    slot(x, "backend", check = FALSE) <- b
+    x
+  })
+})

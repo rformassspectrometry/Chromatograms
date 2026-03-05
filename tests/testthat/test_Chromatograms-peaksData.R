@@ -171,7 +171,7 @@ test_that("Chromatograms, imputePeaksData works", {
 
     for (meth in c("linear", "spline")) {
         c_imp <- imputePeaksData(c_tmp, method = meth, span = 0.3,
-                                 sd = 1, window = 2)
+                                 sd = 1, window = 2, extrapolate = TRUE)
         expect_s4_class(c_imp, "Chromatograms")
 
         expect_equal(length(peaksData(c_imp)), length(peaksData(c_tmp)))
@@ -181,7 +181,7 @@ test_that("Chromatograms, imputePeaksData works", {
 
     for (meth in c("gaussian", "loess")) {
         c_imp <- imputePeaksData(c_tmp, method = meth, span = 0.3,
-                                 sd = 1, window = 2)
+                                 sd = 1, window = 2, extrapolate = TRUE)
         expect_warning(c_imp <- applyProcessing(c_imp),
                        "Falling back to linear interpolation")
         expect_s4_class(c_imp, "Chromatograms")
@@ -189,4 +189,36 @@ test_that("Chromatograms, imputePeaksData works", {
         expect_true(all(!is.na(unlist(intensity(c_imp)))))
         expect_true(any(grepl(meth, .processing(c_imp))))
     }
+
+    ## Test extrapolate = FALSE (default)
+    ## Interior NAs should be interpolated, leading/trailing NAs remain
+    pdata_edge <- list(
+        data.frame(
+            rtime = 1:10,
+            intensity = c(NA, NA, 100, NA, 140, 160, 180, NA, NA, NA)
+        )
+    )
+    tmp_edge <- backendInitialize(be_empty, chromData = cdata[1, , drop = FALSE],
+                                  peaksData = pdata_edge)
+    c_edge <- Chromatograms(tmp_edge)
+
+    ## extrapolate = FALSE (default) - leading/trailing NAs remain, interior filled
+    c_imp_interp <- imputePeaksData(c_edge, method = "linear")
+    ints <- intensity(c_imp_interp)[[1]]
+    expect_true(is.na(ints[1]))
+    expect_true(is.na(ints[2]))
+    expect_true(is.na(ints[8]))
+    expect_true(is.na(ints[9]))
+    expect_true(is.na(ints[10]))
+    # interior NA at position 4 should be interpolated
+    expect_false(is.na(ints[4]))
+    # all interior values (positions 3-7) should have no NAs
+    expect_false(any(is.na(ints[3:7])))
+
+    ## extrapolate = TRUE - no NAs remain
+    c_imp_extrap <- imputePeaksData(c_edge, method = "linear", extrapolate = TRUE)
+    expect_false(any(is.na(unlist(intensity(c_imp_extrap)))))
+
+    ## Check processing log mentions extrapolation when enabled
+    expect_true(grepl("with extrapolation", .processing(c_imp_extrap)))
 })

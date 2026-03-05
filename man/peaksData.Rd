@@ -23,6 +23,7 @@
   span = 0.3,
   sd = 1,
   window = 2,
+  extrapolate = FALSE,
   ...
 )
 
@@ -72,6 +73,12 @@ Standard deviation for Gaussian kernel
 
 \item{window}{For \code{imputePeaksData}: \code{integer}, for the gaussian method:
 Half-width of Gaussian kernel window (e.g., 2 gives window size 5)}
+
+\item{extrapolate}{For \code{imputePeaksData}: \code{logical(1)} (default \code{FALSE}).
+If \code{TRUE}, missing values at the beginning and end of a chromatogram
+(outside the range of observed values) will be extrapolated. If
+\code{FALSE}, only interpolation is performed and leading/trailing \code{NA}
+values remain \code{NA}.}
 
 \item{...}{Additional arguments passed to the method.}
 

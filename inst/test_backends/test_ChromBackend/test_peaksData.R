@@ -94,10 +94,17 @@ test_that("[ works", {
 test_that("imputePeaksData works", {
     be1 <- be[1]
     res <- intensity(be)[[1]]
-    res[1] <- NA
+    ## Put NA in interior position (not leading/trailing) to test interpolation
+    ## with default extrapolate = FALSE
+    if (length(res) >= 3) {
+        res[2] <- NA
+    } else {
+        res[1] <- NA
+    }
     intensity(be1) <- list(res)
     expect_true(any(is.na(intensity(be1)[[1]])))
-    be1 <- imputePeaksData(be1, method = "linear")
+    ## Use extrapolate = TRUE to ensure all NAs are filled regardless of position
+    be1 <- imputePeaksData(be1, method = "linear", extrapolate = TRUE)
     expect_false(any(is.na(intensity(be1)[[1]])))
     })
 

@@ -8,6 +8,7 @@
 \alias{[[,Chromatograms-method}
 \alias{[[<-,Chromatograms-method}
 \alias{chromExtract}
+\alias{filterEmptyChromatograms}
 \alias{Chromatograms,ChromBackendOrMissing-method}
 \alias{Chromatograms,Spectra-method}
 \alias{setBackend,Chromatograms,ChromBackend-method}
@@ -15,6 +16,7 @@
 \alias{$<-,Chromatograms-method}
 \alias{factorize,Chromatograms-method}
 \alias{chromExtract,Chromatograms-method}
+\alias{filterEmptyChromatograms,Chromatograms-method}
 \title{The Chromatograms class to manage and access chromatographic data}
 \usage{
 \S4method{Chromatograms}{ChromBackendOrMissing}(object = ChromBackendMemory(), processingQueue = list(), ...)
@@ -49,6 +51,8 @@
 \S4method{factorize}{Chromatograms}(object, factorize.by = c("msLevel", "dataOrigin"), ...)
 
 \S4method{chromExtract}{Chromatograms}(object, peak.table, by, ...)
+
+\S4method{filterEmptyChromatograms}{Chromatograms}(object, ...)
 }
 \arguments{
 \item{object}{A \link{Chromatograms} object.}
@@ -216,6 +220,15 @@ better suits the needs of the user, for example switching to a memory-based
 backend for smaller datasets or to a file-based backend for larger datasets.
 The \code{setBackend()} function supports parallelization of the backend
 conversion using the \code{BPPARAM} parameter.
+}
+
+\section{Filtering chromatograms}{
+
+\itemize{
+\item \code{filterEmptyChromatograms()}: removes empty chromatograms (i.e.
+chromatograms without peaks) from the object. Returns the filtered
+\code{Chromatograms} object (with chromatograms in their original order).
+}
 }
 
 \section{Extracting chromatograms based on a peak table}{

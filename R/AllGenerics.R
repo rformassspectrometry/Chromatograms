@@ -18,6 +18,9 @@ setGeneric("factorize", function(object, ...) standardGeneric("factorize"))
 setGeneric("filterChromData", function(object, ...) {
     standardGeneric("filterChromData")
 })
+setGeneric("filterEmptyChromatograms", function(object, ...) {
+    standardGeneric("filterEmptyChromatograms")
+})
 setGeneric("filterPeaksData", function(object, ...) {
     standardGeneric("filterPeaksData")
 })

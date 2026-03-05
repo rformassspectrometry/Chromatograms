@@ -65,6 +65,12 @@
 #'        of the peaks data variables to filter for. The list of available
 #'        peaks data variables can be obtained with `peaksVariables()`.
 #'
+#' @param extrapolate For `imputePeaksData`: `logical(1)` (default `FALSE`).
+#'        If `TRUE`, missing values at the beginning and end of a chromatogram
+#'        (outside the range of observed values) will be extrapolated. If
+#'        `FALSE`, only interpolation is performed and leading/trailing `NA`
+#'        values remain `NA`.
+#'
 #' @param sd For `imputePeaksData`: `numeric(1)`, for the gaussian method:
 #'        Standard deviation for Gaussian kernel
 #'        (only used if method == "gaussian")
@@ -186,6 +192,7 @@ setMethod(
     span = 0.3,
     sd = 1,
     window = 2,
+    extrapolate = FALSE,
     ...
   ) {
     method <- match.arg(method)
@@ -195,14 +202,16 @@ setMethod(
       method = method,
       span = span,
       sd = sd,
-      window = window
+      window = window,
+      extrapolate = extrapolate
     )
     object@processing <- .logging(
       .processing(object),
       "Impute: replace missing peaks data ",
       "using the '",
       method,
-      "' method"
+      "' method",
+      if (extrapolate) " (with extrapolation)" else ""
     )
     object
   }
