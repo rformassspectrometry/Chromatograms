@@ -89,7 +89,9 @@ NULL
 #' better suits the needs of the user, for example switching to a memory-based
 #' backend for smaller datasets or to a file-based backend for larger datasets.
 #' The `setBackend()` function supports parallelization of the backend
-#' conversion using the `BPPARAM` parameter.
+#' conversion using the `BPPARAM` parameter. Note that any queued processing
+#' steps are applied during the backend switch (since `peaksData()` is called
+#' to transfer the data) and the processing queue is emptied afterwards.
 #'
 #' @section Filtering chromatograms:
 #'
@@ -455,9 +457,12 @@ setMethod(
         chromData = chromData(object)
       )
     } else {
+      queue <- .processingQueue(object)
       bd_new <- bplapply(
         split(.backend(object), f = f),
-        function(z, ...) {
+        function(z, queue, ...) {
+          if (length(queue))
+            z <- .run_process_queue(z, queue)
           backendInitialize(
             backend,
             peaksData = peaksData(z),
@@ -465,6 +470,7 @@ setMethod(
             BPPARAM = SerialParam()
           )
         },
+        queue = queue,
         ...,
         BPPARAM = BPPARAM
       )
@@ -477,6 +483,7 @@ setMethod(
       ]
     }
     object@backend <- bd_new
+    object@processingQueue <- list()
     object@processing <- .logging(
       object@processing,
       "Switch backend from ",

@@ -201,6 +201,32 @@ setReplaceMethod("chromData", "ChromBackendMzR", function(object, value) {
 #' @export
 setMethod("supportsSetBackend", "ChromBackendMzR", function(object, ...) FALSE)
 
+#' ChromBackendMzR overrides the ChromBackendMemory intensity/rtime
+#' methods because it must route through peaksData() for file-based access.
+#' @rdname hidden_aliases
+setMethod("intensity", "ChromBackendMzR", function(object) {
+  if (length(object)) {
+    peaksData(object, columns = "intensity", drop = TRUE)
+  } else {
+    list()
+  }
+})
+
+#' @rdname hidden_aliases
+setMethod("rtime", "ChromBackendMzR", function(object) {
+  if (length(object)) {
+    peaksData(object, columns = "rtime", drop = TRUE)
+  } else {
+    list()
+  }
+})
+
+#' @rdname hidden_aliases
+setMethod("lengths", "ChromBackendMzR", function(x) {
+  if (.inMemory(x)) return(vapply(.peaksData(x), nrow, integer(1L)))
+  lengths(intensity(x))
+})
+
 #' @rdname hidden_aliases
 #' @importMethodsFrom S4Vectors [ [<-
 setMethod("[", "ChromBackendMzR", function(x, i, j, ...) {

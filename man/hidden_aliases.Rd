@@ -16,7 +16,10 @@
 \alias{peaksData,ChromBackendMemory-method}
 \alias{peaksData<-,ChromBackendMemory-method}
 \alias{peaksVariables,ChromBackendMemory-method}
+\alias{lengths,ChromBackendMemory-method}
 \alias{isReadOnly,ChromBackendMemory-method}
+\alias{intensity,ChromBackendMemory-method}
+\alias{rtime,ChromBackendMemory-method}
 \alias{show,ChromBackendMemory-method}
 \alias{supportsSetBackend,ChromBackendMemory-method}
 \alias{[,ChromBackendMemory-method}
@@ -30,6 +33,9 @@
 \alias{peaksData<-,ChromBackendMzR-method}
 \alias{chromData<-,ChromBackendMzR-method}
 \alias{supportsSetBackend,ChromBackendMzR-method}
+\alias{intensity,ChromBackendMzR-method}
+\alias{rtime,ChromBackendMzR-method}
+\alias{lengths,ChromBackendMzR-method}
 \alias{[,ChromBackendMzR-method}
 \alias{chromExtract,ChromBackendMzR-method}
 \alias{show,ChromBackendSpectra-method}
@@ -39,6 +45,9 @@
 \alias{peaksData,ChromBackendSpectra-method}
 \alias{peaksData<-,ChromBackendSpectra-method}
 \alias{supportsSetBackend,ChromBackendSpectra-method}
+\alias{intensity,ChromBackendSpectra-method}
+\alias{rtime,ChromBackendSpectra-method}
+\alias{lengths,ChromBackendSpectra-method}
 \alias{[,ChromBackendSpectra-method}
 \alias{chromExtract,ChromBackendSpectra-method}
 \alias{show,Chromatograms-method}
@@ -66,7 +75,13 @@ validPeaksData(x = list(), error = TRUE)
 
 \S4method{peaksVariables}{ChromBackendMemory}(object)
 
+\S4method{lengths}{ChromBackendMemory}(x)
+
 \S4method{isReadOnly}{ChromBackendMemory}(object)
+
+\S4method{intensity}{ChromBackendMemory}(object)
+
+\S4method{rtime}{ChromBackendMemory}(object)
 
 \S4method{show}{ChromBackendMemory}(object)
 
@@ -100,6 +115,12 @@ validPeaksData(x = list(), error = TRUE)
 
 \S4method{supportsSetBackend}{ChromBackendMzR}(object, ...)
 
+\S4method{intensity}{ChromBackendMzR}(object)
+
+\S4method{rtime}{ChromBackendMzR}(object)
+
+\S4method{lengths}{ChromBackendMzR}(x)
+
 \S4method{[}{ChromBackendMzR}(x, i, j, ..., drop = TRUE)
 
 \S4method{chromExtract}{ChromBackendMzR}(object, peak.table, by, ...)
@@ -117,6 +138,12 @@ validPeaksData(x = list(), error = TRUE)
 \S4method{peaksData}{ChromBackendSpectra}(object) <- value
 
 \S4method{supportsSetBackend}{ChromBackendSpectra}(object, ...)
+
+\S4method{intensity}{ChromBackendSpectra}(object)
+
+\S4method{rtime}{ChromBackendSpectra}(object)
+
+\S4method{lengths}{ChromBackendSpectra}(x)
 
 \S4method{[}{ChromBackendSpectra}(x, i, j, ..., drop = TRUE)
 

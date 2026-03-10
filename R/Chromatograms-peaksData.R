@@ -252,6 +252,8 @@ setMethod(
 
 #' @rdname peaksData
 setMethod("intensity", signature = "Chromatograms", function(object, ...) {
+  if (!length(.processingQueue(object)))
+    return(intensity(.backend(object)))
   peaksData(object, columns = "intensity", drop = TRUE)
 })
 
@@ -315,6 +317,8 @@ setMethod("peaksVariables", signature = "Chromatograms", function(object, ...) {
 
 #' @rdname peaksData
 setMethod("rtime", signature = "Chromatograms", function(object, ...) {
+  if (!length(.processingQueue(object)))
+    return(rtime(.backend(object)))
   peaksData(object, columns = "rtime", drop = TRUE)
 })
 
@@ -330,8 +334,8 @@ setReplaceMethod("rtime", signature = "Chromatograms", function(object, value) {
 #' @rdname peaksData
 setMethod("lengths", signature = "Chromatograms", function(x) {
   queue <- .processingQueue(x)
-  f <- processingChunkFactor(x)
   if (length(queue)) {
+    f <- processingChunkFactor(x)
     bd <- .run_process_queue(
       .backend(x),
       queue = queue,

@@ -190,17 +190,18 @@ setMethod(
     "peaksData", "ChromBackendMemory",
     function(object, columns = peaksVariables(object),
     drop = FALSE, ...) {
-        if (!any(peaksVariables(object) %in% columns)) {
+        pv <- peaksVariables(object)
+        if (!any(pv %in% columns)) {
             stop(
                 "Some of the requested peaks variables are not",
                 " available"
             )
         }
-        if (identical(
-            as.vector(peaksVariables(object)),
-            as.vector(columns)
-        )) {
+        if (identical(as.vector(pv), as.vector(columns))) {
             return(.peaksData(object))
+        }
+        if (drop && length(columns) == 1L) {
+            return(lapply(.peaksData(object), `[[`, columns))
         }
         lapply(.peaksData(object), function(x) x[, columns, drop = drop])
     }
@@ -225,8 +226,27 @@ setMethod("peaksVariables", "ChromBackendMemory", function(object) {
 })
 
 #' @rdname hidden_aliases
+setMethod("lengths", "ChromBackendMemory", function(x) {
+    vapply(.peaksData(x), nrow, integer(1L))
+})
+
+#' @rdname hidden_aliases
 #' @export
 setMethod("isReadOnly", "ChromBackendMemory", function(object) FALSE)
+
+#' Optimized intensity accessor for ChromBackendMemory.
+#' @rdname hidden_aliases
+setMethod("intensity", "ChromBackendMemory", function(object) {
+    if (!length(object)) return(list())
+    lapply(.peaksData(object), `[[`, "intensity")
+})
+
+#' Optimized rtime accessor for ChromBackendMemory.
+#' @rdname hidden_aliases
+setMethod("rtime", "ChromBackendMemory", function(object) {
+    if (!length(object)) return(list())
+    lapply(.peaksData(object), `[[`, "rtime")
+})
 
 #' @importFrom utils capture.output head
 #' @rdname hidden_aliases

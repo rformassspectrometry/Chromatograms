@@ -635,3 +635,424 @@ test_that(".map_spectra_vars() correctly maps spectra variables", {
     "must already exist in the chromData"
   )
 })
+
+test_that(".prepare_spectra_input extracts and classifies correctly", {
+  sp <- Spectra(DataFrame(
+    mz = NumericList(c(100, 200, 300), c(100, 200, 300), c(100, 200, 300),
+                     compress = FALSE),
+    intensity = NumericList(c(10, 20, 30), c(15, 25, 35), c(20, 30, 40),
+                            compress = FALSE),
+    rtime = c(1, 2, 3),
+    msLevel = rep(1L, 3),
+    dataOrigin = rep("A", 3)
+  ))
+
+  ## EIC case (finite mz range)
+  cd <- data.frame(rtMin = 1, rtMax = 3, mzMin = 100, mzMax = 200)
+  prep <- .prepare_spectra_input(cd, sp, sumi)
+  expect_equal(prep$n_cd, 1L)
+  expect_equal(prep$n_valid, 3L)
+  expect_true(prep$same_rt)
+  expect_false(prep$all_tic)
+  expect_true(prep$use_cumsum)
+  expect_equal(prep$valid_rt, c(1, 2, 3))
+  expect_length(prep$valid_mz, 3L)
+  expect_length(prep$valid_int, 3L)
+  ## Each mz/int entry should be a plain numeric vector
+  expect_type(prep$valid_mz[[1]], "double")
+  expect_type(prep$valid_int[[1]], "double")
+
+  ## TIC case (infinite mz ranges)
+  cd_tic <- data.frame(rtMin = 1, rtMax = 3, mzMin = -Inf, mzMax = Inf)
+  prep_tic <- .prepare_spectra_input(cd_tic, sp, sumi)
+  expect_true(prep_tic$all_tic)
+
+  ## maxi function → use_cumsum = FALSE
+  prep_max <- .prepare_spectra_input(cd, sp, maxi)
+  expect_false(prep_max$use_cumsum)
+
+  ## Multiple chromatograms with same rt
+  cd_multi <- data.frame(
+    rtMin = c(1, 1), rtMax = c(3, 3),
+    mzMin = c(100, 200), mzMax = c(200, 300)
+  )
+  prep_multi <- .prepare_spectra_input(cd_multi, sp, sumi)
+  expect_equal(prep_multi$n_cd, 2L)
+  expect_true(prep_multi$same_rt)
+  expect_false(prep_multi$all_tic)
+
+  ## Different rt ranges → same_rt = FALSE
+  cd_diff <- data.frame(
+    rtMin = c(1, 2), rtMax = c(2, 3),
+    mzMin = c(100, 100), mzMax = c(200, 200)
+  )
+  prep_diff <- .prepare_spectra_input(cd_diff, sp, sumi)
+  expect_false(prep_diff$same_rt)
+
+  ## Narrow rt filter reduces n_valid
+  cd_narrow <- data.frame(rtMin = 2, rtMax = 2, mzMin = 100, mzMax = 200)
+  prep_narrow <- .prepare_spectra_input(cd_narrow, sp, sumi)
+  expect_equal(prep_narrow$n_valid, 1L)
+  expect_equal(prep_narrow$valid_rt, 2)
+})
+
+test_that(".prepare_spectra_input handles duplicated retention times", {
+  sp <- Spectra(DataFrame(
+    mz = NumericList(c(100, 200), c(100, 200), c(100, 200), c(100, 200),
+                     compress = FALSE),
+    intensity = NumericList(c(10, 20), c(15, 25), c(30, 40), c(35, 45),
+                            compress = FALSE),
+    rtime = c(1, 1, 2, 3),
+    msLevel = rep(1L, 4),
+    dataOrigin = rep("A", 4)
+  ))
+  cd <- data.frame(rtMin = 1, rtMax = 3, mzMin = -Inf, mzMax = Inf)
+  prep <- .prepare_spectra_input(cd, sp, sumi)
+  ## Only unique rtimes should be kept
+  expect_equal(prep$n_valid, 3L)
+  expect_equal(prep$valid_rt, c(1, 2, 3))
+})
+
+
+test_that(".build_intensity_matrix TIC/BPC fast path", {
+  mz_list <- list(c(100, 200, 300), c(100, 200, 300))
+  int_list <- list(c(10, 20, 30), c(15, 25, 35))
+  int_mat <- .build_intensity_matrix(
+    mz_list, int_list, kept = 1:2,
+    mzMins = c(-Inf, -Inf), mzMaxs = c(Inf, Inf), n_cd = 2L,
+    fun = sumi, all_tic = TRUE, use_cumsum = TRUE
+  )
+  expect_equal(nrow(int_mat), 2L)
+  expect_equal(ncol(int_mat), 2L)
+  ## TIC: sum of all intensities per spectrum, same for all chroms
+  expect_equal(int_mat[1, 1], 60)  # 10+20+30
+  expect_equal(int_mat[1, 2], 60)
+  expect_equal(int_mat[2, 1], 75)  # 15+25+35
+  expect_equal(int_mat[2, 2], 75)
+})
+
+test_that(".build_intensity_matrix cumsum EIC case", {
+  mz_list <- list(c(100, 200, 300), c(100, 200, 300))
+  int_list <- list(c(10, 20, 30), c(15, 25, 35))
+  ## 2 chromatograms: mz 100-200 and mz 200-300
+  int_mat <- .build_intensity_matrix(
+    mz_list, int_list, kept = 1:2,
+    mzMins = c(100, 200), mzMaxs = c(200, 300), n_cd = 2L,
+    fun = sumi, all_tic = FALSE, use_cumsum = TRUE
+  )
+  expect_equal(nrow(int_mat), 2L)
+  expect_equal(ncol(int_mat), 2L)
+  ## Chrom 1 (mz 100-200): spec1 = 10+20=30, spec2 = 15+25=40
+  expect_equal(int_mat[1, 1], 30)
+  expect_equal(int_mat[2, 1], 40)
+  ## Chrom 2 (mz 200-300): spec1 = 20+30=50, spec2 = 25+35=60
+  expect_equal(int_mat[1, 2], 50)
+  expect_equal(int_mat[2, 2], 60)
+})
+
+test_that(".build_intensity_matrix generic function (maxi)", {
+  mz_list <- list(c(100, 200, 300))
+  int_list <- list(c(10, 20, 30))
+  int_mat <- .build_intensity_matrix(
+    mz_list, int_list, kept = 1L,
+    mzMins = c(100, 200), mzMaxs = c(200, 300), n_cd = 2L,
+    fun = maxi, all_tic = FALSE, use_cumsum = FALSE
+  )
+  expect_equal(int_mat[1, 1], 20)  # max(10, 20)
+  expect_equal(int_mat[1, 2], 30)  # max(20, 30)
+})
+
+test_that(".build_intensity_matrix handles empty mz and no match", {
+  mz_list <- list(numeric(0), c(100, 200), c(500, 600))
+  int_list <- list(numeric(0), c(10, 20), c(50, 60))
+  int_mat <- .build_intensity_matrix(
+    mz_list, int_list, kept = 1:3,
+    mzMins = 100, mzMaxs = 200, n_cd = 1L,
+    fun = sumi, all_tic = FALSE, use_cumsum = TRUE
+  )
+  expect_true(is.na(int_mat[1, 1]))   # empty mz → NA
+  expect_equal(int_mat[2, 1], 30)     # 10+20
+  expect_true(is.na(int_mat[3, 1]))   # no mz in range → NA
+})
+
+
+test_that(".compute_chrom_intensities TIC case", {
+  mz_list <- list(c(100, 200), c(100, 200, 300))
+  int_list <- list(c(10, 20), c(15, 25, 35))
+  res <- .compute_chrom_intensities(
+    mz_list, int_list, kept = 1:2,
+    mz_lo = -Inf, mz_hi = Inf, fun = sumi, use_cumsum = TRUE
+  )
+  expect_equal(res, c(30, 75))
+})
+
+test_that(".compute_chrom_intensities cumsum case", {
+  mz_list <- list(c(100, 200, 300), c(100, 200, 300))
+  int_list <- list(c(10, 20, 30), c(15, 25, 35))
+  res <- .compute_chrom_intensities(
+    mz_list, int_list, kept = 1:2,
+    mz_lo = 100, mz_hi = 200, fun = sumi, use_cumsum = TRUE
+  )
+  expect_equal(res, c(30, 40))
+})
+
+test_that(".compute_chrom_intensities generic function (maxi)", {
+  mz_list <- list(c(100, 200, 300))
+  int_list <- list(c(10, 20, 30))
+  res <- .compute_chrom_intensities(
+    mz_list, int_list, kept = 1L,
+    mz_lo = 100, mz_hi = 300, fun = maxi, use_cumsum = FALSE
+  )
+  expect_equal(res, 30)
+})
+
+test_that(".compute_chrom_intensities handles empty mz and no match", {
+  mz_list <- list(numeric(0), c(500, 600))
+  int_list <- list(numeric(0), c(10, 20))
+  res <- .compute_chrom_intensities(
+    mz_list, int_list, kept = 1:2,
+    mz_lo = 100, mz_hi = 200, fun = sumi, use_cumsum = TRUE
+  )
+  expect_true(is.na(res[1]))
+  expect_true(is.na(res[2]))
+})
+
+
+test_that(".process_peaks_data same-rt TIC case", {
+  sp <- Spectra(DataFrame(
+    mz = NumericList(c(100, 200, 300), c(100, 200, 300), compress = FALSE),
+    intensity = NumericList(c(10, 20, 30), c(15, 25, 35), compress = FALSE),
+    rtime = c(1, 2),
+    msLevel = rep(1L, 2),
+    dataOrigin = rep("A", 2)
+  ))
+  cd <- data.frame(
+    rtMin = c(1, 1), rtMax = c(2, 2),
+    mzMin = c(-Inf, -Inf), mzMax = c(Inf, Inf)
+  )
+  res <- .process_peaks_data(cd, sp, c("rtime", "intensity"), sumi, FALSE)
+  expect_length(res, 2L)
+  expect_true(all(vapply(res, is.data.frame, logical(1))))
+  expect_equal(res[[1]]$rtime, c(1, 2))
+  expect_equal(res[[1]]$intensity, c(60, 75))
+  ## Both TIC with same rt → identical
+  expect_equal(res[[1]], res[[2]])
+})
+
+test_that(".process_peaks_data same-rt EIC (mz filtering)", {
+  sp <- Spectra(DataFrame(
+    mz = NumericList(c(100, 200, 300), c(100, 200, 300), compress = FALSE),
+    intensity = NumericList(c(10, 20, 30), c(15, 25, 35), compress = FALSE),
+    rtime = c(1, 2),
+    msLevel = rep(1L, 2),
+    dataOrigin = rep("A", 2)
+  ))
+  cd <- data.frame(
+    rtMin = c(1, 1), rtMax = c(2, 2),
+    mzMin = c(100, 200), mzMax = c(200, 300)
+  )
+  res <- .process_peaks_data(cd, sp, c("rtime", "intensity"), sumi, FALSE)
+  expect_equal(res[[1]]$intensity, c(30, 40))
+  expect_equal(res[[2]]$intensity, c(50, 60))
+})
+
+test_that(".process_peaks_data different-rt case", {
+  sp <- Spectra(DataFrame(
+    mz = NumericList(c(100, 200), c(100, 200), c(100, 200), compress = FALSE),
+    intensity = NumericList(c(10, 20), c(15, 25), c(30, 40), compress = FALSE),
+    rtime = c(1, 2, 3),
+    msLevel = rep(1L, 3),
+    dataOrigin = rep("A", 3)
+  ))
+  cd <- data.frame(
+    rtMin = c(1, 2), rtMax = c(2, 3),
+    mzMin = c(-Inf, -Inf), mzMax = c(Inf, Inf)
+  )
+  res <- .process_peaks_data(cd, sp, c("rtime", "intensity"), sumi, FALSE)
+  expect_equal(res[[1]]$rtime, c(1, 2))
+  expect_equal(res[[1]]$intensity, c(30, 40))
+  expect_equal(res[[2]]$rtime, c(2, 3))
+  expect_equal(res[[2]]$intensity, c(40, 70))
+})
+
+test_that(".process_peaks_data with maxi function", {
+  sp <- Spectra(DataFrame(
+    mz = NumericList(c(100, 200, 300), c(100, 200, 300), compress = FALSE),
+    intensity = NumericList(c(10, 20, 30), c(15, 25, 35), compress = FALSE),
+    rtime = c(1, 2),
+    msLevel = rep(1L, 2),
+    dataOrigin = rep("A", 2)
+  ))
+  cd <- data.frame(rtMin = 1, rtMax = 2, mzMin = 100, mzMax = 300)
+  res <- .process_peaks_data(cd, sp, c("rtime", "intensity"), maxi, FALSE)
+  expect_equal(res[[1]]$intensity, c(30, 35))
+})
+
+test_that(".process_peaks_data drop=TRUE returns vectors", {
+  sp <- Spectra(DataFrame(
+    mz = NumericList(c(100, 200), compress = FALSE),
+    intensity = NumericList(c(10, 20), compress = FALSE),
+    rtime = 1,
+    msLevel = 1L,
+    dataOrigin = "A"
+  ))
+  cd <- data.frame(rtMin = 1, rtMax = 1, mzMin = -Inf, mzMax = Inf)
+  res <- .process_peaks_data(cd, sp, "intensity", sumi, drop = TRUE)
+  expect_type(res[[1]], "double")
+  expect_equal(res[[1]], 30)
+})
+
+test_that(".process_peaks_data handles empty rt range", {
+  sp <- Spectra(DataFrame(
+    mz = NumericList(c(100, 200), compress = FALSE),
+    intensity = NumericList(c(10, 20), compress = FALSE),
+    rtime = 1,
+    msLevel = 1L,
+    dataOrigin = "A"
+  ))
+  cd <- data.frame(rtMin = 5, rtMax = 10, mzMin = -Inf, mzMax = Inf)
+  res <- .process_peaks_data(cd, sp, c("rtime", "intensity"), sumi, FALSE)
+  expect_equal(nrow(res[[1]]), 0L)
+})
+
+test_that(".process_peaks_data rtime-only request", {
+  sp <- Spectra(DataFrame(
+    mz = NumericList(c(100, 200), c(100, 200), compress = FALSE),
+    intensity = NumericList(c(10, 20), c(15, 25), compress = FALSE),
+    rtime = c(1, 2),
+    msLevel = rep(1L, 2),
+    dataOrigin = rep("A", 2)
+  ))
+  cd <- data.frame(rtMin = 1, rtMax = 2, mzMin = 100, mzMax = 200)
+  res <- .process_peaks_data(cd, sp, "rtime", sumi, drop = TRUE)
+  expect_equal(res[[1]], c(1, 2))
+})
+
+test_that(".process_peaks_data returns correct results via ChromBackendSpectra", {
+  ## Integration test using the actual fixture backend
+  pd <- peaksData(be_sp)
+  expect_true(is.list(pd))
+  expect_true(all(vapply(pd, is.data.frame, logical(1))))
+  expect_true(all(vapply(pd, function(d) all(c("rtime", "intensity") %in% names(d)),
+                         logical(1))))
+  ## rtime should be monotonically non-decreasing in each chromatogram
+  for (i in seq_along(pd)) {
+    if (nrow(pd[[i]]) > 1)
+      expect_true(all(diff(pd[[i]]$rtime) >= 0))
+  }
+})
+
+test_that(".process_peaks_data different-rt EIC with cumsum", {
+  sp <- Spectra(DataFrame(
+    mz = NumericList(c(100, 150, 200), c(100, 150, 200), c(100, 150, 200),
+                     compress = FALSE),
+    intensity = NumericList(c(10, 5, 20), c(15, 8, 25), c(30, 12, 40),
+                            compress = FALSE),
+    rtime = c(1, 2, 3),
+    msLevel = rep(1L, 3),
+    dataOrigin = rep("A", 3)
+  ))
+  cd <- data.frame(
+    rtMin = c(1, 2), rtMax = c(2, 3),
+    mzMin = c(100, 100), mzMax = c(150, 200)
+  )
+  res <- .process_peaks_data(cd, sp, c("rtime", "intensity"), sumi, FALSE)
+  ## Chrom 1: rt 1-2, mz 100-150 → spec1: 10+5=15, spec2: 15+8=23
+  expect_equal(res[[1]]$intensity, c(15, 23))
+  ## Chrom 2: rt 2-3, mz 100-200 → spec2: 15+8+25=48, spec3: 30+12+40=82
+  expect_equal(res[[2]]$intensity, c(48, 82))
+})
+
+test_that(".process_peaks_data different-rt EIC with maxi", {
+  sp <- Spectra(DataFrame(
+    mz = NumericList(c(100, 200, 300), c(100, 200, 300), compress = FALSE),
+    intensity = NumericList(c(10, 20, 30), c(15, 25, 35), compress = FALSE),
+    rtime = c(1, 2),
+    msLevel = rep(1L, 2),
+    dataOrigin = rep("A", 2)
+  ))
+  cd <- data.frame(
+    rtMin = c(1, 2), rtMax = c(1, 2),
+    mzMin = c(100, 100), mzMax = c(200, 300)
+  )
+  res <- .process_peaks_data(cd, sp, c("rtime", "intensity"), maxi, FALSE)
+  ## Chrom 1: rt 1 only, mz 100-200 → max(10, 20) = 20
+  expect_equal(res[[1]]$intensity, 20)
+  ## Chrom 2: rt 2 only, mz 100-300 → max(15, 25, 35) = 35
+  expect_equal(res[[2]]$intensity, 35)
+})
+
+
+test_that("intensity/rtime bypass peaksData when queue is empty", {
+  ## Direct backend dispatch when no processing queue
+  int_direct <- intensity(c_full)
+  int_via_be <- peaksData(.backend(c_full), columns = "intensity", drop = TRUE)
+  expect_identical(int_direct, int_via_be)
+
+  rt_direct <- rtime(c_full)
+  rt_via_be <- peaksData(.backend(c_full), columns = "rtime", drop = TRUE)
+  expect_identical(rt_direct, rt_via_be)
+
+  ## Same test with ChromBackendMzR
+  int_mzr <- intensity(c_mzr)
+  rt_mzr <- rtime(c_mzr)
+  expect_identical(int_mzr,
+    peaksData(.backend(c_mzr), columns = "intensity", drop = TRUE))
+  expect_identical(rt_mzr,
+    peaksData(.backend(c_mzr), columns = "rtime", drop = TRUE))
+
+  ## With processing queue, should go through full peaksData dispatch
+  c_queued <- filterPeaksData(c_full, variables = "rtime",
+                              ranges = c(12.5, 45.5))
+  int_queued <- intensity(c_queued)
+  expect_false(identical(int_queued, int_direct))
+})
+
+test_that("lengths works for ChromBackendMemory", {
+  l <- lengths(be)
+  expect_equal(l, vapply(peaksData(be), nrow, integer(1L)))
+  expect_type(l, "integer")
+  ## Empty backend still has one chromatogram, with zero data points
+  expect_equal(lengths(be_empty), 0L)
+})
+
+test_that("lengths works for Chromatograms", {
+  ## No queue
+  l_full <- lengths(c_full)
+  expect_equal(l_full, vapply(peaksData(c_full), nrow, integer(1L)))
+
+  l_mzr <- lengths(c_mzr)
+  expect_equal(l_mzr, vapply(peaksData(c_mzr), nrow, integer(1L)))
+
+  l_empty <- lengths(c_empty)
+  expect_equal(l_empty, 0L)
+
+  ## With queue
+  c_queued <- filterPeaksData(c_full, variables = "rtime",
+                              ranges = c(12.5, 14.0))
+  l_queued <- lengths(c_queued)
+  expect_equal(l_queued, vapply(peaksData(c_queued), nrow, integer(1L)))
+})
+
+test_that("peaksData fast [[ path for single column", {
+  ## drop=TRUE, single column should use fast path
+  int_fast <- peaksData(be, columns = "intensity", drop = TRUE)
+  int_ref <- lapply(peaksData(be), `[[`, "intensity")
+  expect_equal(int_fast, int_ref)
+
+  rt_fast <- peaksData(be, columns = "rtime", drop = TRUE)
+  rt_ref <- lapply(peaksData(be), `[[`, "rtime")
+  expect_equal(rt_fast, rt_ref)
+})
+
+test_that("setBackend clears processing queue", {
+  c_queued <- filterPeaksData(c_mzr, variables = "rtime",
+                              ranges = c(12.5, 45.5))
+  expect_length(.processingQueue(c_queued), 1L)
+  pd_before <- peaksData(c_queued)
+
+  c_mem <- setBackend(c_queued, ChromBackendMemory())
+  expect_length(.processingQueue(c_mem), 0L)
+  expect_identical(peaksData(c_mem), peaksData(.backend(c_mem)))
+  expect_equal(peaksData(c_mem), pd_before)
+})

@@ -219,7 +219,9 @@ The \code{setBackend()} function can be used to change the backend of a
 better suits the needs of the user, for example switching to a memory-based
 backend for smaller datasets or to a file-based backend for larger datasets.
 The \code{setBackend()} function supports parallelization of the backend
-conversion using the \code{BPPARAM} parameter.
+conversion using the \code{BPPARAM} parameter. Note that any queued processing
+steps are applied during the backend switch (since \code{peaksData()} is called
+to transfer the data) and the processing queue is emptied afterwards.
 }
 
 \section{Filtering chromatograms}{

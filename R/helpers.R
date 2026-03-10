@@ -325,54 +325,224 @@
   }
   plot.xy(xy.coords(rts, ints), type = type, col = col, ...)
 }
-#' Used In:
-#' - `peaksData` for `ChromBackendSpectra` class.
-#' @importFrom Spectra peaksData filterRanges
+#' Pre-extract and pre-filter spectra data for chromatogram computation.
+#'
+#' Extracts mz, intensity, and rtime from a Spectra object as plain R vectors,
+#' removes duplicated retention times, and pre-filters to the global retention
+#' time range defined by the chromatogram metadata.
+#'
+#' Used in:
+#' - `.process_peaks_data()`
+#'
+#' @param cd `data.frame` with columns rtMin, rtMax, mzMin, mzMax.
+#' @param s `Spectra` object.
+#' @param fun Summary function (e.g., `sumi`, `maxi`).
+#' @return A named `list` with the prepared vectors and classification flags.
+#' @importFrom Spectra mz intensity rtime
+#' @importFrom MsCoreUtils sumi
 #' @noRd
-.process_peaks_data <- function(cd, s, columns, fun, drop) {
-  ## Handle single spectrum case: filterRanges fails with length(s) == 1
-  if (length(s) > 1) {
-    s <- filterRanges(
-      s,
-      spectraVariables = rep("rtime", nrow(cd)),
-      ranges = as.vector(rbind(cd$rtMin, cd$rtMax)),
-      match = "any"
-    )
+.prepare_spectra_input <- function(cd, s, fun) {
+  ## as.list() converts SimpleNumericList to plain list (~12x faster for [[)
+  mz_list <- as.list(mz(s))
+  int_list <- as.list(intensity(s))
+  rt <- rtime(s)
+  not_dup <- !duplicated(rt)
+  global_rt_min <- min(cd$rtMin)
+  global_rt_max <- max(cd$rtMax)
+  global_keep <- not_dup & rt >= global_rt_min & rt <= global_rt_max
+  valid_idx <- which(global_keep)
+  rt_mins <- cd$rtMin
+  rt_maxs <- cd$rtMax
+  mzMins <- cd$mzMin
+  mzMaxs <- cd$mzMax
+  list(
+    valid_rt   = rt[valid_idx],
+    valid_mz   = mz_list[valid_idx],
+    valid_int  = int_list[valid_idx],
+    n_valid    = length(valid_idx),
+    rt_mins    = rt_mins,
+    rt_maxs    = rt_maxs,
+    mzMins     = mzMins,
+    mzMaxs     = mzMaxs,
+    n_cd       = nrow(cd),
+    same_rt    = all(rt_mins == rt_mins[1L]) && all(rt_maxs == rt_maxs[1L]),
+    all_tic    = all(is.infinite(mzMins) & mzMins < 0) &&
+                 all(is.infinite(mzMaxs) & mzMaxs > 0),
+    use_cumsum = identical(fun, sumi)
+  )
+}
+
+#' Build intensity matrix for the shared-retention-time path.
+#'
+#' When all chromatograms share the same retention time window, computes
+#' intensities using a spectrum-major loop with `findInterval()` for
+#' O(log n) m/z range lookups.
+#'
+#' Used in:
+#' - `.process_peaks_data()`
+#'
+#' @param valid_mz,valid_int Lists of m/z and intensity vectors.
+#' @param kept Integer indices into `valid_*` for spectra in the rt window.
+#' @param mzMins,mzMaxs Numeric vectors of m/z bounds per chromatogram.
+#' @param n_cd Number of chromatograms.
+#' @param fun Summary function.
+#' @param all_tic Logical: all mz ranges infinite (TIC/BPC case)?
+#' @param use_cumsum Logical: use cumsum optimisation (for `sumi`)?
+#' @return A `matrix` of dimensions `length(kept)` x `n_cd`.
+#' @noRd
+.build_intensity_matrix <- function(valid_mz, valid_int, kept, mzMins,
+                                    mzMaxs, n_cd, fun, all_tic, use_cumsum) {
+  n_kept <- length(kept)
+  int_mat <- matrix(NA_real_, nrow = n_kept, ncol = n_cd)
+  if (all_tic) {
+    ## TIC/BPC fast path: no mz filtering needed
+    for (j in seq_len(n_kept))
+      int_mat[j, ] <- fun(valid_int[[kept[j]]])
+  } else if (use_cumsum) {
+    for (j in seq_len(n_kept)) {
+      k <- kept[j]
+      mz_j <- valid_mz[[k]]
+      int_j <- valid_int[[k]]
+      n_mz <- length(mz_j)
+      if (n_mz == 0L) next
+      cs <- c(0, cumsum(int_j))
+      lo <- findInterval(mzMins, mz_j, left.open = TRUE) + 1L
+      hi <- findInterval(mzMaxs, mz_j)
+      w <- which(lo <= hi & lo >= 1L & hi >= 1L & lo <= n_mz)
+      if (length(w))
+        int_mat[j, w] <- cs[hi[w] + 1L] - cs[lo[w]]
+    }
   } else {
-    ## For single spectrum, manually filter by rtime range
-    if (length(s) == 1) {
-      rt_in_range <- s$rtime >= min(cd$rtMin) & s$rtime <= max(cd$rtMax)
-      if (!rt_in_range) {
-        s <- s[integer(0)] ## Return empty Spectra
-      }
+    ## Generic function (e.g. maxi): findInterval for lookup, direct subset
+    for (j in seq_len(n_kept)) {
+      k <- kept[j]
+      mz_j <- valid_mz[[k]]
+      int_j <- valid_int[[k]]
+      n_mz <- length(mz_j)
+      if (n_mz == 0L) next
+      lo <- findInterval(mzMins, mz_j, left.open = TRUE) + 1L
+      hi <- findInterval(mzMaxs, mz_j)
+      for (i in seq_len(n_cd))
+        if (lo[i] <= hi[i] && lo[i] >= 1L && hi[i] <= n_mz)
+          int_mat[j, i] <- fun(int_j[lo[i]:hi[i]])
     }
   }
-  pd <- peaksData(s, columns = c("mz", "intensity"))
+  int_mat
+}
+
+#' Compute intensity vector for a single chromatogram (different-rt path).
+#'
+#' Aggregates intensities across the given spectra indices within one m/z
+#' range using the provided summary function.
+#'
+#' Used in:
+#' - `.process_peaks_data()`
+#'
+#' @param valid_mz,valid_int Lists of m/z and intensity vectors.
+#' @param kept Integer indices into `valid_*` for spectra in this chrom's
+#'   rt window.
+#' @param mz_lo,mz_hi Scalar m/z bounds for this chromatogram.
+#' @param fun Summary function.
+#' @param use_cumsum Logical: use cumsum optimisation?
+#' @return Numeric vector of length `length(kept)`.
+#' @noRd
+.compute_chrom_intensities <- function(valid_mz, valid_int, kept, mz_lo,
+                                       mz_hi, fun, use_cumsum) {
+  ## TIC/BPC: no mz filtering
+  if (is.infinite(mz_lo) && mz_lo < 0 && is.infinite(mz_hi))
+    return(vapply(kept, function(j) fun(valid_int[[j]]),
+                  numeric(1), USE.NAMES = FALSE))
+  ## cumsum path (sumi)
+  if (use_cumsum)
+    return(vapply(kept, function(j) {
+      mz_j <- valid_mz[[j]]
+      n_mz <- length(mz_j)
+      if (n_mz == 0L) return(NA_real_)
+      cs <- c(0, cumsum(valid_int[[j]]))
+      lo <- findInterval(mz_lo, mz_j, left.open = TRUE) + 1L
+      hi <- findInterval(mz_hi, mz_j)
+      if (lo <= hi && lo >= 1L && hi <= n_mz) cs[hi + 1L] - cs[lo]
+      else NA_real_
+    }, numeric(1), USE.NAMES = FALSE))
+  ## Generic function (e.g. maxi)
+  vapply(kept, function(j) {
+    mz_j <- valid_mz[[j]]
+    n_mz <- length(mz_j)
+    if (n_mz == 0L) return(NA_real_)
+    lo <- findInterval(mz_lo, mz_j, left.open = TRUE) + 1L
+    hi <- findInterval(mz_hi, mz_j)
+    if (lo <= hi && lo >= 1L && hi <= n_mz) fun(valid_int[[j]][lo:hi])
+    else NA_real_
+  }, numeric(1), USE.NAMES = FALSE)
+}
+
+#' Compute peaks data from Spectra for ChromBackendSpectra.
+#'
+#' Main orchestrator that converts raw spectra into chromatographic peaks data
+#' by aggregating intensities within defined m/z and retention time ranges.
+#' Dispatches to `.build_intensity_matrix()` (shared-rt path) or
+#' `.compute_chrom_intensities()` (per-chromatogram path).
+#'
+#' Used In:
+#' - `peaksData` for `ChromBackendSpectra` class.
+#' @importFrom Spectra peaksData
+#' @importFrom MsCoreUtils maxi
+#' @noRd
+.process_peaks_data <- function(cd, s, columns, fun, drop) {
   do_rt <- "rtime" %in% columns
   do_int <- "intensity" %in% columns
-  rt <- rtime(s)
-  lapply(seq_len(nrow(cd)), function(i) {
-    ## only keep the first rt if there is duplication
-    keep <- between(rt, c(cd$rtMin[i], cd$rtMax[i])) & !duplicated(rt)
-    df <- as.data.frame(matrix(ncol = 0, nrow = sum(keep)))
-    if (do_rt) {
-      df$rtime <- rt[keep]
+  prep <- .prepare_spectra_input(cd, s, fun)
+  n_cd <- prep$n_cd
+  valid_rt <- prep$valid_rt
+  valid_mz <- prep$valid_mz
+  valid_int <- prep$valid_int
+  n_valid <- prep$n_valid
+  if (prep$same_rt) {
+    ## Optimized path: all chromatograms share the same rt range
+    if (is.finite(prep$rt_mins[1L]) || is.finite(prep$rt_maxs[1L])) {
+      kept <- which(valid_rt >= prep$rt_mins[1L] &
+                      valid_rt <= prep$rt_maxs[1L])
+    } else {
+      kept <- seq_len(n_valid)
     }
-    if (do_int) {
-      df$intensity <- vapply(
-        pd[keep],
-        function(z) {
-          fun(z[
-            between(z[, "mz"], c(cd$mzMin[i], cd$mzMax[i])),
-            "intensity"
-          ])
-        },
-        NA_real_,
-        USE.NAMES = FALSE
-      )
+    n_kept <- length(kept)
+    rtime_out <- valid_rt[kept]
+    int_mat <- if (do_int && n_kept > 0L)
+      .build_intensity_matrix(valid_mz, valid_int, kept, prep$mzMins,
+                              prep$mzMaxs, n_cd, fun, prep$all_tic,
+                              prep$use_cumsum)
+    res <- vector("list", n_cd)
+    for (i in seq_len(n_cd)) {
+      df_list <- list()
+      if (do_rt) df_list$rtime <- rtime_out
+      if (do_int)
+        df_list$intensity <- if (n_kept > 0L) int_mat[, i] else numeric(0L)
+      res[[i]] <- as.data.frame(df_list)[, columns, drop = drop]
     }
-    df[, columns, drop = drop]
-  })
+  } else {
+    ## Fallback: per-chromatogram rt ranges differ
+    res <- vector("list", n_cd)
+    for (i in seq_len(n_cd)) {
+      if (is.finite(prep$rt_mins[i]) || is.finite(prep$rt_maxs[i])) {
+        kept <- which(valid_rt >= prep$rt_mins[i] &
+                        valid_rt <= prep$rt_maxs[i])
+      } else {
+        kept <- seq_len(n_valid)
+      }
+      n_kept <- length(kept)
+      rtime_out <- valid_rt[kept]
+      intensities <- if (do_int && n_kept > 0L)
+        .compute_chrom_intensities(valid_mz, valid_int, kept,
+                                   prep$mzMins[i], prep$mzMaxs[i],
+                                   fun, prep$use_cumsum)
+      else numeric(n_kept)
+      df_list <- list()
+      if (do_rt) df_list$rtime <- rtime_out
+      if (do_int) df_list$intensity <- intensities
+      res[[i]] <- as.data.frame(df_list)[, columns, drop = drop]
+    }
+  }
+  res
 }
 
 #' Used in:

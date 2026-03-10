@@ -427,6 +427,33 @@ setMethod(
   function(object, ...) FALSE
 )
 
+#' ChromBackendSpectra needs to override the ChromBackendMemory intensity/rtime
+#' methods because it must route through peaksData() (which handles the
+#' inMemory vs. on-the-fly computation from spectra).
+#' @rdname hidden_aliases
+setMethod("intensity", "ChromBackendSpectra", function(object) {
+  if (length(object)) {
+    peaksData(object, columns = "intensity", drop = TRUE)
+  } else {
+    list()
+  }
+})
+
+#' @rdname hidden_aliases
+setMethod("rtime", "ChromBackendSpectra", function(object) {
+  if (length(object)) {
+    peaksData(object, columns = "rtime", drop = TRUE)
+  } else {
+    list()
+  }
+})
+
+#' @rdname hidden_aliases
+setMethod("lengths", "ChromBackendSpectra", function(x) {
+  if (.inMemory(x)) return(vapply(.peaksData(x), nrow, integer(1L)))
+  lengths(intensity(x))
+})
+
 #' @rdname hidden_aliases
 #' @importMethodsFrom S4Vectors [ [[
 #' @importFrom MsCoreUtils i2index
