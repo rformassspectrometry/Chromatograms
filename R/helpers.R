@@ -327,9 +327,10 @@
 }
 #' Pre-extract and pre-filter spectra data for chromatogram computation.
 #'
-#' Extracts mz, intensity, and rtime from a Spectra object as plain R vectors,
-#' removes duplicated retention times, and pre-filters to the global retention
-#' time range defined by the chromatogram metadata.
+#' Extracts mz, intensity, and rtime from a Spectra object as plain R lists,
+#' removes duplicated retention times, and pre-filters spectra to the global
+#' retention time range. Also classifies the request (shared rt, TIC/BPC,
+#' cumsum-eligible) to guide downstream dispatch.
 #'
 #' Used in:
 #' - `.process_peaks_data()`
@@ -337,7 +338,7 @@
 #' @param cd `data.frame` with columns rtMin, rtMax, mzMin, mzMax.
 #' @param s `Spectra` object.
 #' @param fun Summary function (e.g., `sumi`, `maxi`).
-#' @return A named `list` with the prepared vectors and classification flags.
+#' @return A named `list` with prepared vectors and classification flags.
 #' @importFrom Spectra mz intensity rtime
 #' @importFrom MsCoreUtils sumi
 #' @noRd
@@ -375,8 +376,10 @@
 #' Build intensity matrix for the shared-retention-time path.
 #'
 #' When all chromatograms share the same retention time window, computes
-#' intensities using a spectrum-major loop with `findInterval()` for
-#' O(log n) m/z range lookups.
+#' intensities using a spectrum-major loop. Uses `findInterval()` (binary
+#' search) to locate m/z range boundaries efficiently since m/z vectors are
+#' sorted, and `cumsum()` prefix sums for fast range summation when `fun`
+#' is `sumi`.
 #'
 #' Used in:
 #' - `.process_peaks_data()`
@@ -432,8 +435,10 @@
 
 #' Compute intensity vector for a single chromatogram (different-rt path).
 #'
-#' Aggregates intensities across the given spectra indices within one m/z
-#' range using the provided summary function.
+#' Aggregates intensities across spectra within one m/z range using the
+#' provided summary function. Uses the same `findInterval()` + `cumsum()`
+#' strategy as `.build_intensity_matrix()` but for a single chromatogram
+#' at a time.
 #'
 #' Used in:
 #' - `.process_peaks_data()`
