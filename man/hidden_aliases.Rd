@@ -16,8 +16,9 @@
 \alias{peaksData,ChromBackendMemory-method}
 \alias{peaksData<-,ChromBackendMemory-method}
 \alias{peaksVariables,ChromBackendMemory-method}
-\alias{lengths,ChromBackendMemory-method}
+\alias{backendParallelFactor,ChromBackendMemory-method}
 \alias{isReadOnly,ChromBackendMemory-method}
+\alias{lengths,ChromBackendMemory-method}
 \alias{intensity,ChromBackendMemory-method}
 \alias{rtime,ChromBackendMemory-method}
 \alias{show,ChromBackendMemory-method}
@@ -75,9 +76,11 @@ validPeaksData(x = list(), error = TRUE)
 
 \S4method{peaksVariables}{ChromBackendMemory}(object)
 
-\S4method{lengths}{ChromBackendMemory}(x)
+\S4method{backendParallelFactor}{ChromBackendMemory}(object, ...)
 
 \S4method{isReadOnly}{ChromBackendMemory}(object)
+
+\S4method{lengths}{ChromBackendMemory}(x)
 
 \S4method{intensity}{ChromBackendMemory}(object)
 

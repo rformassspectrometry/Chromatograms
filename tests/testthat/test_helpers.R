@@ -714,6 +714,134 @@ test_that(".prepare_spectra_input handles duplicated retention times", {
 })
 
 
+test_that(".spectrum_intensities TIC case returns replicated fun(int_j)", {
+  mz_j <- c(100, 200, 300)
+  int_j <- c(10, 20, 30)
+  ## sumi: sum = 60, replicated for 3 chromatograms
+  res <- .spectrum_intensities(mz_j, int_j,
+    mzMins = c(-Inf, -Inf, -Inf), mzMaxs = c(Inf, Inf, Inf),
+    fun = sumi, all_tic = TRUE, use_cumsum = TRUE
+  )
+  expect_equal(res, rep(60, 3))
+  ## maxi: max = 30
+  res_max <- .spectrum_intensities(mz_j, int_j,
+    mzMins = c(-Inf, -Inf), mzMaxs = c(Inf, Inf),
+    fun = maxi, all_tic = TRUE, use_cumsum = FALSE
+  )
+  expect_equal(res_max, rep(30, 2))
+})
+
+test_that(".spectrum_intensities cumsum EIC case", {
+  mz_j <- c(100, 200, 300)
+  int_j <- c(10, 20, 30)
+  ## Two ranges: mz 100-200 → 10+20=30, mz 200-300 → 20+30=50
+  res <- .spectrum_intensities(mz_j, int_j,
+    mzMins = c(100, 200), mzMaxs = c(200, 300),
+    fun = sumi, all_tic = FALSE, use_cumsum = TRUE
+  )
+  expect_equal(res, c(30, 50))
+})
+
+test_that(".spectrum_intensities generic (maxi) case", {
+  mz_j <- c(100, 200, 300)
+  int_j <- c(10, 20, 30)
+  ## mz 100-200 → max(10,20)=20, mz 200-300 → max(20,30)=30
+  res <- .spectrum_intensities(mz_j, int_j,
+    mzMins = c(100, 200), mzMaxs = c(200, 300),
+    fun = maxi, all_tic = FALSE, use_cumsum = FALSE
+  )
+  expect_equal(res, c(20, 30))
+})
+
+test_that(".spectrum_intensities empty mz returns NA", {
+  ## cumsum path
+  res_cs <- .spectrum_intensities(numeric(0), numeric(0),
+    mzMins = 100, mzMaxs = 200,
+    fun = sumi, all_tic = FALSE, use_cumsum = TRUE
+  )
+  expect_true(is.na(res_cs))
+  ## generic path
+  res_gen <- .spectrum_intensities(numeric(0), numeric(0),
+    mzMins = 100, mzMaxs = 200,
+    fun = maxi, all_tic = FALSE, use_cumsum = FALSE
+  )
+  expect_true(is.na(res_gen))
+})
+
+test_that(".spectrum_intensities no mz in range returns NA", {
+  mz_j <- c(500, 600)
+  int_j <- c(10, 20)
+  res_cs <- .spectrum_intensities(mz_j, int_j,
+    mzMins = 100, mzMaxs = 200,
+    fun = sumi, all_tic = FALSE, use_cumsum = TRUE
+  )
+  expect_true(is.na(res_cs))
+  res_gen <- .spectrum_intensities(mz_j, int_j,
+    mzMins = 100, mzMaxs = 200,
+    fun = maxi, all_tic = FALSE, use_cumsum = FALSE
+  )
+  expect_true(is.na(res_gen))
+})
+
+test_that(".spectrum_intensities TIC with NAs uses fun directly", {
+  mz_j <- c(100, 200, 300)
+  int_j <- c(10, NA, 30)
+  ## sumi (na.rm): 10 + 30 = 40 (MsCoreUtils::sumi removes NAs)
+  res <- .spectrum_intensities(mz_j, int_j,
+    mzMins = -Inf, mzMaxs = Inf,
+    fun = sumi, all_tic = TRUE, use_cumsum = TRUE
+  )
+  expect_equal(res, sumi(int_j))
+  ## maxi (na.rm): max = 30
+  res_max <- .spectrum_intensities(mz_j, int_j,
+    mzMins = -Inf, mzMaxs = Inf,
+    fun = maxi, all_tic = TRUE, use_cumsum = FALSE
+  )
+  expect_equal(res_max, maxi(int_j))
+})
+
+test_that(".spectrum_intensities cumsum with NAs strips NA peaks", {
+  mz_j <- c(100, 200, 300, 400)
+  int_j <- c(10, NA, 30, NA)
+  ## After stripping NAs: mz = c(100, 300), int = c(10, 30)
+  ## mz 100-300: 10+30=40, mz 300-400: 30
+  res <- .spectrum_intensities(mz_j, int_j,
+    mzMins = c(100, 300), mzMaxs = c(300, 400),
+    fun = sumi, all_tic = FALSE, use_cumsum = TRUE
+  )
+  expect_equal(res, c(40, 30))
+})
+
+test_that(".spectrum_intensities generic (maxi) with NAs", {
+  mz_j <- c(100, 200, 300, 400)
+  int_j <- c(10, NA, 30, NA)
+  ## mz 100-300: maxi(10, NA, 30) = 30
+  res <- .spectrum_intensities(mz_j, int_j,
+    mzMins = c(100, 300), mzMaxs = c(300, 400),
+    fun = maxi, all_tic = FALSE, use_cumsum = FALSE
+  )
+  expect_equal(res[1], 30) # max(10, NA, 30) via maxi = 30
+  expect_equal(res[2], 30) # max(30, NA) via maxi = 30
+})
+
+test_that(".spectrum_intensities all-NA spectrum returns NA", {
+  mz_j <- c(100, 200, 300)
+  int_j <- c(NA_real_, NA_real_, NA_real_)
+  ## cumsum: .strip_na_peaks returns NULL → NA
+  res_cs <- .spectrum_intensities(mz_j, int_j,
+    mzMins = c(100, 200), mzMaxs = c(200, 300),
+    fun = sumi, all_tic = FALSE, use_cumsum = TRUE
+  )
+  expect_true(all(is.na(res_cs)))
+  ## generic: maxi(NA, NA, NA) → NA
+  res_gen <- .spectrum_intensities(mz_j, int_j,
+    mzMins = c(100, 200), mzMaxs = c(200, 300),
+    fun = maxi, all_tic = FALSE, use_cumsum = FALSE
+  )
+  expect_true(all(is.na(res_gen)))
+})
+
+
 test_that(".build_intensity_matrix TIC/BPC fast path", {
   mz_list <- list(c(100, 200, 300), c(100, 200, 300))
   int_list <- list(c(10, 20, 30), c(15, 25, 35))
@@ -776,6 +904,85 @@ test_that(".build_intensity_matrix handles empty mz and no match", {
 })
 
 
+test_that(".build_intensity_matrix BPC multi-range (maxi)", {
+  ## Multiple chromatograms with different mz ranges
+  mz_list <- list(c(100, 150, 200, 250, 300),
+                  c(100, 150, 200, 250, 300))
+  int_list <- list(c(10, 50, 20, 80, 30),
+                   c(15, 60, 25, 70, 35))
+  int_mat <- .build_intensity_matrix(
+    mz_list, int_list, kept = 1:2,
+    mzMins = c(100, 200), mzMaxs = c(200, 300), n_cd = 2L,
+    fun = maxi, all_tic = FALSE, use_cumsum = FALSE
+  )
+  ## Chrom 1 (mz 100-200): spec1 max(10,50,20)=50, spec2 max(15,60,25)=60
+  expect_equal(int_mat[1, 1], 50)
+  expect_equal(int_mat[2, 1], 60)
+  ## Chrom 2 (mz 200-300): spec1 max(20,80,30)=80, spec2 max(25,70,35)=70
+  expect_equal(int_mat[1, 2], 80)
+  expect_equal(int_mat[2, 2], 70)
+})
+
+test_that(".build_intensity_matrix BPC single-element range", {
+  mz_list <- list(c(100, 200, 300))
+  int_list <- list(c(10, 20, 30))
+  int_mat <- .build_intensity_matrix(
+    mz_list, int_list, kept = 1L,
+    mzMins = c(200), mzMaxs = c(200), n_cd = 1L,
+    fun = maxi, all_tic = FALSE, use_cumsum = FALSE
+  )
+  expect_equal(int_mat[1, 1], 20)
+})
+
+test_that(".build_intensity_matrix BPC handles NA intensities", {
+  mz_list <- list(c(100, 200, 300, 400))
+  int_list <- list(c(10, NA, 30, NA))
+  ## Sparse table path with NAs
+  int_mat <- .build_intensity_matrix(
+    mz_list, int_list, kept = 1L,
+    mzMins = c(100, 300), mzMaxs = c(300, 400), n_cd = 2L,
+    fun = maxi, all_tic = FALSE, use_cumsum = FALSE
+  )
+  ## mz 100-300: non-NA peaks are 10, 30 → max = 30
+
+  expect_equal(int_mat[1, 1], 30)
+  ## mz 300-400: non-NA peaks are 30 → max = 30
+  expect_equal(int_mat[1, 2], 30)
+})
+
+test_that(".build_intensity_matrix cumsum handles NA intensities", {
+  mz_list <- list(c(100, 200, 300, 400))
+  int_list <- list(c(10, NA, 30, NA))
+  int_mat <- .build_intensity_matrix(
+    mz_list, int_list, kept = 1L,
+    mzMins = c(100, 300), mzMaxs = c(300, 400), n_cd = 2L,
+    fun = sumi, all_tic = FALSE, use_cumsum = TRUE
+  )
+  ## mz 100-300: non-NA are 10, 30 → sum = 40
+  expect_equal(int_mat[1, 1], 40)
+  ## mz 300-400: non-NA is 30 → sum = 30
+  expect_equal(int_mat[1, 2], 30)
+})
+
+test_that(".build_intensity_matrix all-NA spectrum returns NA", {
+  mz_list <- list(c(100, 200, 300))
+  int_list <- list(c(NA_real_, NA_real_, NA_real_))
+  ## cumsum path
+  res_sum <- .build_intensity_matrix(
+    mz_list, int_list, kept = 1L,
+    mzMins = 100, mzMaxs = 300, n_cd = 1L,
+    fun = sumi, all_tic = FALSE, use_cumsum = TRUE
+  )
+  expect_true(is.na(res_sum[1, 1]))
+  ## BPC path
+  res_max <- .build_intensity_matrix(
+    mz_list, int_list, kept = 1L,
+    mzMins = 100, mzMaxs = 300, n_cd = 1L,
+    fun = maxi, all_tic = FALSE, use_cumsum = FALSE
+  )
+  expect_true(is.na(res_max[1, 1]))
+})
+
 test_that(".compute_chrom_intensities TIC case", {
   mz_list <- list(c(100, 200), c(100, 200, 300))
   int_list <- list(c(10, 20), c(15, 25, 35))
@@ -815,6 +1022,58 @@ test_that(".compute_chrom_intensities handles empty mz and no match", {
   )
   expect_true(is.na(res[1]))
   expect_true(is.na(res[2]))
+})
+
+test_that(".compute_chrom_intensities TIC with NAs", {
+  mz_list <- list(c(100, 200), c(100, 200, 300))
+  int_list <- list(c(10, NA), c(NA, 25, 35))
+  res <- .compute_chrom_intensities(
+    mz_list, int_list, kept = 1:2,
+    mz_lo = -Inf, mz_hi = Inf, fun = sumi, use_cumsum = TRUE
+  )
+  ## sumi removes NAs: spec1=10, spec2=60
+  expect_equal(res, c(sumi(c(10, NA)), sumi(c(NA, 25, 35))))
+})
+
+test_that(".compute_chrom_intensities cumsum with NAs", {
+  mz_list <- list(c(100, 200, 300), c(100, 200, 300))
+  int_list <- list(c(10, NA, 30), c(NA, 25, 35))
+  res <- .compute_chrom_intensities(
+    mz_list, int_list, kept = 1:2,
+    mz_lo = 100, mz_hi = 200, fun = sumi, use_cumsum = TRUE
+  )
+  ## After stripping NAs: spec1 mz=c(100,300) int=c(10,30) → mz 100-200 = 10
+  ## spec2 mz=c(200,300) int=c(25,35) → mz 100-200: only mz=200 → 25
+  expect_equal(res[1], 10)
+  expect_equal(res[2], 25)
+})
+
+test_that(".compute_chrom_intensities generic (maxi) with NAs", {
+  mz_list <- list(c(100, 200, 300))
+  int_list <- list(c(10, NA, 30))
+  res <- .compute_chrom_intensities(
+    mz_list, int_list, kept = 1L,
+    mz_lo = 100, mz_hi = 300, fun = maxi, use_cumsum = FALSE
+  )
+  ## maxi(10, NA, 30) = 30  (maxi ignores NAs)
+  expect_equal(res, 30)
+})
+
+test_that(".compute_chrom_intensities all-NA spectrum returns NA", {
+  mz_list <- list(c(100, 200, 300))
+  int_list <- list(c(NA_real_, NA_real_, NA_real_))
+  ## cumsum: .strip_na_peaks → NULL → NA
+  res_sum <- .compute_chrom_intensities(
+    mz_list, int_list, kept = 1L,
+    mz_lo = 100, mz_hi = 300, fun = sumi, use_cumsum = TRUE
+  )
+  expect_true(is.na(res_sum))
+  ## generic path
+  res_max <- .compute_chrom_intensities(
+    mz_list, int_list, kept = 1L,
+    mz_lo = 100, mz_hi = 300, fun = maxi, use_cumsum = FALSE
+  )
+  expect_true(is.na(res_max))
 })
 
 
@@ -982,6 +1241,81 @@ test_that(".process_peaks_data different-rt EIC with maxi", {
   expect_equal(res[[2]]$intensity, 35)
 })
 
+test_that(".process_peaks_data same-rt TIC with NAs in intensities", {
+  sp <- Spectra(DataFrame(
+    mz = NumericList(c(100, 200, 300), c(100, 200, 300), compress = FALSE),
+    intensity = NumericList(c(10, NA, 30), c(NA, 25, 35), compress = FALSE),
+    rtime = c(1, 2),
+    msLevel = rep(1L, 2),
+    dataOrigin = rep("A", 2)
+  ))
+  cd <- data.frame(
+    rtMin = c(1, 1), rtMax = c(2, 2),
+    mzMin = c(-Inf, -Inf), mzMax = c(Inf, Inf)
+  )
+  res <- .process_peaks_data(cd, sp, c("rtime", "intensity"), sumi, FALSE)
+  ## TIC: sumi ignores NAs → spec1: 10+30=40, spec2: 25+35=60
+  expect_equal(res[[1]]$intensity, c(sumi(c(10, NA, 30)), sumi(c(NA, 25, 35))))
+  expect_equal(res[[1]], res[[2]])
+})
+
+test_that(".process_peaks_data same-rt EIC cumsum with NAs", {
+  sp <- Spectra(DataFrame(
+    mz = NumericList(c(100, 200, 300), c(100, 200, 300), compress = FALSE),
+    intensity = NumericList(c(10, NA, 30), c(NA, 25, 35), compress = FALSE),
+    rtime = c(1, 2),
+    msLevel = rep(1L, 2),
+    dataOrigin = rep("A", 2)
+  ))
+  cd <- data.frame(
+    rtMin = c(1, 1), rtMax = c(2, 2),
+    mzMin = c(100, 200), mzMax = c(200, 300)
+  )
+  res <- .process_peaks_data(cd, sp, c("rtime", "intensity"), sumi, FALSE)
+  ## cumsum path strips NAs first, then sums within range
+  ## spec1: non-NA mz=c(100,300) int=c(10,30) → mz 100-200: 10, mz 200-300: 30
+  ## spec2: non-NA mz=c(200,300) int=c(25,35) → mz 100-200: 25, mz 200-300: 60
+  expect_equal(res[[1]]$intensity, c(10, 25))
+  expect_equal(res[[2]]$intensity, c(30, 60))
+})
+
+test_that(".process_peaks_data different-rt with NAs in intensities", {
+  sp <- Spectra(DataFrame(
+    mz = NumericList(c(100, 200), c(100, 200), c(100, 200), compress = FALSE),
+    intensity = NumericList(c(10, NA), c(NA, 25), c(30, 40), compress = FALSE),
+    rtime = c(1, 2, 3),
+    msLevel = rep(1L, 3),
+    dataOrigin = rep("A", 3)
+  ))
+  cd <- data.frame(
+    rtMin = c(1, 2), rtMax = c(2, 3),
+    mzMin = c(-Inf, -Inf), mzMax = c(Inf, Inf)
+  )
+  res <- .process_peaks_data(cd, sp, c("rtime", "intensity"), sumi, FALSE)
+  ## TIC: sumi ignores NAs → spec1: 10, spec2: 25, spec3: 70
+  expect_equal(res[[1]]$intensity, c(sumi(c(10, NA)), sumi(c(NA, 25))))
+  expect_equal(res[[2]]$intensity, c(sumi(c(NA, 25)), sumi(c(30, 40))))
+})
+
+test_that(".process_peaks_data same-rt all-NA spectrum", {
+  sp <- Spectra(DataFrame(
+    mz = NumericList(c(100, 200), c(100, 200), compress = FALSE),
+    intensity = NumericList(c(NA_real_, NA_real_), c(10, 20), compress = FALSE),
+    rtime = c(1, 2),
+    msLevel = rep(1L, 2),
+    dataOrigin = rep("A", 2)
+  ))
+  cd <- data.frame(rtMin = 1, rtMax = 2, mzMin = 100, mzMax = 200)
+  ## cumsum: spec1 all-NA → NA, spec2 → 30
+  res <- .process_peaks_data(cd, sp, c("rtime", "intensity"), sumi, FALSE)
+  expect_true(is.na(res[[1]]$intensity[1]))
+  expect_equal(res[[1]]$intensity[2], 30)
+  ## maxi: spec1 all-NA → NA, spec2 max = 20
+  res_max <- .process_peaks_data(cd, sp, c("rtime", "intensity"), maxi, FALSE)
+  expect_true(is.na(res_max[[1]]$intensity[1]))
+  expect_equal(res_max[[1]]$intensity[2], 20)
+})
+
 
 test_that("intensity/rtime bypass peaksData when queue is empty", {
   ## Direct backend dispatch when no processing queue
@@ -1055,4 +1389,169 @@ test_that("setBackend clears processing queue", {
   expect_length(.processingQueue(c_mem), 0L)
   expect_identical(peaksData(c_mem), peaksData(.backend(c_mem)))
   expect_equal(peaksData(c_mem), pd_before)
+})
+
+
+test_that(".logging appends a timestamped entry", {
+  res <- .logging(character(), "test message")
+  expect_length(res, 1L)
+  expect_match(res, "^test message \\[")
+
+  res2 <- .logging(res, "second")
+  expect_length(res2, 2L)
+  expect_match(res2[2], "^second \\[")
+})
+
+test_that(".strip_na_peaks no NAs returns unchanged", {
+  mz <- c(100, 200, 300)
+  int <- c(10, 20, 30)
+  res <- .strip_na_peaks(mz, int)
+  expect_equal(res$mz, mz)
+  expect_equal(res$int, int)
+  expect_equal(res$n, 3L)
+})
+
+test_that(".strip_na_peaks partial NAs strips correctly", {
+  mz <- c(100, 200, 300, 400)
+  int <- c(10, NA, 30, NA)
+  res <- .strip_na_peaks(mz, int)
+  expect_equal(res$mz, c(100, 300))
+  expect_equal(res$int, c(10, 30))
+  expect_equal(res$n, 2L)
+})
+
+test_that(".strip_na_peaks all NAs returns NULL", {
+  mz <- c(100, 200)
+  int <- c(NA_real_, NA_real_)
+  expect_null(.strip_na_peaks(mz, int))
+})
+
+test_that(".strip_na_peaks empty vectors returns unchanged", {
+  res <- .strip_na_peaks(numeric(0), numeric(0))
+  expect_equal(res$mz, numeric(0))
+  expect_equal(res$int, numeric(0))
+  expect_equal(res$n, 0L)
+})
+
+## ── .mz_boundaries ──────────────────────────────────────────────────────────
+
+test_that(".mz_boundaries returns correct lo/hi indices", {
+  mz <- c(100, 200, 300, 400, 500)
+
+  ## Single range enclosing all
+  b <- .mz_boundaries(100, 500, mz)
+  expect_equal(b$lo, 1L)
+  expect_equal(b$hi, 5L)
+
+  ## Range in the middle
+  b <- .mz_boundaries(200, 400, mz)
+  expect_equal(b$lo, 2L)
+  expect_equal(b$hi, 4L)
+
+  ## Range excluding all (below)
+  b <- .mz_boundaries(10, 50, mz)
+  expect_true(b$lo > b$hi) # empty range
+
+  ## Multiple ranges at once
+  b <- .mz_boundaries(c(100, 300), c(200, 500), mz)
+  expect_equal(b$lo, c(1L, 3L))
+  expect_equal(b$hi, c(2L, 5L))
+})
+
+test_that(".rt_keep finite bounds returns correct indices", {
+  rt <- c(1, 2, 3, 4, 5)
+  res <- .rt_keep(rt, 2, 4, 5L)
+  expect_equal(res, 2:4)
+})
+
+test_that(".rt_keep infinite bounds returns all", {
+  rt <- c(1, 2, 3)
+  res <- .rt_keep(rt, -Inf, Inf, 3L)
+  expect_equal(res, 1:3)
+})
+
+test_that(".rt_keep narrow window returns subset", {
+  rt <- c(1.0, 2.0, 3.0, 4.0)
+  res <- .rt_keep(rt, 2.5, 3.5, 4L)
+  expect_equal(res, 3L)
+})
+
+test_that(".rt_keep no match returns empty", {
+  rt <- c(1, 2, 3)
+  res <- .rt_keep(rt, 10, 20, 3L)
+  expect_equal(res, integer(0))
+})
+
+## ── .make_chrom_entry ────────────────────────────────────────────────────────
+
+test_that(".make_chrom_entry returns data.frame with both columns", {
+  res <- .make_chrom_entry(
+    rtime = c(1, 2, 3), intensity = c(10, 20, 30),
+    do_rt = TRUE, do_int = TRUE, columns = c("rtime", "intensity"),
+    drop = FALSE
+  )
+  expect_s3_class(res, "data.frame")
+  expect_equal(res$rtime, c(1, 2, 3))
+  expect_equal(res$intensity, c(10, 20, 30))
+  expect_equal(nrow(res), 3L)
+})
+
+test_that(".make_chrom_entry rtime-only", {
+  res <- .make_chrom_entry(
+    rtime = c(1, 2), intensity = numeric(0),
+    do_rt = TRUE, do_int = FALSE, columns = "rtime", drop = FALSE
+  )
+  expect_s3_class(res, "data.frame")
+  expect_equal(names(res), "rtime")
+})
+
+test_that(".make_chrom_entry drop=TRUE single column returns vector", {
+  res <- .make_chrom_entry(
+    rtime = numeric(0), intensity = c(10, 20, 30),
+    do_rt = FALSE, do_int = TRUE, columns = "intensity", drop = TRUE
+  )
+  expect_type(res, "double")
+  expect_equal(res, c(10, 20, 30))
+})
+
+test_that(".make_chrom_entry drop=TRUE two columns returns data.frame", {
+  res <- .make_chrom_entry(
+    rtime = c(1, 2), intensity = c(10, 20),
+    do_rt = TRUE, do_int = TRUE, columns = c("rtime", "intensity"),
+    drop = TRUE
+  )
+  expect_s3_class(res, "data.frame")
+})
+
+## ── .spectra_format_chromData ────────────────────────────────────────────────
+
+test_that(".spectra_format_chromData returns correct structure", {
+  sp <- Spectra(DataFrame(
+    mz = NumericList(c(100, 200), c(100, 200), compress = FALSE),
+    intensity = NumericList(c(10, 20), c(15, 25), compress = FALSE),
+    rtime = c(1.5, 3.0),
+    msLevel = rep(1L, 2),
+    dataOrigin = rep("fileA", 2),
+    chromSpectraIndex = rep("grp1", 2)
+  ))
+  res <- .spectra_format_chromData(sp)
+  expect_s3_class(res, "data.frame")
+  expect_equal(nrow(res), 1L)
+  expect_equal(res$msLevel, 1L)
+  expect_equal(res$rtMin, 1.5)
+  expect_equal(res$rtMax, 3.0)
+  expect_equal(res$mzMin, -Inf)
+  expect_equal(res$mzMax, Inf)
+  expect_equal(res$dataOrigin, "fileA")
+  expect_equal(res$chromSpectraIndex, "grp1")
+})
+
+test_that(".peaksData errors for wrong object type", {
+  expect_error(.peaksData("not_a_backend"),
+               "must be of class 'Chromatograms' or 'ChromBackend'")
+})
+
+test_that(".chromData errors for wrong object type", {
+  expect_error(.chromData(42),
+               "must be of class 'Chromatograms' or 'ChromBackend'")
 })
