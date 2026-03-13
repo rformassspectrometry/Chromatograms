@@ -33,6 +33,15 @@
     res
 }
 
+#' Fast rbind for lists of data.frames using `data.table::rbindlist()`.
+#' Always returns a plain `data.frame`.
+#' @importFrom data.table rbindlist
+#' @noRd
+.fast_rbind <- function(lst) {
+  if (length(lst) == 0L) return(data.frame())
+  as.data.frame(rbindlist(lst, use.names = TRUE, fill = TRUE))
+}
+
 #' Helper function to check the order and data types of columns
 #'
 #' @note:

@@ -124,9 +124,7 @@ setMethod(
         if (length(peaksData) > 1 || length(peaksData) == n_cd) {
             validPeaksData(peaksData)
         } else {
-            peaksData <- replicate(n_cd, .EMPTY_PEAKS_DATA,
-                simplify = FALSE
-            )
+            peaksData <- rep(list(.EMPTY_PEAKS_DATA), n_cd)
         }
         object@peaksData <- peaksData
         object
@@ -368,7 +366,7 @@ setMethod("chromExtract", "ChromBackendMemory", function(object, peak.table, by)
     }, obj = obj_sp,
     pks = pk_split, SIMPLIFY = FALSE)
 
-    new_cdata <- do.call(rbind, lapply(new_data, function(z) z$cd))
+    new_cdata <- .fast_rbind(lapply(new_data, function(z) z$cd))
     rownames(new_cdata) <- NULL
     new_pdata <- unlist(lapply(new_data, function(z) z$pd), recursive = FALSE)
     backendInitialize(new("ChromBackendMemory"),

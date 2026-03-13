@@ -27,6 +27,14 @@
   single-column requests. Direct `lengths()` methods added for all backends
   using `nrow()` instead of going through `intensity()`.
 
+- Replace `do.call(rbind, ...)` with `data.table::rbindlist()` in
+  `chromExtract()` for `ChromBackendMemory`, `ChromBackendMzR`, and
+  `ChromBackendSpectra` for faster row-binding of many data.frames.
+
+- Replace `replicate(n, .EMPTY_PEAKS_DATA, simplify = FALSE)` with
+  `rep(list(.EMPTY_PEAKS_DATA), n)` across backends to avoid repeated
+  expression evaluation overhead.
+
 ## Changes in 1.1.3
 
 - Add `filterEmptyChromatograms()` function to remove empty chromatograms

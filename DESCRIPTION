@@ -27,6 +27,7 @@ Depends:
     ProtGenerics (>= 1.39.2),
     R (>= 4.5.0)
 Imports:
+    data.table,
     methods,
     S4Vectors,
     MsCoreUtils (>= 1.7.5),

@@ -481,12 +481,11 @@ setMethod("chromExtract", "ChromBackendSpectra",
               }, cd_row = cd_split,
               pks = pk_split, SIMPLIFY = FALSE)
 
-              new_cdata <- do.call(rbind, new_cdata)
+              new_cdata <- .fast_rbind(new_cdata)
               rownames(new_cdata) <- NULL
 
               object@chromData <- new_cdata
-              object@peaksData <- replicate(nrow(new_cdata),
-                                            .EMPTY_PEAKS_DATA,
-                                            simplify = FALSE)
+              object@peaksData <- rep(list(.EMPTY_PEAKS_DATA),
+                                          nrow(new_cdata))
               object
           })
