@@ -27,7 +27,7 @@ further improved by enabling chunk-wise processing."><!-- mathjax --><script src
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">Chromatograms</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.4</span>
       </span>
     </div>
 
@@ -196,7 +196,7 @@ processing.</p>
 <p>Some backends may prefer a specific type of splitting and chunk-wise
 processing. For example, the <code>ChromBackendMzR</code> backend needs to load MS data
 from the original (mzML) files, so chunk-wise processing on a per-file basis
-is ideal. The <code><a href="https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html" class="external-link">backendParallelFactor()</a></code> function for
+is ideal. The <a href="ChromBackend.html">backendParallelFactor()</a> function for
 <code>ChromBackend</code> allows backends to suggest a preferred data chunking by
 returning a <code>factor</code> defining the respective data chunks. The
 <code>ChromBackendMzR</code> returns a <code>factor</code> based on the <em>dataOrigin</em>

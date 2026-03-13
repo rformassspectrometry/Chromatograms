@@ -29,7 +29,7 @@ an internal spectraSortIndex to avoid physically reordering the spectra.
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">Chromatograms</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.4</span>
       </span>
     </div>
 
@@ -327,7 +327,9 @@ replace specific chromatograms or peaks variables.</p>
 better suits the needs of the user, for example switching to a memory-based
 backend for smaller datasets or to a file-based backend for larger datasets.
 The <code><a href="https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html" class="external-link">setBackend()</a></code> function supports parallelization of the backend
-conversion using the <code>BPPARAM</code> parameter.</p>
+conversion using the <code>BPPARAM</code> parameter. Note that any queued processing
+steps are applied during the backend switch (since <code><a href="peaksData.html">peaksData()</a></code> is called
+to transfer the data) and the processing queue is emptied afterwards.</p>
     </div>
     <div id="filtering-chromatograms">
     <h2>Filtering chromatograms</h2>
