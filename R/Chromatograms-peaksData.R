@@ -184,128 +184,86 @@ NULL
 
 #' @rdname peaksData
 setMethod(
-  "imputePeaksData",
-  signature = "Chromatograms",
-  function(
-    object,
-    method = c("linear", "spline", "gaussian", "loess"),
-    span = 0.3,
-    sd = 1,
-    window = 2,
-    extrapolate = FALSE,
-    ...
-  ) {
-    method <- match.arg(method)
-    object <- addProcessing(
-      object,
-      imputePeaksData,
-      method = method,
-      span = span,
-      sd = sd,
-      window = window,
-      extrapolate = extrapolate
-    )
-    object@processing <- .logging(
-      .processing(object),
-      "Impute: replace missing peaks data ",
-      "using the '",
-      method,
-      "' method",
-      if (extrapolate) " (with extrapolation)" else ""
-    )
-    object
-  }
+    "imputePeaksData", signature = "Chromatograms",
+    function(object, method = c("linear", "spline", "gaussian", "loess"),
+             span = 0.3, sd = 1, window = 2, extrapolate = FALSE, ...) {
+        method <- match.arg(method)
+        object <- addProcessing(object, imputePeaksData,
+            method = method, span = span, sd = sd,
+            window = window, extrapolate = extrapolate)
+        object@processing <- .logging(
+            .processing(object),
+            "Impute: replace missing peaks data ",
+            "using the '", method, "' method",
+            if (extrapolate) " (with extrapolation)" else "")
+        object
+    }
 )
 
 #' @rdname peaksData
 setMethod(
-  "filterPeaksData",
-  signature = "Chromatograms",
-  function(
-    object,
-    variables = character(),
-    ranges = numeric(),
-    match = c("any", "all"),
-    keep = TRUE
-  ) {
-    object <- addProcessing(
-      object,
-      filterPeaksData,
-      variables = variables,
-      ranges = ranges,
-      match = match,
-      keep = keep
-    )
-    object@processing <- .logging(
-      .processing(object),
-      "Filter: remove peaks based ",
-      "on the variables: ",
-      paste(variables, collapse = ", "),
-      "the ranges: ",
-      paste(ranges, collapse = ", "),
-      "and the match condition: ",
-      match
-    )
-    object
-  }
+    "filterPeaksData", signature = "Chromatograms",
+    function(object, variables = character(), ranges = numeric(),
+             match = c("any", "all"), keep = TRUE) {
+        object <- addProcessing(object, filterPeaksData,
+            variables = variables, ranges = ranges,
+            match = match, keep = keep)
+        object@processing <- .logging(
+            .processing(object),
+            "Filter: remove peaks based ",
+            "on the variables: ",
+            paste(variables, collapse = ", "),
+            "the ranges: ",
+            paste(ranges, collapse = ", "),
+            "and the match condition: ", match)
+        object
+    }
 )
 
 #' @rdname peaksData
 setMethod("intensity", signature = "Chromatograms", function(object, ...) {
+  if (!length(.processingQueue(object)))
+    return(intensity(.backend(object)))
   peaksData(object, columns = "intensity", drop = TRUE)
 })
 
 #' @rdname peaksData
 setReplaceMethod(
-  "intensity",
-  signature = "Chromatograms",
-  function(object, value) {
-    if (isReadOnly(.backend(object))) {
-      stop("Cannot replace peaks data in a read-only backend")
+    "intensity", signature = "Chromatograms",
+    function(object, value) {
+        if (isReadOnly(.backend(object)))
+            stop("Cannot replace peaks data in a read-only backend")
+        intensity(object@backend) <- value
+        object
     }
-    intensity(object@backend) <- value
-    object
-  }
 )
 
 #' @rdname peaksData
 #' @importFrom MsCoreUtils between
 setMethod(
-  "peaksData",
-  signature = "Chromatograms",
-  function(
-    object,
-    columns = peaksVariables(object),
-    f = processingChunkFactor(object),
-    BPPARAM = bpparam(),
-    drop = FALSE,
-    ...
-  ) {
-    queue <- .processingQueue(object)
-    if (length(queue)) {
-      bd <- .run_process_queue(
-        .backend(object),
-        queue = queue,
-        f = f,
-        BPPARAM = BPPARAM
-      )
-      return(peaksData(bd, columns = columns, drop = drop))
+    "peaksData", signature = "Chromatograms",
+    function(object, columns = peaksVariables(object),
+             f = processingChunkFactor(object),
+             BPPARAM = bpparam(), drop = FALSE, ...) {
+        queue <- .processingQueue(object)
+        if (length(queue)) {
+            bd <- .run_process_queue(.backend(object),
+                queue = queue, f = f, BPPARAM = BPPARAM)
+            return(peaksData(bd, columns = columns, drop = drop))
+        }
+        peaksData(.backend(object), columns = columns, drop = drop)
     }
-    peaksData(.backend(object), columns = columns, drop = drop)
-  }
 )
 
 #' @rdname peaksData
 setReplaceMethod(
-  "peaksData",
-  signature = "Chromatograms",
-  function(object, value) {
-    if (isReadOnly(.backend(object))) {
-      stop("Cannot replace peaks data in a read-only backend")
+    "peaksData", signature = "Chromatograms",
+    function(object, value) {
+        if (isReadOnly(.backend(object)))
+            stop("Cannot replace peaks data in a read-only backend")
+        peaksData(object@backend) <- value
+        object
     }
-    peaksData(object@backend) <- value
-    object
-  }
 )
 
 #' @rdname peaksData
@@ -315,6 +273,8 @@ setMethod("peaksVariables", signature = "Chromatograms", function(object, ...) {
 
 #' @rdname peaksData
 setMethod("rtime", signature = "Chromatograms", function(object, ...) {
+  if (!length(.processingQueue(object)))
+    return(rtime(.backend(object)))
   peaksData(object, columns = "rtime", drop = TRUE)
 })
 
@@ -329,16 +289,12 @@ setReplaceMethod("rtime", signature = "Chromatograms", function(object, value) {
 
 #' @rdname peaksData
 setMethod("lengths", signature = "Chromatograms", function(x) {
-  queue <- .processingQueue(x)
-  f <- processingChunkFactor(x)
-  if (length(queue)) {
-    bd <- .run_process_queue(
-      .backend(x),
-      queue = queue,
-      f = f,
-      BPPARAM = bpparam()
-    )
-    return(lengths(bd))
-  }
-  lengths(.backend(x))
+    queue <- .processingQueue(x)
+    if (length(queue)) {
+        f <- processingChunkFactor(x)
+        bd <- .run_process_queue(.backend(x),
+            queue = queue, f = f, BPPARAM = bpparam())
+        return(lengths(bd))
+    }
+    lengths(.backend(x))
 })

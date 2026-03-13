@@ -49,7 +49,7 @@
 #' Some backends may prefer a specific type of splitting and chunk-wise
 #' processing. For example, the `ChromBackendMzR` backend needs to load MS data
 #' from the original (mzML) files, so chunk-wise processing on a per-file basis
-#' is ideal. The [Chromatograms::backendParallelFactor()] function for
+#' is ideal. The [backendParallelFactor()][ChromBackend] function for
 #' `ChromBackend` allows backends to suggest a preferred data chunking by
 #' returning a `factor` defining the respective data chunks. The
 #' `ChromBackendMzR` returns a `factor` based on the *dataOrigin*

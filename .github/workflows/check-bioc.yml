@@ -158,6 +158,7 @@ jobs:
           message(paste('****', Sys.time(), 'pass number 1 at installing dependencies: local dependencies ****'))
           BiocManager::install("RforMassSpectrometry/ProtGenerics", ask = FALSE,force = TRUE)
           BiocManager::install("knitr", ask = FALSE, force = TRUE)
+          BiocManager::install("data.table", ask = FALSE)
           remotes::install_local(dependencies = TRUE, repos = BiocManager::repositories(), build_vignettes = TRUE, upgrade = TRUE)
           ## Pass #2 at installing dependencies
           message(paste('****', Sys.time(), 'pass number 2 at installing dependencies: any remaining dependencies ****'))

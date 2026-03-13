@@ -182,7 +182,8 @@ test_that("Chromatograms, imputePeaksData works", {
     for (meth in c("gaussian", "loess")) {
         c_imp <- imputePeaksData(c_tmp, method = meth, span = 0.3,
                                  sd = 1, window = 2, extrapolate = TRUE)
-        expect_warning(c_imp <- applyProcessing(c_imp),
+        expect_warning(c_imp <- applyProcessing(c_imp,
+                                                BPPARAM = SerialParam()),
                        "Falling back to linear interpolation")
         expect_s4_class(c_imp, "Chromatograms")
         expect_equal(length(peaksData(c_imp)), length(peaksData(c_tmp)))

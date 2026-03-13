@@ -108,7 +108,7 @@ processing.
 Some backends may prefer a specific type of splitting and chunk-wise
 processing. For example, the \code{ChromBackendMzR} backend needs to load MS data
 from the original (mzML) files, so chunk-wise processing on a per-file basis
-is ideal. The \code{\link[=backendParallelFactor]{backendParallelFactor()}} function for
+is ideal. The \link[=ChromBackend]{backendParallelFactor()} function for
 \code{ChromBackend} allows backends to suggest a preferred data chunking by
 returning a \code{factor} defining the respective data chunks. The
 \code{ChromBackendMzR} returns a \code{factor} based on the \emph{dataOrigin}

@@ -1,5 +1,40 @@
 # Version 1.1
 
+## Changes in 1.1.4
+
+- `setBackend()` now clears the processing queue after switching backend,
+  preventing queued processing steps from being applied twice (once during
+  the data transfer and again on subsequent `peaksData()` calls).
+
+- Fix `setBackend()` parallel branch (used for `ChromBackendMzR`) to correctly
+  apply queued processing steps to each chunk before transferring data to
+  the new backend.
+
+- Major performance improvement in `.process_peaks_data()` for
+  `ChromBackendSpectra`. Key optimizations include: pre-extracting `mz()` and
+  `intensity()` as plain R lists (avoiding slow `SimpleNumericList` indexing),
+  global retention time pre-filtering, a fast path for TIC/BPC cases, and
+  using `findInterval()` with `cumsum()` for m/z range lookups. Combined,
+ `setBackend()` showed 9x speed up for 1000 chromatograms.
+
+- Add optimized `intensity()` and `rtime()` accessors for `ChromBackendMemory`
+  using direct `[[` extraction instead of the slower `[, col, drop]` path
+  through `peaksData()`.
+
+- Further accessor optimizations: `intensity()`, `rtime()`, and `lengths()` on
+  `Chromatograms` now bypass `peaksData()` dispatch when the processing queue
+  is empty. `peaksData()` on `ChromBackendMemory` uses a fast `[[` path for
+  single-column requests. Direct `lengths()` methods added for all backends
+  using `nrow()` instead of going through `intensity()`.
+
+- Replace `do.call(rbind, ...)` with `data.table::rbindlist()` in
+  `chromExtract()` for `ChromBackendMemory`, `ChromBackendMzR`, and
+  `ChromBackendSpectra` for faster row-binding of many data.frames.
+
+- Replace `replicate(n, .EMPTY_PEAKS_DATA, simplify = FALSE)` with
+  `rep(list(.EMPTY_PEAKS_DATA), n)` across backends to avoid repeated
+  expression evaluation overhead.
+
 ## Changes in 1.1.3
 
 - Add `filterEmptyChromatograms()` function to remove empty chromatograms

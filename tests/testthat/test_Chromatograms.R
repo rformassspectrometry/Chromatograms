@@ -216,6 +216,20 @@ test_that("setBackend works correctly", {
 
   c_sp_new <- setBackend(c_sp, backend = ChromBackendMemory())
   expect_true(!all(c("rtMin", "rtMax") %in% colnames(chromData(c_sp_new))))
+
+  ## setBackend should empty the processing queue so steps are not
+  ## double-applied. peaksData on the Chromatograms object should equal
+  ## peaksData directly from its backend (queue is empty).
+  c_queued <- filterPeaksData(c_mzr,
+    variables = "rtime", ranges = c(12.5, 45.5)
+  )
+  expect_length(.processingQueue(c_queued), 1)
+  pd_before <- peaksData(c_queued)
+  c_queued_mem <- setBackend(c_queued, backend = ChromBackendMemory())
+  expect_length(.processingQueue(c_queued_mem), 0)
+  expect_identical(peaksData(c_queued_mem), peaksData(.backend(c_queued_mem)))
+  expect_equal(peaksData(c_queued_mem), pd_before)
+  expect_true(any(grepl("Switch backend", c_queued_mem@processing)))
 })
 
 test_that("setBackend preserves peaksData order with duplicate chromSpectraIndex", {

@@ -124,9 +124,7 @@ setMethod(
         if (length(peaksData) > 1 || length(peaksData) == n_cd) {
             validPeaksData(peaksData)
         } else {
-            peaksData <- replicate(n_cd, .EMPTY_PEAKS_DATA,
-                simplify = FALSE
-            )
+            peaksData <- rep(list(.EMPTY_PEAKS_DATA), n_cd)
         }
         object@peaksData <- peaksData
         object
@@ -155,7 +153,7 @@ setMethod("backendMerge", "ChromBackendMemory", function(object, ...) {
 setMethod(
     "chromData", "ChromBackendMemory",
     function(object, columns = chromVariables(object), drop = FALSE) {
-        if (!any(chromVariables(object) %in% columns)) {
+        if (!all(columns %in% chromVariables(object))) {
             stop(
                 "Some of the requested Chromatogram variables are not ",
                 "available"
@@ -190,17 +188,18 @@ setMethod(
     "peaksData", "ChromBackendMemory",
     function(object, columns = peaksVariables(object),
     drop = FALSE, ...) {
-        if (!any(peaksVariables(object) %in% columns)) {
+        pv <- peaksVariables(object)
+        if (!all(columns %in% pv)) {
             stop(
                 "Some of the requested peaks variables are not",
                 " available"
             )
         }
-        if (identical(
-            as.vector(peaksVariables(object)),
-            as.vector(columns)
-        )) {
+        if (identical(as.vector(pv), as.vector(columns))) {
             return(.peaksData(object))
+        }
+        if (drop && length(columns) == 1L) {
+            return(lapply(.peaksData(object), function(z) z[[columns]]))
         }
         lapply(.peaksData(object), function(x) x[, columns, drop = drop])
     }
@@ -225,8 +224,39 @@ setMethod("peaksVariables", "ChromBackendMemory", function(object) {
 })
 
 #' @rdname hidden_aliases
+#' @importMethodsFrom ProtGenerics backendParallelFactor
+setMethod("backendParallelFactor", "ChromBackendMemory",
+          function(object, ...) {
+    do <- dataOrigin(object)
+    if (length(unique(do[!is.na(do)])) > 1L)
+        factor(do, levels = unique(do))
+    else factor()
+})
+
+#' @rdname hidden_aliases
 #' @export
 setMethod("isReadOnly", "ChromBackendMemory", function(object) FALSE)
+
+#' @rdname hidden_aliases
+setMethod("lengths", "ChromBackendMemory", function(x) {
+    vapply(.peaksData(x), nrow, integer(1L))
+})
+
+#' Optimized intensity accessor for ChromBackendMemory.
+#' Bypasses peaksData() dispatch for direct slot access.
+#' @rdname hidden_aliases
+setMethod("intensity", "ChromBackendMemory", function(object) {
+    if (!length(object)) return(list())
+    lapply(.peaksData(object), function(z) z$intensity)
+})
+
+#' Optimized rtime accessor for ChromBackendMemory.
+#' Bypasses peaksData() dispatch for direct slot access.
+#' @rdname hidden_aliases
+setMethod("rtime", "ChromBackendMemory", function(object) {
+    if (!length(object)) return(list())
+    lapply(.peaksData(object), function(z) z$rtime)
+})
 
 #' @importFrom utils capture.output head
 #' @rdname hidden_aliases
@@ -336,9 +366,9 @@ setMethod("chromExtract", "ChromBackendMemory", function(object, peak.table, by)
     }, obj = obj_sp,
     pks = pk_split, SIMPLIFY = FALSE)
 
-    new_cdata <- do.call(rbind, lapply(new_data, `[[`, "cd"))
+    new_cdata <- .fast_rbind(lapply(new_data, function(z) z$cd))
     rownames(new_cdata) <- NULL
-    new_pdata <- unlist(lapply(new_data, `[[`, "pd"), recursive = FALSE)
+    new_pdata <- unlist(lapply(new_data, function(z) z$pd), recursive = FALSE)
     backendInitialize(new("ChromBackendMemory"),
                       chromData = new_cdata, peaksData = new_pdata)
 

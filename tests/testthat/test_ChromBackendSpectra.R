@@ -98,7 +98,7 @@ test_that("replacement method works", {
 test_that("error message work", {
     expect_error(
         peaksData(be_sp, columns = "notacolumn"),
-        "undefined columns selected"
+        "requested peaks variables"
     )
 })
 
@@ -159,10 +159,10 @@ test_that("spectraSortIndex is empty for pre-sorted data", {
         msLevel = rep(1L, 5),
         dataOrigin = rep("A", 5)
     ))
-    
+
     cb <- ChromBackendSpectra()
     cb <- backendInitialize(cb, spectra = sp)
-    
+
     ## For pre-sorted data, spectraSortIndex should be empty
     expect_identical(length(cb@spectraSortIndex), 0L)
     expect_identical(cb@spectraSortIndex, integer())
@@ -177,15 +177,15 @@ test_that("spectraSortIndex is set for unsorted data", {
         msLevel = rep(1L, 5),
         dataOrigin = rep("A", 5)
     ))
-    
+
     cb <- ChromBackendSpectra()
     cb <- backendInitialize(cb, spectra = sp)
-    
+
     ## For unsorted data, spectraSortIndex should be set
     expect_true(length(cb@spectraSortIndex) > 0)
     expected_sort <- order(sp$dataOrigin, sp$rtime)
     expect_identical(cb@spectraSortIndex, expected_sort)
-    
+
     ## Verify the sort index produces sorted rtimes
     sorted_rtimes <- sp$rtime[cb@spectraSortIndex]
     expect_identical(sorted_rtimes, c(1, 2, 3, 4, 5))
@@ -200,10 +200,10 @@ test_that("spectraSortIndex is empty for pre-sorted data with multiple dataOrigi
         msLevel = rep(1L, 6),
         dataOrigin = c("A", "A", "A", "B", "B", "B")
     ))
-    
+
     cb <- ChromBackendSpectra()
     cb <- backendInitialize(cb, spectra = sp)
-    
+
     ## For pre-sorted data, spectraSortIndex should be empty
     expect_identical(length(cb@spectraSortIndex), 0L)
 })
@@ -217,15 +217,15 @@ test_that("spectraSortIndex is set for unsorted data with multiple dataOrigins",
         msLevel = rep(1L, 6),
         dataOrigin = c("B", "A", "A", "B", "A", "B")
     ))
-    
+
     cb <- ChromBackendSpectra()
     cb <- backendInitialize(cb, spectra = sp)
-    
+
     ## For unsorted data, spectraSortIndex should be set
     expect_true(length(cb@spectraSortIndex) > 0)
     expected_sort <- order(sp$dataOrigin, sp$rtime)
     expect_identical(cb@spectraSortIndex, expected_sort)
-    
+
     ## Verify sorting is correct
     sorted_do <- sp$dataOrigin[cb@spectraSortIndex]
     sorted_rt <- sp$rtime[cb@spectraSortIndex]
@@ -242,19 +242,19 @@ test_that("factorize() clears spectraSortIndex when data is sorted", {
         msLevel = rep(1L, 4),
         dataOrigin = rep("A", 4)
     ))
-    
+
     cb <- ChromBackendSpectra()
     cb <- backendInitialize(cb, spectra = sp)
-    
+
     ## Initially unsorted, so spectraSortIndex should be set
     expect_true(length(cb@spectraSortIndex) > 0)
-    
+
     ## Now manually sort the spectra and refactorize
     sorted_indices <- order(sp$dataOrigin, sp$rtime)
     cb@spectra <- sp[sorted_indices]
     cb@spectra$rtime <- sp$rtime[sorted_indices]
     cb <- factorize(cb)
-    
+
     ## After refactorize with sorted data, spectraSortIndex should be empty
     expect_identical(length(cb@spectraSortIndex), 0L)
 })
@@ -268,17 +268,17 @@ test_that("factorize() recalculates spectraSortIndex for unsorted data", {
         msLevel = rep(1L, 4),
         dataOrigin = rep("A", 4)
     ))
-    
+
     cb <- ChromBackendSpectra()
     cb <- backendInitialize(cb, spectra = sp)
-    
+
     ## Initially sorted, so spectraSortIndex should be empty
     expect_identical(length(cb@spectraSortIndex), 0L)
-    
+
     ## Modify msLevel to create different factorization
     cb@spectra$msLevel <- c(1L, 2L, 1L, 2L)
     cb <- factorize(cb)
-    
+
     ## spectraSortIndex should still be empty since data is still sorted by rtime
     expect_identical(length(cb@spectraSortIndex), 0L)
 })
@@ -292,13 +292,13 @@ test_that("peaksData works correctly with empty spectraSortIndex", {
         msLevel = rep(1L, 4),
         dataOrigin = rep("A", 4)
     ))
-    
+
     cb <- ChromBackendSpectra()
     cb <- backendInitialize(cb, spectra = sp)
-    
+
     ## spectraSortIndex should be empty
     expect_identical(length(cb@spectraSortIndex), 0L)
-    
+
     ## peaksData should still work correctly
     pd <- peaksData(cb)
     expect_true(is.list(pd))
@@ -315,13 +315,13 @@ test_that("peaksData works correctly with populated spectraSortIndex", {
         msLevel = rep(1L, 4),
         dataOrigin = c("B", "A", "B", "A")
     ))
-    
+
     cb <- ChromBackendSpectra()
     cb <- backendInitialize(cb, spectra = sp)
-    
+
     ## spectraSortIndex should be set
     expect_true(length(cb@spectraSortIndex) > 0)
-    
+
     ## peaksData should still work correctly
     pd <- peaksData(cb)
     expect_true(is.list(pd))
@@ -371,21 +371,21 @@ test_that("[ maintains spectra and spectraSortIndex", {
 
     cb <- ChromBackendSpectra()
     cb <- backendInitialize(cb, spectra = sp)
-    
+
     # Verify initial state
     expect_identical(length(cb), 2L)  # 2 unique combinations of msLevel and dataOrigin
     expect_identical(length(cb@spectra), 4L)  # 4 spectra
     # spectraSortIndex should be set since data is unsorted
     expect_true(length(cb@spectraSortIndex) > 0)
-    
+
     # Verify spectraSortIndex is correctly set
     expected_sort <- order(sp$dataOrigin, sp$rtime)
     expect_identical(cb@spectraSortIndex, expected_sort)
-    
+
     # Get chromSpectraIndex before subsetting
     all_chrom_idx <- chromSpectraIndex(cb)
     expect_identical(length(all_chrom_idx), 2L)
-    
+
     # Subset to keep only "1_A" chromatograms
     keep <- all_chrom_idx == "1_A"
     cb_sub <- cb[keep]
@@ -393,16 +393,16 @@ test_that("[ maintains spectra and spectraSortIndex", {
     # Verify subsetting worked correctly
     expect_s4_class(cb_sub, "ChromBackendSpectra")
     expect_identical(length(cb_sub), 1L)  # Only 1 chromatogram kept
-    
+
     # Verify chromData was subsetted
     sub_chrom_idx <- chromSpectraIndex(cb_sub)
     expect_identical(length(sub_chrom_idx), 1L)
     expect_identical(as.character(sub_chrom_idx), "1_A")
-    
+
     # Verify spectra were subsetted to only include spectra for "1_A"
     expect_identical(length(cb_sub@spectra), 2L)  # Only 2 spectra belong to "1_A"
     expect_true(all(cb_sub@spectra$dataOrigin == "A"))
-    
+
     # Verify spectraSortIndex is valid (may be empty if subsetted data is sorted)
     if (length(cb_sub@spectraSortIndex) > 0) {
         expect_true(all(cb_sub@spectraSortIndex <= length(cb_sub@spectra)))
@@ -414,7 +414,7 @@ test_that("[ maintains spectra and spectraSortIndex", {
         sorted_rtime <- cb_sub@spectra$rtime
         expect_true(all(diff(sorted_rtime) >= 0))
     }
-    
+
     # Verify chromSpectraIndex is properly factorized
     expect_true(is.factor(cb_sub@spectra$chromSpectraIndex))
     expect_identical(levels(cb_sub@spectra$chromSpectraIndex), "1_A")
@@ -436,24 +436,24 @@ test_that("factorize() handles empty chromData correctly", {
         msLevel = rep(1L, 5),
         dataOrigin = rep("example", 5)
     ))
-    
+
     # Create Chromatograms with empty chromData
     cb <- ChromBackendSpectra()
     cb <- backendInitialize(cb, spectra = sp, chromData = data.frame())
-    
+
     # Should create chromData from spectra
     expect_identical(nrow(cb@chromData), 1L)  # One chromatogram: 1_example
     expect_identical(length(cb@spectra), 5L)  # All 5 spectra retained
-    
+
     # Verify chromSpectraIndex was created correctly
     expect_true(is.factor(cb@spectra$chromSpectraIndex))
     expect_identical(as.character(unique(cb@spectra$chromSpectraIndex)), "1_example")
-    
+
     # Verify spectraSortIndex is valid (should be empty since data is pre-sorted)
     expect_identical(length(cb@spectraSortIndex), 0L)
     # For pre-sorted data, rtimes should already be in order
     expect_identical(cb@spectra$rtime, c(100, 110, 120, 130, 140))
-    
+
     # Verify chromData has correct rt range
     expect_equal(cb@chromData$rtMin, 100)
     expect_equal(cb@chromData$rtMax, 140)
@@ -469,25 +469,25 @@ test_that("factorize() recalculates spectraSortIndex correctly - in-memory backe
         msLevel = c(1L, 1L, 2L, 2L, 1L),
         dataOrigin = rep("A", 5)
     ))
-    
+
     cb <- ChromBackendSpectra()
     cb <- backendInitialize(cb, spectra = sp)
-    
+
     # Verify initial sort order is by dataOrigin, rtime
     original_sort_idx <- cb@spectraSortIndex
     sorted_rtimes <- sp$rtime[original_sort_idx]
     expect_true(all(diff(sorted_rtimes) >= 0))
-    
+
     # Modify msLevel and refactorize
     cb@spectra$msLevel <- c(2L, 1L, 1L, 2L, 1L)
     cb <- factorize(cb)
-    
+
     # After factorize, spectraSortIndex should be recalculated
     # and should still produce correctly sorted rtimes
     new_sort_idx <- cb@spectraSortIndex
     sorted_rtimes_after <- cb@spectra$rtime[new_sort_idx]
     expect_true(all(diff(sorted_rtimes_after) >= 0))
-    
+
     # Verify chromData reflects the new factorization
     expect_identical(nrow(cb@chromData), 2L)  # Now 2 groups: 1_A and 2_A
 })
@@ -495,11 +495,11 @@ test_that("factorize() recalculates spectraSortIndex correctly - in-memory backe
 test_that("factorize() works correctly with on-disk spectra backend", {
     # Use the pre-loaded on-disk spectra from test setup (be_sp)
     cb_test <- be_sp
-    
+
     # Verify initial state
     expect_true(length(cb_test@spectra) > 0)
     expect_true(length(cb_test@spectraSortIndex) > 0)
-    
+
     # Verify sort index produces sorted rtimes within groups
     sorted_rtimes <- cb_test@spectra$rtime[cb_test@spectraSortIndex]
     sorted_dataOrigin <- cb_test@spectra$dataOrigin[cb_test@spectraSortIndex]
@@ -508,13 +508,13 @@ test_that("factorize() works correctly with on-disk spectra backend", {
         rtimes_in_group <- sorted_rtimes[sorted_dataOrigin == do]
         expect_true(all(diff(rtimes_in_group) >= 0))
     }
-    
+
     # Factorize with different grouping
     cb_single <- factorize(cb_test, factorize.by = "dataOrigin")
-    
+
     # Should have one row per unique dataOrigin
     expect_true(nrow(cb_single@chromData) >= 1)
-    
+
     # spectraSortIndex should still be valid
     expect_true(all(cb_single@spectraSortIndex <= length(cb_single@spectra)))
     sorted_rtimes_new <- cb_single@spectra$rtime[cb_single@spectraSortIndex]
@@ -534,28 +534,28 @@ test_that("factorize() maintains consistency between chromData and spectra", {
         msLevel = c(1L, 1L, 2L, 2L, 1L, 2L),
         dataOrigin = c("A", "A", "A", "B", "B", "B")
     ))
-    
+
     cb <- ChromBackendSpectra()
     cb <- backendInitialize(cb, spectra = sp)
-    
+
     # Get the chromSpectraIndex values
     chrom_idx <- chromSpectraIndex(cb)
     spectra_idx <- cb@spectra$chromSpectraIndex
-    
+
     # Both should have the same set of levels
     expect_identical(sort(levels(chrom_idx)), sort(levels(spectra_idx)))
-    
+
     # All chromSpectraIndex values in spectra should be in chromData levels
     unique_spectra_idx <- unique(as.character(spectra_idx))
     expect_true(all(unique_spectra_idx %in% levels(spectra_idx)))
-    
+
     # Verify consistency after subsetting
     keep_idx <- chrom_idx == levels(chrom_idx)[1]
     cb_sub <- cb[keep_idx]
-    
+
     chrom_idx_sub <- chromSpectraIndex(cb_sub)
     spectra_idx_sub <- cb_sub@spectra$chromSpectraIndex
-    
+
     # After subsetting, both should have same single level
     expect_identical(nlevels(chrom_idx_sub), 1L)
     expect_identical(nlevels(spectra_idx_sub), 1L)
@@ -570,16 +570,16 @@ test_that("peaksData generation respects spectraSortIndex - in-memory", {
         msLevel = rep(1L, 4),
         dataOrigin = c("B", "A", "B", "A")
     ))
-    
+
     cb <- ChromBackendSpectra()
     cb <- backendInitialize(cb, spectra = sp)
-    
+
     # Get peaksData
     pd <- peaksData(cb)
-    
+
     # Should return a list with one entry per chromatogram
     expect_identical(length(pd), 2L)
-    
+
     # Each entry should be a data.frame with rtime and intensity
     for (i in seq_along(pd)) {
         expect_true(is.data.frame(pd[[i]]))
@@ -596,20 +596,20 @@ test_that("subsetting and peaksData consistency - in-memory", {
         msLevel = rep(1L, 4),
         dataOrigin = c("B", "A", "B", "A")
     ))
-    
+
     cb <- ChromBackendSpectra()
     cb <- backendInitialize(cb, spectra = sp)
-    
+
     # Subset to one chromatogram
     keep <- chromSpectraIndex(cb) == "1_A"
     cb_sub <- cb[keep]
-    
+
     # Get peaksData from subsetted backend
     pd_sub <- peaksData(cb_sub)
-    
+
     # Should have one entry
     expect_identical(length(pd_sub), 1L)
-    
+
     # The data should be valid
     expect_true(is.data.frame(pd_sub[[1]]))
     expect_true(nrow(pd_sub[[1]]) > 0)
@@ -669,22 +669,22 @@ test_that("[ subsetting with empty spectraSortIndex works", {
         msLevel = c(1L, 1L, 2L, 2L),
         dataOrigin = c("A", "A", "B", "B")
     ))
-    
+
     cb <- ChromBackendSpectra()
     cb <- backendInitialize(cb, spectra = sp)
-    
+
     # Verify initial state: pre-sorted data should have empty spectraSortIndex
     expect_identical(length(cb@spectraSortIndex), 0L)
-    
+
     # Subset to keep only first chromatogram (msLevel=1, dataOrigin=A)
     keep <- chromSpectraIndex(cb) == levels(chromSpectraIndex(cb))[1]
     cb_sub <- cb[keep]
-    
+
     # Verify subset is correct
     expect_identical(length(cb_sub), 1L)
     expect_identical(length(cb_sub@spectra), 2L)
     expect_true(all(cb_sub@spectra$msLevel == 1L))
-    
+
     # Verify spectraSortIndex is still empty (pre-sorted data stays pre-sorted)
     expect_identical(length(cb_sub@spectraSortIndex), 0L)
 })
@@ -698,31 +698,31 @@ test_that("[ subsetting with populated spectraSortIndex works", {
         msLevel = c(1L, 1L, 2L, 2L, 1L, 2L),
         dataOrigin = c("B", "A", "B", "A", "A", "B")
     ))
-    
+
     cb <- ChromBackendSpectra()
     cb <- backendInitialize(cb, spectra = sp)
-    
+
     # Verify initial state: unsorted data should have populated spectraSortIndex
     expect_true(length(cb@spectraSortIndex) > 0)
     original_sort_idx <- cb@spectraSortIndex
-    
+
     # Subset to keep only "1_A" chromatogram (msLevel=1, dataOrigin=A)
     keep <- chromSpectraIndex(cb) == "1_A"
     cb_sub <- cb[keep]
-    
+
     # Verify subset is correct
     expect_identical(length(cb_sub), 1L)
     expect_identical(length(cb_sub@spectra), 2L)
-    
+
     # Verify spectra in subset have correct values
     expect_true(all(cb_sub@spectra$msLevel == 1L))
     expect_true(all(cb_sub@spectra$dataOrigin == "A"))
-    
+
     # Verify spectraSortIndex is remapped correctly
     ## Original positions that map to "1_A" are positions 2 and 5
     ## After subsetting, they should be renumbered to 1, 2
     expect_true(all(cb_sub@spectraSortIndex <= length(cb_sub@spectra)))
-    
+
     # Verify the sort index produces correct ordering
     if (length(cb_sub@spectraSortIndex) > 0) {
         sorted_rtimes <- cb_sub@spectra$rtime[cb_sub@spectraSortIndex]
@@ -739,27 +739,27 @@ test_that("[ subsetting remaps spectraSortIndex correctly", {
         msLevel = rep(1L, 5),
         dataOrigin = c("A", "A", "B", "B", "A")
     ))
-    
+
     cb <- ChromBackendSpectra()
     cb <- backendInitialize(cb, spectra = sp)
-    
+
     # Get the original spectraSortIndex
     original_sort_idx <- cb@spectraSortIndex
     expect_true(length(original_sort_idx) > 0)
-    
+
     # Subset to keep only dataOrigin="A" (indices 1, 2, 5)
     keep <- chromSpectraIndex(cb) == "1_A"
     cb_sub <- cb[keep]
-    
+
     # Verify we kept the right spectra
     expect_identical(length(cb_sub@spectra), 3L)
     kept_positions <- c(1, 2, 5)  # These are the original positions we kept
     expect_true(all(cb_sub@spectra$dataOrigin == "A"))
-    
+
     # Verify spectraSortIndex is valid
     expect_true(all(cb_sub@spectraSortIndex > 0))
     expect_true(all(cb_sub@spectraSortIndex <= length(cb_sub@spectra)))
-    
+
     # Verify sort order is preserved
     sorted_rtimes <- cb_sub@spectra$rtime[cb_sub@spectraSortIndex]
     expect_true(all(diff(sorted_rtimes) >= 0))
@@ -774,18 +774,18 @@ test_that("[ subsetting with multiple indices works", {
         msLevel = c(1L, 1L, 2L, 2L),
         dataOrigin = c("A", "A", "A", "A")
     ))
-    
+
     cb <- ChromBackendSpectra()
     cb <- backendInitialize(cb, spectra = sp)
-    
+
     # Subset to keep both chromatograms
     keep <- c(TRUE, TRUE)  # Keep both msLevel=1 and msLevel=2
     cb_sub <- cb[keep]
-    
+
     # Verify all spectra are retained
     expect_identical(length(cb_sub@spectra), 4L)
     expect_identical(length(cb_sub), 2L)
-    
+
     # Verify spectraSortIndex is still valid
     if (length(cb_sub@spectraSortIndex) > 0) {
         expect_true(all(cb_sub@spectraSortIndex <= length(cb_sub@spectra)))
@@ -805,14 +805,14 @@ test_that("[ subsetting with single index works", {
         msLevel = c(1L, 1L, 2L, 2L),
         dataOrigin = c("A", "A", "A", "A")
     ))
-    
+
     cb <- ChromBackendSpectra()
     cb <- backendInitialize(cb, spectra = sp)
-    
+
     # Subset to keep only first chromatogram
     keep <- c(TRUE, FALSE)
     cb_sub <- cb[keep]
-    
+
     # Verify subset is correct
     expect_identical(length(cb_sub), 1L)
     expect_identical(length(cb_sub@spectra), 2L)
@@ -827,20 +827,20 @@ test_that("factorize() with single factorize.by variable works", {
         msLevel = c(1L, 1L, 2L, 2L, 1L, 2L),
         dataOrigin = c("A", "A", "A", "A", "B", "B")
     ))
-    
+
     cb <- ChromBackendSpectra()
     cb <- backendInitialize(cb, spectra = sp)  # Default: factorize.by = c("msLevel", "dataOrigin")
-    
+
     # Verify initial state creates 4 groups (1_A, 1_B, 2_A, 2_B)
     expect_identical(length(cb), 4L)
-    
+
     # Refactorize by only dataOrigin
     cb_fact <- factorize(cb, factorize.by = "dataOrigin")
-    
+
     # After refactorization, chromSpectraIndex changes to only have dataOrigin groups
     expect_true(is.factor(cb_fact@spectra$chromSpectraIndex))
     expect_identical(nlevels(cb_fact@spectra$chromSpectraIndex), 2L)  # Now only 2 levels: A and B
-    
+
     # Verify spectra are correctly assigned to groups
     expect_true(all(cb_fact@spectra$chromSpectraIndex[cb_fact@spectra$dataOrigin == "A"] == "A"))
     expect_true(all(cb_fact@spectra$chromSpectraIndex[cb_fact@spectra$dataOrigin == "B"] == "B"))
@@ -854,17 +854,17 @@ test_that("factorize() with multiple factorize.by variables works", {
         msLevel = c(1L, 1L, 2L, 2L, 1L, 2L),
         dataOrigin = c("A", "A", "A", "A", "B", "B")
     ))
-    
+
     cb <- ChromBackendSpectra()
     cb <- backendInitialize(cb, spectra = sp)
-    
+
     # Factorize by msLevel and dataOrigin (default)
     cb_fact <- factorize(cb, factorize.by = c("msLevel", "dataOrigin"))
-    
+
     # Should create 4 chromatograms
     expect_identical(length(cb_fact), 4L)
     expect_identical(nrow(cb_fact@chromData), 4L)
-    
+
     # Verify chromData levels
     levels_str <- sort(as.character(unique(cb_fact@spectra$chromSpectraIndex)))
     expected_levels <- c("1_A", "1_B", "2_A", "2_B")
@@ -879,18 +879,18 @@ test_that("factorize() recalculates spectraSortIndex for unsorted data", {
         msLevel = c(1L, 1L, 2L, 2L, 1L, 2L),
         dataOrigin = c("A", "A", "A", "A", "B", "B")
     ))
-    
+
     cb <- ChromBackendSpectra()
     cb <- backendInitialize(cb, spectra = sp)
-    
+
     # Verify initial spectraSortIndex is set (unsorted data)
     expect_true(length(cb@spectraSortIndex) > 0)
     initial_sort_idx <- cb@spectraSortIndex
-    
+
     # Modify rtime and refactorize
     cb@spectra$rtime <- c(1, 2, 3, 4, 5, 6)  # Make it sorted
     cb <- factorize(cb)
-    
+
     # After refactorize with sorted data, spectraSortIndex should be empty
     expect_identical(length(cb@spectraSortIndex), 0L)
 })
@@ -903,24 +903,24 @@ test_that("factorize() updates chromSpectraIndex correctly", {
         msLevel = c(1L, 1L, 2L, 2L),
         dataOrigin = rep("A", 4)
     ))
-    
+
     cb <- ChromBackendSpectra()
     cb <- backendInitialize(cb, spectra = sp)
-    
+
     # Verify chromSpectraIndex is a factor
     expect_true(is.factor(cb@spectra$chromSpectraIndex))
-    
+
     # Refactorize
     cb <- factorize(cb)
-    
+
     # Verify chromSpectraIndex is still a factor
     expect_true(is.factor(cb@spectra$chromSpectraIndex))
-    
+
     # Verify all spectra have valid chromSpectraIndex
     expect_true(all(!is.na(cb@spectra$chromSpectraIndex)))
-    
+
     # Verify levels match chromData
-    expect_identical(sort(levels(cb@spectra$chromSpectraIndex)), 
+    expect_identical(sort(levels(cb@spectra$chromSpectraIndex)),
                      sort(as.character(cb@chromData$chromSpectraIndex)))
 })
 
@@ -932,16 +932,16 @@ test_that("factorize() preserves spectra data integrity", {
         msLevel = c(1L, 1L, 2L, 2L),
         dataOrigin = rep("A", 4)
     ))
-    
+
     cb <- ChromBackendSpectra()
     cb <- backendInitialize(cb, spectra = sp)
-    
+
     original_mz <- cb@spectra$mz
     original_intensity <- cb@spectra$intensity
-    
+
     # Refactorize
     cb <- factorize(cb)
-    
+
     # Verify spectra data is preserved
     expect_identical(cb@spectra$mz, original_mz)
     expect_identical(cb@spectra$intensity, original_intensity)
@@ -956,30 +956,30 @@ test_that("[ subsetting with reordering works", {
         msLevel = c(1L, 1L, 2L, 1L, 2L, 2L),
         dataOrigin = c("A", "A", "A", "B", "B", "B")
     ))
-    
+
     cb <- ChromBackendSpectra()
     cb <- backendInitialize(cb, spectra = sp)
-    
+
     # Get original chromSpectraIndex levels
     original_idx <- chromSpectraIndex(cb)
     expect_identical(length(original_idx), 4L)  # 4 chromatograms: 1_A, 1_B, 2_A, 2_B
-    
+
     # Reorder: reverse order
     cb_reordered <- cb[c(4, 3, 2, 1)]
-    
+
     # Verify length is correct
     expect_identical(length(cb_reordered), 4L)
-    
+
     # Verify order is reversed
     reordered_idx <- chromSpectraIndex(cb_reordered)
     expect_identical(as.character(reordered_idx), as.character(original_idx[c(4, 3, 2, 1)]))
-    
+
     # Verify chromData is reordered
     expect_identical(nrow(cb_reordered@chromData), 4L)
-    
+
     # Verify spectra are still correctly associated
     expect_true(all(cb_reordered@spectra$chromSpectraIndex %in% reordered_idx))
-    
+
     # Verify spectraSortIndex is still valid
     if (length(cb_reordered@spectraSortIndex) > 0) {
         expect_true(all(cb_reordered@spectraSortIndex <= length(cb_reordered@spectra)))
@@ -995,37 +995,37 @@ test_that("[ subsetting with duplication works", {
         msLevel = c(1L, 1L, 2L, 2L),
         dataOrigin = c("A", "A", "A", "A")
     ))
-    
+
     cb <- ChromBackendSpectra()
     cb <- backendInitialize(cb, spectra = sp)
-    
+
     # Get original chromSpectraIndex levels
     original_idx <- chromSpectraIndex(cb)
     expect_identical(length(original_idx), 2L)  # 2 chromatograms: 1_A, 2_A
-    
+
     # Duplicate: keep first chromatogram twice, then second
     cb_dup <- cb[c(1, 1, 2)]
-    
+
     # Verify length includes duplicates
     expect_identical(length(cb_dup), 3L)
-    
+
     # Verify chromData includes duplicates
     expect_identical(nrow(cb_dup@chromData), 3L)
     dup_idx <- chromSpectraIndex(cb_dup)
     expect_identical(as.character(dup_idx), as.character(original_idx[c(1, 1, 2)]))
-    
+
     # Verify spectra: keeps all unique spectra from subsetted chromatograms
     ## Both chrom 1 and 2 are kept, so all 4 original spectra are kept
     expect_identical(length(cb_dup@spectra), 4L)
-    
+
     # Verify all spectra belong to the right chromatograms
     expect_true(all(cb_dup@spectra$chromSpectraIndex %in% dup_idx))
-    
+
     # Verify spectraSortIndex is still valid
     if (length(cb_dup@spectraSortIndex) > 0) {
         expect_true(all(cb_dup@spectraSortIndex <= length(cb_dup@spectra)))
     }
-    
+
     # Verify peaksData works with duplicated chromatograms
     pd <- peaksData(cb_dup)
     expect_identical(length(pd), 3L)
@@ -1040,42 +1040,42 @@ test_that("[ subsetting with reordering and duplication works", {
         msLevel = c(1L, 1L, 2L, 2L),
         dataOrigin = c("A", "A", "A", "A")
     ))
-    
+
     cb <- ChromBackendSpectra()
     cb <- backendInitialize(cb, spectra = sp)
-    
+
     original_idx <- chromSpectraIndex(cb)
     expect_identical(length(original_idx), 2L)  # 2 chromatograms
-    
+
     # Reorder and duplicate: c(2, 1, 1)
     cb_mixed <- cb[c(2, 1, 1)]
-    
+
     # Verify length is correct
     expect_identical(length(cb_mixed), 3L)
-    
+
     # Verify order matches requested subset
     mixed_idx <- chromSpectraIndex(cb_mixed)
     expect_identical(as.character(mixed_idx), as.character(original_idx[c(2, 1, 1)]))
-    
+
     # Verify chromData has correct structure
     expect_identical(nrow(cb_mixed@chromData), 3L)
-    
+
     # Verify spectra are correctly associated
     expect_true(all(cb_mixed@spectra$chromSpectraIndex %in% mixed_idx))
-    
+
     # Verify number of spectra: keeps unique spectra from both chromatograms
     ## Both chrom 1 and 2 are in the subset, so all 4 spectra are kept
     expect_identical(length(cb_mixed@spectra), 4L)
-    
+
     # Verify spectraSortIndex is valid
     if (length(cb_mixed@spectraSortIndex) > 0) {
         expect_true(all(cb_mixed@spectraSortIndex > 0))
         expect_true(all(cb_mixed@spectraSortIndex <= length(cb_mixed@spectra)))
-        
+
         # Verify sort index still provides correct ordering
         sorted_rtimes <- cb_mixed@spectra$rtime[cb_mixed@spectraSortIndex]
         sorted_do <- cb_mixed@spectra$dataOrigin[cb_mixed@spectraSortIndex]
-        
+
         # Check rtimes are sorted within each dataOrigin group
         for (do in unique(sorted_do)) {
             rtimes_in_group <- sorted_rtimes[sorted_do == do]
@@ -1093,47 +1093,47 @@ test_that("[ subsetting with unsorted data and duplication works", {
         msLevel = c(1L, 1L, 2L, 2L),
         dataOrigin = c("B", "A", "B", "A")
     ))
-    
+
     cb <- ChromBackendSpectra()
     cb <- backendInitialize(cb, spectra = sp)
-    
+
     # Verify initial state has populated spectraSortIndex
     expect_true(length(cb@spectraSortIndex) > 0)
-    
+
     original_idx <- chromSpectraIndex(cb)
     expect_identical(length(original_idx), 4L)  # 4 chromatograms: 1_A, 1_B, 2_A, 2_B
-    
+
     # Duplicate and reorder: keep chromatogram 2, then 1 twice
     cb_dup <- cb[c(2, 1, 1)]
-    
+
     # Verify basic structure
     expect_identical(length(cb_dup), 3L)
     expect_identical(nrow(cb_dup@chromData), 3L)
-    
+
     # Verify order
     dup_idx <- chromSpectraIndex(cb_dup)
     expect_identical(as.character(dup_idx), as.character(original_idx[c(2, 1, 1)]))
-    
+
     # Verify spectra count: keeps unique spectra from chromatograms 1 and 2
     ## Chrom 1_A has 1 spectrum, chrom 1_B has 1 spectrum → 2 unique spectra
     expect_identical(length(cb_dup@spectra), 2L)
-    
+
     # Verify spectraSortIndex is valid after duplication
     if (length(cb_dup@spectraSortIndex) > 0) {
         expect_true(all(cb_dup@spectraSortIndex > 0))
         expect_true(all(cb_dup@spectraSortIndex <= length(cb_dup@spectra)))
-        
+
         # Verify sorting is maintained
         sorted_rtimes <- cb_dup@spectra$rtime[cb_dup@spectraSortIndex]
         sorted_do <- cb_dup@spectra$dataOrigin[cb_dup@spectraSortIndex]
-        
+
         # Within each dataOrigin, rtimes should be sorted
         for (do in unique(sorted_do)) {
             rtimes_in_group <- sorted_rtimes[sorted_do == do]
             expect_true(all(diff(rtimes_in_group) >= 0))
         }
     }
-    
+
     # Verify peaksData works with duplicated chromatograms
     pd <- peaksData(cb_dup)
     expect_identical(length(pd), 3L)
@@ -1148,7 +1148,7 @@ test_that("peaksData returns data in correct order when chromSpectraIndex has du
     ## ensures peaksData is returned in the original chromData row order.
     sp <- Spectra(DataFrame(
         mz = NumericList(
-            c(100, 101, 102), c(100, 101, 102), c(100, 101, 102), 
+            c(100, 101, 102), c(100, 101, 102), c(100, 101, 102),
             c(100, 101, 102), c(100, 101, 102), c(100, 101, 102),
             compress = FALSE
         ),
@@ -1161,7 +1161,7 @@ test_that("peaksData returns data in correct order when chromSpectraIndex has du
         msLevel = rep(1L, 6),
         dataOrigin = c("A", "A", "A", "B", "B", "B")
     ))
-    
+
     ## Create custom chromData with multiple EICs sharing same chromSpectraIndex
     ## This simulates extracting different m/z windows from the same spectra
     custom_chromData <- data.frame(
@@ -1172,37 +1172,37 @@ test_that("peaksData returns data in correct order when chromSpectraIndex has du
         rtMax = c(3, 3, 6, 6),
         dataOrigin = c("A", "A", "B", "B")
     )
-    
+
     cb <- ChromBackendSpectra()
     cb <- backendInitialize(cb, spectra = sp, chromData = custom_chromData)
-    
+
     ## chromSpectraIndex should have duplicates: 1_A, 1_A, 1_B, 1_B
     chrom_idx <- chromSpectraIndex(cb)
     expect_identical(length(chrom_idx), 4L)
     expect_identical(as.character(chrom_idx), c("1_A", "1_A", "1_B", "1_B"))
-    
+
     ## Get peaksData
     pd <- peaksData(cb)
-    
+
     ## Verify peaksData has same length as chromData rows
     expect_identical(length(pd), 4L)
-    
+
     ## Verify peaksData is returned in chromData row order, NOT factor level order
     ## Row 1: 1_A with mzMax=101 (should have intensities from mz=100,101)
     ## Row 2: 1_A with mzMax=102 (should have intensities from mz=100,101,102)
     ## Row 3: 1_B with mzMax=101 (should have intensities from mz=100,101)
     ## Row 4: 1_B with mzMax=102 (should have intensities from mz=100,101,102)
-    
+
     ## Check that the intensity patterns match the expected order
     ## The key test: row 1 and row 2 should have different intensity sums
     ## because they have different mz windows
     int_sums <- sapply(pd, function(x) sum(x$intensity, na.rm = TRUE))
-    
+
     ## Row 1 (1_A, mz 100-101): should have lower sum than Row 2 (1_A, mz 100-102)
     expect_true(int_sums[1] < int_sums[2])
     ## Row 3 (1_B, mz 100-101): should have lower sum than Row 4 (1_B, mz 100-102)
     expect_true(int_sums[3] < int_sums[4])
-    
+
     ## Also verify the pattern matches across files
     ## Row 1 and Row 3 should have similar intensity ratios (both use mz 100-101)
     ## Row 2 and Row 4 should have similar intensity ratios (both use mz 100-102)
