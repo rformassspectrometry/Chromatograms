@@ -5,6 +5,7 @@
 \alias{peaksVariables}
 \alias{filterPeaksData}
 \alias{imputePeaksData}
+\alias{peakBoundary}
 \alias{imputePeaksData,Chromatograms-method}
 \alias{filterPeaksData,Chromatograms-method}
 \alias{intensity,Chromatograms-method}
@@ -15,6 +16,7 @@
 \alias{rtime,Chromatograms-method}
 \alias{rtime<-,Chromatograms-method}
 \alias{lengths,Chromatograms-method}
+\alias{peakBoundary,Chromatograms-method}
 \title{Chromatographic peaks data}
 \usage{
 \S4method{imputePeaksData}{Chromatograms}(
@@ -57,6 +59,8 @@
 \S4method{rtime}{Chromatograms}(object) <- value
 
 \S4method{lengths}{Chromatograms}(x)
+
+\S4method{peakBoundary}{Chromatograms}(object, threshold = 0, ...)
 }
 \arguments{
 \item{object}{A \link{Chromatograms} object.}
@@ -119,6 +123,13 @@ and one column is called by the user, the method returns a list of
 vector of the single column requested.}
 
 \item{x}{For \code{lengths()}: A \code{Chromatograms} object.}
+
+\item{threshold}{For \code{peakBoundary()}: \code{numeric(1)} (default \code{0}). Fraction
+of the maximum intensity used as cut-off to determine the peak
+boundaries. Must be \verb{>= 0} and \verb{< 1}. A value of \code{0} extends the
+boundaries to the full signal extent (i.e. all data points above
+zero); higher values (e.g. \code{0.05} or \code{0.1}) tighten the boundaries
+around the apex.}
 }
 \value{
 Refer to the individual function description for information on the
@@ -174,6 +185,19 @@ specified imputation methods using various methods such as linear
 interpolation, spline interpolation, Gaussian kernel smoothing, or LOESS
 smoothing. This method modifies the peaks data in place and returns the
 same \code{Chromatograms} object with imputed values.
+}
+
+\section{Peak Boundary Detection}{
+
+
+\code{peakBoundary()} determines the retention time boundaries of the tallest
+peak in each chromatogram. Starting from the apex (maximum intensity), the
+function walks outward in both directions until the intensity drops below
+\code{threshold * max_intensity} (with \code{threshold} defaulting to \code{0}).
+The result is a \code{matrix} with one row per
+chromatogram and columns \code{left_boundary} and \code{right_boundary}
+(retention times). Chromatograms that are empty, contain only \code{NA} or
+all-zero intensities return \code{NA} for both boundaries.
 }
 
 \examples{

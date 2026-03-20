@@ -8,6 +8,7 @@
 #' @aliases peaksVariables
 #' @aliases filterPeaksData
 #' @aliases imputePeaksData
+#' @aliases peakBoundary
 #'
 #' @description
 #'
@@ -78,6 +79,13 @@
 #' @param span For `imputePeaksData`: `numeric(1)`, for the loess method:
 #'        Smoothing parameter (only used if method == "loess")
 #'
+#' @param threshold For `peakBoundary()`: `numeric(1)` (default `0`). Fraction
+#'        of the maximum intensity used as cut-off to determine the peak
+#'        boundaries. Must be `>= 0` and `< 1`. A value of `0` extends the
+#'        boundaries to the full signal extent (i.e. all data points above
+#'        zero); higher values (e.g. `0.05` or `0.1`) tighten the boundaries
+#'        around the apex.
+#'
 #' @param window For `imputePeaksData`: `integer`, for the gaussian method:
 #'        Half-width of Gaussian kernel window (e.g., 2 gives window size 5)
 #'
@@ -119,6 +127,18 @@
 #' smoothing. This method modifies the peaks data in place and returns the
 #' same `Chromatograms` object with imputed values.
 #'
+#'
+#'
+#' @section Peak Boundary Detection:
+#'
+#' `peakBoundary()` determines the retention time boundaries of the tallest
+#' peak in each chromatogram. Starting from the apex (maximum intensity), the
+#' function walks outward in both directions until the intensity drops below
+#' `threshold * max_intensity` (with `threshold` defaulting to `0`).
+#' The result is a `matrix` with one row per
+#' chromatogram and columns `left_boundary` and `right_boundary`
+#' (retention times). Chromatograms that are empty, contain only `NA` or
+#' all-zero intensities return `NA` for both boundaries.
 #'
 #'
 #' @seealso [Chromatograms] for a general description of the `Chromatograms`
@@ -298,3 +318,22 @@ setMethod("lengths", signature = "Chromatograms", function(x) {
     }
     lengths(.backend(x))
 })
+
+#' @rdname peaksData
+setMethod(
+    "peakBoundary", signature = "Chromatograms",
+    function(object, threshold = 0, ...) {
+        if (!is.numeric(threshold) || length(threshold) != 1L ||
+            is.na(threshold))
+            stop("'threshold' must be a single non-missing numeric value.")
+        if (threshold < 0 || threshold >= 1)
+            stop("'threshold' must be >= 0 and < 1.")
+        pd <- peaksData(object)
+        res <- vapply(pd, function(p)
+            .peak_boundary_one(p$rtime, p$intensity, threshold = threshold),
+            numeric(2))
+        res <- t(res)
+        colnames(res) <- c("left_boundary", "right_boundary")
+        res
+    }
+)

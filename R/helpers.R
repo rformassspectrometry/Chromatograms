@@ -849,3 +849,53 @@
 .spectra <- function(object) {
     object@spectra
 }
+
+#' Compute peak boundaries for a single chromatogram.
+#'
+#' Finds the retention time boundaries of the tallest peak in a chromatogram
+#' based on a relative intensity threshold. Starting from the apex (maximum
+#' intensity), the function walks left and right until the intensity drops
+#' below `threshold * max_intensity` (ignoring `NA` values).
+#'
+#' Used in:
+#' - `peakBoundary()`
+#'
+#' @param rtime numeric vector of retention times.
+#' @param intensity numeric vector of intensities.
+#' @param threshold numeric(1), fraction of the maximum intensity used as
+#'        the cut-off (default 0).
+#' @return A numeric vector of length 2 (left boundary, right boundary
+#'   retention times), or `c(NA_real_, NA_real_)` when no valid peak
+#'   is found.
+#' @noRd
+.peak_boundary_one <- function(rtime, intensity, threshold = 0) {
+    na_res <- c(NA_real_, NA_real_)
+    if (length(rtime) == 0L || length(intensity) == 0L)
+        return(na_res)
+    non_na <- !is.na(intensity)
+    if (!any(non_na))
+        return(na_res)
+    max_int <- max(intensity[non_na])
+    if (max_int == 0)
+        return(na_res)
+    cutoff <- threshold * max_int
+    apex <- which.max(replace(intensity, is.na(intensity), -Inf))
+    ## Walk left from apex
+    left <- apex
+    while (left > 1L) {
+        if (!is.na(intensity[left - 1L]) &&
+            intensity[left - 1L] < cutoff)
+            break
+        left <- left - 1L
+    }
+    ## Walk right from apex
+    right <- apex
+    n <- length(intensity)
+    while (right < n) {
+        if (!is.na(intensity[right + 1L]) &&
+            intensity[right + 1L] < cutoff)
+            break
+        right <- right + 1L
+    }
+    c(unname(rtime[left]), unname(rtime[right]))
+}

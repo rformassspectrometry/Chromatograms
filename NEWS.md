@@ -1,5 +1,13 @@
 # Version 1.1
 
+## Changes in 1.1.5
+
+- Add `peakBoundary()` method for `Chromatograms` objects. Determines the
+  retention time boundaries of the tallest peak in each chromatogram by
+  walking outward from the apex until intensity drops below
+  `threshold * max_intensity`. Returns a matrix with `left_boundary` and
+  `right_boundary` columns.
+
 ## Changes in 1.1.4
 
 - `setBackend()` now clears the processing queue after switching backend,
