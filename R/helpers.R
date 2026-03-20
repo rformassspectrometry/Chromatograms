@@ -853,49 +853,58 @@
 #' Compute peak boundaries for a single chromatogram.
 #'
 #' Finds the retention time boundaries of the tallest peak in a chromatogram
-#' based on a relative intensity threshold. Starting from the apex (maximum
-#' intensity), the function walks left and right until the intensity drops
-#' below `threshold * max_intensity` (ignoring `NA` values).
+#' using `MsCoreUtils::valleys()` to locate the flanking valleys. When the
+#' valley intensities exceed a baseline-relative threshold, falls back to a
+#' threshold-based boundary search.
 #'
 #' Used in:
 #' - `peakBoundary()`
 #'
 #' @param rtime numeric vector of retention times.
 #' @param intensity numeric vector of intensities.
-#' @param threshold numeric(1), fraction of the maximum intensity used as
-#'        the cut-off (default 0).
+#' @param threshold numeric(1), fraction of the peak height above baseline
+#'        used as a fallback cut-off (default 0.1).
+#' @param baselineThreshold numeric(1), fraction of the peak height above
+#'        baseline used to validate valley positions (default 0.1).
+#' @param baselineQuantile numeric(1), quantile of the intensity distribution
+#'        used as the baseline estimate (default 0.1).
 #' @return A numeric vector of length 2 (left boundary, right boundary
 #'   retention times), or `c(NA_real_, NA_real_)` when no valid peak
 #'   is found.
+#' @importFrom MsCoreUtils valleys
+#' @importFrom stats quantile
 #' @noRd
-.peak_boundary_one <- function(rtime, intensity, threshold = 0) {
+.peak_boundary_one <- function(rtime, intensity, threshold = 0.1,
+                               baselineThreshold = 0.1,
+                               baselineQuantile = 0.1) {
+    n <- length(intensity)
     na_res <- c(NA_real_, NA_real_)
-    if (length(rtime) == 0L || length(intensity) == 0L)
+    if (n < 3L || all(is.na(intensity)))
         return(na_res)
-    non_na <- !is.na(intensity)
-    if (!any(non_na))
-        return(na_res)
-    max_int <- max(intensity[non_na])
+    max_int <- max(intensity, na.rm = TRUE)
     if (max_int == 0)
         return(na_res)
-    cutoff <- threshold * max_int
-    apex <- which.max(replace(intensity, is.na(intensity), -Inf))
-    ## Walk left from apex
-    left <- apex
-    while (left > 1L) {
-        if (!is.na(intensity[left - 1L]) &&
-            intensity[left - 1L] < cutoff)
-            break
-        left <- left - 1L
+    max_idx <- which.max(intensity)
+    baseline_int <- quantile(intensity, probs = baselineQuantile,
+                             na.rm = TRUE)
+    peak_height <- max_int - baseline_int
+    baseline_thresh <- baseline_int + peak_height * baselineThreshold
+    v <- valleys(intensity, max_idx)
+    left_idx  <- if ("left" %in% colnames(v)) v[1L, "left"] else 1L
+    right_idx <- if ("right" %in% colnames(v)) v[1L, "right"] else n
+    left_ok <- !is.na(intensity[left_idx]) &&
+        intensity[left_idx] <= baseline_thresh &&
+        !(left_idx > 1L && is.na(intensity[left_idx - 1L]))
+    right_ok <- !is.na(intensity[right_idx]) &&
+        intensity[right_idx] <= baseline_thresh &&
+        !(right_idx < n && is.na(intensity[right_idx + 1L]))
+    if (!left_ok || !right_ok) {
+        thresh_val <- baseline_int + peak_height * threshold
+        left_cand  <- which(intensity[seq_len(max_idx)] <= thresh_val)
+        right_cand <- which(intensity[max_idx:n] <= thresh_val)
+        left_idx  <- if (length(left_cand)) max(left_cand) else 1L
+        right_idx <- if (length(right_cand))
+            max_idx + min(right_cand) - 1L else n
     }
-    ## Walk right from apex
-    right <- apex
-    n <- length(intensity)
-    while (right < n) {
-        if (!is.na(intensity[right + 1L]) &&
-            intensity[right + 1L] < cutoff)
-            break
-        right <- right + 1L
-    }
-    c(unname(rtime[left]), unname(rtime[right]))
+    c(unname(rtime[left_idx]), unname(rtime[right_idx]))
 }

@@ -266,6 +266,13 @@ test_that("peakBoundary handles empty chromatogram.", {
                                peaksData = pdata_e)
     tmp <- peakBoundary(chr_empty)
     expect_true(all(is.na(tmp)))
+
+    ## Also n < 3 returns NA
+    pdata_2 <- list(data.frame(rtime = c(1, 2), intensity = c(10, 20)))
+    chr_2 <- Chromatograms(ChromBackendMemory(), chromData = cdata_e,
+                           peaksData = pdata_2)
+    tmp2 <- peakBoundary(chr_2)
+    expect_true(all(is.na(tmp2)))
 })
 
 test_that("peakBoundary handles all-NA intensities.", {
@@ -311,6 +318,20 @@ test_that("peakBoundary threshold parameter works.", {
     expect_false(any(is.na(tmp_05)))
 })
 
+test_that("peakBoundary correctly isolates tallest peak in multi-peak data.", {
+    cdata_m <- data.frame(msLevel = 1L, mz = 100, dataOrigin = "s1")
+    pdata_m <- list(data.frame(
+        rtime = 1:9,
+        intensity = c(0, 5, 10, 5, 0, 3, 20, 3, 0)
+    ))
+    chr_m <- Chromatograms(ChromBackendMemory(), chromData = cdata_m,
+                           peaksData = pdata_m)
+    tmp <- peakBoundary(chr_m)
+    ## Should return boundaries for the tallest peak (rtime 5-9 region)
+    expect_equal(unname(tmp[1, "left_boundary"]), 5)
+    expect_equal(unname(tmp[1, "right_boundary"]), 9)
+})
+
 test_that("peakBoundary handles NA-adjacent boundaries.", {
     cdata_na_adj <- data.frame(msLevel = 1L, mz = 100, dataOrigin = "s1")
     pdata_na_adj <- list(data.frame(
@@ -345,4 +366,14 @@ test_that("peakBoundary validates threshold parameter.", {
                  "must be >= 0 and < 1")
     expect_error(peakBoundary(chr_v, threshold = 2),
                  "must be >= 0 and < 1")
+    ## baselineThreshold validation
+    expect_error(peakBoundary(chr_v, baselineThreshold = "a"),
+                 "baselineThreshold.*single non-missing numeric")
+    expect_error(peakBoundary(chr_v, baselineThreshold = -0.1),
+                 "baselineThreshold.*must be >= 0 and < 1")
+    ## baselineQuantile validation
+    expect_error(peakBoundary(chr_v, baselineQuantile = "a"),
+                 "baselineQuantile.*single non-missing numeric")
+    expect_error(peakBoundary(chr_v, baselineQuantile = 1.5),
+                 "baselineQuantile.*must be >= 0 and <= 1")
 })

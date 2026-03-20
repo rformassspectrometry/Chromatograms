@@ -54,7 +54,8 @@ setGeneric("productMzMin<-", function(object, value) {
 })
 setGeneric("imputePeaksData", function(object, ...)
     standardGeneric("imputePeaksData"))
-setGeneric("peakBoundary", function(object, ...)
+setGeneric("peakBoundary", function(object, threshold = 0.1,
+    baselineThreshold = 0.1, baselineQuantile = 0.1, ...)
     standardGeneric("peakBoundary"))
 #' @rdname hidden_aliases
 setGeneric("reset", function(object, ...) {

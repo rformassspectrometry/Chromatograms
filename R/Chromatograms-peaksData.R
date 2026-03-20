@@ -79,12 +79,21 @@
 #' @param span For `imputePeaksData`: `numeric(1)`, for the loess method:
 #'        Smoothing parameter (only used if method == "loess")
 #'
-#' @param threshold For `peakBoundary()`: `numeric(1)` (default `0`). Fraction
-#'        of the maximum intensity used as cut-off to determine the peak
-#'        boundaries. Must be `>= 0` and `< 1`. A value of `0` extends the
-#'        boundaries to the full signal extent (i.e. all data points above
-#'        zero); higher values (e.g. `0.05` or `0.1`) tighten the boundaries
-#'        around the apex.
+#' @param threshold For `peakBoundary()`: `numeric(1)` (default `0.1`).
+#'        Fraction of the peak height above baseline used as a fallback
+#'        cut-off when valley-based boundaries are not suitable. Must be
+#'        `>= 0` and `< 1`.
+#'
+#' @param baselineThreshold For `peakBoundary()`: `numeric(1)` (default
+#'        `0.1`). Fraction of the peak height above the baseline. Valley
+#'        positions returned by `MsCoreUtils::valleys()` are accepted only if
+#'        the intensity at the valley is at or below
+#'        `baseline + peak_height * baselineThreshold`. Must be `>= 0` and
+#'        `< 1`.
+#'
+#' @param baselineQuantile For `peakBoundary()`: `numeric(1)` (default
+#'        `0.1`). Quantile of the intensity distribution used as the
+#'        baseline estimate. Must be `>= 0` and `<= 1`.
 #'
 #' @param window For `imputePeaksData`: `integer`, for the gaussian method:
 #'        Half-width of Gaussian kernel window (e.g., 2 gives window size 5)
@@ -132,13 +141,17 @@
 #' @section Peak Boundary Detection:
 #'
 #' `peakBoundary()` determines the retention time boundaries of the tallest
-#' peak in each chromatogram. Starting from the apex (maximum intensity), the
-#' function walks outward in both directions until the intensity drops below
-#' `threshold * max_intensity` (with `threshold` defaulting to `0`).
+#' peak in each chromatogram. The function uses `MsCoreUtils::valleys()` to
+#' locate the valleys (local minima) flanking the apex. If the valley
+#' intensities exceed a baseline-relative threshold (controlled by
+#' `baselineThreshold`), it falls back to a threshold-based boundary search
+#' using `threshold`. The baseline is estimated as the `baselineQuantile`
+#' quantile of the chromatogram's intensity values.
 #' The result is a `matrix` with one row per
 #' chromatogram and columns `left_boundary` and `right_boundary`
-#' (retention times). Chromatograms that are empty, contain only `NA` or
-#' all-zero intensities return `NA` for both boundaries.
+#' (retention times). Chromatograms that are empty, have fewer than 3 data
+#' points, contain only `NA` or all-zero intensities return `NA` for both
+#' boundaries.
 #'
 #'
 #' @seealso [Chromatograms] for a general description of the `Chromatograms`
@@ -320,17 +333,34 @@ setMethod("lengths", signature = "Chromatograms", function(x) {
 })
 
 #' @rdname peaksData
+#' @export
 setMethod(
     "peakBoundary", signature = "Chromatograms",
-    function(object, threshold = 0, ...) {
+    function(object, threshold = 0.1, baselineThreshold = 0.1,
+             baselineQuantile = 0.1, ...) {
         if (!is.numeric(threshold) || length(threshold) != 1L ||
             is.na(threshold))
             stop("'threshold' must be a single non-missing numeric value.")
         if (threshold < 0 || threshold >= 1)
             stop("'threshold' must be >= 0 and < 1.")
+        if (!is.numeric(baselineThreshold) ||
+            length(baselineThreshold) != 1L || is.na(baselineThreshold))
+            stop("'baselineThreshold' must be a single non-missing ",
+                 "numeric value.")
+        if (baselineThreshold < 0 || baselineThreshold >= 1)
+            stop("'baselineThreshold' must be >= 0 and < 1.")
+        if (!is.numeric(baselineQuantile) ||
+            length(baselineQuantile) != 1L || is.na(baselineQuantile))
+            stop("'baselineQuantile' must be a single non-missing ",
+                 "numeric value.")
+        if (baselineQuantile < 0 || baselineQuantile > 1)
+            stop("'baselineQuantile' must be >= 0 and <= 1.")
         pd <- peaksData(object)
         res <- vapply(pd, function(p)
-            .peak_boundary_one(p$rtime, p$intensity, threshold = threshold),
+            .peak_boundary_one(p$rtime, p$intensity,
+                               threshold = threshold,
+                               baselineThreshold = baselineThreshold,
+                               baselineQuantile = baselineQuantile),
             numeric(2))
         res <- t(res)
         colnames(res) <- c("left_boundary", "right_boundary")
