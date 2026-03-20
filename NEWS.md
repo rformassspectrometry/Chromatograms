@@ -1,5 +1,12 @@
 # Version 1.1
 
+## Changes in 1.1.5
+
+- Add `peakBoundary()` method for `Chromatograms` objects. Determines the
+  retention time boundaries of the tallest peak in each chromatogram using
+  `MsCoreUtils::valleys()` to locate flanking valleys, with a threshold-based
+  fallback. Returns a matrix with `left_boundary` and `right_boundary` columns.
+
 ## Changes in 1.1.4
 
 - `setBackend()` now clears the processing queue after switching backend,

@@ -223,3 +223,157 @@ test_that("Chromatograms, imputePeaksData works", {
     ## Check processing log mentions extrapolation when enabled
     expect_true(grepl("with extrapolation", .processing(c_imp_extrap)))
 })
+
+test_that("peakBoundary returns per-chromatogram matrix.", {
+    cdata <- data.frame(
+        msLevel = c(1L, 1L),
+        mz = c(100.0, 200.0),
+        dataOrigin = c("mem1", "mem1")
+    )
+    pdata <- list(
+        data.frame(rtime = c(2.1, 2.5, 3.0, 3.4, 3.9),
+                   intensity = c(100, 250, 400, 300, 150)),
+        data.frame(rtime = c(1, 2, 3, 4, 5, 6, 7),
+                   intensity = c(0, 10, 50, 100, 50, 10, 0))
+    )
+    chr <- Chromatograms(ChromBackendMemory(), chromData = cdata,
+                         peaksData = pdata)
+    tmp <- peakBoundary(chr)
+    expect_true(is.matrix(tmp))
+    expect_equal(nrow(tmp), length(chr))
+    expect_equal(colnames(tmp), c("left_boundary", "right_boundary"))
+    expect_true(all(tmp[, "left_boundary"] <= tmp[, "right_boundary"],
+                    na.rm = TRUE))
+})
+
+test_that("peakBoundary returns correct boundaries for clean symmetric peak.", {
+    cdata_pb <- data.frame(msLevel = 1L, mz = 100, dataOrigin = "s1")
+    pdata_pb <- list(data.frame(
+        rtime = c(1, 2, 3, 4, 5, 6, 7),
+        intensity = c(0, 10, 50, 100, 50, 10, 0)
+    ))
+    chr_pb <- Chromatograms(ChromBackendMemory(), chromData = cdata_pb,
+                            peaksData = pdata_pb)
+    tmp <- peakBoundary(chr_pb)
+    expect_equal(unname(tmp[1, "left_boundary"]), 1)
+    expect_equal(unname(tmp[1, "right_boundary"]), 7)
+})
+
+test_that("peakBoundary handles empty chromatogram.", {
+    cdata_e <- data.frame(msLevel = 1L, mz = 100, dataOrigin = "s1")
+    pdata_e <- list(data.frame(rtime = numeric(0), intensity = numeric(0)))
+    chr_empty <- Chromatograms(ChromBackendMemory(), chromData = cdata_e,
+                               peaksData = pdata_e)
+    tmp <- peakBoundary(chr_empty)
+    expect_true(all(is.na(tmp)))
+
+    ## Also n < 3 returns NA
+    pdata_2 <- list(data.frame(rtime = c(1, 2), intensity = c(10, 20)))
+    chr_2 <- Chromatograms(ChromBackendMemory(), chromData = cdata_e,
+                           peaksData = pdata_2)
+    tmp2 <- peakBoundary(chr_2)
+    expect_true(all(is.na(tmp2)))
+})
+
+test_that("peakBoundary handles all-NA intensities.", {
+    cdata_na <- data.frame(msLevel = 1L, mz = 100, dataOrigin = "s1")
+    pdata_na <- list(data.frame(
+        rtime = c(1, 2, 3, 4, 5),
+        intensity = c(NA_real_, NA_real_, NA_real_, NA_real_, NA_real_)
+    ))
+    chr_allna <- Chromatograms(ChromBackendMemory(), chromData = cdata_na,
+                               peaksData = pdata_na)
+    tmp <- peakBoundary(chr_allna)
+    expect_true(all(is.na(tmp)))
+})
+
+test_that("peakBoundary handles all-zero intensities.", {
+    cdata_z <- data.frame(msLevel = c(1L, 1L), mz = c(100, 200),
+                          dataOrigin = c("s1", "s1"))
+    pdata_z <- list(
+        data.frame(rtime = c(1, 2, 3, 4, 5),
+                   intensity = c(0, 0, 0, 0, 0)),
+        data.frame(rtime = c(1, 2, 3, 4, 5, 6, 7),
+                   intensity = c(0, 0, 0, 0, 0, 0, 0))
+    )
+    chr_zero <- Chromatograms(ChromBackendMemory(), chromData = cdata_z,
+                              peaksData = pdata_z)
+    tmp <- peakBoundary(chr_zero)
+    expect_true(all(is.na(tmp)))
+})
+
+test_that("peakBoundary threshold parameter works.", {
+    cdata_t <- data.frame(msLevel = 1L, mz = 100, dataOrigin = "s1")
+    pdata_t <- list(data.frame(
+        rtime = c(1, 2, 3, 4, 5, 6, 7),
+        intensity = c(5, 20, 60, 100, 60, 20, 5)
+    ))
+    chr_t <- Chromatograms(ChromBackendMemory(), chromData = cdata_t,
+                           peaksData = pdata_t)
+    tmp <- peakBoundary(chr_t, threshold = 0.1)
+    expect_true(is.matrix(tmp))
+    expect_false(any(is.na(tmp)))
+    tmp_05 <- peakBoundary(chr_t, threshold = 0.05)
+    expect_true(is.matrix(tmp_05))
+    expect_false(any(is.na(tmp_05)))
+})
+
+test_that("peakBoundary correctly isolates tallest peak in multi-peak data.", {
+    cdata_m <- data.frame(msLevel = 1L, mz = 100, dataOrigin = "s1")
+    pdata_m <- list(data.frame(
+        rtime = 1:9,
+        intensity = c(0, 5, 10, 5, 0, 3, 20, 3, 0)
+    ))
+    chr_m <- Chromatograms(ChromBackendMemory(), chromData = cdata_m,
+                           peaksData = pdata_m)
+    tmp <- peakBoundary(chr_m)
+    ## Should return boundaries for the tallest peak (rtime 5-9 region)
+    expect_equal(unname(tmp[1, "left_boundary"]), 5)
+    expect_equal(unname(tmp[1, "right_boundary"]), 9)
+})
+
+test_that("peakBoundary handles NA-adjacent boundaries.", {
+    cdata_na_adj <- data.frame(msLevel = 1L, mz = 100, dataOrigin = "s1")
+    pdata_na_adj <- list(data.frame(
+        rtime = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10),
+        intensity = c(NA, NA, 50, 100, 500, 100, 50, NA, NA, 5)
+    ))
+    chr_na_adj <- Chromatograms(ChromBackendMemory(), chromData = cdata_na_adj,
+                                peaksData = pdata_na_adj)
+    expect_no_error(peakBoundary(chr_na_adj))
+    tmp <- peakBoundary(chr_na_adj)
+    expect_true(is.matrix(tmp))
+    expect_false(any(is.na(tmp)))
+})
+
+test_that("peakBoundary validates threshold parameter.", {
+    cdata_v <- data.frame(msLevel = 1L, mz = 100, dataOrigin = "s1")
+    pdata_v <- list(data.frame(
+        rtime = c(1, 2, 3, 4, 5),
+        intensity = c(10, 50, 100, 50, 10)
+    ))
+    chr_v <- Chromatograms(ChromBackendMemory(), chromData = cdata_v,
+                           peaksData = pdata_v)
+    expect_error(peakBoundary(chr_v, threshold = "a"),
+                 "single non-missing numeric")
+    expect_error(peakBoundary(chr_v, threshold = c(0.1, 0.2)),
+                 "single non-missing numeric")
+    expect_error(peakBoundary(chr_v, threshold = NA),
+                 "single non-missing numeric")
+    expect_error(peakBoundary(chr_v, threshold = -0.1),
+                 "must be >= 0 and < 1")
+    expect_error(peakBoundary(chr_v, threshold = 1),
+                 "must be >= 0 and < 1")
+    expect_error(peakBoundary(chr_v, threshold = 2),
+                 "must be >= 0 and < 1")
+    ## baselineThreshold validation
+    expect_error(peakBoundary(chr_v, baselineThreshold = "a"),
+                 "baselineThreshold.*single non-missing numeric")
+    expect_error(peakBoundary(chr_v, baselineThreshold = -0.1),
+                 "baselineThreshold.*must be >= 0 and < 1")
+    ## baselineQuantile validation
+    expect_error(peakBoundary(chr_v, baselineQuantile = "a"),
+                 "baselineQuantile.*single non-missing numeric")
+    expect_error(peakBoundary(chr_v, baselineQuantile = 1.5),
+                 "baselineQuantile.*must be >= 0 and <= 1")
+})
