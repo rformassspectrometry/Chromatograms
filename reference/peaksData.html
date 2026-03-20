@@ -26,7 +26,7 @@ to the sections below for more details."><!-- mathjax --><script src="https://cd
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">Chromatograms</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.4</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.5</span>
       </span>
     </div>
 
@@ -133,7 +133,16 @@ to the sections below for more details.</p>
 <span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html" class="external-link">rtime</a></span><span class="op">(</span><span class="va">object</span><span class="op">)</span> <span class="op">&lt;-</span> <span class="va">value</span></span>
 <span></span>
 <span><span class="co"># S4 method for class 'Chromatograms'</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/lengths.html" class="external-link">lengths</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/lengths.html" class="external-link">lengths</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S4 method for class 'Chromatograms'</span></span>
+<span><span class="fu">peakBoundary</span><span class="op">(</span></span>
+<span>  <span class="va">object</span>,</span>
+<span>  threshold <span class="op">=</span> <span class="fl">0.1</span>,</span>
+<span>  baselineThreshold <span class="op">=</span> <span class="fl">0.1</span>,</span>
+<span>  baselineQuantile <span class="op">=</span> <span class="fl">0.1</span>,</span>
+<span>  <span class="va">...</span></span>
+<span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -234,6 +243,28 @@ vector of the single column requested.</p></dd>
 <dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
 <dd><p>For <code><a href="https://rdrr.io/r/base/lengths.html" class="external-link">lengths()</a></code>: A <code>Chromatograms</code> object.</p></dd>
 
+
+<dt id="arg-threshold">threshold<a class="anchor" aria-label="anchor" href="#arg-threshold"></a></dt>
+<dd><p>For <code>peakBoundary()</code>: <code>numeric(1)</code> (default <code>0.1</code>).
+Fraction of the peak height above baseline used as a fallback
+cut-off when valley-based boundaries are not suitable. Must be
+<code>&gt;= 0</code> and <code>&lt; 1</code>.</p></dd>
+
+
+<dt id="arg-baselinethreshold">baselineThreshold<a class="anchor" aria-label="anchor" href="#arg-baselinethreshold"></a></dt>
+<dd><p>For <code>peakBoundary()</code>: <code>numeric(1)</code> (default
+<code>0.1</code>). Fraction of the peak height above the baseline. Valley
+positions returned by <code><a href="https://rdrr.io/pkg/MsCoreUtils/man/valleys.html" class="external-link">MsCoreUtils::valleys()</a></code> are accepted only if
+the intensity at the valley is at or below
+<code>baseline + peak_height * baselineThreshold</code>. Must be <code>&gt;= 0</code> and
+<code>&lt; 1</code>.</p></dd>
+
+
+<dt id="arg-baselinequantile">baselineQuantile<a class="anchor" aria-label="anchor" href="#arg-baselinequantile"></a></dt>
+<dd><p>For <code>peakBoundary()</code>: <code>numeric(1)</code> (default
+<code>0.1</code>). Quantile of the intensity distribution used as the
+baseline estimate. Must be <code>&gt;= 0</code> and <code>&lt;= 1</code>.</p></dd>
+
 </dl></div>
     <div id="value">
     <h2>Value</h2>
@@ -274,6 +305,24 @@ specified imputation methods using various methods such as linear
 interpolation, spline interpolation, Gaussian kernel smoothing, or LOESS
 smoothing. This method modifies the peaks data in place and returns the
 same <code>Chromatograms</code> object with imputed values.</p>
+    </div>
+    <div id="peak-boundary-detection">
+    <h2>Peak Boundary Detection</h2>
+
+
+
+<p><code>peakBoundary()</code> determines the retention time boundaries of the tallest
+peak in each chromatogram. The function uses <code><a href="https://rdrr.io/pkg/MsCoreUtils/man/valleys.html" class="external-link">MsCoreUtils::valleys()</a></code> to
+locate the valleys (local minima) flanking the apex. If the valley
+intensities exceed a baseline-relative threshold (controlled by
+<code>baselineThreshold</code>), it falls back to a threshold-based boundary search
+using <code>threshold</code>. The baseline is estimated as the <code>baselineQuantile</code>
+quantile of the chromatogram's intensity values.
+The result is a <code>matrix</code> with one row per
+chromatogram and columns <code>left_boundary</code> and <code>right_boundary</code>
+(retention times). Chromatograms that are empty, have fewer than 3 data
+points, contain only <code>NA</code> or all-zero intensities return <code>NA</code> for both
+boundaries.</p>
     </div>
     <div id="see-also">
     <h2>See also</h2>
@@ -388,8 +437,8 @@ see <a href="processingQueue.html">processingQueue</a>.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ... 2 peaksData variables</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Lazy evaluation queue: 1 processing step(s)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Processing:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Filter: remove peaks based on the variables: rtimethe ranges: 12.5, 13.5and the match condition: any [Fri Mar 13 13:45:37 2026]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Filter: remove peaks based on the variables: rtimethe ranges: 12.5, 13.5and the match condition: all [Fri Mar 13 13:45:37 2026] </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Filter: remove peaks based on the variables: rtimethe ranges: 12.5, 13.5and the match condition: any [Fri Mar 20 15:44:19 2026]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Filter: remove peaks based on the variables: rtimethe ranges: 12.5, 13.5and the match condition: all [Fri Mar 20 15:44:19 2026] </span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
