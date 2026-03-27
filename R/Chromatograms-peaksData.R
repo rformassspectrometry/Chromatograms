@@ -463,9 +463,13 @@ matchRtime <- function(x, y, ...) {
 setMethod("compareChromatograms", 
           signature(x = "Chromatograms", y = "Chromatograms"),
     function(x, y, MAPFUN = matchRtime, FUN = cor, ..., SIMPLIFY = TRUE) {
+        nx <- length(x)
+        ny <- length(y)
+        if (nx == 0L || ny == 0L)
+            return(matrix(numeric(0), nx, ny))
         mat <- .compare_chromatograms(peaksData(x), peaksData(y),
                                       MAPFUN = MAPFUN, FUN = FUN, ...)
-        if (SIMPLIFY && (length(x) == 1L || length(y) == 1L))
+        if (SIMPLIFY && (nx == 1L || ny == 1L))
             mat <- as.vector(mat)
         mat
     }
@@ -501,7 +505,7 @@ setMethod("compareChromatograms", signature(x = "Chromatograms", y = "missing"),
         if (n == 0L) return(matrix(numeric(0), 0, 0))
         if (n == 1L)
             return(compareChromatograms(x, x, MAPFUN = MAPFUN,
-                                        FUN = FUN, SIMPLIFY = SIMPLIFY, ...))
+                                        FUN = FUN, SIMPLIFY = FALSE, ...))
         labs <- .resolve_labels(x, labels)
         .compare_chromatograms(peaksData(x), MAPFUN = MAPFUN, FUN = FUN,
                                labels = labs, ...)

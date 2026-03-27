@@ -701,8 +701,10 @@ test_that("compareChromatograms with custom MAPFUN.", {
     identity_map <- function(x, y, ...) {
         list(x = x$intensity, y = y$intensity)
     }
-    res <- compareChromatograms(c_full, MAPFUN = identity_map)
+    ## Use chromatograms 1 and 3 which are identical (same number of points)
+    res <- compareChromatograms(c_full[c(1, 3)], MAPFUN = identity_map)
     expect_true(is.matrix(res))
-    expect_equal(dim(res), c(3L, 3L))
-    expect_equal(diag(res), c(1, 1, 1))
+    expect_equal(dim(res), c(2L, 2L))
+    expect_equal(diag(res), c(1, 1))
+    expect_equal(res[1, 2], 1)
 })
