@@ -82,7 +82,7 @@
 #'
 #' @param x A [Chromatograms] object.
 #'
-#' @section `Chromatograms` variables and accessor functions:
+#' @section Chromatograms variables and accessor functions:
 #'
 #' The following chromatograms variables are guaranteed to be provided by a
 #' `Chromatograms` object and to be accessible with either the `chromData()` or
@@ -113,7 +113,7 @@
 #' - `productMzMax`: for SRM data, optional `numeric` with the upper m/z of
 #'   the product's isolation window.
 #'
-#' @section Filter `Chromatograms` variables:
+#' @section Filter Chromatograms variables:
 #'
 #' Functions that filter `Chromatograms` based on chromatograms variables
 #' (i.e, `@chromData` ) will remove chromatographic data that do not meet the

@@ -898,27 +898,33 @@ chr_in_memory <- applyProcessing(chr_in_memory)
 length(chr_in_memory@processingQueue)
 ```
 
-# Comparing chromatograms with correlation
+# Comparing chromatograms
 
-The `correlate()` function computes pairwise similarity between all
-chromatograms in a `Chromatograms` object. Because two chromatograms rarely
-share the exact same retention time values, intensities are first linearly
-interpolated onto a common retention time grid before the similarity is
-calculated. By default Pearson correlation is used, but Spearman and Kendall
-are also available, and an arbitrary similarity function can be supplied via
-`FUN`.
+The `compareChromatograms()` function computes pairwise similarity between
+chromatograms, following the same two-step design as `compareSpectra()` in the
+`Spectra` package. First, a mapping function (`MAPFUN`, default `matchRtime()`)
+aligns the two chromatograms onto a common retention-time grid by linear
+interpolation. Then, a scoring function (`FUN`, default `cor()`, i.e. Pearson
+correlation) computes a similarity value from the aligned intensity vectors.
+Additional arguments such as `method = "spearman"` can be passed via `...`
+to the scoring function, and a fully custom `FUN` or `MAPFUN` can be supplied.
+
+## Comparing chromatograms within a single object
+
+When called with a single `Chromatograms` object, `compareChromatograms()`
+computes all pairwise similarities and returns a symmetric *n × n* matrix.
 
 Let's pick a subset of the MRM chromatograms we loaded earlier:
 
-```{r correlate-mrm}
+```{r compare-chromatograms-mrm}
 ## Pick 8 MRM chromatograms, skipping the first (a TIC with no m/z info)
 chr_sub <- chr_mzr[2:9]
 
-cor_mat <- correlate(chr_sub)
+cor_mat <- compareChromatograms(chr_sub)
 cor_mat
 
 ## Use a chromData column as row/column labels
-cor_mat_labeled <- correlate(chr_sub, labels = "chromIndex")
+cor_mat_labeled <- compareChromatograms(chr_sub, labels = "chromIndex")
 cor_mat_labeled
 ```
 
@@ -926,7 +932,7 @@ The result is a symmetric matrix with 1 on the diagonal. We can visualise it
 as a heatmap, labelling rows and columns with the MRM precursor → product m/z
 transitions stored in `chromData()`:
 
-```{r correlate-heatmap, fig.width=6, fig.height=5}
+```{r compare-chromatograms-heatmap, fig.width=6, fig.height=5}
 library(pheatmap)
 ## Label rows/columns with precursor → product m/z transitions
 mz_labels <- paste0(round(chromData(chr_sub)$precursorMz, 1), " → ",
@@ -940,13 +946,29 @@ A custom similarity function can be passed via `FUN`. For example, cosine
 similarity, useful for checking co-elution regardless of absolute intensity
 differences:
 
-```{r correlate-custom}
+```{r compare-chromatograms-custom}
 cosine <- function(x, y) {
     sum(x * y) / (sqrt(sum(x^2)) * sqrt(sum(y^2)))
 }
 
-cos_mat <- correlate(chr_sub, FUN = cosine)
+cos_mat <- compareChromatograms(chr_sub, FUN = cosine)
 cos_mat
+```
+
+## Comparing two Chromatograms objects
+
+When called with two `Chromatograms` objects, `compareChromatograms(x, y)`
+returns an *n × m* matrix with similarities between each chromatogram in `x`
+(rows) and each in `y` (columns). When one side has length 1, the result is
+simplified to a numeric vector by default (`SIMPLIFY = TRUE`).
+
+```{r compare-chromatograms-xy}
+## Compare the first 4 chromatograms against the last 4
+res <- compareChromatograms(chr_sub[1:4], chr_sub[5:8])
+res
+
+## Compare a single chromatogram against all others → returns a vector
+compareChromatograms(chr_sub[1], chr_sub[2:8])
 ```
 
 

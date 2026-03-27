@@ -378,11 +378,11 @@ test_that("peakBoundary validates threshold parameter.", {
                  "baselineQuantile.*must be >= 0 and <= 1")
 })
 
-## ---- correlate tests ----
+## ---- compareChromatograms tests ----
 
-test_that("correlate default returns correct matrix structure.", {
+test_that("compareChromatograms default returns correct matrix structure.", {
     ## Default by = character() → no grouping → single 3x3 matrix.
-    res <- correlate(c_full)
+    res <- compareChromatograms(c_full)
     expect_true(is.matrix(res))
     expect_equal(nrow(res), 3L)
     expect_equal(ncol(res), 3L)
@@ -397,21 +397,21 @@ test_that("correlate default returns correct matrix structure.", {
     expect_null(colnames(res))
 })
 
-test_that("correlate default, empty object returns 0x0 matrix.", {
-    res <- correlate(c_empty)
+test_that("compareChromatograms default, empty object returns 0x0 matrix.", {
+    res <- compareChromatograms(c_empty)
     expect_true(is.matrix(res))
     expect_equal(dim(res), c(0L, 0L))
 })
 
-test_that("correlate default, single chromatogram returns 1x1.", {
-    res <- correlate(c_full[1])
+test_that("compareChromatograms default, single chromatogram returns 1x1.", {
+    res <- compareChromatograms(c_full[1])
     expect_true(is.matrix(res))
     expect_equal(dim(res), c(1L, 1L))
     expect_equal(res[1, 1], 1)
 })
 
-test_that("correlate method = 'spearman' and 'kendall' work.", {
-    res_s <- correlate(c_full, method = "spearman")
+test_that("compareChromatograms method = 'spearman' and 'kendall' work.", {
+    res_s <- compareChromatograms(c_full, method = "spearman")
     expect_true(is.matrix(res_s))
     expect_equal(dim(res_s), c(3L, 3L))
     expect_equal(diag(res_s), c(1, 1, 1))
@@ -420,27 +420,25 @@ test_that("correlate method = 'spearman' and 'kendall' work.", {
     ## Non-overlapping → NA
     expect_true(is.na(res_s[1, 2]))
 
-    res_k <- correlate(c_full, method = "kendall")
+    res_k <- compareChromatograms(c_full, method = "kendall")
     expect_true(is.matrix(res_k))
     expect_equal(diag(res_k), c(1, 1, 1))
     expect_equal(res_k[1, 3], 1)
 })
 
-test_that("correlate with custom FUN produces expected values.", {
-    cosine_sim <- function(x, y) {
+test_that("compareChromatograms with custom FUN produces expected values.", {
+    cosine_sim <- function(x, y, ...) {
         sum(x * y, na.rm = TRUE) /
             (sqrt(sum(x^2, na.rm = TRUE)) * sqrt(sum(y^2, na.rm = TRUE)))
     }
-    res <- correlate(c_full, FUN = cosine_sim)
+    res <- compareChromatograms(c_full, FUN = cosine_sim)
     expect_true(is.matrix(res))
     expect_equal(dim(res), c(3L, 3L))
     expect_equal(diag(res), c(1, 1, 1))
     expect_equal(res[1, 3], 1)
-    res2 <- correlate(c_full, method = "spearman", FUN = cosine_sim)
-    expect_equal(res, res2)
 })
 
-test_that("correlate returns NA for non-overlapping chromatograms.", {
+test_that("compareChromatograms returns NA for non-overlapping chromatograms.", {
     cdata_no <- data.frame(
         msLevel = c(1L, 1L),
         mz = c(100, 200),
@@ -452,13 +450,13 @@ test_that("correlate returns NA for non-overlapping chromatograms.", {
     )
     chr_no <- Chromatograms(ChromBackendMemory(), chromData = cdata_no,
                             peaksData = pdata_no)
-    res <- correlate(chr_no)
+    res <- compareChromatograms(chr_no)
     expect_true(is.na(res[1, 2]))
     expect_true(is.na(res[2, 1]))
     expect_equal(diag(res), c(1, 1))
 })
 
-test_that("correlate returns NA when a chromatogram has < 2 points.", {
+test_that("compareChromatograms returns NA when a chromatogram has < 2 points.", {
     cdata_short <- data.frame(
         msLevel = c(1L, 1L),
         mz = c(100, 200),
@@ -470,13 +468,13 @@ test_that("correlate returns NA when a chromatogram has < 2 points.", {
     )
     chr_short <- Chromatograms(ChromBackendMemory(), chromData = cdata_short,
                                peaksData = pdata_short)
-    res <- correlate(chr_short)
+    res <- compareChromatograms(chr_short)
     expect_true(is.na(res[1, 2]))
     expect_equal(res[1, 1], 1)
     expect_equal(res[2, 2], 1)
 })
 
-test_that("correlate computes correct Pearson value for known data.", {
+test_that("compareChromatograms computes correct Pearson value for known data.", {
     ## Two chromatograms with overlapping RT and known correlation
     cdata_known <- data.frame(
         msLevel = c(1L, 1L),
@@ -491,35 +489,35 @@ test_that("correlate computes correct Pearson value for known data.", {
     )
     chr_known <- Chromatograms(ChromBackendMemory(), chromData = cdata_known,
                                peaksData = pdata_known)
-    res <- correlate(chr_known)
+    res <- compareChromatograms(chr_known)
     ## Same RT grid → no interpolation needed; these are perfectly correlated
     expect_equal(res[1, 2], 1, tolerance = 1e-10)
 })
 
-test_that("correlate labels parameter sets row/col names.", {
+test_that("compareChromatograms labels parameter sets row/col names.", {
     ## 'mz' column has unique values in c_full
-    res <- correlate(c_full, labels = "mz")
+    res <- compareChromatograms(c_full, labels = "mz")
     expect_equal(rownames(res), as.character(chromData(c_full)[["mz"]]))
     expect_equal(colnames(res), as.character(chromData(c_full)[["mz"]]))
     ## NULL labels → no names
-    res_no <- correlate(c_full, labels = NULL)
+    res_no <- compareChromatograms(c_full, labels = NULL)
     expect_null(rownames(res_no))
     expect_null(colnames(res_no))
     ## Non-existent column → error
-    expect_error(correlate(c_full, labels = "nonexistent"),
+    expect_error(compareChromatograms(c_full, labels = "nonexistent"),
                  "not found")
     ## Non-unique column → error
     c_dup <- c_full
     c_dup$msLevel <- rep(1L, length(c_dup))
-    expect_error(correlate(c_dup, labels = "msLevel"),
+    expect_error(compareChromatograms(c_dup, labels = "msLevel"),
                  "duplicated")
     ## Non-character labels → error
-    expect_error(correlate(c_full, labels = 42),
+    expect_error(compareChromatograms(c_full, labels = 42),
                  "single character string")
 })
 
-test_that("correlate works with ChromBackendMzR.", {
-    res <- correlate(c_mzr)
+test_that("compareChromatograms works with ChromBackendMzR.", {
+    res <- compareChromatograms(c_mzr)
     expect_true(is.matrix(res))
     expect_equal(nrow(res), length(c_mzr))
     expect_equal(ncol(res), length(c_mzr))
@@ -528,10 +526,10 @@ test_that("correlate works with ChromBackendMzR.", {
     expect_true(is.numeric(res))
 })
 
-test_that("correlate by = 'dataOrigin' returns a named list.", {
+test_that("compareChromatograms by = 'dataOrigin' returns a named list.", {
     ## c_full has 3 unique dataOrigins: mem1, mem2, mem3
     ## Each group has exactly 1 chromatogram → list of 1x1 matrices
-    res <- correlate(c_full, by = "dataOrigin")
+    res <- compareChromatograms(c_full, by = "dataOrigin")
     expect_true(is.list(res))
     expect_equal(length(res), 3L)
     expect_true(all(c("mem1", "mem2", "mem3") %in% names(res)))
@@ -543,11 +541,11 @@ test_that("correlate by = 'dataOrigin' returns a named list.", {
     }
 })
 
-test_that("correlate by groups chromatograms correctly.", {
+test_that("compareChromatograms by groups chromatograms correctly.", {
     ## Put chromatograms 1 and 3 in the same group (they are identical)
     c_grp <- c_full
     c_grp$group <- c("A", "B", "A")
-    res <- correlate(c_grp, by = "group")
+    res <- compareChromatograms(c_grp, by = "group")
     expect_true(is.list(res))
     expect_equal(sort(names(res)), c("A", "B"))
     ## Group "A" has 2 chromatograms (identical) → 2x2 matrix, off-diag = 1
@@ -560,11 +558,11 @@ test_that("correlate by groups chromatograms correctly.", {
     expect_equal(res[["B"]][1, 1], 1)
 })
 
-test_that("correlate by with labels works per group.", {
+test_that("compareChromatograms by with labels works per group.", {
     c_grp <- c_full
     c_grp$group <- c("A", "B", "A")
     c_grp$feat <- c("f1", "f2", "f3")
-    res <- correlate(c_grp, by = "group", labels = "feat")
+    res <- compareChromatograms(c_grp, by = "group", labels = "feat")
     ## Labels applied within each group
     expect_equal(rownames(res[["A"]]), c("f1", "f3"))
     expect_equal(colnames(res[["A"]]), c("f1", "f3"))
@@ -572,11 +570,11 @@ test_that("correlate by with labels works per group.", {
     expect_equal(colnames(res[["B"]]), "f2")
 })
 
-test_that("correlate by with multiple grouping variables.", {
+test_that("compareChromatograms by with multiple grouping variables.", {
     c_grp <- c_full
     c_grp$group1 <- c("X", "X", "Y")
     c_grp$group2 <- c("a", "b", "a")
-    res <- correlate(c_grp, by = c("group1", "group2"))
+    res <- compareChromatograms(c_grp, by = c("group1", "group2"))
     expect_true(is.list(res))
     ## 3 unique combinations: X.a, X.b, Y.a
     expect_equal(length(res), 3L)
@@ -586,26 +584,125 @@ test_that("correlate by with multiple grouping variables.", {
     }
 })
 
-test_that("correlate by errors on non-existent column.", {
-    expect_error(correlate(c_full, by = "nonexistent"), "not found")
+test_that("compareChromatograms by errors on non-existent column.", {
+    expect_error(compareChromatograms(c_full, by = "nonexistent"), "not found")
 })
 
-test_that("correlate by errors on non-character by.", {
-    expect_error(correlate(c_full, by = 42), "must be a character")
+test_that("compareChromatograms by errors on non-character by.", {
+    expect_error(compareChromatograms(c_full, by = 42), "must be a character")
 })
 
-test_that("correlate by with FUN and labels combined.", {
-    cosine_sim <- function(x, y) {
+test_that("compareChromatograms by with FUN and labels combined.", {
+    cosine_sim <- function(x, y, ...) {
         sum(x * y, na.rm = TRUE) /
             (sqrt(sum(x^2, na.rm = TRUE)) * sqrt(sum(y^2, na.rm = TRUE)))
     }
     c_grp <- c_full
     c_grp$group <- c("A", "B", "A")
-    res <- correlate(c_grp, by = "group", FUN = cosine_sim, labels = "mz")
+    res <- compareChromatograms(c_grp, by = "group", FUN = cosine_sim,
+                                labels = "mz")
     expect_true(is.list(res))
     ## Group A: 2 identical chroms → cosine = 1
     expect_equal(res[["A"]][1, 2], 1)
     ## Labels from mz
     mz_A <- as.character(chromData(c_grp[c(1, 3)])[["mz"]])
     expect_equal(rownames(res[["A"]]), mz_A)
+})
+
+## ---- compareChromatograms x, y tests ----
+
+test_that("compareChromatograms(x, y) returns n x m matrix.", {
+    ## c_full has 3 chromatograms; compare first 2 vs last 1
+    res <- compareChromatograms(c_full[1:2], c_full[3], SIMPLIFY = FALSE)
+    expect_true(is.matrix(res))
+    expect_equal(nrow(res), 2L)
+    expect_equal(ncol(res), 1L)
+    ## Chromatograms 1 and 3 are identical
+    expect_equal(res[1, 1], 1)
+    ## Chromatograms 2 and 3 have non-overlapping RT
+    expect_true(is.na(res[2, 1]))
+})
+
+test_that("compareChromatograms(x, y) SIMPLIFY works.", {
+    ## When y has length 1, SIMPLIFY = TRUE (default) returns a vector
+    res <- compareChromatograms(c_full[1:2], c_full[3])
+    expect_true(is.numeric(res))
+    expect_false(is.matrix(res))
+    expect_equal(length(res), 2L)
+    ## When x has length 1
+    res2 <- compareChromatograms(c_full[1], c_full[1:3])
+    expect_true(is.numeric(res2))
+    expect_false(is.matrix(res2))
+    expect_equal(length(res2), 3L)
+    ## SIMPLIFY = FALSE keeps matrix
+    res3 <- compareChromatograms(c_full[1], c_full[1:3], SIMPLIFY = FALSE)
+    expect_true(is.matrix(res3))
+    expect_equal(dim(res3), c(1L, 3L))
+})
+
+test_that("compareChromatograms(x, y) with empty objects.", {
+    res <- compareChromatograms(c_empty, c_full)
+    expect_true(is.matrix(res))
+    expect_equal(nrow(res), 0L)
+    res2 <- compareChromatograms(c_full, c_empty)
+    expect_true(is.matrix(res2))
+    expect_equal(ncol(res2), 0L)
+})
+
+test_that("compareChromatograms(x, y) with custom FUN.", {
+    cosine_sim <- function(x, y, ...) {
+        sum(x * y, na.rm = TRUE) /
+            (sqrt(sum(x^2, na.rm = TRUE)) * sqrt(sum(y^2, na.rm = TRUE)))
+    }
+    res <- compareChromatograms(c_full[1], c_full[3], FUN = cosine_sim)
+    expect_equal(res, 1)
+})
+
+## ---- matchRtime tests ----
+
+test_that("matchRtime returns aligned intensities for overlapping RT", {
+    pd_a <- data.frame(rtime = c(1, 2, 3, 4), intensity = c(10, 20, 30, 40))
+    pd_b <- data.frame(rtime = c(2, 3, 4, 5), intensity = c(20, 30, 40, 50))
+    res <- matchRtime(pd_a, pd_b)
+    expect_true(is.list(res))
+    expect_equal(length(res$x), length(res$y))
+    expect_true(length(res$x) >= 2L)
+    ## Overlapping RT is 2-4; both have identical intensities at those points
+    expect_equal(res$x, res$y)
+})
+
+test_that("matchRtime returns empty vectors for non-overlapping RT", {
+    pd_a <- data.frame(rtime = c(1, 2, 3), intensity = c(10, 20, 30))
+    pd_b <- data.frame(rtime = c(10, 11, 12), intensity = c(40, 50, 60))
+    res <- matchRtime(pd_a, pd_b)
+    expect_equal(res$x, numeric())
+    expect_equal(res$y, numeric())
+})
+
+test_that("matchRtime returns empty vectors when fewer than 2 points", {
+    pd_short <- data.frame(rtime = 1, intensity = 50)
+    pd_ok <- data.frame(rtime = c(1, 2, 3), intensity = c(10, 20, 30))
+    res <- matchRtime(pd_short, pd_ok)
+    expect_equal(res$x, numeric())
+    expect_equal(res$y, numeric())
+})
+
+test_that("matchRtime interpolates onto union of RT grids", {
+    pd_a <- data.frame(rtime = c(1, 3), intensity = c(10, 30))
+    pd_b <- data.frame(rtime = c(1, 2, 3), intensity = c(100, 200, 300))
+    res <- matchRtime(pd_a, pd_b)
+    ## Common grid: 1, 2, 3. pd_a interpolated at rt=2 → 20
+    expect_equal(res$x, c(10, 20, 30))
+    expect_equal(res$y, c(100, 200, 300))
+})
+
+test_that("compareChromatograms with custom MAPFUN.", {
+    ## A MAPFUN that returns raw intensities (assumes identical RT)
+    identity_map <- function(x, y, ...) {
+        list(x = x$intensity, y = y$intensity)
+    }
+    res <- compareChromatograms(c_full, MAPFUN = identity_map)
+    expect_true(is.matrix(res))
+    expect_equal(dim(res), c(3L, 3L))
+    expect_equal(diag(res), c(1, 1, 1))
 })

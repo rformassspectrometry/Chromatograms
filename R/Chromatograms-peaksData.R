@@ -9,7 +9,8 @@
 #' @aliases filterPeaksData
 #' @aliases imputePeaksData
 #' @aliases peakBoundary
-#' @aliases correlate
+#' @aliases compareChromatograms
+#' @aliases matchRtime
 #'
 #' @description
 #'
@@ -51,27 +52,37 @@
 #'
 #' @param method For `imputePeaksData()`: `character(1)`: Imputation
 #'        method ("linear", "spline", "gaussian", "loess").
-#'        For `correlate()`: `character(1)`: Correlation method
-#'        ("pearson", "spearman", "kendall"). Default is "pearson".
 #'
-#' @param FUN For `correlate()`: optional custom similarity function. If
-#'        provided, it must accept two numeric vectors (interpolated
-#'        intensities) as the first two arguments and return a single numeric
-#'        value. When `FUN` is provided, the `method` parameter is ignored.
-#'        Additional arguments can be passed via `...`.
+#' @param FUN For `compareChromatograms()`: `function` to compute the
+#'        similarity between two chromatograms from their aligned intensity
+#'        vectors (as returned by `MAPFUN`). Must accept two numeric vectors
+#'        as the first two arguments and return a single numeric value.
+#'        Defaults to [stats::cor()] (Pearson correlation). Additional
+#'        arguments can be passed via `...` (e.g., `method = "spearman"` for
+#'        [stats::cor()]).
 #'
-#' @param by For `correlate()`: `character` giving the name(s) of
+#' @param MAPFUN For `compareChromatograms()`: `function` to align the
+#'        retention times of two chromatograms before computing similarity.
+#'        The function must accept two `data.frame`s (with columns `rtime`
+#'        and `intensity`) and return a `list` with elements `x` and `y`
+#'        (numeric vectors of equal length). Defaults to [matchRtime()],
+#'        which linearly interpolates intensities onto a common retention
+#'        time grid. Additional arguments can be passed via `...`.
+#'
+#' @param by For `compareChromatograms()`: `character` giving the name(s) of
 #'        chromatogram variable(s) (columns in `chromData()`) to group
-#'        chromatograms by before computing correlation. A named `list`
-#'        of correlation matrices is returned, one per unique combination
+#'        chromatograms by before computing similarity. A named `list`
+#'        of similarity matrices is returned, one per unique combination
 #'        of the grouping variable(s). Defaults to `character()` (no
-#'        grouping), which returns a single correlation matrix.
+#'        grouping), which returns a single similarity matrix. Only used
+#'        when `y` is missing.
 #'
-#' @param labels For `correlate()`: optional `character(1)` giving the name of
-#'        a chromatogram variable (column in `chromData()`) whose values should
-#'        be used as row and column names of the returned matrix. The column
-#'        must contain unique values (within each group, if `by` is used).
-#'        If `NULL` (the default), the matrix dimensions are unnamed.
+#' @param labels For `compareChromatograms()`: optional `character(1)` giving
+#'        the name of a chromatogram variable (column in `chromData()`) whose
+#'        values should be used as row and column names of the returned matrix.
+#'        The column must contain unique values (within each group, if `by` is
+#'        used). If `NULL` (the default), the matrix dimensions are unnamed.
+#'        Only used when `y` is missing.
 #'
 #' @param object A [Chromatograms] object.
 #'
@@ -120,7 +131,16 @@
 #' @param window For `imputePeaksData`: `integer`, for the gaussian method:
 #'        Half-width of Gaussian kernel window (e.g., 2 gives window size 5)
 #'
-#' @param x For `lengths()`: A `Chromatograms` object.
+#' @param x For `lengths()` and `compareChromatograms()`: A [Chromatograms]
+#'        object.
+#'
+#' @param y For `compareChromatograms()`: A [Chromatograms] object against
+#'        which `x` is compared. If missing, each chromatogram in `x` is
+#'        compared with each other chromatogram in `x`.
+#'
+#' @param SIMPLIFY For `compareChromatograms()`: `logical(1)` (default
+#'        `TRUE`). If `TRUE` and either `x` or `y` has length 1, the result
+#'        is simplified to a `numeric` vector instead of a `matrix`.
 #'
 #' @param ... Additional arguments passed to the method.
 #'
@@ -176,34 +196,56 @@
 #' boundaries.
 #'
 #'
-#' @section Correlation:
+#' @section Compare Chromatograms:
 #'
-#' `correlate()` computes pairwise similarity (by default Pearson correlation)
-#' between the intensity profiles of all chromatograms in the object.
-#' Because chromatograms may have different retention time points, intensities
-#' are linearly interpolated onto a common retention time grid (the union of
-#' both chromatograms' retention times within their overlapping range) before
-#' computing the similarity.
+#' `compareChromatograms()` compares chromatograms following the same
+#' two-step design as `compareSpectra()` in the *Spectra* package:
 #'
-#' The result is a square numeric `matrix` of dimensions `n x n`, where `n`
-#' is the number of chromatograms. Diagonal elements are always `1`. Pairs
-#' without overlapping retention time ranges, or with fewer than two data
-#' points each, return `NA`.
+#' 1. **Align** – `MAPFUN` (default [matchRtime()]) maps the two
+#'    chromatograms onto a common retention-time grid and returns a
+#'    `list(x, y)` of aligned intensity vectors.
+#' 2. **Score** – `FUN` (default [stats::cor()], Pearson correlation)
+#'    computes a single similarity value from the aligned intensities.
 #'
-#' A custom similarity function can be passed via the `FUN` parameter. It
-#' must accept two numeric vectors and return a single numeric value. When
-#' `FUN` is provided, the `method` parameter is ignored.
+#' If `y` is missing, each chromatogram in `x` is compared against every
+#' other chromatogram in `x`; otherwise, each in `x` is compared with
+#' each in `y`.
 #'
-#' The `labels` parameter can be used to assign meaningful row/column names
-#' to the output matrix from a `chromData()` column (e.g., `"mz"` or a
-#' user-defined feature identifier). The column must contain unique values
-#' (within each group, if `by` is used).
+#' The default `MAPFUN = matchRtime` linearly interpolates intensities
+#' onto the union of both chromatograms' retention times within their
+#' overlapping range. A custom `MAPFUN` can be supplied; it must accept
+#' two `data.frame`s (with columns `rtime` and `intensity`) and return
+#' a `list` with elements `x` and `y` (numeric vectors of equal length).
 #'
-#' The `by` parameter allows to split chromatograms into groups based on one
-#' or more `chromData()` columns before computing correlation. This is useful,
-#' for example, to compute separate correlation matrices per `dataOrigin` or
-#' per `precursorMz`. When `by` is provided, a named `list` of matrices is
-#' returned.
+#' The result is a `numeric` `matrix` with `length(x)` rows and
+#' `length(y)` columns (or a symmetric `n x n` matrix for
+#' self-comparison, with 1 on the diagonal). Pairs without overlapping
+#' retention-time ranges, or with fewer than two aligned points, return
+#' `NA`.
+#'
+#' If `SIMPLIFY = TRUE` (default) and `length(x)` or `length(y)` is one,
+#' the result is simplified to a `numeric` vector.
+#'
+#' `matchRtime()` is the default retention-time alignment function used
+#' by `compareChromatograms()`. It takes two `data.frame`s with columns
+#' `rtime` and `intensity`, finds their overlapping retention-time range,
+#' builds a common grid from the union of both chromatograms' time points
+#' within that range, and linearly interpolates both chromatograms'
+#' intensities onto the common grid using [stats::approx()]. The result
+#' is a `list` with elements `x` and `y` (numeric vectors of equal
+#' length). If the chromatograms do not overlap or either has fewer than
+#' 2 data points, empty numeric vectors are returned.
+#'
+#' When `y` is missing, the `labels` parameter can be used to assign
+#' meaningful row/column names to the output matrix from a `chromData()`
+#' column (e.g., `"mz"` or a user-defined feature identifier). The column
+#' must contain unique values (within each group, if `by` is used).
+#'
+#' When `y` is missing, the `by` parameter allows to split chromatograms
+#' into groups based on one or more `chromData()` columns before computing
+#' similarity. This is useful, for example, to compute separate similarity
+#' matrices per `dataOrigin` or per `precursorMz`. When `by` is provided,
+#' a named `list` of matrices is returned.
 #'
 #' @seealso [Chromatograms] for a general description of the `Chromatograms`
 #'          object, and [chromData] for accessing,substituting and filtering
@@ -264,12 +306,16 @@
 #' # Filter peaks data
 #' filterPeaksData(chr, variables = "rtime", ranges = c(12.5, 13.5))
 #'
-#' # Pairwise correlation of chromatogram intensity profiles
-#' correlate(chr)
-#' correlate(chr, method = "spearman")
+#' # Pairwise similarity of chromatogram intensity profiles
+#' compareChromatograms(chr)
+#' ## Use Spearman correlation (passed to cor() via ...)
+#' compareChromatograms(chr, method = "spearman")
 #'
 #' # Use a chromData column as row/column labels
-#' correlate(chr, labels = "mz")
+#' compareChromatograms(chr, labels = "mz")
+#'
+#' # Compare two Chromatograms objects
+#' compareChromatograms(chr[1:2], chr[3])
 #'
 NULL
 
@@ -393,44 +439,78 @@ setMethod("lengths", signature = "Chromatograms", function(x) {
 #' @rdname peaksData
 #' @importFrom stats cor
 #' @export
-setMethod(
-    "correlate", signature = "Chromatograms",
-    function(object, method = c("pearson", "spearman", "kendall"),
-             FUN = NULL, labels = NULL, by = character(), ...) {
-        method <- match.arg(method)
-        if (length(by)) {
-            if (!is.character(by))
-                stop("'by' must be a character vector")
-            missing_cols <- setdiff(by, chromVariables(object))
-            if (length(missing_cols))
-                stop("Column(s) '", paste0(missing_cols, collapse = "', '"),
-                     "' not found in chromData")
-            grp <- interaction(chromData(object)[, by, drop = FALSE],
-            drop = TRUE)
-            lvls <- levels(grp)
-            res <- vector("list", length(lvls))
-            names(res) <- lvls
-            for (g in lvls) {
-                idx <- which(grp == g)
-                sub_obj <- object[idx]
-                labs <- .resolve_labels(sub_obj, labels)
-                res[[g]] <- .correlate_matrix(peaksData(sub_obj),
-                    method = method, FUN = FUN, labels = labs, ...)
-            }
-            return(res)
-        }
-        n <- length(object)
-        if (n == 0L) return(matrix(numeric(0), 0, 0))
-        labs <- .resolve_labels(object, labels)
-        .correlate_matrix(peaksData(object), method = method, FUN = FUN,
-                          labels = labs, ...)
+matchRtime <- function(x, y, ...) {
+    if (nrow(x) < 2L || nrow(y) < 2L)
+        return(list(x = numeric(), y = numeric()))
+    rt_min <- max(min(x$rtime), min(y$rtime))
+    rt_max <- min(max(x$rtime), max(y$rtime))
+    if (rt_min >= rt_max)
+        return(list(x = numeric(), y = numeric()))
+    common_rt <- sort(unique(c(
+        x$rtime[x$rtime >= rt_min & x$rtime <= rt_max],
+        y$rtime[y$rtime >= rt_min & y$rtime <= rt_max]
+    )))
+    if (length(common_rt) < 2L)
+        return(list(x = numeric(), y = numeric()))
+    list(
+        x = approx(x$rtime, x$intensity, xout = common_rt, rule = 1)$y,
+        y = approx(y$rtime, y$intensity, xout = common_rt, rule = 1)$y
+    )
+}
+
+#' @rdname peaksData
+#' @export
+setMethod("compareChromatograms", 
+          signature(x = "Chromatograms", y = "Chromatograms"),
+    function(x, y, MAPFUN = matchRtime, FUN = cor, ..., SIMPLIFY = TRUE) {
+        mat <- .compare_chromatograms(peaksData(x), peaksData(y),
+                                      MAPFUN = MAPFUN, FUN = FUN, ...)
+        if (SIMPLIFY && (length(x) == 1L || length(y) == 1L))
+            mat <- as.vector(mat)
+        mat
     }
 )
 
 #' @rdname peaksData
 #' @export
-setMethod(
-    "peakBoundary", signature = "Chromatograms",
+setMethod("compareChromatograms", signature(x = "Chromatograms", y = "missing"),
+    function(x, y = NULL, MAPFUN = matchRtime, FUN = cor, ...,
+             labels = NULL, by = character(), SIMPLIFY = TRUE) {
+        if (length(by)) {
+            if (!is.character(by))
+                stop("'by' must be a character vector")
+            missing_cols <- setdiff(by, chromVariables(x))
+            if (length(missing_cols))
+                stop("Column(s) '",
+                     paste0(missing_cols, collapse = "', '"),
+                     "' not found in chromData")
+            grp <- interaction(chromData(x)[, by, drop = FALSE], drop = TRUE)
+            lvls <- levels(grp)
+            res <- vector("list", length(lvls))
+            names(res) <- lvls
+            for (g in lvls) {
+                idx <- which(grp == g)
+                sub_obj <- x[idx]
+                labs <- .resolve_labels(sub_obj, labels)
+                res[[g]] <- .compare_chromatograms(peaksData(sub_obj),
+                    MAPFUN = MAPFUN, FUN = FUN, labels = labs, ...)
+            }
+            return(res)
+        }
+        n <- length(x)
+        if (n == 0L) return(matrix(numeric(0), 0, 0))
+        if (n == 1L)
+            return(compareChromatograms(x, x, MAPFUN = MAPFUN,
+                                        FUN = FUN, SIMPLIFY = SIMPLIFY, ...))
+        labs <- .resolve_labels(x, labels)
+        .compare_chromatograms(peaksData(x), MAPFUN = MAPFUN, FUN = FUN,
+                               labels = labs, ...)
+    }
+)
+
+#' @rdname peaksData
+#' @export
+setMethod("peakBoundary", signature = "Chromatograms",
     function(object, threshold = 0.1, baselineThreshold = 0.1,
              baselineQuantile = 0.1, ...) {
         if (!is.numeric(threshold) || length(threshold) != 1L ||

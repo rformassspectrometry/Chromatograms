@@ -1,5 +1,10 @@
 # Version 1.1
 
+## Changes in 1.1.6
+
+- Add `compareChromatograms()` and `matchRtime()` for pairwise similarity
+  of chromatographic intensity profiles.
+
 ## Changes in 1.1.5
 
 - Add `peakBoundary()` method for `Chromatograms` objects. Determines the
