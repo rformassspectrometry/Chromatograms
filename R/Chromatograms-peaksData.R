@@ -9,6 +9,7 @@
 #' @aliases filterPeaksData
 #' @aliases imputePeaksData
 #' @aliases peakBoundary
+#' @aliases correlate
 #'
 #' @description
 #'
@@ -49,7 +50,28 @@
 #'        the default), or for any of them (`match = "any"`).
 #'
 #' @param method For `imputePeaksData()`: `character(1)`: Imputation
-#'        method ("linear", "spline", "gaussian", "loess")
+#'        method ("linear", "spline", "gaussian", "loess").
+#'        For `correlate()`: `character(1)`: Correlation method
+#'        ("pearson", "spearman", "kendall"). Default is "pearson".
+#'
+#' @param FUN For `correlate()`: optional custom similarity function. If
+#'        provided, it must accept two numeric vectors (interpolated
+#'        intensities) as the first two arguments and return a single numeric
+#'        value. When `FUN` is provided, the `method` parameter is ignored.
+#'        Additional arguments can be passed via `...`.
+#'
+#' @param by For `correlate()`: `character` giving the name(s) of
+#'        chromatogram variable(s) (columns in `chromData()`) to group
+#'        chromatograms by before computing correlation. A named `list`
+#'        of correlation matrices is returned, one per unique combination
+#'        of the grouping variable(s). Defaults to `character()` (no
+#'        grouping), which returns a single correlation matrix.
+#'
+#' @param labels For `correlate()`: optional `character(1)` giving the name of
+#'        a chromatogram variable (column in `chromData()`) whose values should
+#'        be used as row and column names of the returned matrix. The column
+#'        must contain unique values (within each group, if `by` is used).
+#'        If `NULL` (the default), the matrix dimensions are unnamed.
 #'
 #' @param object A [Chromatograms] object.
 #'
@@ -154,6 +176,35 @@
 #' boundaries.
 #'
 #'
+#' @section Correlation:
+#'
+#' `correlate()` computes pairwise similarity (by default Pearson correlation)
+#' between the intensity profiles of all chromatograms in the object.
+#' Because chromatograms may have different retention time points, intensities
+#' are linearly interpolated onto a common retention time grid (the union of
+#' both chromatograms' retention times within their overlapping range) before
+#' computing the similarity.
+#'
+#' The result is a square numeric `matrix` of dimensions `n x n`, where `n`
+#' is the number of chromatograms. Diagonal elements are always `1`. Pairs
+#' without overlapping retention time ranges, or with fewer than two data
+#' points each, return `NA`.
+#'
+#' A custom similarity function can be passed via the `FUN` parameter. It
+#' must accept two numeric vectors and return a single numeric value. When
+#' `FUN` is provided, the `method` parameter is ignored.
+#'
+#' The `labels` parameter can be used to assign meaningful row/column names
+#' to the output matrix from a `chromData()` column (e.g., `"mz"` or a
+#' user-defined feature identifier). The column must contain unique values
+#' (within each group, if `by` is used).
+#'
+#' The `by` parameter allows to split chromatograms into groups based on one
+#' or more `chromData()` columns before computing correlation. This is useful,
+#' for example, to compute separate correlation matrices per `dataOrigin` or
+#' per `precursorMz`. When `by` is provided, a named `list` of matrices is
+#' returned.
+#'
 #' @seealso [Chromatograms] for a general description of the `Chromatograms`
 #'          object, and [chromData] for accessing,substituting and filtering
 #'          chromatographic variables. For more information on the queuing
@@ -212,6 +263,13 @@
 #'
 #' # Filter peaks data
 #' filterPeaksData(chr, variables = "rtime", ranges = c(12.5, 13.5))
+#'
+#' # Pairwise correlation of chromatogram intensity profiles
+#' correlate(chr)
+#' correlate(chr, method = "spearman")
+#'
+#' # Use a chromData column as row/column labels
+#' correlate(chr, labels = "mz")
 #'
 NULL
 
@@ -331,6 +389,43 @@ setMethod("lengths", signature = "Chromatograms", function(x) {
     }
     lengths(.backend(x))
 })
+
+#' @rdname peaksData
+#' @importFrom stats cor
+#' @export
+setMethod(
+    "correlate", signature = "Chromatograms",
+    function(object, method = c("pearson", "spearman", "kendall"),
+             FUN = NULL, labels = NULL, by = character(), ...) {
+        method <- match.arg(method)
+        if (length(by)) {
+            if (!is.character(by))
+                stop("'by' must be a character vector")
+            missing_cols <- setdiff(by, chromVariables(object))
+            if (length(missing_cols))
+                stop("Column(s) '", paste0(missing_cols, collapse = "', '"),
+                     "' not found in chromData")
+            grp <- interaction(chromData(object)[, by, drop = FALSE],
+            drop = TRUE)
+            lvls <- levels(grp)
+            res <- vector("list", length(lvls))
+            names(res) <- lvls
+            for (g in lvls) {
+                idx <- which(grp == g)
+                sub_obj <- object[idx]
+                labs <- .resolve_labels(sub_obj, labels)
+                res[[g]] <- .correlate_matrix(peaksData(sub_obj),
+                    method = method, FUN = FUN, labels = labs, ...)
+            }
+            return(res)
+        }
+        n <- length(object)
+        if (n == 0L) return(matrix(numeric(0), 0, 0))
+        labs <- .resolve_labels(object, labels)
+        .correlate_matrix(peaksData(object), method = method, FUN = FUN,
+                          labels = labs, ...)
+    }
+)
 
 #' @rdname peaksData
 #' @export

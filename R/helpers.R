@@ -150,7 +150,7 @@
     return(msgs)
 }
 
-#' Function to validate the processingQueue slot of a Chromatograms object
+#' Function to validate the processingQueue slot of a `Chromatograms` object
 #'
 #' Used in:
 #' - `validObject(Chromatograms())`
@@ -808,6 +808,98 @@
     rownames(cd) <- NULL
     object@chromData <- cd
     object
+}
+
+
+#' Compute pairwise correlation between two chromatograms.
+#'
+#' Interpolates both chromatograms onto the union of their retention time
+#' points within the overlapping range, then computes the correlation (or a
+#' custom similarity via `FUN`).
+#'
+#' Used in:
+#' - `correlate()`
+#'
+#' @param x,y `data.frame` with columns `rtime` and `intensity`.
+#' @param method `character(1)` correlation method passed to `cor()`.
+#' @param FUN optional custom function taking two numeric vectors.
+#' @param ... additional arguments passed to `FUN`.
+#' @return `numeric(1)` similarity value.
+#' @importFrom stats approx cor
+#' @noRd
+.correlate_chrom_pair <- function(x, y, method = "pearson", FUN = NULL, ...) {
+    if (nrow(x) < 2L || nrow(y) < 2L) return(NA_real_)
+    rt_min <- max(min(x$rtime), min(y$rtime))
+    rt_max <- min(max(x$rtime), max(y$rtime))
+    if (rt_min >= rt_max) return(NA_real_)
+    common_rt <- sort(unique(c(
+        x$rtime[x$rtime >= rt_min & x$rtime <= rt_max],
+        y$rtime[y$rtime >= rt_min & y$rtime <= rt_max]
+    )))
+    if (length(common_rt) < 2L) return(NA_real_)
+    int_x <- approx(x$rtime, x$intensity, xout = common_rt, rule = 1)$y
+    int_y <- approx(y$rtime, y$intensity, xout = common_rt, rule = 1)$y
+    if (is.function(FUN))
+        return(FUN(int_x, int_y, ...))
+    cor(int_x, int_y, method = method, use = "pairwise.complete.obs")
+}
+
+#' Compute a pairwise similarity matrix from a list of peaks data.frames
+#' and optionally label the rows/columns.
+#'
+#' Used in:
+#' - `correlate()`
+#'
+#' @param pd `list` of `data.frame` each with columns `rtime` and `intensity`.
+#' @param method `character(1)` correlation method.
+#' @param FUN optional custom similarity function.
+#' @param labels optional `character` vector of row/column names (must be the
+#'        same length as `pd` and contain unique values).
+#' @param ... passed to `.correlate_chrom_pair()`.
+#' @return A square numeric `matrix`.
+#' @noRd
+.correlate_matrix <- function(pd, method = "pearson", FUN = NULL,
+                              labels = NULL, ...) {
+    n <- length(pd)
+    if (n == 0L) return(matrix(numeric(0), 0, 0))
+    mat <- matrix(NA_real_, n, n)
+    diag(mat) <- 1
+    if (n > 1L) {
+        for (i in seq_len(n - 1L)) {
+            for (j in (i + 1L):n) {
+                val <- .correlate_chrom_pair(
+                    pd[[i]], pd[[j]], method = method, FUN = FUN, ...)
+                mat[i, j] <- val
+                mat[j, i] <- val
+            }
+        }
+    }
+    if (!is.null(labels)) {
+        rownames(mat) <- labels
+        colnames(mat) <- labels
+    }
+    mat
+}
+
+#' Resolve and validate the labels vector from a chromData column.
+#'
+#' Used in:
+#' - `correlate()`
+#'
+#' @param object A `Chromatograms` object.
+#' @param labels `character(1)` column name in `chromData()`, or `NULL`.
+#' @return A character vector of labels, or `NULL`.
+#' @noRd
+.resolve_labels <- function(object, labels) {
+    if (is.null(labels)) return(NULL)
+    if (!is.character(labels) || length(labels) != 1L)
+        stop("'labels' must be a single character string")
+    labs <- chromData(object)[[labels]]
+    if (is.null(labs))
+        stop("Column '", labels, "' not found in chromData")
+    if (anyDuplicated(labs))
+        stop("Column '", labels, "' contains duplicated values")
+    labs
 }
 
 

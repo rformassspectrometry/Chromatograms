@@ -6,6 +6,7 @@
 \alias{filterPeaksData}
 \alias{imputePeaksData}
 \alias{peakBoundary}
+\alias{correlate}
 \alias{imputePeaksData,Chromatograms-method}
 \alias{filterPeaksData,Chromatograms-method}
 \alias{intensity,Chromatograms-method}
@@ -16,6 +17,7 @@
 \alias{rtime,Chromatograms-method}
 \alias{rtime<-,Chromatograms-method}
 \alias{lengths,Chromatograms-method}
+\alias{correlate,Chromatograms-method}
 \alias{peakBoundary,Chromatograms-method}
 \title{Chromatographic peaks data}
 \usage{
@@ -60,6 +62,15 @@
 
 \S4method{lengths}{Chromatograms}(x)
 
+\S4method{correlate}{Chromatograms}(
+  object,
+  method = c("pearson", "spearman", "kendall"),
+  FUN = NULL,
+  labels = NULL,
+  by = character(),
+  ...
+)
+
 \S4method{peakBoundary}{Chromatograms}(
   object,
   threshold = 0.1,
@@ -72,7 +83,9 @@
 \item{object}{A \link{Chromatograms} object.}
 
 \item{method}{For \code{imputePeaksData()}: \code{character(1)}: Imputation
-method ("linear", "spline", "gaussian", "loess")}
+method ("linear", "spline", "gaussian", "loess").
+For \code{correlate()}: \code{character(1)}: Correlation method
+("pearson", "spearman", "kendall"). Default is "pearson".}
 
 \item{span}{For \code{imputePeaksData}: \code{numeric(1)}, for the loess method:
 Smoothing parameter (only used if method == "loess")}
@@ -129,6 +142,25 @@ and one column is called by the user, the method returns a list of
 vector of the single column requested.}
 
 \item{x}{For \code{lengths()}: A \code{Chromatograms} object.}
+
+\item{FUN}{For \code{correlate()}: optional custom similarity function. If
+provided, it must accept two numeric vectors (interpolated
+intensities) as the first two arguments and return a single numeric
+value. When \code{FUN} is provided, the \code{method} parameter is ignored.
+Additional arguments can be passed via \code{...}.}
+
+\item{labels}{For \code{correlate()}: optional \code{character(1)} giving the name of
+a chromatogram variable (column in \code{chromData()}) whose values should
+be used as row and column names of the returned matrix. The column
+must contain unique values (within each group, if \code{by} is used).
+If \code{NULL} (the default), the matrix dimensions are unnamed.}
+
+\item{by}{For \code{correlate()}: \code{character} giving the name(s) of
+chromatogram variable(s) (columns in \code{chromData()}) to group
+chromatograms by before computing correlation. A named \code{list}
+of correlation matrices is returned, one per unique combination
+of the grouping variable(s). Defaults to \code{character()} (no
+grouping), which returns a single correlation matrix.}
 
 \item{threshold}{For \code{peakBoundary()}: \code{numeric(1)} (default \code{0.1}).
 Fraction of the peak height above baseline used as a fallback
@@ -219,6 +251,37 @@ points, contain only \code{NA} or all-zero intensities return \code{NA} for both
 boundaries.
 }
 
+\section{Correlation}{
+
+
+\code{correlate()} computes pairwise similarity (by default Pearson correlation)
+between the intensity profiles of all chromatograms in the object.
+Because chromatograms may have different retention time points, intensities
+are linearly interpolated onto a common retention time grid (the union of
+both chromatograms' retention times within their overlapping range) before
+computing the similarity.
+
+The result is a square numeric \code{matrix} of dimensions \verb{n x n}, where \code{n}
+is the number of chromatograms. Diagonal elements are always \code{1}. Pairs
+without overlapping retention time ranges, or with fewer than two data
+points each, return \code{NA}.
+
+A custom similarity function can be passed via the \code{FUN} parameter. It
+must accept two numeric vectors and return a single numeric value. When
+\code{FUN} is provided, the \code{method} parameter is ignored.
+
+The \code{labels} parameter can be used to assign meaningful row/column names
+to the output matrix from a \code{chromData()} column (e.g., \code{"mz"} or a
+user-defined feature identifier). The column must contain unique values
+(within each group, if \code{by} is used).
+
+The \code{by} parameter allows to split chromatograms into groups based on one
+or more \code{chromData()} columns before computing correlation. This is useful,
+for example, to compute separate correlation matrices per \code{dataOrigin} or
+per \code{precursorMz}. When \code{by} is provided, a named \code{list} of matrices is
+returned.
+}
+
 \examples{
 
 # Create a Chromatograms object
@@ -262,6 +325,13 @@ rtime(chr)[[1]] <- c(1, 2, 3, 4)
 
 # Filter peaks data
 filterPeaksData(chr, variables = "rtime", ranges = c(12.5, 13.5))
+
+# Pairwise correlation of chromatogram intensity profiles
+correlate(chr)
+correlate(chr, method = "spearman")
+
+# Use a chromData column as row/column labels
+correlate(chr, labels = "mz")
 
 }
 \seealso{

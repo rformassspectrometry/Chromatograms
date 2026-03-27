@@ -367,26 +367,6 @@ the underlying `Spectra` object and its sort index are also properly subset and
 updated. This ensures that peak data extraction remains efficient even after
 subsetting operations.
 
-### Re-factorizing after metadata changes
-
-If you modify the chromatogram metadata (particularly the factorization columns
-like `msLevel` or `dataOrigin`), you may need to re-factorize the data to update
-the groupings. This can be done using the `factorize()` function:
-
-```{r, eval=FALSE}
-## Modify metadata
-chr_s$msLevel <- rep(2L, length(chr_s))
-
-## Re-factorize to update the groupings
-chr_s <- factorize(chr_s)
-
-chromData(chr_s)
-```
-
-This recalculates which spectra belong to which chromatograms based on the
-updated metadata.
-
-
 # Lazy Processing and Parallelization
 
 The `Chromatograms` object is designed to be scalable and flexible. It is
@@ -637,6 +617,28 @@ chr_custom
 This approach allows you to pre-define the chromatographic regions you want to
 extract, which is useful for targeted analysis workflows.
 
+## Re-factorizing after metadata changes
+
+If you modify the chromatogram metadata (particularly the factorization columns
+like `msLevel` or `dataOrigin`), you may need to re-factorize the data to update
+the groupings. This can be done using the `factorize()` function:
+
+```{r}
+## Work on a copy so downstream examples are not affected
+chr_s_tmp <- chr_s
+
+## Modify metadata
+chr_s_tmp$msLevel <- rep(2L, length(chr_s_tmp))
+
+## Re-factorize to update the groupings
+chr_s_tmp <- factorize(chr_s_tmp)
+
+chromData(chr_s_tmp)
+```
+
+This recalculates which spectra belong to which chromatograms based on the
+updated metadata.
+
 Now, let's say we want to plot specific area of the chromatograms.
 
 ```{r}
@@ -768,20 +770,36 @@ observed values). You can control this behavior with the `extrapolate` parameter
 
 ## Example: Imputing an extracted ion chromatogram (EIC)
 
-Let's extract a narrow m/z range EIC and then apply different imputation methods:
+To demonstrate imputation we first build a small `Spectra` object that already
+contains a few `NA` intensity values — mimicking a real-world EIC with gaps —
+and then extract a chromatogram from it.
 
 ```{r}
-## Create a specific EIC
-eic_table <- data.frame(
-    rtMin = 125,
-    rtMax = 180,
-    mzMin = 100.01,
-    mzMax = 100.02,
-    msLevel = 1L,
-    dataOrigin = dataOrigin(chr_s)[1]
+## A small Spectra with some missing intensities at m/z 100
+sp_gaps <- Spectra(
+    DataFrame(
+        rtime      = c(100, 110, 120, 130, 140, 150, 160, 170, 180),
+        msLevel    = rep(1L, 9),
+        dataOrigin = rep("impute_demo", 9),
+        mz = NumericList(100, 100, 100, 100, 100, 100, 100, 100, 100,
+                         compress = FALSE),
+        intensity = NumericList(50, NA, 120, 200, NA, NA, 80, 30, 10,
+                               compress = FALSE)
+    ),
+    source = MsBackendDataFrame()
 )
 
-chr_eic <- chromExtract(chr_s, eic_table, by = c("msLevel", "dataOrigin"))
+## Derive a Chromatograms and extract the EIC for m/z ≈ 100
+chr_gaps <- Chromatograms(sp_gaps)
+eic_table <- data.frame(
+    rtMin = 100, rtMax = 180,
+    mzMin = 99.5, mzMax = 100.5,
+    msLevel = 1L,
+    dataOrigin = "impute_demo"
+)
+
+chr_eic <- chromExtract(chr_gaps, eic_table,
+                        by = c("msLevel", "dataOrigin"))
 chr_eic
 ```
 
@@ -792,8 +810,8 @@ Now let's examine the raw data and apply different imputation methods:
 chr_linear <- imputePeaksData(chr_eic, method = "linear")
 chr_spline <- imputePeaksData(chr_eic, method = "spline")
 chr_gaussian <- imputePeaksData(chr_eic, method = "gaussian",
-                                window = 5, sd = 2)
-chr_loess <- imputePeaksData(chr_eic, method = "loess", span = 0.3)
+                                window = 2, sd = 1)
+chr_loess <- imputePeaksData(chr_eic, method = "loess", span = 0.75)
 
 ## Plot all methods for comparison
 par(mfrow = c(3, 2), mar = c(4, 4, 2, 1))
@@ -808,10 +826,10 @@ plotChromatograms(chr_linear, main = "Linear Imputation")
 plotChromatograms(chr_spline, main = "Spline Imputation")
 
 ## Gaussian smoothing
-plotChromatograms(chr_gaussian, main = "Gaussian Smoothing (window=5, sd=2)")
+plotChromatograms(chr_gaussian, main = "Gaussian Smoothing (window=2, sd=1)")
 
 ## LOESS smoothing
-plotChromatograms(chr_loess, main = "LOESS Smoothing (span=0.3)")
+plotChromatograms(chr_loess, main = "LOESS Smoothing (span=0.75)")
 ```
 
 ## Selecting the right imputation method
@@ -879,6 +897,58 @@ chr_in_memory <- applyProcessing(chr_in_memory)
 # Now imputation is permanently applied
 length(chr_in_memory@processingQueue)
 ```
+
+# Comparing chromatograms with correlation
+
+The `correlate()` function computes pairwise similarity between all
+chromatograms in a `Chromatograms` object. Because two chromatograms rarely
+share the exact same retention time values, intensities are first linearly
+interpolated onto a common retention time grid before the similarity is
+calculated. By default Pearson correlation is used, but Spearman and Kendall
+are also available, and an arbitrary similarity function can be supplied via
+`FUN`.
+
+Let's pick a subset of the MRM chromatograms we loaded earlier:
+
+```{r correlate-mrm}
+## Pick 8 MRM chromatograms, skipping the first (a TIC with no m/z info)
+chr_sub <- chr_mzr[2:9]
+
+cor_mat <- correlate(chr_sub)
+cor_mat
+
+## Use a chromData column as row/column labels
+cor_mat_labeled <- correlate(chr_sub, labels = "chromIndex")
+cor_mat_labeled
+```
+
+The result is a symmetric matrix with 1 on the diagonal. We can visualise it
+as a heatmap, labelling rows and columns with the MRM precursor → product m/z
+transitions stored in `chromData()`:
+
+```{r correlate-heatmap, fig.width=6, fig.height=5}
+library(pheatmap)
+## Label rows/columns with precursor → product m/z transitions
+mz_labels <- paste0(round(chromData(chr_sub)$precursorMz, 1), " → ",
+                     round(chromData(chr_sub)$productMz, 1))
+rownames(cor_mat) <- colnames(cor_mat) <- mz_labels
+pheatmap(cor_mat, main = "Pairwise Pearson correlation",
+         color = hcl.colors(30, palette = "RdYlBu", rev = TRUE))
+```
+
+A custom similarity function can be passed via `FUN`. For example, cosine
+similarity, useful for checking co-elution regardless of absolute intensity
+differences:
+
+```{r correlate-custom}
+cosine <- function(x, y) {
+    sum(x * y) / (sqrt(sum(x^2)) * sqrt(sum(y^2)))
+}
+
+cos_mat <- correlate(chr_sub, FUN = cosine)
+cos_mat
+```
+
 
 # Session information
 

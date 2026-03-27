@@ -57,6 +57,8 @@ setGeneric("imputePeaksData", function(object, ...)
 setGeneric("peakBoundary", function(object, threshold = 0.1,
     baselineThreshold = 0.1, baselineQuantile = 0.1, ...)
     standardGeneric("peakBoundary"))
+setGeneric("correlate", function(object, ...)
+    standardGeneric("correlate"))
 #' @rdname hidden_aliases
 setGeneric("reset", function(object, ...) {
     standardGeneric("reset")

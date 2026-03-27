@@ -377,3 +377,235 @@ test_that("peakBoundary validates threshold parameter.", {
     expect_error(peakBoundary(chr_v, baselineQuantile = 1.5),
                  "baselineQuantile.*must be >= 0 and <= 1")
 })
+
+## ---- correlate tests ----
+
+test_that("correlate default returns correct matrix structure.", {
+    ## Default by = character() → no grouping → single 3x3 matrix.
+    res <- correlate(c_full)
+    expect_true(is.matrix(res))
+    expect_equal(nrow(res), 3L)
+    expect_equal(ncol(res), 3L)
+    expect_equal(diag(res), c(1, 1, 1))
+    expect_equal(res[1, 2], res[2, 1])
+    expect_equal(res[1, 3], res[3, 1])
+    expect_equal(res[2, 3], res[3, 2])
+    expect_equal(res[1, 3], 1)
+    expect_true(is.na(res[1, 2]))
+    expect_true(is.na(res[2, 3]))
+    expect_null(rownames(res))
+    expect_null(colnames(res))
+})
+
+test_that("correlate default, empty object returns 0x0 matrix.", {
+    res <- correlate(c_empty)
+    expect_true(is.matrix(res))
+    expect_equal(dim(res), c(0L, 0L))
+})
+
+test_that("correlate default, single chromatogram returns 1x1.", {
+    res <- correlate(c_full[1])
+    expect_true(is.matrix(res))
+    expect_equal(dim(res), c(1L, 1L))
+    expect_equal(res[1, 1], 1)
+})
+
+test_that("correlate method = 'spearman' and 'kendall' work.", {
+    res_s <- correlate(c_full, method = "spearman")
+    expect_true(is.matrix(res_s))
+    expect_equal(dim(res_s), c(3L, 3L))
+    expect_equal(diag(res_s), c(1, 1, 1))
+    ## Identical chromatograms → 1 regardless of method
+    expect_equal(res_s[1, 3], 1)
+    ## Non-overlapping → NA
+    expect_true(is.na(res_s[1, 2]))
+
+    res_k <- correlate(c_full, method = "kendall")
+    expect_true(is.matrix(res_k))
+    expect_equal(diag(res_k), c(1, 1, 1))
+    expect_equal(res_k[1, 3], 1)
+})
+
+test_that("correlate with custom FUN produces expected values.", {
+    cosine_sim <- function(x, y) {
+        sum(x * y, na.rm = TRUE) /
+            (sqrt(sum(x^2, na.rm = TRUE)) * sqrt(sum(y^2, na.rm = TRUE)))
+    }
+    res <- correlate(c_full, FUN = cosine_sim)
+    expect_true(is.matrix(res))
+    expect_equal(dim(res), c(3L, 3L))
+    expect_equal(diag(res), c(1, 1, 1))
+    expect_equal(res[1, 3], 1)
+    res2 <- correlate(c_full, method = "spearman", FUN = cosine_sim)
+    expect_equal(res, res2)
+})
+
+test_that("correlate returns NA for non-overlapping chromatograms.", {
+    cdata_no <- data.frame(
+        msLevel = c(1L, 1L),
+        mz = c(100, 200),
+        dataOrigin = c("s1", "s2")
+    )
+    pdata_no <- list(
+        data.frame(rtime = c(1, 2, 3, 4), intensity = c(10, 50, 100, 50)),
+        data.frame(rtime = c(10, 11, 12, 13), intensity = c(20, 80, 200, 80))
+    )
+    chr_no <- Chromatograms(ChromBackendMemory(), chromData = cdata_no,
+                            peaksData = pdata_no)
+    res <- correlate(chr_no)
+    expect_true(is.na(res[1, 2]))
+    expect_true(is.na(res[2, 1]))
+    expect_equal(diag(res), c(1, 1))
+})
+
+test_that("correlate returns NA when a chromatogram has < 2 points.", {
+    cdata_short <- data.frame(
+        msLevel = c(1L, 1L),
+        mz = c(100, 200),
+        dataOrigin = c("s1", "s2")
+    )
+    pdata_short <- list(
+        data.frame(rtime = 1, intensity = 50),
+        data.frame(rtime = c(1, 2, 3), intensity = c(10, 50, 100))
+    )
+    chr_short <- Chromatograms(ChromBackendMemory(), chromData = cdata_short,
+                               peaksData = pdata_short)
+    res <- correlate(chr_short)
+    expect_true(is.na(res[1, 2]))
+    expect_equal(res[1, 1], 1)
+    expect_equal(res[2, 2], 1)
+})
+
+test_that("correlate computes correct Pearson value for known data.", {
+    ## Two chromatograms with overlapping RT and known correlation
+    cdata_known <- data.frame(
+        msLevel = c(1L, 1L),
+        mz = c(100, 200),
+        dataOrigin = c("s1", "s2")
+    )
+    pdata_known <- list(
+        data.frame(rtime = c(1, 2, 3, 4, 5),
+                   intensity = c(10, 20, 30, 20, 10)),
+        data.frame(rtime = c(1, 2, 3, 4, 5),
+                   intensity = c(5, 15, 25, 15, 5))
+    )
+    chr_known <- Chromatograms(ChromBackendMemory(), chromData = cdata_known,
+                               peaksData = pdata_known)
+    res <- correlate(chr_known)
+    ## Same RT grid → no interpolation needed; these are perfectly correlated
+    expect_equal(res[1, 2], 1, tolerance = 1e-10)
+})
+
+test_that("correlate labels parameter sets row/col names.", {
+    ## 'mz' column has unique values in c_full
+    res <- correlate(c_full, labels = "mz")
+    expect_equal(rownames(res), as.character(chromData(c_full)[["mz"]]))
+    expect_equal(colnames(res), as.character(chromData(c_full)[["mz"]]))
+    ## NULL labels → no names
+    res_no <- correlate(c_full, labels = NULL)
+    expect_null(rownames(res_no))
+    expect_null(colnames(res_no))
+    ## Non-existent column → error
+    expect_error(correlate(c_full, labels = "nonexistent"),
+                 "not found")
+    ## Non-unique column → error
+    c_dup <- c_full
+    c_dup$msLevel <- rep(1L, length(c_dup))
+    expect_error(correlate(c_dup, labels = "msLevel"),
+                 "duplicated")
+    ## Non-character labels → error
+    expect_error(correlate(c_full, labels = 42),
+                 "single character string")
+})
+
+test_that("correlate works with ChromBackendMzR.", {
+    res <- correlate(c_mzr)
+    expect_true(is.matrix(res))
+    expect_equal(nrow(res), length(c_mzr))
+    expect_equal(ncol(res), length(c_mzr))
+    expect_equal(diag(res), rep(1, length(c_mzr)))
+    ## All values should be numeric (not NULL, not character)
+    expect_true(is.numeric(res))
+})
+
+test_that("correlate by = 'dataOrigin' returns a named list.", {
+    ## c_full has 3 unique dataOrigins: mem1, mem2, mem3
+    ## Each group has exactly 1 chromatogram → list of 1x1 matrices
+    res <- correlate(c_full, by = "dataOrigin")
+    expect_true(is.list(res))
+    expect_equal(length(res), 3L)
+    expect_true(all(c("mem1", "mem2", "mem3") %in% names(res)))
+    ## Each element is a 1x1 matrix with value 1
+    for (nm in names(res)) {
+        expect_true(is.matrix(res[[nm]]))
+        expect_equal(dim(res[[nm]]), c(1L, 1L))
+        expect_equal(res[[nm]][1, 1], 1)
+    }
+})
+
+test_that("correlate by groups chromatograms correctly.", {
+    ## Put chromatograms 1 and 3 in the same group (they are identical)
+    c_grp <- c_full
+    c_grp$group <- c("A", "B", "A")
+    res <- correlate(c_grp, by = "group")
+    expect_true(is.list(res))
+    expect_equal(sort(names(res)), c("A", "B"))
+    ## Group "A" has 2 chromatograms (identical) → 2x2 matrix, off-diag = 1
+    expect_equal(dim(res[["A"]]), c(2L, 2L))
+    expect_equal(diag(res[["A"]]), c(1, 1))
+    expect_equal(res[["A"]][1, 2], 1)
+    expect_equal(res[["A"]][2, 1], 1)
+    ## Group "B" has 1 chromatogram → 1x1 matrix
+    expect_equal(dim(res[["B"]]), c(1L, 1L))
+    expect_equal(res[["B"]][1, 1], 1)
+})
+
+test_that("correlate by with labels works per group.", {
+    c_grp <- c_full
+    c_grp$group <- c("A", "B", "A")
+    c_grp$feat <- c("f1", "f2", "f3")
+    res <- correlate(c_grp, by = "group", labels = "feat")
+    ## Labels applied within each group
+    expect_equal(rownames(res[["A"]]), c("f1", "f3"))
+    expect_equal(colnames(res[["A"]]), c("f1", "f3"))
+    expect_equal(rownames(res[["B"]]), "f2")
+    expect_equal(colnames(res[["B"]]), "f2")
+})
+
+test_that("correlate by with multiple grouping variables.", {
+    c_grp <- c_full
+    c_grp$group1 <- c("X", "X", "Y")
+    c_grp$group2 <- c("a", "b", "a")
+    res <- correlate(c_grp, by = c("group1", "group2"))
+    expect_true(is.list(res))
+    ## 3 unique combinations: X.a, X.b, Y.a
+    expect_equal(length(res), 3L)
+    ## Each should be a 1x1 matrix
+    for (nm in names(res)) {
+        expect_equal(dim(res[[nm]]), c(1L, 1L))
+    }
+})
+
+test_that("correlate by errors on non-existent column.", {
+    expect_error(correlate(c_full, by = "nonexistent"), "not found")
+})
+
+test_that("correlate by errors on non-character by.", {
+    expect_error(correlate(c_full, by = 42), "must be a character")
+})
+
+test_that("correlate by with FUN and labels combined.", {
+    cosine_sim <- function(x, y) {
+        sum(x * y, na.rm = TRUE) /
+            (sqrt(sum(x^2, na.rm = TRUE)) * sqrt(sum(y^2, na.rm = TRUE)))
+    }
+    c_grp <- c_full
+    c_grp$group <- c("A", "B", "A")
+    res <- correlate(c_grp, by = "group", FUN = cosine_sim, labels = "mz")
+    expect_true(is.list(res))
+    ## Group A: 2 identical chroms → cosine = 1
+    expect_equal(res[["A"]][1, 2], 1)
+    ## Labels from mz
+    mz_A <- as.character(chromData(c_grp[c(1, 3)])[["mz"]])
+    expect_equal(rownames(res[["A"]]), mz_A)
+})

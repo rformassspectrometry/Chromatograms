@@ -171,7 +171,7 @@ NULL
 #'        be applied to the chromatographic data. The processing steps are
 #'        applied in the order they are listed in the `processingQueue`.
 #'
-#' @param summarize.method For Chromatograms created with a `Spectra` object:
+#' @param summarize.method For `Chromatograms` created with a `Spectra` object:
 #'        A `character` vector with the name of the function to be used to
 #'        summaries the spectra data intensity. The available methods are "sum"
 #'        and "max". The default is "sum".
@@ -253,7 +253,7 @@ NULL
 
 setClassUnion("ChromBackendOrMissing", c("ChromBackend", "missing"))
 
-#' The Chromatograms class
+#' The `Chromatograms` class
 #'
 #' The `Chromatograms` class is a container for chromatographic data.
 #'
@@ -618,7 +618,7 @@ setMethod(
 #'
 NULL
 
-#' Internal function to concatenate a list of Chromatograms objects.
+#' Internal function to concatenate a list of `Chromatograms` objects.
 #'
 #' @param x `list` of `Chromatograms` objects.
 #'
