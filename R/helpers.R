@@ -855,30 +855,57 @@
 #' @return A numeric `matrix` with `length(pd_x)` rows and `length(pd_y)`
 #'         columns.
 #' @noRd
+
+#' @importFrom BiocParallel bplapply SerialParam
+
 .compare_chromatograms <- function(pd_x, pd_y = pd_x,
                                    MAPFUN = matchRtime, FUN = cor,
-                                   labels = NULL, ...) {
+                                   labels = NULL, BPPARAM = SerialParam(), ...) {
     nx <- length(pd_x)
     ny <- length(pd_y)
     if (nx == 0L || ny == 0L)
         return(matrix(numeric(0), nx, ny))
     self <- identical(pd_x, pd_y)
     mat <- matrix(NA_real_, nx, ny)
+
+    same_grid <- FALSE
+    if (nx > 1L && all(vapply(pd_x, function(df) {
+        identical(df$rtime, pd_x[[1]]$rtime)
+    }, logical(1)))) {
+        same_grid <- TRUE
+        ints <- lapply(pd_x, function(df) as.numeric(df$intensity))
+    }
+
     if (self) {
-        diag(mat) <- 1
-        for (i in seq_len(nx - 1L)) {
-            for (j in (i + 1L):ny) {
-                val <- .compare_chrom_pair(
-                    pd_x[[i]], pd_y[[j]], MAPFUN = MAPFUN, FUN = FUN, ...)
-                mat[i, j] <- val
-                mat[j, i] <- val
-            }
+        if (nx == 1L) {
+            mat[1, 1] <- 1
+        } else {
+            diag(mat) <- 1
+            upper_idx <- which(upper.tri(mat), arr.ind = TRUE)
+            vals <- bplapply(seq_len(nrow(upper_idx)), function(k) {
+                i <- upper_idx[k, 1]; j <- upper_idx[k, 2]
+                if (same_grid) {
+                    if (length(ints[[i]]) < 2L) return(NA_real_)
+                    return(FUN(ints[[i]], ints[[j]], ...))
+                } else {
+                    .compare_chrom_pair(pd_x[[i]], pd_y[[j]], MAPFUN = MAPFUN, FUN = FUN, ...)
+                }
+            }, BPPARAM = BPPARAM)
+            mat[upper.tri(mat)] <- unlist(vals)
+            mat[lower.tri(mat)] <- t(mat)[lower.tri(mat)]
         }
     } else {
-        for (i in seq_len(nx))
-            for (j in seq_len(ny))
-                mat[i, j] <- .compare_chrom_pair(
-                    pd_x[[i]], pd_y[[j]], MAPFUN = MAPFUN, FUN = FUN, ...)
+        idx_grid <- expand.grid(i = seq_len(nx), j = seq_len(ny))
+        vals <- bplapply(seq_len(nrow(idx_grid)), function(k) {
+            i <- idx_grid$i[k]; j <- idx_grid$j[k]
+            if (same_grid && nx == ny) {
+                if (length(ints[[i]]) < 2L) return(NA_real_)
+                return(FUN(ints[[i]], ints[[j]], ...))
+            } else {
+                .compare_chrom_pair(pd_x[[i]], pd_y[[j]], MAPFUN = MAPFUN, FUN = FUN, ...)
+            }
+        }, BPPARAM = BPPARAM)
+        mat[] <- unlist(vals)
     }
     if (!is.null(labels)) {
         rownames(mat) <- labels
