@@ -72,7 +72,8 @@ matchRtime(x, y, ...)
   MAPFUN = matchRtime,
   FUN = cor,
   ...,
-  SIMPLIFY = TRUE
+  SIMPLIFY = TRUE,
+  BPPARAM = SerialParam()
 )
 
 \S4method{compareChromatograms}{Chromatograms,missing}(
@@ -83,7 +84,8 @@ matchRtime(x, y, ...)
   ...,
   labels = NULL,
   by = character(),
-  SIMPLIFY = TRUE
+  SIMPLIFY = TRUE,
+  BPPARAM = SerialParam()
 )
 
 \S4method{peakBoundary}{Chromatograms}(

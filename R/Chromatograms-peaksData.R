@@ -462,13 +462,15 @@ matchRtime <- function(x, y, ...) {
 #' @export
 setMethod("compareChromatograms", 
           signature(x = "Chromatograms", y = "Chromatograms"),
-    function(x, y, MAPFUN = matchRtime, FUN = cor, ..., SIMPLIFY = TRUE) {
+    function(x, y, MAPFUN = matchRtime, FUN = cor, ..., SIMPLIFY = TRUE,
+             BPPARAM = SerialParam()) {
         nx <- length(x)
         ny <- length(y)
         if (nx == 0L || ny == 0L)
             return(matrix(numeric(0), nx, ny))
         mat <- .compare_chromatograms(peaksData(x), peaksData(y),
-                                      MAPFUN = MAPFUN, FUN = FUN, ...)
+                                      MAPFUN = MAPFUN, FUN = FUN,
+                                      BPPARAM = BPPARAM, self = FALSE, ...)
         if (SIMPLIFY && (nx == 1L || ny == 1L))
             mat <- as.vector(mat)
         mat
@@ -479,7 +481,8 @@ setMethod("compareChromatograms",
 #' @export
 setMethod("compareChromatograms", signature(x = "Chromatograms", y = "missing"),
     function(x, y = NULL, MAPFUN = matchRtime, FUN = cor, ...,
-             labels = NULL, by = character(), SIMPLIFY = TRUE) {
+             labels = NULL, by = character(), SIMPLIFY = TRUE,
+             BPPARAM = SerialParam()) {
         if (length(by)) {
             if (!is.character(by))
                 stop("'by' must be a character vector")
@@ -497,7 +500,8 @@ setMethod("compareChromatograms", signature(x = "Chromatograms", y = "missing"),
                 sub_obj <- x[idx]
                 labs <- .resolve_labels(sub_obj, labels)
                 res[[g]] <- .compare_chromatograms(peaksData(sub_obj),
-                    MAPFUN = MAPFUN, FUN = FUN, labels = labs, ...)
+                    MAPFUN = MAPFUN, FUN = FUN, labels = labs,
+                    BPPARAM = BPPARAM, self = TRUE, ...)
             }
             return(res)
         }
@@ -505,10 +509,11 @@ setMethod("compareChromatograms", signature(x = "Chromatograms", y = "missing"),
         if (n == 0L) return(matrix(numeric(0), 0, 0))
         if (n == 1L)
             return(compareChromatograms(x, x, MAPFUN = MAPFUN,
-                                        FUN = FUN, SIMPLIFY = FALSE, ...))
+                                        FUN = FUN, SIMPLIFY = FALSE,
+                                        BPPARAM = BPPARAM, ...))
         labs <- .resolve_labels(x, labels)
         .compare_chromatograms(peaksData(x), MAPFUN = MAPFUN, FUN = FUN,
-                               labels = labs, ...)
+                               labels = labs, BPPARAM = BPPARAM, self = TRUE, ...)
     }
 )
 

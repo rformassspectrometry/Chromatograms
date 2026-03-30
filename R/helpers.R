@@ -860,21 +860,31 @@
 
 .compare_chromatograms <- function(pd_x, pd_y = pd_x,
                                    MAPFUN = matchRtime, FUN = cor,
-                                   labels = NULL, BPPARAM = SerialParam(), ...) {
+                                   labels = NULL, BPPARAM = SerialParam(),
+                                   self = FALSE, ...) {
     nx <- length(pd_x)
     ny <- length(pd_y)
     if (nx == 0L || ny == 0L)
         return(matrix(numeric(0), nx, ny))
-    self <- identical(pd_x, pd_y)
     mat <- matrix(NA_real_, nx, ny)
 
-    same_grid <- FALSE
-    if (nx > 1L && all(vapply(pd_x, function(df) {
+    .lapply <- if (inherits(BPPARAM, "SerialParam")) lapply else
+        function(X, FUN) bplapply(X, FUN, BPPARAM = BPPARAM)
+
+    same_grid_x <- nx > 1L && all(vapply(pd_x, function(df) {
         identical(df$rtime, pd_x[[1]]$rtime)
-    }, logical(1)))) {
-        same_grid <- TRUE
-        ints <- lapply(pd_x, function(df) as.numeric(df$intensity))
-    }
+    }, logical(1)))
+    ints_x <- if (same_grid_x) lapply(pd_x, function(df) as.numeric(df$intensity))
+
+    same_grid_y <- self || (ny > 1L && all(vapply(pd_y, function(df) {
+        identical(df$rtime, pd_y[[1]]$rtime)
+    }, logical(1))))
+    ints_y <- if (same_grid_y && !self) lapply(pd_y, function(df) as.numeric(df$intensity))
+    if (self) ints_y <- ints_x
+
+    same_grid <- same_grid_x && same_grid_y &&
+        (self || (nx >= 1L && ny >= 1L &&
+                  identical(pd_x[[1]]$rtime, pd_y[[1]]$rtime)))
 
     if (self) {
         if (nx == 1L) {
@@ -882,29 +892,27 @@
         } else {
             diag(mat) <- 1
             upper_idx <- which(upper.tri(mat), arr.ind = TRUE)
-            vals <- bplapply(seq_len(nrow(upper_idx)), function(k) {
+            vals <- .lapply(seq_len(nrow(upper_idx)), function(k) {
                 i <- upper_idx[k, 1]; j <- upper_idx[k, 2]
                 if (same_grid) {
-                    if (length(ints[[i]]) < 2L) return(NA_real_)
-                    return(FUN(ints[[i]], ints[[j]], ...))
-                } else {
-                    .compare_chrom_pair(pd_x[[i]], pd_y[[j]], MAPFUN = MAPFUN, FUN = FUN, ...)
+                    if (length(ints_x[[i]]) < 2L) return(NA_real_)
+                    return(FUN(ints_x[[i]], ints_y[[j]], ...))
                 }
-            }, BPPARAM = BPPARAM)
+                .compare_chrom_pair(pd_x[[i]], pd_y[[j]], MAPFUN = MAPFUN, FUN = FUN, ...)
+            })
             mat[upper.tri(mat)] <- unlist(vals)
             mat[lower.tri(mat)] <- t(mat)[lower.tri(mat)]
         }
     } else {
         idx_grid <- expand.grid(i = seq_len(nx), j = seq_len(ny))
-        vals <- bplapply(seq_len(nrow(idx_grid)), function(k) {
+        vals <- .lapply(seq_len(nrow(idx_grid)), function(k) {
             i <- idx_grid$i[k]; j <- idx_grid$j[k]
-            if (same_grid && nx == ny) {
-                if (length(ints[[i]]) < 2L) return(NA_real_)
-                return(FUN(ints[[i]], ints[[j]], ...))
-            } else {
-                .compare_chrom_pair(pd_x[[i]], pd_y[[j]], MAPFUN = MAPFUN, FUN = FUN, ...)
+            if (same_grid) {
+                if (length(ints_x[[i]]) < 2L) return(NA_real_)
+                return(FUN(ints_x[[i]], ints_y[[j]], ...))
             }
-        }, BPPARAM = BPPARAM)
+            .compare_chrom_pair(pd_x[[i]], pd_y[[j]], MAPFUN = MAPFUN, FUN = FUN, ...)
+        })
         mat[] <- unlist(vals)
     }
     if (!is.null(labels)) {
