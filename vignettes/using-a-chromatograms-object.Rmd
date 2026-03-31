@@ -901,18 +901,28 @@ length(chr_in_memory@processingQueue)
 # Comparing chromatograms
 
 The `compareChromatograms()` function computes pairwise similarity between
-chromatograms, following the same two-step design as `compareSpectra()` in the
-`Spectra` package. First, a mapping function (`MAPFUN`, default `matchRtime()`)
-aligns the two chromatograms onto a common retention-time grid by linear
-interpolation. Then, a scoring function (`FUN`, default `cor()`, i.e. Pearson
-correlation) computes a similarity value from the aligned intensity vectors.
-Additional arguments such as `method = "spearman"` can be passed via `...`
-to the scoring function, and a fully custom `FUN` or `MAPFUN` can be supplied.
+chromatograms in two steps. First, a mapping function (`MAPFUN`, default
+`matchRtime()`) aligns two chromatograms onto a common retention-time grid by
+linear interpolation, returning aligned intensity vectors for each. Then, a
+scoring function (`FUN`, default `cor()`, i.e. Pearson correlation) computes a
+similarity value from those vectors. Additional arguments such as
+`method = "spearman"` can be passed via `...` to the scoring function, and a
+fully custom `FUN` or `MAPFUN` can be supplied.
+
+The result is always a 3-dimensional numeric array of dimensions
+*n × m × 2*. Layer `[, , "score"]` contains pairwise similarity scores; layer
+`[, , "n_peaks"]` contains the number of overlapping retention-time points used
+for each comparison. The `minPeaks` parameter (default `4`) sets the minimum
+number of overlapping points required to compute a score — pairs below this
+threshold return `NA` in the score layer while the actual overlap count is still
+recorded in `n_peaks`. This avoids unreliable scores from very sparse overlaps
+and skips the `FUN` computation entirely for those pairs. Use `minPeaks = 2L`
+to compute a score whenever two or more points overlap.
 
 ## Comparing chromatograms within a single object
 
 When called with a single `Chromatograms` object, `compareChromatograms()`
-computes all pairwise similarities and returns a symmetric *n × n* matrix.
+computes all pairwise similarities and returns a symmetric *n × n × 2* array.
 
 Let's pick a subset of the MRM chromatograms we loaded earlier:
 
@@ -920,25 +930,26 @@ Let's pick a subset of the MRM chromatograms we loaded earlier:
 ## Pick 8 MRM chromatograms, skipping the first (a TIC with no m/z info)
 chr_sub <- chr_mzr[2:9]
 
-cor_mat <- compareChromatograms(chr_sub)
-cor_mat
+cor_arr <- compareChromatograms(chr_sub)
+cor_arr[, , "score"]   ## similarity scores
+cor_arr[, , "n_peaks"] ## number of overlapping RT points per pair
 
 ## Use a chromData column as row/column labels
-cor_mat_labeled <- compareChromatograms(chr_sub, labels = "chromIndex")
-cor_mat_labeled
+cor_arr_labeled <- compareChromatograms(chr_sub, labels = "chromIndex")
+cor_arr_labeled[, , "score"]
 ```
 
-The result is a symmetric matrix with 1 on the diagonal. We can visualise it
-as a heatmap, labelling rows and columns with the MRM precursor → product m/z
-transitions stored in `chromData()`:
+We can visualise the score layer as a heatmap, labelling rows and columns with
+the MRM precursor → product m/z transitions stored in `chromData()`:
 
 ```{r compare-chromatograms-heatmap, fig.width=6, fig.height=5}
 library(pheatmap)
 ## Label rows/columns with precursor → product m/z transitions
 mz_labels <- paste0(round(chromData(chr_sub)$precursorMz, 1), " → ",
                      round(chromData(chr_sub)$productMz, 1))
-rownames(cor_mat) <- colnames(cor_mat) <- mz_labels
-pheatmap(cor_mat, main = "Pairwise Pearson correlation",
+score_mat <- cor_arr[, , "score"]
+rownames(score_mat) <- colnames(score_mat) <- mz_labels
+pheatmap(score_mat, main = "Pairwise Pearson correlation",
          color = hcl.colors(30, palette = "RdYlBu", rev = TRUE))
 ```
 
@@ -951,24 +962,42 @@ cosine <- function(x, y) {
     sum(x * y) / (sqrt(sum(x^2)) * sqrt(sum(y^2)))
 }
 
-cos_mat <- compareChromatograms(chr_sub, FUN = cosine)
-cos_mat
+cos_arr <- compareChromatograms(chr_sub, FUN = cosine)
+cos_arr[, , "score"]
+```
+
+The `n_peaks` layer is useful even when `minPeaks` blocks a score: it shows
+how many RT points overlapped, letting you distinguish *no overlap at all*
+(`n_peaks = 0`) from *some overlap but below the threshold* (`n_peaks > 0` but
+`score = NA`):
+
+```{r compare-chromatograms-minpeaks}
+## Require at least 10 overlapping RT points to compute a score
+cor_strict <- compareChromatograms(chr_sub, minPeaks = 10L)
+cor_strict[, , "score"]   ## NAs for pairs with < 10 common RT points
+cor_strict[, , "n_peaks"] ## actual overlap counts are always recorded
 ```
 
 ## Comparing two Chromatograms objects
 
 When called with two `Chromatograms` objects, `compareChromatograms(x, y)`
-returns an *n × m* matrix with similarities between each chromatogram in `x`
-(rows) and each in `y` (columns). When one side has length 1, the result is
-simplified to a numeric vector by default (`SIMPLIFY = TRUE`).
+returns an *n × m × 2* array with similarities between each chromatogram in
+`x` (rows) and each in `y` (columns).
 
 ```{r compare-chromatograms-xy}
 ## Compare the first 4 chromatograms against the last 4
 res <- compareChromatograms(chr_sub[1:4], chr_sub[5:8])
-res
+res[, , "score"]
+```
 
-## Compare a single chromatogram against all others → returns a vector
-compareChromatograms(chr_sub[1], chr_sub[2:8])
+## Comparing groups of chromatograms
+
+To compare chromatograms within separate groups (e.g. per `dataOrigin`), split
+the object first and apply `compareChromatograms()` to each subset:
+
+```{r compare-chromatograms-groups, eval=FALSE}
+grp_list <- split(chr_sub, chromData(chr_sub)$dataOrigin)
+lapply(grp_list, compareChromatograms)
 ```
 
 

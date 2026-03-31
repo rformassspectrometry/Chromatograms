@@ -72,7 +72,7 @@ matchRtime(x, y, ...)
   MAPFUN = matchRtime,
   FUN = cor,
   ...,
-  SIMPLIFY = TRUE,
+  minPeaks = 4L,
   BPPARAM = SerialParam()
 )
 
@@ -82,9 +82,8 @@ matchRtime(x, y, ...)
   MAPFUN = matchRtime,
   FUN = cor,
   ...,
+  minPeaks = 4L,
   labels = NULL,
-  by = character(),
-  SIMPLIFY = TRUE,
   BPPARAM = SerialParam()
 )
 
@@ -165,11 +164,12 @@ compared with each other chromatogram in \code{x}.}
 
 \item{MAPFUN}{For \code{compareChromatograms()}: \code{function} to align the
 retention times of two chromatograms before computing similarity.
-The function must accept two \code{data.frame}s (with columns \code{rtime}
-and \code{intensity}) and return a \code{list} with elements \code{x} and \code{y}
-(numeric vectors of equal length). Defaults to \code{\link[=matchRtime]{matchRtime()}},
-which linearly interpolates intensities onto a common retention
-time grid. Additional arguments can be passed via \code{...}.}
+Must accept two \code{data.frame}s (with columns \code{rtime} and \code{intensity})
+and return a \code{list} with elements \code{x} and \code{y}: numeric vectors of
+equal length containing the aligned intensities of the first and
+second chromatogram respectively, interpolated onto a common
+retention-time grid. Defaults to \code{\link[=matchRtime]{matchRtime()}}. Additional
+arguments can be passed via \code{...}.}
 
 \item{FUN}{For \code{compareChromatograms()}: \code{function} to compute the
 similarity between two chromatograms from their aligned intensity
@@ -179,24 +179,20 @@ Defaults to \code{\link[stats:cor]{stats::cor()}} (Pearson correlation). Additio
 arguments can be passed via \code{...} (e.g., \code{method = "spearman"} for
 \code{\link[stats:cor]{stats::cor()}}).}
 
-\item{SIMPLIFY}{For \code{compareChromatograms()}: \code{logical(1)} (default
-\code{TRUE}). If \code{TRUE} and either \code{x} or \code{y} has length 1, the result
-is simplified to a \code{numeric} vector instead of a \code{matrix}.}
+\item{minPeaks}{For \code{compareChromatograms()}: \code{integer(1)} (default \code{4L}).
+Minimum number of overlapping retention-time points (as returned by
+\code{MAPFUN}) required to compute a similarity score. Pairs whose
+retention-time overlap contains fewer than \code{minPeaks} points return
+\code{NA} in the score layer; the actual overlap count is still recorded
+in the \code{n_peaks} layer. Setting \code{minPeaks = 2L} recovers the
+behaviour of always computing a score whenever at least two points
+overlap.}
 
 \item{labels}{For \code{compareChromatograms()}: optional \code{character(1)} giving
 the name of a chromatogram variable (column in \code{chromData()}) whose
-values should be used as row and column names of the returned matrix.
-The column must contain unique values (within each group, if \code{by} is
-used). If \code{NULL} (the default), the matrix dimensions are unnamed.
-Only used when \code{y} is missing.}
-
-\item{by}{For \code{compareChromatograms()}: \code{character} giving the name(s) of
-chromatogram variable(s) (columns in \code{chromData()}) to group
-chromatograms by before computing similarity. A named \code{list}
-of similarity matrices is returned, one per unique combination
-of the grouping variable(s). Defaults to \code{character()} (no
-grouping), which returns a single similarity matrix. Only used
-when \code{y} is missing.}
+values should be used as row and column names of the returned array.
+The column must contain unique values. If \code{NULL} (the default), the
+array dimensions are unnamed. Only used when \code{y} is missing.}
 
 \item{threshold}{For \code{peakBoundary()}: \code{numeric(1)} (default \code{0.1}).
 Fraction of the peak height above baseline used as a fallback
@@ -290,55 +286,43 @@ boundaries.
 \section{Compare Chromatograms}{
 
 
-\code{compareChromatograms()} compares chromatograms following the same
-two-step design as \code{compareSpectra()} in the \emph{Spectra} package:
+\code{compareChromatograms()} compares chromatograms in two steps:
 \enumerate{
-\item \strong{Align} – \code{MAPFUN} (default \code{\link[=matchRtime]{matchRtime()}}) maps the two
-chromatograms onto a common retention-time grid and returns a
-\code{list(x, y)} of aligned intensity vectors.
+\item \strong{Align} – \code{MAPFUN} (default \code{\link[=matchRtime]{matchRtime()}}) maps two chromatograms
+onto a common retention-time grid and returns \code{list(x, y)}, where
+\code{x} and \code{y} are numeric vectors of equal length containing the aligned
+intensities of the first and second chromatogram respectively.
 \item \strong{Score} – \code{FUN} (default \code{\link[stats:cor]{stats::cor()}}, Pearson correlation)
-computes a single similarity value from the aligned intensities.
+computes a single similarity value from those aligned intensity vectors.
 }
 
 If \code{y} is missing, each chromatogram in \code{x} is compared against every
 other chromatogram in \code{x}; otherwise, each in \code{x} is compared with
 each in \code{y}.
 
-The default \code{MAPFUN = matchRtime} linearly interpolates intensities
-onto the union of both chromatograms' retention times within their
-overlapping range. A custom \code{MAPFUN} can be supplied; it must accept
-two \code{data.frame}s (with columns \code{rtime} and \code{intensity}) and return
-a \code{list} with elements \code{x} and \code{y} (numeric vectors of equal length).
+The result is a 3-dimensional numeric array with dimensions
+\code{length(x)} x \code{length(y)} x 2 (or symmetric \verb{n x n x 2} for
+self-comparison). Layer \verb{[, , 1]} (named \code{"score"}) contains pairwise
+similarity scores; layer \verb{[, , 2]} (named \code{"n_peaks"}) contains the
+number of overlapping retention-time points used to compute each score.
+Pairs with fewer overlapping retention-time points than \code{minPeaks} (default
+4) return \code{NA} in the score layer; the actual overlap count is still
+recorded in the \code{n_peaks} layer. The diagonal of a self-comparison is
+always 1 (score) and the number of data points in that chromatogram
+(count).
 
-The result is a \code{numeric} \code{matrix} with \code{length(x)} rows and
-\code{length(y)} columns (or a symmetric \verb{n x n} matrix for
-self-comparison, with 1 on the diagonal). Pairs without overlapping
-retention-time ranges, or with fewer than two aligned points, return
-\code{NA}.
+\code{matchRtime()} is the default \code{MAPFUN}. It finds the overlapping
+retention-time range of two chromatograms, builds a common grid from
+the union of their time points within that range, and linearly
+interpolates both chromatograms' intensities onto that grid using
+\code{\link[stats:approxfun]{stats::approx()}}. If the chromatograms do not overlap or either has
+fewer than 2 data points, empty numeric vectors are returned.
 
-If \code{SIMPLIFY = TRUE} (default) and \code{length(x)} or \code{length(y)} is one,
-the result is simplified to a \code{numeric} vector.
-
-\code{matchRtime()} is the default retention-time alignment function used
-by \code{compareChromatograms()}. It takes two \code{data.frame}s with columns
-\code{rtime} and \code{intensity}, finds their overlapping retention-time range,
-builds a common grid from the union of both chromatograms' time points
-within that range, and linearly interpolates both chromatograms'
-intensities onto the common grid using \code{\link[stats:approxfun]{stats::approx()}}. The result
-is a \code{list} with elements \code{x} and \code{y} (numeric vectors of equal
-length). If the chromatograms do not overlap or either has fewer than
-2 data points, empty numeric vectors are returned.
-
-When \code{y} is missing, the \code{labels} parameter can be used to assign
-meaningful row/column names to the output matrix from a \code{chromData()}
-column (e.g., \code{"mz"} or a user-defined feature identifier). The column
-must contain unique values (within each group, if \code{by} is used).
-
-When \code{y} is missing, the \code{by} parameter allows to split chromatograms
-into groups based on one or more \code{chromData()} columns before computing
-similarity. This is useful, for example, to compute separate similarity
-matrices per \code{dataOrigin} or per \code{precursorMz}. When \code{by} is provided,
-a named \code{list} of matrices is returned.
+When \code{y} is missing, the \code{labels} parameter assigns meaningful row/column
+names to the output from a \code{chromData()} column (e.g., \code{"mz"} or a
+user-defined feature identifier). The column must contain unique values.
+To compare groups of chromatograms separately, split the object with
+\code{split()} beforehand and apply \code{compareChromatograms()} to each subset.
 }
 
 \examples{
@@ -385,13 +369,16 @@ rtime(chr)[[1]] <- c(1, 2, 3, 4)
 # Filter peaks data
 filterPeaksData(chr, variables = "rtime", ranges = c(12.5, 13.5))
 
-# Pairwise similarity of chromatogram intensity profiles
-compareChromatograms(chr)
+# Pairwise similarity: returns a 3D array [i, j, layer]
+res <- compareChromatograms(chr)
+res[, , "score"]   ## similarity scores
+res[, , "n_peaks"] ## number of overlapping RT points
+
 ## Use Spearman correlation (passed to cor() via ...)
-compareChromatograms(chr, method = "spearman")
+compareChromatograms(chr, method = "spearman")[, , "score"]
 
 # Use a chromData column as row/column labels
-compareChromatograms(chr, labels = "mz")
+compareChromatograms(chr, labels = "mz")[, , "score"]
 
 # Compare two Chromatograms objects
 compareChromatograms(chr[1:2], chr[3])

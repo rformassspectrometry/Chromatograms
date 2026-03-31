@@ -63,26 +63,27 @@
 #'
 #' @param MAPFUN For `compareChromatograms()`: `function` to align the
 #'        retention times of two chromatograms before computing similarity.
-#'        The function must accept two `data.frame`s (with columns `rtime`
-#'        and `intensity`) and return a `list` with elements `x` and `y`
-#'        (numeric vectors of equal length). Defaults to [matchRtime()],
-#'        which linearly interpolates intensities onto a common retention
-#'        time grid. Additional arguments can be passed via `...`.
+#'        Must accept two `data.frame`s (with columns `rtime` and `intensity`)
+#'        and return a `list` with elements `x` and `y`: numeric vectors of
+#'        equal length containing the aligned intensities of the first and
+#'        second chromatogram respectively, interpolated onto a common
+#'        retention-time grid. Defaults to [matchRtime()]. Additional
+#'        arguments can be passed via `...`.
 #'
-#' @param by For `compareChromatograms()`: `character` giving the name(s) of
-#'        chromatogram variable(s) (columns in `chromData()`) to group
-#'        chromatograms by before computing similarity. A named `list`
-#'        of similarity matrices is returned, one per unique combination
-#'        of the grouping variable(s). Defaults to `character()` (no
-#'        grouping), which returns a single similarity matrix. Only used
-#'        when `y` is missing.
+#' @param minPeaks For `compareChromatograms()`: `integer(1)` (default `4L`).
+#'        Minimum number of overlapping retention-time points (as returned by
+#'        `MAPFUN`) required to compute a similarity score. Pairs whose
+#'        retention-time overlap contains fewer than `minPeaks` points return
+#'        `NA` in the score layer; the actual overlap count is still recorded
+#'        in the `n_peaks` layer. Setting `minPeaks = 2L` recovers the
+#'        behaviour of always computing a score whenever at least two points
+#'        overlap.
 #'
 #' @param labels For `compareChromatograms()`: optional `character(1)` giving
 #'        the name of a chromatogram variable (column in `chromData()`) whose
-#'        values should be used as row and column names of the returned matrix.
-#'        The column must contain unique values (within each group, if `by` is
-#'        used). If `NULL` (the default), the matrix dimensions are unnamed.
-#'        Only used when `y` is missing.
+#'        values should be used as row and column names of the returned array.
+#'        The column must contain unique values. If `NULL` (the default), the
+#'        array dimensions are unnamed. Only used when `y` is missing.
 #'
 #' @param object A [Chromatograms] object.
 #'
@@ -137,10 +138,6 @@
 #' @param y For `compareChromatograms()`: A [Chromatograms] object against
 #'        which `x` is compared. If missing, each chromatogram in `x` is
 #'        compared with each other chromatogram in `x`.
-#'
-#' @param SIMPLIFY For `compareChromatograms()`: `logical(1)` (default
-#'        `TRUE`). If `TRUE` and either `x` or `y` has length 1, the result
-#'        is simplified to a `numeric` vector instead of a `matrix`.
 #'
 #' @param ... Additional arguments passed to the method.
 #'
@@ -198,54 +195,42 @@
 #'
 #' @section Compare Chromatograms:
 #'
-#' `compareChromatograms()` compares chromatograms following the same
-#' two-step design as `compareSpectra()` in the *Spectra* package:
+#' `compareChromatograms()` compares chromatograms in two steps:
 #'
-#' 1. **Align** – `MAPFUN` (default [matchRtime()]) maps the two
-#'    chromatograms onto a common retention-time grid and returns a
-#'    `list(x, y)` of aligned intensity vectors.
+#' 1. **Align** – `MAPFUN` (default [matchRtime()]) maps two chromatograms
+#'    onto a common retention-time grid and returns `list(x, y)`, where
+#'    `x` and `y` are numeric vectors of equal length containing the aligned
+#'    intensities of the first and second chromatogram respectively.
 #' 2. **Score** – `FUN` (default [stats::cor()], Pearson correlation)
-#'    computes a single similarity value from the aligned intensities.
+#'    computes a single similarity value from those aligned intensity vectors.
 #'
 #' If `y` is missing, each chromatogram in `x` is compared against every
 #' other chromatogram in `x`; otherwise, each in `x` is compared with
 #' each in `y`.
 #'
-#' The default `MAPFUN = matchRtime` linearly interpolates intensities
-#' onto the union of both chromatograms' retention times within their
-#' overlapping range. A custom `MAPFUN` can be supplied; it must accept
-#' two `data.frame`s (with columns `rtime` and `intensity`) and return
-#' a `list` with elements `x` and `y` (numeric vectors of equal length).
+#' The result is a 3-dimensional numeric array with dimensions
+#' `length(x)` x `length(y)` x 2 (or symmetric `n x n x 2` for
+#' self-comparison). Layer `[, , 1]` (named `"score"`) contains pairwise
+#' similarity scores; layer `[, , 2]` (named `"n_peaks"`) contains the
+#' number of overlapping retention-time points used to compute each score.
+#' Pairs with fewer overlapping retention-time points than `minPeaks` (default
+#' 4) return `NA` in the score layer; the actual overlap count is still
+#' recorded in the `n_peaks` layer. The diagonal of a self-comparison is
+#' always 1 (score) and the number of data points in that chromatogram
+#' (count).
 #'
-#' The result is a `numeric` `matrix` with `length(x)` rows and
-#' `length(y)` columns (or a symmetric `n x n` matrix for
-#' self-comparison, with 1 on the diagonal). Pairs without overlapping
-#' retention-time ranges, or with fewer than two aligned points, return
-#' `NA`.
+#' `matchRtime()` is the default `MAPFUN`. It finds the overlapping
+#' retention-time range of two chromatograms, builds a common grid from
+#' the union of their time points within that range, and linearly
+#' interpolates both chromatograms' intensities onto that grid using
+#' [stats::approx()]. If the chromatograms do not overlap or either has
+#' fewer than 2 data points, empty numeric vectors are returned.
 #'
-#' If `SIMPLIFY = TRUE` (default) and `length(x)` or `length(y)` is one,
-#' the result is simplified to a `numeric` vector.
-#'
-#' `matchRtime()` is the default retention-time alignment function used
-#' by `compareChromatograms()`. It takes two `data.frame`s with columns
-#' `rtime` and `intensity`, finds their overlapping retention-time range,
-#' builds a common grid from the union of both chromatograms' time points
-#' within that range, and linearly interpolates both chromatograms'
-#' intensities onto the common grid using [stats::approx()]. The result
-#' is a `list` with elements `x` and `y` (numeric vectors of equal
-#' length). If the chromatograms do not overlap or either has fewer than
-#' 2 data points, empty numeric vectors are returned.
-#'
-#' When `y` is missing, the `labels` parameter can be used to assign
-#' meaningful row/column names to the output matrix from a `chromData()`
-#' column (e.g., `"mz"` or a user-defined feature identifier). The column
-#' must contain unique values (within each group, if `by` is used).
-#'
-#' When `y` is missing, the `by` parameter allows to split chromatograms
-#' into groups based on one or more `chromData()` columns before computing
-#' similarity. This is useful, for example, to compute separate similarity
-#' matrices per `dataOrigin` or per `precursorMz`. When `by` is provided,
-#' a named `list` of matrices is returned.
+#' When `y` is missing, the `labels` parameter assigns meaningful row/column
+#' names to the output from a `chromData()` column (e.g., `"mz"` or a
+#' user-defined feature identifier). The column must contain unique values.
+#' To compare groups of chromatograms separately, split the object with
+#' `split()` beforehand and apply `compareChromatograms()` to each subset.
 #'
 #' @seealso [Chromatograms] for a general description of the `Chromatograms`
 #'          object, and [chromData] for accessing,substituting and filtering
@@ -306,13 +291,16 @@
 #' # Filter peaks data
 #' filterPeaksData(chr, variables = "rtime", ranges = c(12.5, 13.5))
 #'
-#' # Pairwise similarity of chromatogram intensity profiles
-#' compareChromatograms(chr)
+#' # Pairwise similarity: returns a 3D array [i, j, layer]
+#' res <- compareChromatograms(chr)
+#' res[, , "score"]   ## similarity scores
+#' res[, , "n_peaks"] ## number of overlapping RT points
+#'
 #' ## Use Spearman correlation (passed to cor() via ...)
-#' compareChromatograms(chr, method = "spearman")
+#' compareChromatograms(chr, method = "spearman")[, , "score"]
 #'
 #' # Use a chromData column as row/column labels
-#' compareChromatograms(chr, labels = "mz")
+#' compareChromatograms(chr, labels = "mz")[, , "score"]
 #'
 #' # Compare two Chromatograms objects
 #' compareChromatograms(chr[1:2], chr[3])
@@ -460,20 +448,19 @@ matchRtime <- function(x, y, ...) {
 
 #' @rdname peaksData
 #' @export
-setMethod("compareChromatograms", 
+setMethod("compareChromatograms",
           signature(x = "Chromatograms", y = "Chromatograms"),
-    function(x, y, MAPFUN = matchRtime, FUN = cor, ..., SIMPLIFY = TRUE,
-             BPPARAM = SerialParam()) {
+    function(x, y, MAPFUN = matchRtime, FUN = cor, ...,
+             minPeaks = 4L, BPPARAM = SerialParam()) {
         nx <- length(x)
         ny <- length(y)
         if (nx == 0L || ny == 0L)
-            return(matrix(numeric(0), nx, ny))
-        mat <- .compare_chromatograms(peaksData(x), peaksData(y),
-                                      MAPFUN = MAPFUN, FUN = FUN,
-                                      BPPARAM = BPPARAM, self = FALSE, ...)
-        if (SIMPLIFY && (nx == 1L || ny == 1L))
-            mat <- as.vector(mat)
-        mat
+            return(array(numeric(0), dim = c(nx, ny, 2L),
+                         dimnames = list(NULL, NULL, c("score", "n_peaks"))))
+        .compare_chromatograms(peaksData(x), peaksData(y),
+                               MAPFUN = MAPFUN, FUN = FUN,
+                               minPeaks = minPeaks, BPPARAM = BPPARAM,
+                               self = FALSE, ...)
     }
 )
 
@@ -481,39 +468,23 @@ setMethod("compareChromatograms",
 #' @export
 setMethod("compareChromatograms", signature(x = "Chromatograms", y = "missing"),
     function(x, y = NULL, MAPFUN = matchRtime, FUN = cor, ...,
-             labels = NULL, by = character(), SIMPLIFY = TRUE,
-             BPPARAM = SerialParam()) {
-        if (length(by)) {
-            if (!is.character(by))
-                stop("'by' must be a character vector")
-            missing_cols <- setdiff(by, chromVariables(x))
-            if (length(missing_cols))
-                stop("Column(s) '",
-                     paste0(missing_cols, collapse = "', '"),
-                     "' not found in chromData")
-            grp <- interaction(chromData(x)[, by, drop = FALSE], drop = TRUE)
-            lvls <- levels(grp)
-            res <- vector("list", length(lvls))
-            names(res) <- lvls
-            for (g in lvls) {
-                idx <- which(grp == g)
-                sub_obj <- x[idx]
-                labs <- .resolve_labels(sub_obj, labels)
-                res[[g]] <- .compare_chromatograms(peaksData(sub_obj),
-                    MAPFUN = MAPFUN, FUN = FUN, labels = labs,
-                    BPPARAM = BPPARAM, self = TRUE, ...)
-            }
-            return(res)
-        }
+             minPeaks = 4L, labels = NULL, BPPARAM = SerialParam()) {
         n <- length(x)
-        if (n == 0L) return(matrix(numeric(0), 0, 0))
-        if (n == 1L)
-            return(compareChromatograms(x, x, MAPFUN = MAPFUN,
-                                        FUN = FUN, SIMPLIFY = FALSE,
-                                        BPPARAM = BPPARAM, ...))
+        if (n == 0L)
+            return(array(numeric(0), dim = c(0L, 0L, 2L),
+                         dimnames = list(NULL, NULL, c("score", "n_peaks"))))
+        if (n == 1L) {
+            pd1 <- peaksData(x)
+            arr1 <- array(NA_real_, dim = c(1L, 1L, 2L),
+                          dimnames = list(NULL, NULL, c("score", "n_peaks")))
+            arr1[1L, 1L, 1L] <- 1
+            arr1[1L, 1L, 2L] <- nrow(pd1[[1L]])
+            return(arr1)
+        }
         labs <- .resolve_labels(x, labels)
         .compare_chromatograms(peaksData(x), MAPFUN = MAPFUN, FUN = FUN,
-                               labels = labs, BPPARAM = BPPARAM, self = TRUE, ...)
+                               minPeaks = minPeaks, labels = labs,
+                               BPPARAM = BPPARAM, self = TRUE, ...)
     }
 )
 

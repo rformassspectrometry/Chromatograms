@@ -821,24 +821,27 @@
 #' - `compareChromatograms()`
 #'
 #' @param x,y `data.frame` with columns `rtime` and `intensity`.
-#' @param method `character(1)` correlation method passed to `cor()`.
 #' @param MAPFUN function to align two chromatograms' retention times.
 #' @param FUN function to compute similarity from aligned intensities.
+#' @param minPeaks minimum number of overlapping RT points required to compute
+#'        the similarity; pairs with fewer points return `NA` (score) and the
+#'        actual count (n_peaks).
 #' @param ... additional arguments passed to both `MAPFUN` and `FUN`.
-#' @return `numeric(1)` similarity value.
+#' @return `numeric(2)`: similarity value and number of overlapping RT points.
 #' @noRd
-.compare_chrom_pair <- function(x, y, MAPFUN = matchRtime, FUN = cor, ...) {
+.compare_chrom_pair <- function(x, y, MAPFUN = matchRtime, FUN = cor,
+                                minPeaks = 4L, ...) {
     aligned <- MAPFUN(x, y, ...)
-    if (length(aligned$x) < 2L) return(NA_real_)
-    FUN(aligned$x, aligned$y, ...)
+    n <- length(aligned$x)
+    if (n < minPeaks) return(c(NA_real_, n))
+    c(FUN(aligned$x, aligned$y, ...), n)
 }
 
-#' Compute a pairwise similarity matrix between two lists of peaks
-#' data.frames.
+#' Compute a pairwise similarity array between two lists of peaks data.frames.
 #'
 #' Compares each chromatogram in `pd_x` with each chromatogram in `pd_y`.
 #' When `pd_y` is not provided (default), `pd_x` is compared against itself
-#' and the result is a symmetric n x n matrix.
+#' and the result is a symmetric n x n x 2 array.
 #'
 #' Used in:
 #' - `compareChromatograms()`
@@ -849,24 +852,30 @@
 #'        `intensity`. Defaults to `pd_x` (self-comparison).
 #' @param MAPFUN function to align retention times.
 #' @param FUN function to compute similarity.
+#' @param minPeaks minimum overlapping RT points to compute similarity.
 #' @param labels optional `character` vector of row/column names. Only
 #'        meaningful for self-comparison (when `pd_y` is not supplied).
 #' @param ... passed to `.compare_chrom_pair()`.
-#' @return A numeric `matrix` with `length(pd_x)` rows and `length(pd_y)`
-#'         columns.
+#' @return A numeric array with dimensions `length(pd_x)` x `length(pd_y)` x 2.
+#'         Layer 1 contains similarity scores; layer 2 the number of
+#'         overlapping retention-time points used for each comparison.
 #' @noRd
 
 #' @importFrom BiocParallel bplapply SerialParam
 
 .compare_chromatograms <- function(pd_x, pd_y = pd_x,
                                    MAPFUN = matchRtime, FUN = cor,
-                                   labels = NULL, BPPARAM = SerialParam(),
+                                   minPeaks = 4L, labels = NULL,
+                                   BPPARAM = SerialParam(),
                                    self = FALSE, ...) {
     nx <- length(pd_x)
     ny <- length(pd_y)
     if (nx == 0L || ny == 0L)
-        return(matrix(numeric(0), nx, ny))
-    mat <- matrix(NA_real_, nx, ny)
+        return(array(numeric(0), dim = c(nx, ny, 2L),
+                     dimnames = list(NULL, NULL, c("score", "n_peaks"))))
+
+    scores <- matrix(NA_real_, nx, ny)
+    counts <- matrix(0L, nx, ny)
 
     .lapply <- if (inherits(BPPARAM, "SerialParam")) lapply else
         function(X, FUN) bplapply(X, FUN, BPPARAM = BPPARAM)
@@ -887,39 +896,53 @@
                   identical(pd_x[[1]]$rtime, pd_y[[1]]$rtime)))
 
     if (self) {
-        if (nx == 1L) {
-            mat[1, 1] <- 1
-        } else {
-            diag(mat) <- 1
-            upper_idx <- which(upper.tri(mat), arr.ind = TRUE)
+        diag(scores) <- 1
+        diag(counts) <- vapply(seq_len(nx),
+            function(i) as.integer(nrow(pd_x[[i]])), integer(1L))
+        if (nx > 1L) {
+            upper_idx <- which(upper.tri(scores), arr.ind = TRUE)
             vals <- .lapply(seq_len(nrow(upper_idx)), function(k) {
-                i <- upper_idx[k, 1]; j <- upper_idx[k, 2]
+                i <- upper_idx[k, 1L]; j <- upper_idx[k, 2L]
                 if (same_grid) {
-                    if (length(ints_x[[i]]) < 2L) return(NA_real_)
-                    return(FUN(ints_x[[i]], ints_y[[j]], ...))
+                    n <- length(ints_x[[i]])
+                    if (n < minPeaks) return(c(NA_real_, n))
+                    return(c(FUN(ints_x[[i]], ints_y[[j]], ...), n))
                 }
-                .compare_chrom_pair(pd_x[[i]], pd_y[[j]], MAPFUN = MAPFUN, FUN = FUN, ...)
+                .compare_chrom_pair(pd_x[[i]], pd_y[[j]], MAPFUN = MAPFUN,
+                                    FUN = FUN, minPeaks = minPeaks, ...)
             })
-            mat[upper.tri(mat)] <- unlist(vals)
-            mat[lower.tri(mat)] <- t(mat)[lower.tri(mat)]
+            vals_mat <- matrix(unlist(vals), nrow = 2L)
+            scores[upper.tri(scores)] <- vals_mat[1L, ]
+            counts[upper.tri(counts)] <- vals_mat[2L, ]
+            scores[lower.tri(scores)] <- t(scores)[lower.tri(scores)]
+            counts[lower.tri(counts)] <- t(counts)[lower.tri(counts)]
         }
     } else {
         idx_grid <- expand.grid(i = seq_len(nx), j = seq_len(ny))
         vals <- .lapply(seq_len(nrow(idx_grid)), function(k) {
             i <- idx_grid$i[k]; j <- idx_grid$j[k]
             if (same_grid) {
-                if (length(ints_x[[i]]) < 2L) return(NA_real_)
-                return(FUN(ints_x[[i]], ints_y[[j]], ...))
+                n <- length(ints_x[[i]])
+                if (n < minPeaks) return(c(NA_real_, n))
+                return(c(FUN(ints_x[[i]], ints_y[[j]], ...), n))
             }
-            .compare_chrom_pair(pd_x[[i]], pd_y[[j]], MAPFUN = MAPFUN, FUN = FUN, ...)
+            .compare_chrom_pair(pd_x[[i]], pd_y[[j]], MAPFUN = MAPFUN,
+                                FUN = FUN, minPeaks = minPeaks, ...)
         })
-        mat[] <- unlist(vals)
+        vals_mat <- matrix(unlist(vals), nrow = 2L)
+        scores[] <- vals_mat[1L, ]
+        counts[] <- vals_mat[2L, ]
     }
+
+    arr <- array(NA_real_, dim = c(nx, ny, 2L),
+                 dimnames = list(NULL, NULL, c("score", "n_peaks")))
+    arr[, , 1L] <- scores
+    arr[, , 2L] <- counts
     if (!is.null(labels)) {
-        rownames(mat) <- labels
-        colnames(mat) <- labels
+        dimnames(arr)[[1L]] <- labels
+        dimnames(arr)[[2L]] <- labels
     }
-    mat
+    arr
 }
 
 #' Resolve and validate the labels vector from a chromData column.
