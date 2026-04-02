@@ -1678,7 +1678,7 @@ test_that(".compare_chromatograms applies labels for self-comparison", {
         data.frame(rtime = c(1, 2, 3), intensity = c(10, 20, 30)),
         data.frame(rtime = c(1, 2, 3), intensity = c(5, 15, 25))
     )
-    res <- .compare_chromatograms(pd, labels = c("a", "b"))
+    res <- .compare_chromatograms(pd, labelsColumn = c("a", "b"))
     expect_equal(dimnames(res)[[1L]], c("a", "b"))
     expect_equal(dimnames(res)[[2L]], c("a", "b"))
 })

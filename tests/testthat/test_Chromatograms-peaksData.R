@@ -527,25 +527,25 @@ test_that("compareChromatograms minPeaks filters low-overlap pairs.", {
     expect_false(is.na(res_loose[1, 2, 1L]))
 })
 
-test_that("compareChromatograms labels parameter sets row/col names.", {
+test_that("compareChromatograms labelsColumn parameter sets row/col names.", {
     ## 'mz' column has unique values in c_full
-    res <- compareChromatograms(c_full, labels = "mz")
+    res <- compareChromatograms(c_full, labelsColumn = "mz")
     expect_equal(dimnames(res)[[1L]], as.character(chromData(c_full)[["mz"]]))
     expect_equal(dimnames(res)[[2L]], as.character(chromData(c_full)[["mz"]]))
-    ## NULL labels → no names on first two dims
-    res_no <- compareChromatograms(c_full, labels = NULL)
+    ## NULL labelsColumn → no names on first two dims
+    res_no <- compareChromatograms(c_full, labelsColumn = NULL)
     expect_null(dimnames(res_no)[[1L]])
     expect_null(dimnames(res_no)[[2L]])
     ## Non-existent column → error
-    expect_error(compareChromatograms(c_full, labels = "nonexistent"),
+    expect_error(compareChromatograms(c_full, labelsColumn = "nonexistent"),
                  "not found")
     ## Non-unique column → error
     c_dup <- c_full
     c_dup$msLevel <- rep(1L, length(c_dup))
-    expect_error(compareChromatograms(c_dup, labels = "msLevel"),
+    expect_error(compareChromatograms(c_dup, labelsColumn = "msLevel"),
                  "duplicated")
-    ## Non-character labels → error
-    expect_error(compareChromatograms(c_full, labels = 42),
+    ## Non-character labelsColumn → error
+    expect_error(compareChromatograms(c_full, labelsColumn = 42),
                  "single character string")
 })
 
