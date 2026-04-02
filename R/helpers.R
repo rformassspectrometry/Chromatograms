@@ -150,7 +150,7 @@
     return(msgs)
 }
 
-#' Function to validate the processingQueue slot of a Chromatograms object
+#' Function to validate the processingQueue slot of a `Chromatograms` object
 #'
 #' Used in:
 #' - `validObject(Chromatograms())`
@@ -811,6 +811,137 @@
 }
 
 
+#' Compute pairwise similarity between two chromatograms.
+#'
+#' Interpolates both chromatograms onto the union of their retention time
+#' points within the overlapping range, then computes the correlation (or a
+#' custom similarity via `FUN`).
+#'
+#' Used in:
+#' - `compareChromatograms()`
+#'
+#' @param x,y `data.frame` with columns `rtime` and `intensity`.
+#' @param MAPFUN function to align two chromatograms' retention times.
+#' @param FUN function to compute similarity from aligned intensities.
+#' @param minPeaks minimum number of overlapping RT points required to compute
+#'        the similarity; pairs with fewer points return `NA` (score) and the
+#'        actual count (n_peaks).
+#' @param ... additional arguments passed to both `MAPFUN` and `FUN`.
+#' @return `numeric(2)`: similarity value and number of overlapping RT points.
+#' @noRd
+.compare_chrom_pair <- function(x, y, MAPFUN = matchRtime, FUN = cor,
+                                minPeaks = 4L, ...) {
+    aligned <- MAPFUN(x, y, ...)
+    n <- length(aligned$x)
+    if (n < minPeaks) return(c(NA_real_, n))
+    c(FUN(aligned$x, aligned$y, ...), n)
+}
+
+#' Compute a pairwise similarity array between two lists of peaks data.frames.
+#'
+#' Compares each chromatogram in `pd_x` with each chromatogram in `pd_y`.
+#' When `pd_y` is not provided (default), `pd_x` is compared against itself
+#' and the result is a symmetric n x n x 2 array.
+#'
+#' Used in:
+#' - `compareChromatograms()`
+#'
+#' @param pd_x `list` of `data.frame` each with columns `rtime` and
+#'        `intensity`.
+#' @param pd_y `list` of `data.frame` each with columns `rtime` and
+#'        `intensity`. Defaults to `pd_x` (self-comparison).
+#' @param MAPFUN function to align retention times.
+#' @param FUN function to compute similarity.
+#' @param minPeaks minimum overlapping RT points to compute similarity.
+#' @param labelsColumn optional `character` vector of row/column names. Only
+#'        meaningful for self-comparison (when `pd_y` is not supplied).
+#' @param ... passed to `.compare_chrom_pair()`.
+#' @return A numeric array with dimensions `length(pd_x)` x `length(pd_y)` x 2.
+#'         Layer 1 contains similarity scores; layer 2 the number of
+#'         overlapping retention-time points used for each comparison.
+#' @noRd
+
+#' @importFrom BiocParallel bplapply SerialParam
+
+.compare_chromatograms <- function(pd_x, pd_y = pd_x,
+                                   MAPFUN = matchRtime, FUN = cor,
+                                   minPeaks = 4L, labelsColumn = NULL,
+                                   BPPARAM = SerialParam(),
+                                   self = FALSE, ...) {
+    nx <- length(pd_x)
+    ny <- length(pd_y)
+    if (nx == 0L || ny == 0L)
+        return(array(numeric(0), dim = c(nx, ny, 2L),
+                     dimnames = list(NULL, NULL, c("score", "n_peaks"))))
+
+    .lapply <- if (inherits(BPPARAM, "SerialParam")) lapply else
+        function(X, FUN) bplapply(X, FUN, BPPARAM = BPPARAM)
+
+    scores <- matrix(NA_real_, nx, ny)
+    counts <- matrix(0L, nx, ny)
+
+    if (self) {
+        diag(scores) <- 1
+        diag(counts) <- vapply(pd_x, nrow, integer(1L))
+        if (nx > 1L) {
+            upper_idx <- which(upper.tri(scores), arr.ind = TRUE)
+            vals <- .lapply(seq_len(nrow(upper_idx)), function(k) {
+                i <- upper_idx[k, 1L]
+                j <- upper_idx[k, 2L]
+                .compare_chrom_pair(pd_x[[i]], pd_x[[j]], MAPFUN = MAPFUN,
+                                    FUN = FUN, minPeaks = minPeaks, ...)
+            })
+            vals_mat <- matrix(unlist(vals), nrow = 2L)
+            scores[upper.tri(scores)] <- vals_mat[1L, ]
+            counts[upper.tri(counts)] <- vals_mat[2L, ]
+            ## Fill lower triangle by symmetry. 
+            scores[lower.tri(scores)] <- t(scores)[lower.tri(scores)]
+            counts[lower.tri(counts)] <- t(counts)[lower.tri(counts)]
+        }
+    } else {
+        pairs <- cbind(rep(seq_len(nx), times = ny), rep(seq_len(ny), each = nx))
+        vals <- .lapply(seq_len(nrow(pairs)), function(k) {
+            .compare_chrom_pair(pd_x[[pairs[k, 1L]]], pd_y[[pairs[k, 2L]]],
+                                MAPFUN = MAPFUN, FUN = FUN, minPeaks = minPeaks, ...)
+        })
+        vals_mat <- matrix(unlist(vals), nrow = 2L)
+        scores[] <- vals_mat[1L, ]
+        counts[] <- vals_mat[2L, ]
+    }
+
+    arr <- array(NA_real_, dim = c(nx, ny, 2L),
+                 dimnames = list(NULL, NULL, c("score", "n_peaks")))
+    arr[, , 1L] <- scores
+    arr[, , 2L] <- counts
+    if (!is.null(labelsColumn)) {
+        dimnames(arr)[[1L]] <- labelsColumn
+        dimnames(arr)[[2L]] <- labelsColumn
+    }
+    arr
+}
+
+#' Resolve and validate the labels vector from a chromData column.
+#'
+#' Used in:
+#' - `compareChromatograms()`
+#'
+#' @param object A `Chromatograms` object.
+#' @param labelsColumn `character(1)` column name in `chromData()`, or `NULL`.
+#' @return A character vector of labels, or `NULL`.
+#' @noRd
+.resolve_labels <- function(object, labelsColumn) {
+    if (is.null(labelsColumn)) return(NULL)
+    if (!is.character(labelsColumn) || length(labelsColumn) != 1L)
+        stop("'labelsColumn' must be a single character string")
+    labs <- chromData(object)[[labelsColumn]]
+    if (is.null(labs))
+        stop("Column '", labelsColumn, "' not found in chromData")
+    if (anyDuplicated(labs))
+        stop("Column '", labelsColumn, "' contains duplicated values")
+    labs
+}
+
+
 #' Below are internal accessor functions, used ubiquitously in the package.
 #' These directly access the internal slots (e.g., `@chromData`, `@peaksData`,
 #' `@spectra`, etc.).
@@ -908,3 +1039,4 @@
     }
     c(unname(rtime[left_idx]), unname(rtime[right_idx]))
 }
+

@@ -63,7 +63,7 @@ applied in the order they are listed in the \code{processingQueue}.}
 
 \item{...}{Additional arguments.}
 
-\item{summarize.method}{For Chromatograms created with a \code{Spectra} object:
+\item{summarize.method}{For \code{Chromatograms} created with a \code{Spectra} object:
 A \code{character} vector with the name of the function to be used to
 summaries the spectra data intensity. The available methods are "sum"
 and "max". The default is "sum".}

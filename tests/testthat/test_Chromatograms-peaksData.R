@@ -377,3 +377,365 @@ test_that("peakBoundary validates threshold parameter.", {
     expect_error(peakBoundary(chr_v, baselineQuantile = 1.5),
                  "baselineQuantile.*must be >= 0 and <= 1")
 })
+
+## ---- compareChromatograms tests ----
+
+test_that("compareChromatograms default returns correct array structure.", {
+    res <- compareChromatograms(c_full)
+    expect_true(is.array(res))
+    expect_equal(dim(res), c(3L, 3L, 2L))
+    expect_equal(dimnames(res)[[3L]], c("score", "n_peaks"))
+    ## Scores layer: symmetric, diagonal = 1
+    expect_equal(diag(res[, , 1L]), c(1, 1, 1))
+    expect_equal(res[1, 2, 1L], res[2, 1, 1L])
+    expect_equal(res[1, 3, 1L], res[3, 1, 1L])
+    expect_equal(res[2, 3, 1L], res[3, 2, 1L])
+    expect_equal(unname(res[1, 3, 1L]), 1)
+    expect_true(is.na(res[1, 2, 1L]))
+    expect_true(is.na(res[2, 3, 1L]))
+    ## Count layer: diagonal > 0, non-overlapping = 0
+    expect_true(all(diag(res[, , 2L]) > 0))
+    expect_equal(unname(res[1, 2, 2L]), 0)
+    expect_equal(unname(res[2, 3, 2L]), 0)
+    expect_null(rownames(res))
+    expect_null(colnames(res))
+})
+
+test_that("compareChromatograms default, empty object returns 0x0x2 array.", {
+    res <- compareChromatograms(c_empty)
+    expect_true(is.array(res))
+    expect_equal(dim(res), c(0L, 0L, 2L))
+})
+
+test_that("compareChromatograms default, single chromatogram returns 1x1x2.", {
+    res <- compareChromatograms(c_full[1])
+    expect_true(is.array(res))
+    expect_equal(dim(res), c(1L, 1L, 2L))
+    expect_equal(unname(res[1, 1, 1L]), 1)
+    expect_true(res[1, 1, 2L] > 0)
+})
+
+test_that("compareChromatograms method = 'spearman' and 'kendall' work.", {
+    res_s <- compareChromatograms(c_full, method = "spearman")
+    expect_true(is.array(res_s))
+    expect_equal(dim(res_s), c(3L, 3L, 2L))
+    expect_equal(diag(res_s[, , 1L]), c(1, 1, 1))
+    ## Identical chromatograms → 1 regardless of method
+    expect_equal(unname(res_s[1, 3, 1L]), 1)
+    ## Non-overlapping → NA
+    expect_true(is.na(res_s[1, 2, 1L]))
+
+    res_k <- compareChromatograms(c_full, method = "kendall")
+    expect_true(is.array(res_k))
+    expect_equal(diag(res_k[, , 1L]), c(1, 1, 1))
+    expect_equal(unname(res_k[1, 3, 1L]), 1)
+})
+
+test_that("compareChromatograms with custom FUN produces expected values.", {
+    cosine_sim <- function(x, y, ...) {
+        sum(x * y, na.rm = TRUE) /
+            (sqrt(sum(x^2, na.rm = TRUE)) * sqrt(sum(y^2, na.rm = TRUE)))
+    }
+    res <- compareChromatograms(c_full, FUN = cosine_sim)
+    expect_true(is.array(res))
+    expect_equal(dim(res), c(3L, 3L, 2L))
+    expect_equal(diag(res[, , 1L]), c(1, 1, 1))
+    expect_equal(unname(res[1, 3, 1L]), 1)
+})
+
+test_that("compareChromatograms returns NA for non-overlapping chromatograms.", {
+    cdata_no <- data.frame(
+        msLevel = c(1L, 1L),
+        mz = c(100, 200),
+        dataOrigin = c("s1", "s2")
+    )
+    pdata_no <- list(
+        data.frame(rtime = c(1, 2, 3, 4), intensity = c(10, 50, 100, 50)),
+        data.frame(rtime = c(10, 11, 12, 13), intensity = c(20, 80, 200, 80))
+    )
+    chr_no <- Chromatograms(ChromBackendMemory(), chromData = cdata_no,
+                            peaksData = pdata_no)
+    res <- compareChromatograms(chr_no)
+    expect_true(is.na(res[1, 2, 1L]))
+    expect_true(is.na(res[2, 1, 1L]))
+    expect_equal(diag(res[, , 1L]), c(1, 1))
+})
+
+test_that("compareChromatograms returns NA when overlap < minPeaks.", {
+    cdata_short <- data.frame(
+        msLevel = c(1L, 1L),
+        mz = c(100, 200),
+        dataOrigin = c("s1", "s2")
+    )
+    pdata_short <- list(
+        data.frame(rtime = 1, intensity = 50),
+        data.frame(rtime = c(1, 2, 3), intensity = c(10, 50, 100))
+    )
+    chr_short <- Chromatograms(ChromBackendMemory(), chromData = cdata_short,
+                               peaksData = pdata_short)
+    res <- compareChromatograms(chr_short)
+    expect_true(is.na(res[1, 2, 1L]))
+    expect_equal(unname(res[1, 1, 1L]), 1)
+    expect_equal(unname(res[2, 2, 1L]), 1)
+})
+
+test_that("compareChromatograms computes correct Pearson value for known data.", {
+    ## Two chromatograms with overlapping RT and known correlation
+    cdata_known <- data.frame(
+        msLevel = c(1L, 1L),
+        mz = c(100, 200),
+        dataOrigin = c("s1", "s2")
+    )
+    pdata_known <- list(
+        data.frame(rtime = c(1, 2, 3, 4, 5),
+                   intensity = c(10, 20, 30, 20, 10)),
+        data.frame(rtime = c(1, 2, 3, 4, 5),
+                   intensity = c(5, 15, 25, 15, 5))
+    )
+    chr_known <- Chromatograms(ChromBackendMemory(), chromData = cdata_known,
+                               peaksData = pdata_known)
+    res <- compareChromatograms(chr_known)
+    ## Same RT grid → no interpolation needed; these are perfectly correlated
+    expect_equal(unname(res[1, 2, 1L]), 1, tolerance = 1e-10)
+    expect_equal(unname(res[1, 2, 2L]), 5)  ## 5 overlapping RT points
+})
+
+test_that("compareChromatograms minPeaks filters low-overlap pairs.", {
+    ## chr_known has 5 overlapping RT points
+    cdata_known <- data.frame(
+        msLevel = c(1L, 1L),
+        mz = c(100, 200),
+        dataOrigin = c("s1", "s2")
+    )
+    pdata_known <- list(
+        data.frame(rtime = c(1, 2, 3, 4, 5),
+                   intensity = c(10, 20, 30, 20, 10)),
+        data.frame(rtime = c(1, 2, 3, 4, 5),
+                   intensity = c(5, 15, 25, 15, 5))
+    )
+    chr_known <- Chromatograms(ChromBackendMemory(), chromData = cdata_known,
+                               peaksData = pdata_known)
+    ## Default minPeaks = 4: 5 points ≥ 4 → score computed
+    res <- compareChromatograms(chr_known)
+    expect_false(is.na(res[1, 2, 1L]))
+    ## minPeaks = 6: 5 points < 6 → score is NA, but count is still 5
+    res_strict <- compareChromatograms(chr_known, minPeaks = 6L)
+    expect_true(is.na(res_strict[1, 2, 1L]))
+    expect_equal(unname(res_strict[1, 2, 2L]), 5)
+    ## minPeaks = 2: always compute when ≥ 2 points overlap
+    res_loose <- compareChromatograms(chr_known, minPeaks = 2L)
+    expect_false(is.na(res_loose[1, 2, 1L]))
+})
+
+test_that("compareChromatograms labelsColumn parameter sets row/col names.", {
+    ## 'mz' column has unique values in c_full
+    res <- compareChromatograms(c_full, labelsColumn = "mz")
+    expect_equal(dimnames(res)[[1L]], as.character(chromData(c_full)[["mz"]]))
+    expect_equal(dimnames(res)[[2L]], as.character(chromData(c_full)[["mz"]]))
+    ## NULL labelsColumn → no names on first two dims
+    res_no <- compareChromatograms(c_full, labelsColumn = NULL)
+    expect_null(dimnames(res_no)[[1L]])
+    expect_null(dimnames(res_no)[[2L]])
+    ## Non-existent column → error
+    expect_error(compareChromatograms(c_full, labelsColumn = "nonexistent"),
+                 "not found")
+    ## Non-unique column → error
+    c_dup <- c_full
+    c_dup$msLevel <- rep(1L, length(c_dup))
+    expect_error(compareChromatograms(c_dup, labelsColumn = "msLevel"),
+                 "duplicated")
+    ## Non-character labelsColumn → error
+    expect_error(compareChromatograms(c_full, labelsColumn = 42),
+                 "single character string")
+})
+
+test_that("compareChromatograms works with ChromBackendMzR.", {
+    res <- compareChromatograms(c_mzr)
+    expect_true(is.array(res))
+    expect_equal(dim(res)[1L], length(c_mzr))
+    expect_equal(dim(res)[2L], length(c_mzr))
+    expect_equal(dim(res)[3L], 2L)
+    expect_equal(diag(res[, , 1L]), rep(1, length(c_mzr)))
+    expect_true(is.numeric(res))
+})
+
+test_that("compareChromatograms per-group via split() works.", {
+    ## The 'by' parameter is no longer supported; users split beforehand.
+    c_grp <- c_full
+    c_grp$group <- c("A", "B", "A")
+    grp_list <- split(c_grp, c_grp$group)
+    res <- lapply(grp_list, compareChromatograms)
+    expect_equal(sort(names(res)), c("A", "B"))
+    ## Group "A" has 2 identical chromatograms → off-diagonal score = 1
+    expect_equal(dim(res[["A"]]), c(2L, 2L, 2L))
+    expect_equal(unname(res[["A"]][1, 2, 1L]), 1)
+    ## Group "B" has 1 chromatogram → 1x1x2 array
+    expect_equal(dim(res[["B"]]), c(1L, 1L, 2L))
+    expect_equal(unname(res[["B"]][1, 1, 1L]), 1)
+})
+
+test_that("compareChromatograms minPeaks works for x,y comparison.", {
+    ## chr_known has 5 overlapping RT points (defined above in minPeaks test)
+    cdata_known <- data.frame(
+        msLevel = c(1L, 1L), mz = c(100, 200), dataOrigin = c("s1", "s2")
+    )
+    pdata_known <- list(
+        data.frame(rtime = c(1, 2, 3, 4, 5), intensity = c(10, 20, 30, 20, 10)),
+        data.frame(rtime = c(1, 2, 3, 4, 5), intensity = c(5, 15, 25, 15, 5))
+    )
+    chr_known <- Chromatograms(ChromBackendMemory(), chromData = cdata_known,
+                               peaksData = pdata_known)
+    ## strict threshold blocks score but count is still recorded
+    res <- compareChromatograms(chr_known[1], chr_known[2], minPeaks = 6L)
+    expect_true(is.na(res[1, 1, 1L]))
+    expect_equal(unname(res[1, 1, 2L]), 5)
+})
+
+## ---- compareChromatograms x, y tests ----
+
+test_that("compareChromatograms(x, y) returns n x m x 2 array.", {
+    ## c_full has 3 chromatograms; compare first 2 vs last 1
+    res <- compareChromatograms(c_full[1:2], c_full[3])
+    expect_true(is.array(res))
+    expect_equal(dim(res), c(2L, 1L, 2L))
+    ## Chromatograms 1 and 3 are identical
+    expect_equal(unname(res[1, 1, 1L]), 1)
+    ## Chromatograms 2 and 3 have non-overlapping RT
+    expect_true(is.na(res[2, 1, 1L]))
+    ## Overlap count for identical pair = number of RT points
+    expect_true(res[1, 1, 2L] > 0)
+    expect_equal(unname(res[2, 1, 2L]), 0)
+})
+
+test_that("compareChromatograms(x, y) with empty objects.", {
+    res <- compareChromatograms(c_empty, c_full)
+    expect_true(is.array(res))
+    expect_equal(dim(res)[1L], 0L)
+    res2 <- compareChromatograms(c_full, c_empty)
+    expect_true(is.array(res2))
+    expect_equal(dim(res2)[2L], 0L)
+})
+
+test_that("compareChromatograms(x, y) with custom FUN.", {
+    cosine_sim <- function(x, y, ...) {
+        sum(x * y, na.rm = TRUE) /
+            (sqrt(sum(x^2, na.rm = TRUE)) * sqrt(sum(y^2, na.rm = TRUE)))
+    }
+    res <- compareChromatograms(c_full[1], c_full[3], FUN = cosine_sim)
+    expect_equal(unname(res[1, 1, 1L]), 1)
+})
+
+## ---- matchRtime tests ----
+
+test_that("matchRtime returns aligned intensities for overlapping RT", {
+    pd_a <- data.frame(rtime = c(1, 2, 3, 4), intensity = c(10, 20, 30, 40))
+    pd_b <- data.frame(rtime = c(2, 3, 4, 5), intensity = c(20, 30, 40, 50))
+    res <- matchRtime(pd_a, pd_b)
+    expect_true(is.list(res))
+    expect_equal(length(res$x), length(res$y))
+    expect_true(length(res$x) >= 2L)
+    ## Overlapping RT is 2-4; both have identical intensities at those points
+    expect_equal(res$x, res$y)
+})
+
+test_that("matchRtime returns empty vectors for non-overlapping RT", {
+    pd_a <- data.frame(rtime = c(1, 2, 3), intensity = c(10, 20, 30))
+    pd_b <- data.frame(rtime = c(10, 11, 12), intensity = c(40, 50, 60))
+    res <- matchRtime(pd_a, pd_b)
+    expect_equal(res$x, numeric())
+    expect_equal(res$y, numeric())
+})
+
+test_that("matchRtime returns empty vectors when fewer than 2 points", {
+    pd_short <- data.frame(rtime = 1, intensity = 50)
+    pd_ok <- data.frame(rtime = c(1, 2, 3), intensity = c(10, 20, 30))
+    res <- matchRtime(pd_short, pd_ok)
+    expect_equal(res$x, numeric())
+    expect_equal(res$y, numeric())
+})
+
+test_that("matchRtime interpolates onto union of RT grids", {
+    pd_a <- data.frame(rtime = c(1, 3), intensity = c(10, 30))
+    pd_b <- data.frame(rtime = c(1, 2, 3), intensity = c(100, 200, 300))
+    res <- matchRtime(pd_a, pd_b, tolerance = 0.5)
+    expect_equal(res$x, c(10, 20, 30))
+    expect_equal(res$y, c(100, 200, 300))
+})
+
+test_that("matchRtime x larger than y - y interpolates at x unmatched points", {
+    pd_a <- data.frame(rtime = c(1, 2, 3, 4, 5), intensity = c(10, 20, 30, 40, 50))
+    pd_b <- data.frame(rtime = c(1, 3, 5),        intensity = c(100, 300, 500))
+    res <- matchRtime(pd_a, pd_b, tolerance = 0.5)
+    expect_equal(res$x, c(10, 20, 30, 40, 50))
+    expect_equal(res$y, c(100, 200, 300, 400, 500))
+})
+
+test_that("matchRtime both sides interpolate at their respective unmatched points", {
+    pd_a <- data.frame(rtime = c(1, 3, 5),    intensity = c(10, 30, 50))
+    pd_b <- data.frame(rtime = c(1, 2, 4, 5), intensity = c(10, 20, 40, 50))
+    res <- matchRtime(pd_a, pd_b, tolerance = 0.5)
+    expect_equal(res$x, c(10, 20, 30, 40, 50))
+    expect_equal(res$y, c(10, 20, 30, 40, 50))
+})
+
+## ---- matchRtime tolerance tests ----
+
+test_that("matchRtime tolerance = Inf gives same result as no tolerance", {
+    pd_a <- data.frame(rtime = c(1, 2, 3, 4), intensity = c(10, 20, 30, 40))
+    pd_b <- data.frame(rtime = c(1, 2, 3, 4), intensity = c(10, 20, 30, 40))
+    expect_equal(matchRtime(pd_a, pd_b), matchRtime(pd_a, pd_b, tolerance = Inf))
+})
+
+test_that("matchRtime tolerance keeps interior points and approximates missing values", {
+    ## pd_a has points at 1, 2, 3; pd_b at 1, 3 (no point at rt=2).
+    ## With tolerance = 0.5, rt=2 from pd_a has no match in pd_b (distance = 1),
+    ## but it lies inside the matched range [1, 3] so it is retained.
+    ## pd_b's intensity at rt=2 is approximated by linear interpolation → 200.
+    pd_a <- data.frame(rtime = c(1, 2, 3), intensity = c(10, 20, 30))
+    pd_b <- data.frame(rtime = c(1, 3),    intensity = c(100, 300))
+    res <- matchRtime(pd_a, pd_b, tolerance = 0.5)
+    expect_equal(res$x, c(10, 20, 30))
+    expect_equal(res$y, c(100, 200, 300))
+})
+
+test_that("matchRtime tolerance = 1 keeps points exactly at the boundary", {
+    ## pd_a has rt=2; nearest pd_b point is rt=1 or rt=3 (distance = 1).
+    ## tolerance = 1 uses <=, so distance == tolerance is kept.
+    pd_a <- data.frame(rtime = c(1, 2, 3), intensity = c(10, 20, 30))
+    pd_b <- data.frame(rtime = c(1, 3),    intensity = c(100, 300))
+    res <- matchRtime(pd_a, pd_b, tolerance = 1)
+    expect_equal(res$x, c(10, 20, 30))
+})
+
+test_that("matchRtime tolerance returns empty when no points survive", {
+    pd_a <- data.frame(rtime = c(1, 10), intensity = c(10, 100))
+    pd_b <- data.frame(rtime = c(5, 10), intensity = c(50, 100))
+    ## rt=1 from pd_a: nearest pd_b is rt=5, distance=4 > tolerance=2 → not matched
+    ## rt=5 from pd_b: nearest pd_a is rt=1, distance=4 > tolerance=2 → not matched
+    ## rt=10 in both: distance=0 → matched in each
+    ## Only one matched point across both → rt_min == rt_max = 10 → empty
+    res_strict <- matchRtime(pd_a, pd_b, tolerance = 2)
+    expect_equal(res_strict$x, numeric())
+    expect_equal(res_strict$y, numeric())
+})
+
+test_that("matchRtime tolerance affects the matched range", {
+    pd_a <- data.frame(rtime = c(0.5, 1, 2, 3), intensity = c(5, 10, 20, 30))
+    pd_b <- data.frame(rtime = c(0, 1, 2, 3),   intensity = c(0, 10, 20, 30))
+    res_inf <- matchRtime(pd_a, pd_b, tolerance = Inf)
+    res_tol <- matchRtime(pd_a, pd_b, tolerance = 0.4)
+    expect_true(length(res_inf$x) > length(res_tol$x))
+})
+
+test_that("compareChromatograms with custom MAPFUN.", {
+    ## A MAPFUN that returns raw intensities (assumes identical RT)
+    identity_map <- function(x, y, ...) {
+        list(x = x$intensity, y = y$intensity)
+    }
+    ## Use chromatograms 1 and 3 which are identical (same number of points)
+    res <- compareChromatograms(c_full[c(1, 3)], MAPFUN = identity_map)
+    expect_true(is.array(res))
+    expect_equal(dim(res), c(2L, 2L, 2L))
+    expect_equal(diag(res[, , 1L]), c(1, 1))
+    expect_equal(unname(res[1, 2, 1L]), 1)
+})

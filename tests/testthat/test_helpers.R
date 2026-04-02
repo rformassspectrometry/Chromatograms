@@ -1555,3 +1555,178 @@ test_that(".chromData errors for wrong object type", {
   expect_error(.chromData(42),
                "must be of class 'Chromatograms' or 'ChromBackend'")
 })
+
+## ── .compare_chrom_pair ─────────────────────────────────────────────────────
+
+test_that(".compare_chrom_pair returns c(score, n) for identical chromatograms", {
+    pd <- data.frame(rtime = c(1, 2, 3, 4), intensity = c(10, 50, 100, 50))
+    res <- .compare_chrom_pair(pd, pd)
+    expect_equal(length(res), 2L)
+    expect_equal(res[[1L]], 1)
+    expect_equal(res[[2L]], 4L)  ## all 4 RT points overlap
+})
+
+test_that(".compare_chrom_pair returns c(NA, 0) for non-overlapping RT", {
+    pd_a <- data.frame(rtime = c(1, 2, 3), intensity = c(10, 20, 30))
+    pd_b <- data.frame(rtime = c(10, 11, 12), intensity = c(40, 50, 60))
+    res <- .compare_chrom_pair(pd_a, pd_b)
+    expect_true(is.na(res[[1L]]))
+    expect_equal(res[[2L]], 0L)
+})
+
+test_that(".compare_chrom_pair returns c(NA, 0) when fewer than 2 points", {
+    pd_short <- data.frame(rtime = 1, intensity = 50)
+    pd_ok <- data.frame(rtime = c(1, 2, 3), intensity = c(10, 20, 30))
+    res1 <- .compare_chrom_pair(pd_short, pd_ok)
+    expect_true(is.na(res1[[1L]]))
+    expect_equal(res1[[2L]], 0L)
+    res2 <- .compare_chrom_pair(pd_ok, pd_short)
+    expect_true(is.na(res2[[1L]]))
+    expect_equal(res2[[2L]], 0L)
+})
+
+test_that(".compare_chrom_pair uses custom FUN when provided", {
+    pd_a <- data.frame(rtime = c(1, 2, 3), intensity = c(10, 20, 30))
+    pd_b <- data.frame(rtime = c(1, 2, 3), intensity = c(5, 15, 25))
+    cosine <- function(x, y, ...) {
+        sum(x * y) / (sqrt(sum(x^2)) * sqrt(sum(y^2)))
+    }
+    res <- .compare_chrom_pair(pd_a, pd_b, FUN = cosine, minPeaks = 3L)
+    expected <- cosine(pd_a$intensity, pd_b$intensity)
+    expect_equal(res[[1L]], expected, tolerance = 1e-10)
+    expect_equal(res[[2L]], 3L)
+})
+
+test_that(".compare_chrom_pair interpolates onto common RT grid", {
+    ## Different RT grids, but overlapping range (RT 2-4 → 3 common points)
+    pd_a <- data.frame(rtime = c(1, 2, 3, 4), intensity = c(10, 20, 30, 40))
+    pd_b <- data.frame(rtime = c(2, 3, 4, 5), intensity = c(20, 30, 40, 50))
+    res <- .compare_chrom_pair(pd_a, pd_b, minPeaks = 3L)
+    expect_true(is.numeric(res))
+    expect_true(!is.na(res[[1L]]))
+    ## Overlap is RT 2-4, perfectly correlated linear data → correlation = 1
+    expect_equal(res[[1L]], 1, tolerance = 1e-10)
+    expect_equal(res[[2L]], 3L)
+})
+
+test_that(".compare_chrom_pair respects method argument", {
+    pd_a <- data.frame(rtime = c(1, 2, 3, 4, 5),
+                       intensity = c(10, 20, 30, 20, 10))
+    pd_b <- data.frame(rtime = c(1, 2, 3, 4, 5),
+                       intensity = c(5, 15, 25, 15, 5))
+    res_p <- .compare_chrom_pair(pd_a, pd_b, method = "pearson")
+    res_s <- .compare_chrom_pair(pd_a, pd_b, method = "spearman")
+    expect_true(is.numeric(res_p))
+    expect_true(is.numeric(res_s))
+    ## Both should be 1 for perfectly linearly related data
+    expect_equal(res_p[[1L]], 1, tolerance = 1e-10)
+    expect_equal(res_s[[1L]], 1, tolerance = 1e-10)
+})
+
+## ── .compare_chromatograms ──────────────────────────────────────────────────
+
+test_that(".compare_chromatograms self-comparison returns symmetric array", {
+    pd <- list(
+        data.frame(rtime = c(1, 2, 3, 4), intensity = c(10, 50, 100, 50)),
+        data.frame(rtime = c(1, 2, 3, 4), intensity = c(5, 25, 50, 25)),
+        data.frame(rtime = c(10, 11, 12), intensity = c(40, 50, 60))
+    )
+    res <- .compare_chromatograms(pd, minPeaks = 3L)
+    expect_true(is.array(res))
+    expect_equal(dim(res), c(3L, 3L, 2L))
+    expect_equal(dimnames(res)[[3L]], c("score", "n_peaks"))
+    expect_equal(diag(res[, , 1L]), c(1, 1, 1))
+    expect_equal(res[1, 2, 1L], res[2, 1, 1L])
+    expect_equal(res[1, 3, 1L], res[3, 1, 1L])
+    ## Chromatograms 1 & 2 overlap and are correlated
+    expect_true(!is.na(res[1, 2, 1L]))
+    expect_true(res[1, 2, 2L] > 0)
+    ## Chromatograms 1/2 vs 3 don't overlap
+    expect_true(is.na(res[1, 3, 1L]))
+    expect_equal(unname(res[1, 3, 2L]), 0)
+})
+
+test_that(".compare_chromatograms cross-comparison returns n x m x 2 array", {
+    pd_x <- list(
+        data.frame(rtime = c(1, 2, 3), intensity = c(10, 20, 30)),
+        data.frame(rtime = c(1, 2, 3), intensity = c(5, 15, 25))
+    )
+    pd_y <- list(
+        data.frame(rtime = c(1, 2, 3), intensity = c(10, 20, 30))
+    )
+    res <- .compare_chromatograms(pd_x, pd_y, minPeaks = 3L)
+    expect_true(is.array(res))
+    expect_equal(dim(res), c(2L, 1L, 2L))
+    ## First pair is identical
+    expect_equal(unname(res[1, 1, 1L]), 1, tolerance = 1e-10)
+    expect_equal(unname(res[1, 1, 2L]), 3)
+    ## Second pair is linearly related → correlation = 1
+    expect_equal(unname(res[2, 1, 1L]), 1, tolerance = 1e-10)
+})
+
+test_that(".compare_chromatograms empty lists return 0-dim array", {
+    expect_equal(dim(.compare_chromatograms(list())), c(0L, 0L, 2L))
+    pd <- list(data.frame(rtime = 1:3, intensity = c(10, 20, 30)))
+    res <- .compare_chromatograms(list(), pd)
+    expect_equal(dim(res)[1L], 0L)
+    res2 <- .compare_chromatograms(pd, list())
+    expect_equal(dim(res2)[2L], 0L)
+})
+
+test_that(".compare_chromatograms applies labels for self-comparison", {
+    pd <- list(
+        data.frame(rtime = c(1, 2, 3), intensity = c(10, 20, 30)),
+        data.frame(rtime = c(1, 2, 3), intensity = c(5, 15, 25))
+    )
+    res <- .compare_chromatograms(pd, labelsColumn = c("a", "b"))
+    expect_equal(dimnames(res)[[1L]], c("a", "b"))
+    expect_equal(dimnames(res)[[2L]], c("a", "b"))
+})
+
+test_that(".compare_chromatograms with custom FUN", {
+    cosine <- function(x, y, ...) {
+        sum(x * y) / (sqrt(sum(x^2)) * sqrt(sum(y^2)))
+    }
+    pd <- list(
+        data.frame(rtime = c(1, 2, 3), intensity = c(10, 20, 30)),
+        data.frame(rtime = c(1, 2, 3), intensity = c(10, 20, 30))
+    )
+    res <- .compare_chromatograms(pd, FUN = cosine, minPeaks = 3L)
+    expect_equal(unname(res[1, 2, 1L]), 1, tolerance = 1e-10)
+    expect_equal(unname(res[2, 1, 1L]), 1, tolerance = 1e-10)
+})
+
+test_that(".compare_chromatograms single element returns 1x1x2 with score = 1", {
+    pd <- list(data.frame(rtime = c(1, 2, 3), intensity = c(10, 20, 30)))
+    res <- .compare_chromatograms(pd, minPeaks = 3L)
+    expect_equal(dim(res), c(1L, 1L, 2L))
+    expect_equal(unname(res[1, 1, 1L]), 1)
+    expect_equal(unname(res[1, 1, 2L]), 3)
+})
+
+## ── .resolve_labels ─────────────────────────────────────────────────────────
+
+test_that(".resolve_labels returns NULL when labels is NULL", {
+    expect_null(.resolve_labels(c_full, NULL))
+})
+
+test_that(".resolve_labels returns values from a valid column", {
+    res <- .resolve_labels(c_full, "mz")
+    expect_equal(res, chromData(c_full)[["mz"]])
+})
+
+test_that(".resolve_labels errors on non-existent column", {
+    expect_error(.resolve_labels(c_full, "nonexistent"), "not found")
+})
+
+test_that(".resolve_labels errors on duplicated column values", {
+    c_dup <- c_full
+    c_dup$msLevel <- rep(1L, length(c_dup))
+    expect_error(.resolve_labels(c_dup, "msLevel"), "duplicated")
+})
+
+test_that(".resolve_labels errors on non-character or length != 1", {
+    expect_error(.resolve_labels(c_full, 42), "single character string")
+    expect_error(.resolve_labels(c_full, c("mz", "msLevel")),
+                 "single character string")
+})

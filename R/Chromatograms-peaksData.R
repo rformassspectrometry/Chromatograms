@@ -9,6 +9,8 @@
 #' @aliases filterPeaksData
 #' @aliases imputePeaksData
 #' @aliases peakBoundary
+#' @aliases compareChromatograms
+#' @aliases matchRtime
 #'
 #' @description
 #'
@@ -49,7 +51,40 @@
 #'        the default), or for any of them (`match = "any"`).
 #'
 #' @param method For `imputePeaksData()`: `character(1)`: Imputation
-#'        method ("linear", "spline", "gaussian", "loess")
+#'        method ("linear", "spline", "gaussian", "loess").
+#'
+#' @param FUN For `compareChromatograms()`: `function` to compute the
+#'        similarity between two chromatograms from their aligned intensity
+#'        vectors (as returned by `MAPFUN`). Must accept two numeric vectors
+#'        as the first two arguments and return a single numeric value.
+#'        Defaults to [stats::cor()] (Pearson correlation). Additional
+#'        arguments can be passed via `...` (e.g., `method = "spearman"` for
+#'        [stats::cor()]).
+#'
+#' @param MAPFUN For `compareChromatograms()`: `function` to align the
+#'        retention times of two chromatograms before computing similarity.
+#'        Must accept two `data.frame`s (with columns `rtime` and `intensity`)
+#'        and return a `list` with elements `x` and `y`: numeric vectors of
+#'        equal length containing the aligned intensities of the first and
+#'        second chromatogram respectively, interpolated onto a common
+#'        retention-time grid. Defaults to [matchRtime()]. Additional
+#'        arguments can be passed via `...`.
+#'
+#' @param minPeaks For `compareChromatograms()`: `integer(1)` (default `4L`).
+#'        Minimum number of overlapping retention-time points (as returned by
+#'        `MAPFUN`) required to compute a similarity score. Pairs whose
+#'        retention-time overlap contains fewer than `minPeaks` points return
+#'        `NA` in the score layer; the actual overlap count is still recorded
+#'        in the `n_peaks` layer. Setting `minPeaks = 2L` recovers the
+#'        behaviour of always computing a score whenever at least two points
+#'        overlap.
+#'
+#' @param labelsColumn For `compareChromatograms()`: optional `character(1)`
+#'        giving the name of a chromatogram variable (column in `chromData()`)
+#'        whose values should be used as row and column names of the returned
+#'        array. The column must contain unique values. If `NULL` (the
+#'        default), the array dimensions are unnamed. Only used when `y` is
+#'        missing.
 #'
 #' @param object A [Chromatograms] object.
 #'
@@ -98,7 +133,23 @@
 #' @param window For `imputePeaksData`: `integer`, for the gaussian method:
 #'        Half-width of Gaussian kernel window (e.g., 2 gives window size 5)
 #'
-#' @param x For `lengths()`: A `Chromatograms` object.
+#' @param tolerance For `matchRtime()`: `numeric(1)` (default `Inf`). Maximum
+#'        RT difference between two measured points to be considered a match.
+#'        Controls both the overlap detection and the shared RT grid. Lower
+#'        values prevent a peak from being compared against a long interpolated
+#'        gap in the other chromatogram. Use `Inf` (the default) to consider
+#'        all RT points as matching. Can be forwarded via `...` in
+#'        `compareChromatograms()`.
+#'
+#' @param x For `lengths()` and `compareChromatograms()`: A [Chromatograms]
+#'        object. For `matchRtime()`: a `data.frame` with columns `rtime` and
+#'        `intensity` representing the first chromatogram.
+#'
+#' @param y For `compareChromatograms()`: A [Chromatograms] object against
+#'        which `x` is compared. If missing, each chromatogram in `x` is
+#'        compared with each other chromatogram in `x`. For `matchRtime()`:
+#'        a `data.frame` with columns `rtime` and `intensity` representing
+#'        the second chromatogram.
 #'
 #' @param ... Additional arguments passed to the method.
 #'
@@ -153,6 +204,57 @@
 #' points, contain only `NA` or all-zero intensities return `NA` for both
 #' boundaries.
 #'
+#'
+#' @section Compare Chromatograms:
+#'
+#' `compareChromatograms()` compares chromatograms in two steps:
+#'
+#' 1. **Align** – `MAPFUN` (default [matchRtime()]) maps two chromatograms
+#'    onto a common retention-time grid and returns `list(x, y)`, where
+#'    `x` and `y` are numeric vectors of equal length containing the aligned
+#'    intensities of the first and second chromatogram respectively.
+#' 2. **Score** – `FUN` (default [stats::cor()], Pearson correlation)
+#'    computes a single similarity value from those aligned intensity vectors.
+#'
+#' If `y` is missing, each chromatogram in `x` is compared against every
+#' other chromatogram in `x`; otherwise, each in `x` is compared with
+#' each in `y`.
+#'
+#' The result is a 3-dimensional numeric array with dimensions
+#' `length(x)` x `length(y)` x 2 (or symmetric `n x n x 2` for
+#' self-comparison). Layer `[, , 1]` (named `"score"`) contains pairwise
+#' similarity scores; layer `[, , 2]` (named `"n_peaks"`) contains the
+#' number of overlapping retention-time points used to compute each score.
+#' Pairs with fewer overlapping retention-time points than `minPeaks` (default
+#' 4) return `NA` in the score layer; the actual overlap count is still
+#' recorded in the `n_peaks` layer. The diagonal of a self-comparison is
+#' always 1 (score) and the number of data points in that chromatogram
+#' (count).
+#'
+#' `matchRtime()` is the default `MAPFUN`. Given two chromatograms as
+#' `data.frame`s with `rtime` and `intensity` columns, it aligns their RT axes
+#' and returns a named list with elements `x` and `y`: equal-length intensity
+#' vectors evaluated on a shared RT grid, ready for similarity scoring.
+#'
+#' The alignment works as follows: `matchRtime()` first identifies the RT range
+#' where both chromatograms have measured points within `tolerance` of each
+#' other (the *overlap*). Within that range, it builds a shared RT grid from
+#' all of `x`'s RT points, adding any RT points from `y` that have no close
+#' match in `x` (within `tolerance`). Both intensity vectors are then linearly
+#' interpolated at grid positions they do not natively cover, using
+#' [stats::approx()]. If either chromatogram has fewer than 2 data points, or
+#' the two chromatograms do not overlap, empty vectors are returned.
+#'
+#' The `tolerance` parameter (default `Inf`, meaning all RT points are
+#' considered matching) controls the strictness of the matching. Lowering it
+#' prevents comparing a measured peak against a long interpolated gap in the
+#' other chromatogram. Pass `tolerance` via `...` in `compareChromatograms()`.
+#'
+#' When `y` is missing, the `labelsColumn` parameter assigns meaningful
+#' row/column names to the output from a `chromData()` column (e.g., `"mz"`
+#' or a user-defined feature identifier). The column must contain unique
+#' values. To compare groups of chromatograms separately, split the object
+#' with `split()` beforehand and apply `compareChromatograms()` to each subset.
 #'
 #' @seealso [Chromatograms] for a general description of the `Chromatograms`
 #'          object, and [chromData] for accessing,substituting and filtering
@@ -212,6 +314,20 @@
 #'
 #' # Filter peaks data
 #' filterPeaksData(chr, variables = "rtime", ranges = c(12.5, 13.5))
+#'
+#' # Pairwise similarity: returns a 3D array [i, j, layer]
+#' res <- compareChromatograms(chr)
+#' res[, , "score"]   ## similarity scores
+#' res[, , "n_peaks"] ## number of overlapping RT points
+#'
+#' ## Use Spearman correlation (passed to cor() via ...)
+#' compareChromatograms(chr, method = "spearman")[, , "score"]
+#'
+#' # Use a chromData column as row/column labels
+#' compareChromatograms(chr, labelsColumn = "mz")[, , "score"]
+#'
+#' # Compare two Chromatograms objects
+#' compareChromatograms(chr[1:2], chr[3])
 #'
 NULL
 
@@ -333,9 +449,76 @@ setMethod("lengths", signature = "Chromatograms", function(x) {
 })
 
 #' @rdname peaksData
+#' @importFrom stats cor
 #' @export
-setMethod(
-    "peakBoundary", signature = "Chromatograms",
+matchRtime <- function(x, y, tolerance = Inf, ...) {
+    if (nrow(x) < 2L || nrow(y) < 2L)
+        return(list(x = numeric(), y = numeric()))
+    x_rt <- x$rtime
+    y_rt <- y$rtime
+    close <- outer(x_rt, y_rt, function(a, b) abs(a - b) <= tolerance)
+    x_has_match <- rowSums(close) > 0
+    y_has_match <- colSums(close) > 0
+    if (!any(x_has_match) || !any(y_has_match))
+        return(list(x = numeric(), y = numeric()))
+    rt_min <- min(x_rt[x_has_match], y_rt[y_has_match])
+    rt_max <- max(x_rt[x_has_match], y_rt[y_has_match])
+    if (rt_min >= rt_max)
+        return(list(x = numeric(), y = numeric()))
+    x_in <- x_rt[x_rt >= rt_min & x_rt <= rt_max]
+    y_in <- y_rt[y_rt >= rt_min & y_rt <= rt_max]
+    close_in <- outer(x_in, y_in, function(a, b) abs(a - b) <= tolerance)
+    target_rt <- sort(c(x_in, y_in[colSums(close_in) == 0]))
+    x_out <- approx(x_rt, x$intensity, xout = target_rt, rule = 1)$y
+    y_out <- approx(y_rt, y$intensity, xout = target_rt, rule = 1)$y
+    keep <- !is.na(x_out) & !is.na(y_out)
+    list(x = x_out[keep], y = y_out[keep])
+}
+
+#' @rdname peaksData
+#' @export
+setMethod("compareChromatograms",
+          signature(x = "Chromatograms", y = "Chromatograms"),
+    function(x, y, MAPFUN = matchRtime, FUN = cor, ...,
+             minPeaks = 4L, BPPARAM = SerialParam()) {
+        nx <- length(x)
+        ny <- length(y)
+        if (nx == 0L || ny == 0L)
+            return(array(numeric(0), dim = c(nx, ny, 2L),
+                         dimnames = list(NULL, NULL, c("score", "n_peaks"))))
+        .compare_chromatograms(peaksData(x), peaksData(y),
+                               MAPFUN = MAPFUN, FUN = FUN,
+                               minPeaks = minPeaks, BPPARAM = BPPARAM,
+                               self = FALSE, ...)
+    }
+)
+
+#' @rdname peaksData
+#' @export
+setMethod("compareChromatograms", signature(x = "Chromatograms", y = "missing"),
+    function(x, y = NULL, MAPFUN = matchRtime, FUN = cor, ...,
+             minPeaks = 4L, labelsColumn = NULL, BPPARAM = SerialParam()) {
+        n <- length(x)
+        if (n == 0L)
+            return(array(numeric(0), dim = c(0L, 0L, 2L),
+                         dimnames = list(NULL, NULL, c("score", "n_peaks"))))
+        if (n == 1L) {
+            arr1 <- array(NA_real_, dim = c(1L, 1L, 2L),
+                          dimnames = list(NULL, NULL, c("score", "n_peaks")))
+            arr1[1L, 1L, 1L] <- 1
+            arr1[1L, 1L, 2L] <- nrow(peaksData(x)[[1L]])
+            return(arr1)
+        }
+        labs <- .resolve_labels(x, labelsColumn)
+        .compare_chromatograms(peaksData(x), MAPFUN = MAPFUN, FUN = FUN,
+                               minPeaks = minPeaks, labelsColumn = labs,
+                               BPPARAM = BPPARAM, self = TRUE, ...)
+    }
+)
+
+#' @rdname peaksData
+#' @export
+setMethod("peakBoundary", signature = "Chromatograms",
     function(object, threshold = 0.1, baselineThreshold = 0.1,
              baselineQuantile = 0.1, ...) {
         if (!is.numeric(threshold) || length(threshold) != 1L ||
