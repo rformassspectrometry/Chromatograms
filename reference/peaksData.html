@@ -26,7 +26,7 @@ to the sections below for more details."><!-- mathjax --><script src="https://cd
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">Chromatograms</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.5</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.1.6</span>
       </span>
     </div>
 
@@ -135,6 +135,31 @@ to the sections below for more details.</p>
 <span><span class="co"># S4 method for class 'Chromatograms'</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/lengths.html" class="external-link">lengths</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
 <span></span>
+<span><span class="fu">matchRtime</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span>, tolerance <span class="op">=</span> <span class="cn">Inf</span>, <span class="va">...</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S4 method for class 'Chromatograms,Chromatograms'</span></span>
+<span><span class="fu">compareChromatograms</span><span class="op">(</span></span>
+<span>  <span class="va">x</span>,</span>
+<span>  <span class="va">y</span>,</span>
+<span>  MAPFUN <span class="op">=</span> <span class="va">matchRtime</span>,</span>
+<span>  FUN <span class="op">=</span> <span class="va">cor</span>,</span>
+<span>  <span class="va">...</span>,</span>
+<span>  minPeaks <span class="op">=</span> <span class="fl">4L</span>,</span>
+<span>  BPPARAM <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocParallel/man/SerialParam-class.html" class="external-link">SerialParam</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># S4 method for class 'Chromatograms,missing'</span></span>
+<span><span class="fu">compareChromatograms</span><span class="op">(</span></span>
+<span>  <span class="va">x</span>,</span>
+<span>  y <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  MAPFUN <span class="op">=</span> <span class="va">matchRtime</span>,</span>
+<span>  FUN <span class="op">=</span> <span class="va">cor</span>,</span>
+<span>  <span class="va">...</span>,</span>
+<span>  minPeaks <span class="op">=</span> <span class="fl">4L</span>,</span>
+<span>  labelsColumn <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  BPPARAM <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/pkg/BiocParallel/man/SerialParam-class.html" class="external-link">SerialParam</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
 <span><span class="co"># S4 method for class 'Chromatograms'</span></span>
 <span><span class="fu">peakBoundary</span><span class="op">(</span></span>
 <span>  <span class="va">object</span>,</span>
@@ -155,7 +180,7 @@ to the sections below for more details.</p>
 
 <dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
 <dd><p>For <code>imputePeaksData()</code>: <code>character(1)</code>: Imputation
-method ("linear", "spline", "gaussian", "loess")</p></dd>
+method ("linear", "spline", "gaussian", "loess").</p></dd>
 
 
 <dt id="arg-span">span<a class="anchor" aria-label="anchor" href="#arg-span"></a></dt>
@@ -241,7 +266,68 @@ vector of the single column requested.</p></dd>
 
 
 <dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>For <code><a href="https://rdrr.io/r/base/lengths.html" class="external-link">lengths()</a></code>: A <code>Chromatograms</code> object.</p></dd>
+<dd><p>For <code><a href="https://rdrr.io/r/base/lengths.html" class="external-link">lengths()</a></code> and <code>compareChromatograms()</code>: A <a href="Chromatograms.html">Chromatograms</a>
+object. For <code>matchRtime()</code>: a <code>data.frame</code> with columns <code>rtime</code> and
+<code>intensity</code> representing the first chromatogram.</p></dd>
+
+
+<dt id="arg-y">y<a class="anchor" aria-label="anchor" href="#arg-y"></a></dt>
+<dd><p>For <code>compareChromatograms()</code>: A <a href="Chromatograms.html">Chromatograms</a> object against
+which <code>x</code> is compared. If missing, each chromatogram in <code>x</code> is
+compared with each other chromatogram in <code>x</code>. For <code>matchRtime()</code>:
+a <code>data.frame</code> with columns <code>rtime</code> and <code>intensity</code> representing
+the second chromatogram.</p></dd>
+
+
+<dt id="arg-tolerance">tolerance<a class="anchor" aria-label="anchor" href="#arg-tolerance"></a></dt>
+<dd><p>For <code>matchRtime()</code>: <code>numeric(1)</code> (default <code>Inf</code>). Maximum
+RT difference between two measured points to be considered a match.
+Controls both the overlap detection and the shared RT grid. Lower
+values prevent a peak from being compared against a long interpolated
+gap in the other chromatogram. Use <code>Inf</code> (the default) to consider
+all RT points as matching. Can be forwarded via <code>...</code> in
+<code>compareChromatograms()</code>.</p></dd>
+
+
+<dt id="arg-mapfun">MAPFUN<a class="anchor" aria-label="anchor" href="#arg-mapfun"></a></dt>
+<dd><p>For <code>compareChromatograms()</code>: <code>function</code> to align the
+retention times of two chromatograms before computing similarity.
+Must accept two <code>data.frame</code>s (with columns <code>rtime</code> and <code>intensity</code>)
+and return a <code>list</code> with elements <code>x</code> and <code>y</code>: numeric vectors of
+equal length containing the aligned intensities of the first and
+second chromatogram respectively, interpolated onto a common
+retention-time grid. Defaults to <code>matchRtime()</code>. Additional
+arguments can be passed via <code>...</code>.</p></dd>
+
+
+<dt id="arg-fun">FUN<a class="anchor" aria-label="anchor" href="#arg-fun"></a></dt>
+<dd><p>For <code>compareChromatograms()</code>: <code>function</code> to compute the
+similarity between two chromatograms from their aligned intensity
+vectors (as returned by <code>MAPFUN</code>). Must accept two numeric vectors
+as the first two arguments and return a single numeric value.
+Defaults to <code><a href="https://rdrr.io/r/stats/cor.html" class="external-link">stats::cor()</a></code> (Pearson correlation). Additional
+arguments can be passed via <code>...</code> (e.g., <code>method = "spearman"</code> for
+<code><a href="https://rdrr.io/r/stats/cor.html" class="external-link">stats::cor()</a></code>).</p></dd>
+
+
+<dt id="arg-minpeaks">minPeaks<a class="anchor" aria-label="anchor" href="#arg-minpeaks"></a></dt>
+<dd><p>For <code>compareChromatograms()</code>: <code>integer(1)</code> (default <code>4L</code>).
+Minimum number of overlapping retention-time points (as returned by
+<code>MAPFUN</code>) required to compute a similarity score. Pairs whose
+retention-time overlap contains fewer than <code>minPeaks</code> points return
+<code>NA</code> in the score layer; the actual overlap count is still recorded
+in the <code>n_peaks</code> layer. Setting <code>minPeaks = 2L</code> recovers the
+behaviour of always computing a score whenever at least two points
+overlap.</p></dd>
+
+
+<dt id="arg-labelscolumn">labelsColumn<a class="anchor" aria-label="anchor" href="#arg-labelscolumn"></a></dt>
+<dd><p>For <code>compareChromatograms()</code>: optional <code>character(1)</code>
+giving the name of a chromatogram variable (column in <code><a href="chromData.html">chromData()</a></code>)
+whose values should be used as row and column names of the returned
+array. The column must contain unique values. If <code>NULL</code> (the
+default), the array dimensions are unnamed. Only used when <code>y</code> is
+missing.</p></dd>
 
 
 <dt id="arg-threshold">threshold<a class="anchor" aria-label="anchor" href="#arg-threshold"></a></dt>
@@ -323,6 +409,52 @@ chromatogram and columns <code>left_boundary</code> and <code>right_boundary</co
 (retention times). Chromatograms that are empty, have fewer than 3 data
 points, contain only <code>NA</code> or all-zero intensities return <code>NA</code> for both
 boundaries.</p>
+    </div>
+    <div id="compare-chromatograms">
+    <h2>Compare Chromatograms</h2>
+
+
+
+<p><code>compareChromatograms()</code> compares chromatograms in two steps:</p><ol><li><p><strong>Align</strong> – <code>MAPFUN</code> (default <code>matchRtime()</code>) maps two chromatograms
+onto a common retention-time grid and returns <code>list(x, y)</code>, where
+<code>x</code> and <code>y</code> are numeric vectors of equal length containing the aligned
+intensities of the first and second chromatogram respectively.</p></li>
+<li><p><strong>Score</strong> – <code>FUN</code> (default <code><a href="https://rdrr.io/r/stats/cor.html" class="external-link">stats::cor()</a></code>, Pearson correlation)
+computes a single similarity value from those aligned intensity vectors.</p></li>
+</ol><p>If <code>y</code> is missing, each chromatogram in <code>x</code> is compared against every
+other chromatogram in <code>x</code>; otherwise, each in <code>x</code> is compared with
+each in <code>y</code>.</p>
+<p>The result is a 3-dimensional numeric array with dimensions
+<code>length(x)</code> x <code>length(y)</code> x 2 (or symmetric <code>n x n x 2</code> for
+self-comparison). Layer <code>[, , 1]</code> (named <code>"score"</code>) contains pairwise
+similarity scores; layer <code>[, , 2]</code> (named <code>"n_peaks"</code>) contains the
+number of overlapping retention-time points used to compute each score.
+Pairs with fewer overlapping retention-time points than <code>minPeaks</code> (default
+4) return <code>NA</code> in the score layer; the actual overlap count is still
+recorded in the <code>n_peaks</code> layer. The diagonal of a self-comparison is
+always 1 (score) and the number of data points in that chromatogram
+(count).</p>
+<p><code>matchRtime()</code> is the default <code>MAPFUN</code>. Given two chromatograms as
+<code>data.frame</code>s with <code>rtime</code> and <code>intensity</code> columns, it aligns their RT axes
+and returns a named list with elements <code>x</code> and <code>y</code>: equal-length intensity
+vectors evaluated on a shared RT grid, ready for similarity scoring.</p>
+<p>The alignment works as follows: <code>matchRtime()</code> first identifies the RT range
+where both chromatograms have measured points within <code>tolerance</code> of each
+other (the <em>overlap</em>). Within that range, it builds a shared RT grid from
+all of <code>x</code>'s RT points, adding any RT points from <code>y</code> that have no close
+match in <code>x</code> (within <code>tolerance</code>). Both intensity vectors are then linearly
+interpolated at grid positions they do not natively cover, using
+<code><a href="https://rdrr.io/r/stats/approxfun.html" class="external-link">stats::approx()</a></code>. If either chromatogram has fewer than 2 data points, or
+the two chromatograms do not overlap, empty vectors are returned.</p>
+<p>The <code>tolerance</code> parameter (default <code>Inf</code>, meaning all RT points are
+considered matching) controls the strictness of the matching. Lowering it
+prevents comparing a measured peak against a long interpolated gap in the
+other chromatogram. Pass <code>tolerance</code> via <code>...</code> in <code>compareChromatograms()</code>.</p>
+<p>When <code>y</code> is missing, the <code>labelsColumn</code> parameter assigns meaningful
+row/column names to the output from a <code><a href="chromData.html">chromData()</a></code> column (e.g., <code>"mz"</code>
+or a user-defined feature identifier). The column must contain unique
+values. To compare groups of chromatograms separately, split the object
+with <code><a href="https://rdrr.io/r/base/split.html" class="external-link">split()</a></code> beforehand and apply <code>compareChromatograms()</code> to each subset.</p>
     </div>
     <div id="see-also">
     <h2>See also</h2>
@@ -437,8 +569,50 @@ see <a href="processingQueue.html">processingQueue</a>.</p></div>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ... 2 peaksData variables</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Lazy evaluation queue: 1 processing step(s)</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Processing:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Filter: remove peaks based on the variables: rtimethe ranges: 12.5, 13.5and the match condition: any [Fri Mar 20 15:44:19 2026]</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Filter: remove peaks based on the variables: rtimethe ranges: 12.5, 13.5and the match condition: all [Fri Mar 20 15:44:19 2026] </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Filter: remove peaks based on the variables: rtimethe ranges: 12.5, 13.5and the match condition: any [Thu Apr  2 11:32:29 2026]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Filter: remove peaks based on the variables: rtimethe ranges: 12.5, 13.5and the match condition: all [Thu Apr  2 11:32:29 2026] </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Pairwise similarity: returns a 3D array [i, j, layer]</span></span></span>
+<span class="r-in"><span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu">compareChromatograms</span><span class="op">(</span><span class="va">chr</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">res</span><span class="op">[</span>, , <span class="st">"score"</span><span class="op">]</span>   <span class="co">## similarity scores</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      [,1] [,2] [,3]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1,]    1   NA   NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [2,]   NA    1   NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [3,]   NA   NA    1</span>
+<span class="r-in"><span><span class="va">res</span><span class="op">[</span>, , <span class="st">"n_peaks"</span><span class="op">]</span> <span class="co">## number of overlapping RT points</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      [,1] [,2] [,3]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1,]    4    0    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [2,]    0    2    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [3,]    0    0    4</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co">## Use Spearman correlation (passed to cor() via ...)</span></span></span>
+<span class="r-in"><span><span class="fu">compareChromatograms</span><span class="op">(</span><span class="va">chr</span>, method <span class="op">=</span> <span class="st">"spearman"</span><span class="op">)</span><span class="op">[</span>, , <span class="st">"score"</span><span class="op">]</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      [,1] [,2] [,3]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1,]    1   NA   NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [2,]   NA    1   NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [3,]   NA   NA    1</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Use a chromData column as row/column labels</span></span></span>
+<span class="r-in"><span><span class="fu">compareChromatograms</span><span class="op">(</span><span class="va">chr</span>, labelsColumn <span class="op">=</span> <span class="st">"mz"</span><span class="op">)</span><span class="op">[</span>, , <span class="st">"score"</span><span class="op">]</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>       112.2 123.3 134.4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 112.2     1    NA    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 123.3    NA     1    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 134.4    NA    NA     1</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Compare two Chromatograms objects</span></span></span>
+<span class="r-in"><span><span class="fu">compareChromatograms</span><span class="op">(</span><span class="va">chr</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span><span class="op">]</span>, <span class="va">chr</span><span class="op">[</span><span class="fl">3</span><span class="op">]</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> , , score</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      [,1]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1,]   NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [2,]   NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> , , n_peaks</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>      [,1]</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1,]    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [2,]    0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 </code></pre></div>
     </div>
