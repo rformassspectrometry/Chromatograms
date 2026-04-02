@@ -383,27 +383,35 @@
 #' @param s `Spectra` object.
 #' @param fun Summary function (e.g., `sumi`, `maxi`).
 #' @return A named `list` with prepared vectors and classification flags.
-#' @importFrom Spectra mz intensity rtime
-#' @importFrom MsCoreUtils sumi maxi
+#' @importFrom Spectra rtime peaksData filterRanges filterRt
+#' @importFrom MsCoreUtils sumi maxi reduce
 #' @noRd
 .prepare_spectra_input <- function(cd, s, fun) {
-  ## as.list() converts SimpleNumericList to plain list (~12x faster for [[)
-  mz_list <- as.list(mz(s))
-  int_list <- as.list(intensity(s))
-  rt <- rtime(s)
-  not_dup <- !duplicated(rt)
   global_rt_min <- min(cd$rtMin)
   global_rt_max <- max(cd$rtMax)
-  global_keep <- not_dup & rt >= global_rt_min & rt <= global_rt_max
-  valid_idx <- which(global_keep)
+  rtr <- do.call(rbind, reduce(cd$rtMin, cd$rtMax, .check = FALSE))
+  n_ranges <- ncol(rtr)
+  if (n_ranges == 1L) {
+    rt_range <- as.vector(rtr)
+    if (rt_range[1L] < rt_range[2L])
+      s <- filterRt(s, rt = rt_range)
+  } else {
+    s <- filterRanges(s, as.vector(rtr), match = "any",
+                      spectraVariables = rep("rtime", n_ranges))
+  }
+  rt <- rtime(s)
+  valid_idx <- which(!duplicated(rt) & rt >= global_rt_min & rt <= global_rt_max)
+  p <- peaksData(s[valid_idx], return.type = "list")
+  mz_list <- lapply(p, `[`, , 1L)
+  int_list <- lapply(p, `[`, , 2L)
   rt_mins <- cd$rtMin
   rt_maxs <- cd$rtMax
   mzMins <- cd$mzMin
   mzMaxs <- cd$mzMax
   list(
     valid_rt   = rt[valid_idx],
-    valid_mz   = mz_list[valid_idx],
-    valid_int  = int_list[valid_idx],
+    valid_mz   = mz_list,
+    valid_int  = int_list,
     n_valid    = length(valid_idx),
     rt_mins    = rt_mins,
     rt_maxs    = rt_maxs,
