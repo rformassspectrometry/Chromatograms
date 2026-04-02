@@ -657,10 +657,74 @@ test_that("matchRtime returns empty vectors when fewer than 2 points", {
 test_that("matchRtime interpolates onto union of RT grids", {
     pd_a <- data.frame(rtime = c(1, 3), intensity = c(10, 30))
     pd_b <- data.frame(rtime = c(1, 2, 3), intensity = c(100, 200, 300))
-    res <- matchRtime(pd_a, pd_b)
-    ## Common grid: 1, 2, 3. pd_a interpolated at rt=2 → 20
+    res <- matchRtime(pd_a, pd_b, tolerance = 0.5)
     expect_equal(res$x, c(10, 20, 30))
     expect_equal(res$y, c(100, 200, 300))
+})
+
+test_that("matchRtime x larger than y - y interpolates at x unmatched points", {
+    pd_a <- data.frame(rtime = c(1, 2, 3, 4, 5), intensity = c(10, 20, 30, 40, 50))
+    pd_b <- data.frame(rtime = c(1, 3, 5),        intensity = c(100, 300, 500))
+    res <- matchRtime(pd_a, pd_b, tolerance = 0.5)
+    expect_equal(res$x, c(10, 20, 30, 40, 50))
+    expect_equal(res$y, c(100, 200, 300, 400, 500))
+})
+
+test_that("matchRtime both sides interpolate at their respective unmatched points", {
+    pd_a <- data.frame(rtime = c(1, 3, 5),    intensity = c(10, 30, 50))
+    pd_b <- data.frame(rtime = c(1, 2, 4, 5), intensity = c(10, 20, 40, 50))
+    res <- matchRtime(pd_a, pd_b, tolerance = 0.5)
+    expect_equal(res$x, c(10, 20, 30, 40, 50))
+    expect_equal(res$y, c(10, 20, 30, 40, 50))
+})
+
+## ---- matchRtime tolerance tests ----
+
+test_that("matchRtime tolerance = Inf gives same result as no tolerance", {
+    pd_a <- data.frame(rtime = c(1, 2, 3, 4), intensity = c(10, 20, 30, 40))
+    pd_b <- data.frame(rtime = c(1, 2, 3, 4), intensity = c(10, 20, 30, 40))
+    expect_equal(matchRtime(pd_a, pd_b), matchRtime(pd_a, pd_b, tolerance = Inf))
+})
+
+test_that("matchRtime tolerance keeps interior points and approximates missing values", {
+    ## pd_a has points at 1, 2, 3; pd_b at 1, 3 (no point at rt=2).
+    ## With tolerance = 0.5, rt=2 from pd_a has no match in pd_b (distance = 1),
+    ## but it lies inside the matched range [1, 3] so it is retained.
+    ## pd_b's intensity at rt=2 is approximated by linear interpolation → 200.
+    pd_a <- data.frame(rtime = c(1, 2, 3), intensity = c(10, 20, 30))
+    pd_b <- data.frame(rtime = c(1, 3),    intensity = c(100, 300))
+    res <- matchRtime(pd_a, pd_b, tolerance = 0.5)
+    expect_equal(res$x, c(10, 20, 30))
+    expect_equal(res$y, c(100, 200, 300))
+})
+
+test_that("matchRtime tolerance = 1 keeps points exactly at the boundary", {
+    ## pd_a has rt=2; nearest pd_b point is rt=1 or rt=3 (distance = 1).
+    ## tolerance = 1 uses <=, so distance == tolerance is kept.
+    pd_a <- data.frame(rtime = c(1, 2, 3), intensity = c(10, 20, 30))
+    pd_b <- data.frame(rtime = c(1, 3),    intensity = c(100, 300))
+    res <- matchRtime(pd_a, pd_b, tolerance = 1)
+    expect_equal(res$x, c(10, 20, 30))
+})
+
+test_that("matchRtime tolerance returns empty when no points survive", {
+    pd_a <- data.frame(rtime = c(1, 10), intensity = c(10, 100))
+    pd_b <- data.frame(rtime = c(5, 10), intensity = c(50, 100))
+    ## rt=1 from pd_a: nearest pd_b is rt=5, distance=4 > tolerance=2 → not matched
+    ## rt=5 from pd_b: nearest pd_a is rt=1, distance=4 > tolerance=2 → not matched
+    ## rt=10 in both: distance=0 → matched in each
+    ## Only one matched point across both → rt_min == rt_max = 10 → empty
+    res_strict <- matchRtime(pd_a, pd_b, tolerance = 2)
+    expect_equal(res_strict$x, numeric())
+    expect_equal(res_strict$y, numeric())
+})
+
+test_that("matchRtime tolerance affects the matched range", {
+    pd_a <- data.frame(rtime = c(0.5, 1, 2, 3), intensity = c(5, 10, 20, 30))
+    pd_b <- data.frame(rtime = c(0, 1, 2, 3),   intensity = c(0, 10, 20, 30))
+    res_inf <- matchRtime(pd_a, pd_b, tolerance = Inf)
+    res_tol <- matchRtime(pd_a, pd_b, tolerance = 0.4)
+    expect_true(length(res_inf$x) > length(res_tol$x))
 })
 
 test_that("compareChromatograms with custom MAPFUN.", {

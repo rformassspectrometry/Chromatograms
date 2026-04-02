@@ -132,6 +132,14 @@
 #' @param window For `imputePeaksData`: `integer`, for the gaussian method:
 #'        Half-width of Gaussian kernel window (e.g., 2 gives window size 5)
 #'
+#' @param tolerance For `matchRtime()`: `numeric(1)` (default `Inf`). Maximum
+#'        allowed RT difference for two RT points to be considered matching.
+#'        Controls both the overlapping range detection and the output grid:
+#'        RT points with no match within `tolerance` in the other chromatogram
+#'        are added to the grid and the other vector interpolates at those
+#'        positions. Use `Inf` (the default) to consider all points matched.
+#'        Can be forwarded via `...` in `compareChromatograms()`.
+#'
 #' @param x For `lengths()` and `compareChromatograms()`: A [Chromatograms]
 #'        object.
 #'
@@ -220,11 +228,17 @@
 #' (count).
 #'
 #' `matchRtime()` is the default `MAPFUN`. It finds the overlapping
-#' retention-time range of two chromatograms, builds a common grid from
-#' the union of their time points within that range, and linearly
-#' interpolates both chromatograms' intensities onto that grid using
-#' [stats::approx()]. If the chromatograms do not overlap or either has
+#' retention-time range, then builds an output grid from x's RT points in that
+#' range plus any y RT points with no match in x within `tolerance`. Both
+#' vectors are linearly interpolated at positions they don't natively have
+#' using [stats::approx()]. If the chromatograms do not overlap or either has
 #' fewer than 2 data points, empty numeric vectors are returned.
+#' The optional `tolerance` parameter (default `Inf`) further restricts
+#' the common grid: an RT point contributed by one chromatogram is only
+#' kept if the other chromatogram has a measured point within `tolerance`
+#' RT units. This avoids comparing a real peak against a long interpolated
+#' gap in the other chromatogram. Pass `tolerance` via `...` in
+#' `compareChromatograms()`.
 #'
 #' When `y` is missing, the `labels` parameter assigns meaningful row/column
 #' names to the output from a `chromData()` column (e.g., `"mz"` or a
@@ -427,23 +441,28 @@ setMethod("lengths", signature = "Chromatograms", function(x) {
 #' @rdname peaksData
 #' @importFrom stats cor
 #' @export
-matchRtime <- function(x, y, ...) {
+matchRtime <- function(x, y, tolerance = Inf, ...) {
     if (nrow(x) < 2L || nrow(y) < 2L)
         return(list(x = numeric(), y = numeric()))
-    rt_min <- max(min(x$rtime), min(y$rtime))
-    rt_max <- min(max(x$rtime), max(y$rtime))
+    x_rt <- x$rtime
+    y_rt <- y$rtime
+    close <- outer(x_rt, y_rt, function(a, b) abs(a - b) <= tolerance)
+    x_has_match <- rowSums(close) > 0
+    y_has_match <- colSums(close) > 0
+    if (!any(x_has_match) || !any(y_has_match))
+        return(list(x = numeric(), y = numeric()))
+    rt_min <- min(x_rt[x_has_match], y_rt[y_has_match])
+    rt_max <- max(x_rt[x_has_match], y_rt[y_has_match])
     if (rt_min >= rt_max)
         return(list(x = numeric(), y = numeric()))
-    common_rt <- sort(unique(c(
-        x$rtime[x$rtime >= rt_min & x$rtime <= rt_max],
-        y$rtime[y$rtime >= rt_min & y$rtime <= rt_max]
-    )))
-    if (length(common_rt) < 2L)
-        return(list(x = numeric(), y = numeric()))
-    list(
-        x = approx(x$rtime, x$intensity, xout = common_rt, rule = 1)$y,
-        y = approx(y$rtime, y$intensity, xout = common_rt, rule = 1)$y
-    )
+    x_in <- x_rt[x_rt >= rt_min & x_rt <= rt_max]
+    y_in <- y_rt[y_rt >= rt_min & y_rt <= rt_max]
+    close_in <- outer(x_in, y_in, function(a, b) abs(a - b) <= tolerance)
+    target_rt <- sort(c(x_in, y_in[colSums(close_in) == 0]))
+    x_out <- approx(x_rt, x$intensity, xout = target_rt, rule = 1)$y
+    y_out <- approx(y_rt, y$intensity, xout = target_rt, rule = 1)$y
+    keep <- !is.na(x_out) & !is.na(y_out)
+    list(x = x_out[keep], y = y_out[keep])
 }
 
 #' @rdname peaksData

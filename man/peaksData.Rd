@@ -64,7 +64,7 @@
 
 \S4method{lengths}{Chromatograms}(x)
 
-matchRtime(x, y, ...)
+matchRtime(x, y, tolerance = Inf, ...)
 
 \S4method{compareChromatograms}{Chromatograms,Chromatograms}(
   x,
@@ -161,6 +161,14 @@ object.}
 \item{y}{For \code{compareChromatograms()}: A \link{Chromatograms} object against
 which \code{x} is compared. If missing, each chromatogram in \code{x} is
 compared with each other chromatogram in \code{x}.}
+
+\item{tolerance}{For \code{matchRtime()}: \code{numeric(1)} (default \code{Inf}). Maximum
+allowed RT difference for two RT points to be considered matching.
+Controls both the overlapping range detection and the output grid:
+RT points with no match within \code{tolerance} in the other chromatogram
+are added to the grid and the other vector interpolates at those
+positions. Use \code{Inf} (the default) to consider all points matched.
+Can be forwarded via \code{...} in \code{compareChromatograms()}.}
 
 \item{MAPFUN}{For \code{compareChromatograms()}: \code{function} to align the
 retention times of two chromatograms before computing similarity.
@@ -312,11 +320,17 @@ always 1 (score) and the number of data points in that chromatogram
 (count).
 
 \code{matchRtime()} is the default \code{MAPFUN}. It finds the overlapping
-retention-time range of two chromatograms, builds a common grid from
-the union of their time points within that range, and linearly
-interpolates both chromatograms' intensities onto that grid using
-\code{\link[stats:approxfun]{stats::approx()}}. If the chromatograms do not overlap or either has
+retention-time range, then builds an output grid from x's RT points in that
+range plus any y RT points with no match in x within \code{tolerance}. Both
+vectors are linearly interpolated at positions they don't natively have
+using \code{\link[stats:approxfun]{stats::approx()}}. If the chromatograms do not overlap or either has
 fewer than 2 data points, empty numeric vectors are returned.
+The optional \code{tolerance} parameter (default \code{Inf}) further restricts
+the common grid: an RT point contributed by one chromatogram is only
+kept if the other chromatogram has a measured point within \code{tolerance}
+RT units. This avoids comparing a real peak against a long interpolated
+gap in the other chromatogram. Pass \code{tolerance} via \code{...} in
+\code{compareChromatograms()}.
 
 When \code{y} is missing, the \code{labels} parameter assigns meaningful row/column
 names to the output from a \code{chromData()} column (e.g., \code{"mz"} or a
