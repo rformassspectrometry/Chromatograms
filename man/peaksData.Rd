@@ -83,7 +83,7 @@ matchRtime(x, y, tolerance = Inf, ...)
   FUN = cor,
   ...,
   minPeaks = 4L,
-  labels = NULL,
+  labelsColumn = NULL,
   BPPARAM = SerialParam()
 )
 
@@ -156,19 +156,22 @@ and one column is called by the user, the method returns a list of
 vector of the single column requested.}
 
 \item{x}{For \code{lengths()} and \code{compareChromatograms()}: A \link{Chromatograms}
-object.}
+object. For \code{matchRtime()}: a \code{data.frame} with columns \code{rtime} and
+\code{intensity} representing the first chromatogram.}
 
 \item{y}{For \code{compareChromatograms()}: A \link{Chromatograms} object against
 which \code{x} is compared. If missing, each chromatogram in \code{x} is
-compared with each other chromatogram in \code{x}.}
+compared with each other chromatogram in \code{x}. For \code{matchRtime()}:
+a \code{data.frame} with columns \code{rtime} and \code{intensity} representing
+the second chromatogram.}
 
 \item{tolerance}{For \code{matchRtime()}: \code{numeric(1)} (default \code{Inf}). Maximum
-allowed RT difference for two RT points to be considered matching.
-Controls both the overlapping range detection and the output grid:
-RT points with no match within \code{tolerance} in the other chromatogram
-are added to the grid and the other vector interpolates at those
-positions. Use \code{Inf} (the default) to consider all points matched.
-Can be forwarded via \code{...} in \code{compareChromatograms()}.}
+RT difference between two measured points to be considered a match.
+Controls both the overlap detection and the shared RT grid. Lower
+values prevent a peak from being compared against a long interpolated
+gap in the other chromatogram. Use \code{Inf} (the default) to consider
+all RT points as matching. Can be forwarded via \code{...} in
+\code{compareChromatograms()}.}
 
 \item{MAPFUN}{For \code{compareChromatograms()}: \code{function} to align the
 retention times of two chromatograms before computing similarity.
@@ -196,11 +199,12 @@ in the \code{n_peaks} layer. Setting \code{minPeaks = 2L} recovers the
 behaviour of always computing a score whenever at least two points
 overlap.}
 
-\item{labels}{For \code{compareChromatograms()}: optional \code{character(1)} giving
-the name of a chromatogram variable (column in \code{chromData()}) whose
-values should be used as row and column names of the returned array.
-The column must contain unique values. If \code{NULL} (the default), the
-array dimensions are unnamed. Only used when \code{y} is missing.}
+\item{labelsColumn}{For \code{compareChromatograms()}: optional \code{character(1)}
+giving the name of a chromatogram variable (column in \code{chromData()})
+whose values should be used as row and column names of the returned
+array. The column must contain unique values. If \code{NULL} (the
+default), the array dimensions are unnamed. Only used when \code{y} is
+missing.}
 
 \item{threshold}{For \code{peakBoundary()}: \code{numeric(1)} (default \code{0.1}).
 Fraction of the peak height above baseline used as a fallback
@@ -319,24 +323,30 @@ recorded in the \code{n_peaks} layer. The diagonal of a self-comparison is
 always 1 (score) and the number of data points in that chromatogram
 (count).
 
-\code{matchRtime()} is the default \code{MAPFUN}. It finds the overlapping
-retention-time range, then builds an output grid from x's RT points in that
-range plus any y RT points with no match in x within \code{tolerance}. Both
-vectors are linearly interpolated at positions they don't natively have
-using \code{\link[stats:approxfun]{stats::approx()}}. If the chromatograms do not overlap or either has
-fewer than 2 data points, empty numeric vectors are returned.
-The optional \code{tolerance} parameter (default \code{Inf}) further restricts
-the common grid: an RT point contributed by one chromatogram is only
-kept if the other chromatogram has a measured point within \code{tolerance}
-RT units. This avoids comparing a real peak against a long interpolated
-gap in the other chromatogram. Pass \code{tolerance} via \code{...} in
-\code{compareChromatograms()}.
+\code{matchRtime()} is the default \code{MAPFUN}. Given two chromatograms as
+\code{data.frame}s with \code{rtime} and \code{intensity} columns, it aligns their RT axes
+and returns a named list with elements \code{x} and \code{y}: equal-length intensity
+vectors evaluated on a shared RT grid, ready for similarity scoring.
 
-When \code{y} is missing, the \code{labels} parameter assigns meaningful row/column
-names to the output from a \code{chromData()} column (e.g., \code{"mz"} or a
-user-defined feature identifier). The column must contain unique values.
-To compare groups of chromatograms separately, split the object with
-\code{split()} beforehand and apply \code{compareChromatograms()} to each subset.
+The alignment works as follows: \code{matchRtime()} first identifies the RT range
+where both chromatograms have measured points within \code{tolerance} of each
+other (the \emph{overlap}). Within that range, it builds a shared RT grid from
+all of \code{x}'s RT points, adding any RT points from \code{y} that have no close
+match in \code{x} (within \code{tolerance}). Both intensity vectors are then linearly
+interpolated at grid positions they do not natively cover, using
+\code{\link[stats:approxfun]{stats::approx()}}. If either chromatogram has fewer than 2 data points, or
+the two chromatograms do not overlap, empty vectors are returned.
+
+The \code{tolerance} parameter (default \code{Inf}, meaning all RT points are
+considered matching) controls the strictness of the matching. Lowering it
+prevents comparing a measured peak against a long interpolated gap in the
+other chromatogram. Pass \code{tolerance} via \code{...} in \code{compareChromatograms()}.
+
+When \code{y} is missing, the \code{labelsColumn} parameter assigns meaningful
+row/column names to the output from a \code{chromData()} column (e.g., \code{"mz"}
+or a user-defined feature identifier). The column must contain unique
+values. To compare groups of chromatograms separately, split the object
+with \code{split()} beforehand and apply \code{compareChromatograms()} to each subset.
 }
 
 \examples{
@@ -392,7 +402,7 @@ res[, , "n_peaks"] ## number of overlapping RT points
 compareChromatograms(chr, method = "spearman")[, , "score"]
 
 # Use a chromData column as row/column labels
-compareChromatograms(chr, labels = "mz")[, , "score"]
+compareChromatograms(chr, labelsColumn = "mz")[, , "score"]
 
 # Compare two Chromatograms objects
 compareChromatograms(chr[1:2], chr[3])

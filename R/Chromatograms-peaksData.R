@@ -79,11 +79,12 @@
 #'        behaviour of always computing a score whenever at least two points
 #'        overlap.
 #'
-#' @param labels For `compareChromatograms()`: optional `character(1)` giving
-#'        the name of a chromatogram variable (column in `chromData()`) whose
-#'        values should be used as row and column names of the returned array.
-#'        The column must contain unique values. If `NULL` (the default), the
-#'        array dimensions are unnamed. Only used when `y` is missing.
+#' @param labelsColumn For `compareChromatograms()`: optional `character(1)`
+#'        giving the name of a chromatogram variable (column in `chromData()`)
+#'        whose values should be used as row and column names of the returned
+#'        array. The column must contain unique values. If `NULL` (the
+#'        default), the array dimensions are unnamed. Only used when `y` is
+#'        missing.
 #'
 #' @param object A [Chromatograms] object.
 #'
@@ -133,19 +134,22 @@
 #'        Half-width of Gaussian kernel window (e.g., 2 gives window size 5)
 #'
 #' @param tolerance For `matchRtime()`: `numeric(1)` (default `Inf`). Maximum
-#'        allowed RT difference for two RT points to be considered matching.
-#'        Controls both the overlapping range detection and the output grid:
-#'        RT points with no match within `tolerance` in the other chromatogram
-#'        are added to the grid and the other vector interpolates at those
-#'        positions. Use `Inf` (the default) to consider all points matched.
-#'        Can be forwarded via `...` in `compareChromatograms()`.
+#'        RT difference between two measured points to be considered a match.
+#'        Controls both the overlap detection and the shared RT grid. Lower
+#'        values prevent a peak from being compared against a long interpolated
+#'        gap in the other chromatogram. Use `Inf` (the default) to consider
+#'        all RT points as matching. Can be forwarded via `...` in
+#'        `compareChromatograms()`.
 #'
 #' @param x For `lengths()` and `compareChromatograms()`: A [Chromatograms]
-#'        object.
+#'        object. For `matchRtime()`: a `data.frame` with columns `rtime` and
+#'        `intensity` representing the first chromatogram.
 #'
 #' @param y For `compareChromatograms()`: A [Chromatograms] object against
 #'        which `x` is compared. If missing, each chromatogram in `x` is
-#'        compared with each other chromatogram in `x`.
+#'        compared with each other chromatogram in `x`. For `matchRtime()`:
+#'        a `data.frame` with columns `rtime` and `intensity` representing
+#'        the second chromatogram.
 #'
 #' @param ... Additional arguments passed to the method.
 #'
@@ -227,24 +231,30 @@
 #' always 1 (score) and the number of data points in that chromatogram
 #' (count).
 #'
-#' `matchRtime()` is the default `MAPFUN`. It finds the overlapping
-#' retention-time range, then builds an output grid from x's RT points in that
-#' range plus any y RT points with no match in x within `tolerance`. Both
-#' vectors are linearly interpolated at positions they don't natively have
-#' using [stats::approx()]. If the chromatograms do not overlap or either has
-#' fewer than 2 data points, empty numeric vectors are returned.
-#' The optional `tolerance` parameter (default `Inf`) further restricts
-#' the common grid: an RT point contributed by one chromatogram is only
-#' kept if the other chromatogram has a measured point within `tolerance`
-#' RT units. This avoids comparing a real peak against a long interpolated
-#' gap in the other chromatogram. Pass `tolerance` via `...` in
-#' `compareChromatograms()`.
+#' `matchRtime()` is the default `MAPFUN`. Given two chromatograms as
+#' `data.frame`s with `rtime` and `intensity` columns, it aligns their RT axes
+#' and returns a named list with elements `x` and `y`: equal-length intensity
+#' vectors evaluated on a shared RT grid, ready for similarity scoring.
 #'
-#' When `y` is missing, the `labels` parameter assigns meaningful row/column
-#' names to the output from a `chromData()` column (e.g., `"mz"` or a
-#' user-defined feature identifier). The column must contain unique values.
-#' To compare groups of chromatograms separately, split the object with
-#' `split()` beforehand and apply `compareChromatograms()` to each subset.
+#' The alignment works as follows: `matchRtime()` first identifies the RT range
+#' where both chromatograms have measured points within `tolerance` of each
+#' other (the *overlap*). Within that range, it builds a shared RT grid from
+#' all of `x`'s RT points, adding any RT points from `y` that have no close
+#' match in `x` (within `tolerance`). Both intensity vectors are then linearly
+#' interpolated at grid positions they do not natively cover, using
+#' [stats::approx()]. If either chromatogram has fewer than 2 data points, or
+#' the two chromatograms do not overlap, empty vectors are returned.
+#'
+#' The `tolerance` parameter (default `Inf`, meaning all RT points are
+#' considered matching) controls the strictness of the matching. Lowering it
+#' prevents comparing a measured peak against a long interpolated gap in the
+#' other chromatogram. Pass `tolerance` via `...` in `compareChromatograms()`.
+#'
+#' When `y` is missing, the `labelsColumn` parameter assigns meaningful
+#' row/column names to the output from a `chromData()` column (e.g., `"mz"`
+#' or a user-defined feature identifier). The column must contain unique
+#' values. To compare groups of chromatograms separately, split the object
+#' with `split()` beforehand and apply `compareChromatograms()` to each subset.
 #'
 #' @seealso [Chromatograms] for a general description of the `Chromatograms`
 #'          object, and [chromData] for accessing,substituting and filtering
@@ -314,7 +324,7 @@
 #' compareChromatograms(chr, method = "spearman")[, , "score"]
 #'
 #' # Use a chromData column as row/column labels
-#' compareChromatograms(chr, labels = "mz")[, , "score"]
+#' compareChromatograms(chr, labelsColumn = "mz")[, , "score"]
 #'
 #' # Compare two Chromatograms objects
 #' compareChromatograms(chr[1:2], chr[3])
@@ -487,7 +497,7 @@ setMethod("compareChromatograms",
 #' @export
 setMethod("compareChromatograms", signature(x = "Chromatograms", y = "missing"),
     function(x, y = NULL, MAPFUN = matchRtime, FUN = cor, ...,
-             minPeaks = 4L, labels = NULL, BPPARAM = SerialParam()) {
+             minPeaks = 4L, labelsColumn = NULL, BPPARAM = SerialParam()) {
         n <- length(x)
         if (n == 0L)
             return(array(numeric(0), dim = c(0L, 0L, 2L),
@@ -499,9 +509,9 @@ setMethod("compareChromatograms", signature(x = "Chromatograms", y = "missing"),
             arr1[1L, 1L, 2L] <- nrow(peaksData(x)[[1L]])
             return(arr1)
         }
-        labs <- .resolve_labels(x, labels)
+        labs <- .resolve_labels(x, labelsColumn)
         .compare_chromatograms(peaksData(x), MAPFUN = MAPFUN, FUN = FUN,
-                               minPeaks = minPeaks, labels = labs,
+                               minPeaks = minPeaks, labelsColumn = labs,
                                BPPARAM = BPPARAM, self = TRUE, ...)
     }
 )

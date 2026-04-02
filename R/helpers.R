@@ -853,7 +853,7 @@
 #' @param MAPFUN function to align retention times.
 #' @param FUN function to compute similarity.
 #' @param minPeaks minimum overlapping RT points to compute similarity.
-#' @param labels optional `character` vector of row/column names. Only
+#' @param labelsColumn optional `character` vector of row/column names. Only
 #'        meaningful for self-comparison (when `pd_y` is not supplied).
 #' @param ... passed to `.compare_chrom_pair()`.
 #' @return A numeric array with dimensions `length(pd_x)` x `length(pd_y)` x 2.
@@ -865,7 +865,7 @@
 
 .compare_chromatograms <- function(pd_x, pd_y = pd_x,
                                    MAPFUN = matchRtime, FUN = cor,
-                                   minPeaks = 4L, labels = NULL,
+                                   minPeaks = 4L, labelsColumn = NULL,
                                    BPPARAM = SerialParam(),
                                    self = FALSE, ...) {
     nx <- length(pd_x)
@@ -913,9 +913,9 @@
                  dimnames = list(NULL, NULL, c("score", "n_peaks")))
     arr[, , 1L] <- scores
     arr[, , 2L] <- counts
-    if (!is.null(labels)) {
-        dimnames(arr)[[1L]] <- labels
-        dimnames(arr)[[2L]] <- labels
+    if (!is.null(labelsColumn)) {
+        dimnames(arr)[[1L]] <- labelsColumn
+        dimnames(arr)[[2L]] <- labelsColumn
     }
     arr
 }
@@ -926,18 +926,18 @@
 #' - `compareChromatograms()`
 #'
 #' @param object A `Chromatograms` object.
-#' @param labels `character(1)` column name in `chromData()`, or `NULL`.
+#' @param labelsColumn `character(1)` column name in `chromData()`, or `NULL`.
 #' @return A character vector of labels, or `NULL`.
 #' @noRd
-.resolve_labels <- function(object, labels) {
-    if (is.null(labels)) return(NULL)
-    if (!is.character(labels) || length(labels) != 1L)
-        stop("'labels' must be a single character string")
-    labs <- chromData(object)[[labels]]
+.resolve_labels <- function(object, labelsColumn) {
+    if (is.null(labelsColumn)) return(NULL)
+    if (!is.character(labelsColumn) || length(labelsColumn) != 1L)
+        stop("'labelsColumn' must be a single character string")
+    labs <- chromData(object)[[labelsColumn]]
     if (is.null(labs))
-        stop("Column '", labels, "' not found in chromData")
+        stop("Column '", labelsColumn, "' not found in chromData")
     if (anyDuplicated(labs))
-        stop("Column '", labels, "' contains duplicated values")
+        stop("Column '", labelsColumn, "' contains duplicated values")
     labs
 }
 
