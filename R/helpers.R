@@ -874,60 +874,35 @@
         return(array(numeric(0), dim = c(nx, ny, 2L),
                      dimnames = list(NULL, NULL, c("score", "n_peaks"))))
 
-    scores <- matrix(NA_real_, nx, ny)
-    counts <- matrix(0L, nx, ny)
-
     .lapply <- if (inherits(BPPARAM, "SerialParam")) lapply else
         function(X, FUN) bplapply(X, FUN, BPPARAM = BPPARAM)
 
-    same_grid_x <- nx > 1L && all(vapply(pd_x, function(df) {
-        identical(df$rtime, pd_x[[1]]$rtime)
-    }, logical(1)))
-    ints_x <- if (same_grid_x) lapply(pd_x, function(df) as.numeric(df$intensity))
-
-    same_grid_y <- self || (ny > 1L && all(vapply(pd_y, function(df) {
-        identical(df$rtime, pd_y[[1]]$rtime)
-    }, logical(1))))
-    ints_y <- if (same_grid_y && !self) lapply(pd_y, function(df) as.numeric(df$intensity))
-    if (self) ints_y <- ints_x
-
-    same_grid <- same_grid_x && same_grid_y &&
-        (self || (nx >= 1L && ny >= 1L &&
-                  identical(pd_x[[1]]$rtime, pd_y[[1]]$rtime)))
+    scores <- matrix(NA_real_, nx, ny)
+    counts <- matrix(0L, nx, ny)
 
     if (self) {
         diag(scores) <- 1
-        diag(counts) <- vapply(seq_len(nx),
-            function(i) as.integer(nrow(pd_x[[i]])), integer(1L))
+        diag(counts) <- vapply(pd_x, nrow, integer(1L))
         if (nx > 1L) {
             upper_idx <- which(upper.tri(scores), arr.ind = TRUE)
             vals <- .lapply(seq_len(nrow(upper_idx)), function(k) {
-                i <- upper_idx[k, 1L]; j <- upper_idx[k, 2L]
-                if (same_grid) {
-                    n <- length(ints_x[[i]])
-                    if (n < minPeaks) return(c(NA_real_, n))
-                    return(c(FUN(ints_x[[i]], ints_y[[j]], ...), n))
-                }
-                .compare_chrom_pair(pd_x[[i]], pd_y[[j]], MAPFUN = MAPFUN,
+                i <- upper_idx[k, 1L]
+                j <- upper_idx[k, 2L]
+                .compare_chrom_pair(pd_x[[i]], pd_x[[j]], MAPFUN = MAPFUN,
                                     FUN = FUN, minPeaks = minPeaks, ...)
             })
             vals_mat <- matrix(unlist(vals), nrow = 2L)
             scores[upper.tri(scores)] <- vals_mat[1L, ]
             counts[upper.tri(counts)] <- vals_mat[2L, ]
+            ## Fill lower triangle by symmetry. 
             scores[lower.tri(scores)] <- t(scores)[lower.tri(scores)]
             counts[lower.tri(counts)] <- t(counts)[lower.tri(counts)]
         }
     } else {
-        idx_grid <- expand.grid(i = seq_len(nx), j = seq_len(ny))
-        vals <- .lapply(seq_len(nrow(idx_grid)), function(k) {
-            i <- idx_grid$i[k]; j <- idx_grid$j[k]
-            if (same_grid) {
-                n <- length(ints_x[[i]])
-                if (n < minPeaks) return(c(NA_real_, n))
-                return(c(FUN(ints_x[[i]], ints_y[[j]], ...), n))
-            }
-            .compare_chrom_pair(pd_x[[i]], pd_y[[j]], MAPFUN = MAPFUN,
-                                FUN = FUN, minPeaks = minPeaks, ...)
+        pairs <- cbind(rep(seq_len(nx), times = ny), rep(seq_len(ny), each = nx))
+        vals <- .lapply(seq_len(nrow(pairs)), function(k) {
+            .compare_chrom_pair(pd_x[[pairs[k, 1L]]], pd_y[[pairs[k, 2L]]],
+                                MAPFUN = MAPFUN, FUN = FUN, minPeaks = minPeaks, ...)
         })
         vals_mat <- matrix(unlist(vals), nrow = 2L)
         scores[] <- vals_mat[1L, ]

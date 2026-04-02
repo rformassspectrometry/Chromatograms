@@ -474,11 +474,10 @@ setMethod("compareChromatograms", signature(x = "Chromatograms", y = "missing"),
             return(array(numeric(0), dim = c(0L, 0L, 2L),
                          dimnames = list(NULL, NULL, c("score", "n_peaks"))))
         if (n == 1L) {
-            pd1 <- peaksData(x)
             arr1 <- array(NA_real_, dim = c(1L, 1L, 2L),
                           dimnames = list(NULL, NULL, c("score", "n_peaks")))
             arr1[1L, 1L, 1L] <- 1
-            arr1[1L, 1L, 2L] <- nrow(pd1[[1L]])
+            arr1[1L, 1L, 2L] <- nrow(peaksData(x)[[1L]])
             return(arr1)
         }
         labs <- .resolve_labels(x, labels)
