@@ -935,7 +935,7 @@ cor_arr[, , "score"]   ## similarity scores
 cor_arr[, , "n_peaks"] ## number of overlapping RT points per pair
 
 ## Use a chromData column as row/column labels
-cor_arr_labeled <- compareChromatograms(chr_sub, labels = "chromIndex")
+cor_arr_labeled <- compareChromatograms(chr_sub, labelsColumn = "chromIndex")
 cor_arr_labeled[, , "score"]
 ```
 
