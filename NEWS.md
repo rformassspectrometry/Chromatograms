@@ -1,5 +1,14 @@
 # Version 1.1
 
+## Changes in 1.1.7
+
+- Improve performance of `.prepare_spectra_input()`: spectra are now
+  pre-filtered to the non-overlapping union of EIC retention time ranges
+  using `MsCoreUtils::reduce()` and `Spectra::filterRanges()`, and peak
+  data is loaded in a single `peaksData()` call instead of separate
+  `mz()` and `intensity()` calls. This reduces I/O and memory usage,
+  especially for file-backed backends.
+
 ## Changes in 1.1.6
 
 - Add `compareChromatograms()` and `matchRtime()` for pairwise similarity
