@@ -1,5 +1,13 @@
 # Version 1.1
 
+## Changes in 1.1.8
+
+- Improve performance of `matchRtime()`.
+
+- Fix `compareChromatograms()`: `...` arguments (e.g. `tolerance`) are now
+  routed to `MAPFUN` or `FUN` based on their formal parameters, preventing
+  errors when `FUN = cor` received unknown arguments.
+
 ## Changes in 1.1.7
 
 - Improve performance of `.prepare_spectra_input()`: spectra are now

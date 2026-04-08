@@ -839,10 +839,17 @@
 #' @noRd
 .compare_chrom_pair <- function(x, y, MAPFUN = matchRtime, FUN = cor,
                                 minPeaks = 4L, ...) {
-    aligned <- MAPFUN(x, y, ...)
+    dots <- list(...)
+    fmls_map <- names(formals(MAPFUN))
+    fmls_fun <- names(formals(FUN))
+    aligned <- do.call(MAPFUN, c(list(x, y),
+                                 if ("..." %in% fmls_map) dots
+                                 else dots[names(dots) %in% fmls_map]))
     n <- length(aligned$x)
     if (n < minPeaks) return(c(NA_real_, n))
-    c(FUN(aligned$x, aligned$y, ...), n)
+    c(do.call(FUN, c(list(aligned$x, aligned$y),
+                     if ("..." %in% fmls_fun) dots
+                     else dots[names(dots) %in% fmls_fun])), n)
 }
 
 #' Compute a pairwise similarity array between two lists of peaks data.frames.
