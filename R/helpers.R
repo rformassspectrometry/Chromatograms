@@ -830,15 +830,19 @@
 #'
 #' @param x,y `data.frame` with columns `rtime` and `intensity`.
 #' @param MAPFUN function to align two chromatograms' retention times.
+#'        Defaults to `matchRtime`.
 #' @param FUN function to compute similarity from aligned intensities.
+#'        Defaults to `cor`.
+#' @param mapfun_args `list` of additional arguments passed to `MAPFUN`.
+#' @param fun_args `list` of additional arguments passed to `FUN`.
 #' @param minPeaks minimum number of overlapping RT points required to compute
 #'        the similarity; pairs with fewer points return `NA` (score) and the
-#'        actual count (n_peaks).
-#' @param ... additional arguments passed to both `MAPFUN` and `FUN`.
+#'        actual count (n_peaks). Defaults to `2L`.
 #' @return `numeric(2)`: similarity value and number of overlapping RT points.
 #' @noRd
-.compare_chrom_pair <- function(x, y, MAPFUN, FUN, mapfun_args, fun_args,
-                                minPeaks) {
+.compare_chrom_pair <- function(x, y, MAPFUN = matchRtime, FUN = cor,
+                                mapfun_args = list(), fun_args = list(),
+                                minPeaks = 2L) {
     aligned <- do.call(MAPFUN, c(list(x, y), mapfun_args))
     n <- length(aligned$x)
     if (n < minPeaks) return(c(NA_real_, n))

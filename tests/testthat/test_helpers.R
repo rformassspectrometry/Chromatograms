@@ -1614,8 +1614,8 @@ test_that(".compare_chrom_pair respects method argument", {
                        intensity = c(10, 20, 30, 20, 10))
     pd_b <- data.frame(rtime = c(1, 2, 3, 4, 5),
                        intensity = c(5, 15, 25, 15, 5))
-    res_p <- .compare_chrom_pair(pd_a, pd_b, method = "pearson")
-    res_s <- .compare_chrom_pair(pd_a, pd_b, method = "spearman")
+    res_p <- .compare_chrom_pair(pd_a, pd_b, fun_args = list(method = "pearson"))
+    res_s <- .compare_chrom_pair(pd_a, pd_b, fun_args = list(method = "spearman"))
     expect_true(is.numeric(res_p))
     expect_true(is.numeric(res_s))
     ## Both should be 1 for perfectly linearly related data
