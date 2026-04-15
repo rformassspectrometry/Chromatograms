@@ -739,3 +739,18 @@ test_that("compareChromatograms with custom MAPFUN.", {
     expect_equal(diag(res[, , 1L]), c(1, 1))
     expect_equal(unname(res[1, 2, 1L]), 1)
 })
+
+test_that("compareChromatograms routes tolerance to MAPFUN, not FUN.", {
+    ## tolerance is a matchRtime argument; passing it to compareChromatograms
+    ## must not error even though FUN = cor does not accept tolerance.
+    expect_no_error(compareChromatograms(c_full, tolerance = 1))
+    expect_no_error(compareChromatograms(c_full[1], c_full[2], tolerance = 1))
+})
+
+test_that("compareChromatograms routes MAPFUN and FUN args independently.", {
+    ## tolerance goes to MAPFUN (matchRtime), method goes to FUN (cor).
+    ## Both should be accepted without error.
+    expect_no_error(
+        compareChromatograms(c_full, tolerance = 1, method = "spearman")
+    )
+})

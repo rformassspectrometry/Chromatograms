@@ -456,6 +456,20 @@ matchRtime <- function(x, y, tolerance = Inf, ...) {
         return(list(x = numeric(), y = numeric()))
     x_rt <- x$rtime
     y_rt <- y$rtime
+    rx <- range(x_rt)
+    ry <- range(y_rt)
+
+    if (is.infinite(tolerance)) {
+        keep_x <- x_rt >= max(rx[1L], ry[1L]) & x_rt <= min(rx[2L], ry[2L])
+        if (!any(keep_x))
+            return(list(x = numeric(), y = numeric()))
+        y_out <- approx(y_rt, y$intensity, xout = x_rt[keep_x], rule = 1)$y
+        ok <- !is.na(y_out)
+        return(list(x = x$intensity[keep_x][ok], y = y_out[ok]))
+    }
+
+    if (rx[2L] + tolerance < ry[1L] || ry[2L] + tolerance < rx[1L])
+        return(list(x = numeric(), y = numeric()))
     close <- outer(x_rt, y_rt, function(a, b) abs(a - b) <= tolerance)
     x_has_match <- rowSums(close) > 0
     y_has_match <- colSums(close) > 0
@@ -465,10 +479,10 @@ matchRtime <- function(x, y, tolerance = Inf, ...) {
     rt_max <- max(x_rt[x_has_match], y_rt[y_has_match])
     if (rt_min >= rt_max)
         return(list(x = numeric(), y = numeric()))
-    x_in <- x_rt[x_rt >= rt_min & x_rt <= rt_max]
-    y_in <- y_rt[y_rt >= rt_min & y_rt <= rt_max]
-    close_in <- outer(x_in, y_in, function(a, b) abs(a - b) <= tolerance)
-    target_rt <- sort(c(x_in, y_in[colSums(close_in) == 0]))
+    x_in_mask <- x_rt >= rt_min & x_rt <= rt_max
+    y_in_mask <- y_rt >= rt_min & y_rt <= rt_max
+    target_rt <- sort(c(x_rt[x_in_mask],
+                        y_rt[y_in_mask][colSums(close[x_in_mask, y_in_mask, drop = FALSE]) == 0]))
     x_out <- approx(x_rt, x$intensity, xout = target_rt, rule = 1)$y
     y_out <- approx(y_rt, y$intensity, xout = target_rt, rule = 1)$y
     keep <- !is.na(x_out) & !is.na(y_out)

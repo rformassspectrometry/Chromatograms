@@ -830,19 +830,23 @@
 #'
 #' @param x,y `data.frame` with columns `rtime` and `intensity`.
 #' @param MAPFUN function to align two chromatograms' retention times.
+#'        Defaults to `matchRtime`.
 #' @param FUN function to compute similarity from aligned intensities.
+#'        Defaults to `cor`.
+#' @param mapfun_args `list` of additional arguments passed to `MAPFUN`.
+#' @param fun_args `list` of additional arguments passed to `FUN`.
 #' @param minPeaks minimum number of overlapping RT points required to compute
 #'        the similarity; pairs with fewer points return `NA` (score) and the
-#'        actual count (n_peaks).
-#' @param ... additional arguments passed to both `MAPFUN` and `FUN`.
+#'        actual count (n_peaks). Defaults to `2L`.
 #' @return `numeric(2)`: similarity value and number of overlapping RT points.
 #' @noRd
 .compare_chrom_pair <- function(x, y, MAPFUN = matchRtime, FUN = cor,
-                                minPeaks = 4L, ...) {
-    aligned <- MAPFUN(x, y, ...)
+                                mapfun_args = list(), fun_args = list(),
+                                minPeaks = 2L) {
+    aligned <- do.call(MAPFUN, c(list(x, y), mapfun_args))
     n <- length(aligned$x)
     if (n < minPeaks) return(c(NA_real_, n))
-    c(FUN(aligned$x, aligned$y, ...), n)
+    c(do.call(FUN, c(list(aligned$x, aligned$y), fun_args)), n)
 }
 
 #' Compute a pairwise similarity array between two lists of peaks data.frames.
@@ -882,6 +886,10 @@
         return(array(numeric(0), dim = c(nx, ny, 2L),
                      dimnames = list(NULL, NULL, c("score", "n_peaks"))))
 
+    dots <- list(...)
+    mapfun_args <- dots[names(dots) %in% names(formals(MAPFUN))]
+    fun_args <- dots[names(dots) %in% names(formals(FUN))]
+
     .lapply <- if (inherits(BPPARAM, "SerialParam")) lapply else
         function(X, FUN) bplapply(X, FUN, BPPARAM = BPPARAM)
 
@@ -892,29 +900,31 @@
         diag(scores) <- 1
         diag(counts) <- vapply(pd_x, nrow, integer(1L))
         if (nx > 1L) {
-            upper_idx <- which(upper.tri(scores), arr.ind = TRUE)
-            vals <- .lapply(seq_len(nrow(upper_idx)), function(k) {
-                i <- upper_idx[k, 1L]
-                j <- upper_idx[k, 2L]
-                .compare_chrom_pair(pd_x[[i]], pd_x[[j]], MAPFUN = MAPFUN,
-                                    FUN = FUN, minPeaks = minPeaks, ...)
+            row_vals <- .lapply(seq_len(nx - 1L), function(i) {
+                vapply(seq.int(i + 1L, nx), function(j)
+                    .compare_chrom_pair(pd_x[[i]], pd_x[[j]], MAPFUN, FUN,
+                                        mapfun_args, fun_args, minPeaks),
+                    numeric(2L))
             })
-            vals_mat <- matrix(unlist(vals), nrow = 2L)
-            scores[upper.tri(scores)] <- vals_mat[1L, ]
-            counts[upper.tri(counts)] <- vals_mat[2L, ]
-            ## Fill lower triangle by symmetry. 
-            scores[lower.tri(scores)] <- t(scores)[lower.tri(scores)]
-            counts[lower.tri(counts)] <- t(counts)[lower.tri(counts)]
+            for (i in seq_len(nx - 1L)) {
+                js <- seq.int(i + 1L, nx)
+                scores[i, js] <- row_vals[[i]][1L, ]
+                scores[js, i] <- row_vals[[i]][1L, ]
+                counts[i, js] <- row_vals[[i]][2L, ]
+                counts[js, i] <- row_vals[[i]][2L, ]
+            }
         }
     } else {
-        pairs <- cbind(rep(seq_len(nx), times = ny), rep(seq_len(ny), each = nx))
-        vals <- .lapply(seq_len(nrow(pairs)), function(k) {
-            .compare_chrom_pair(pd_x[[pairs[k, 1L]]], pd_y[[pairs[k, 2L]]],
-                                MAPFUN = MAPFUN, FUN = FUN, minPeaks = minPeaks, ...)
+        row_vals <- .lapply(seq_len(nx), function(i) {
+            vapply(seq_len(ny), function(j)
+                .compare_chrom_pair(pd_x[[i]], pd_y[[j]], MAPFUN, FUN,
+                                    mapfun_args, fun_args, minPeaks),
+                numeric(2L))
         })
-        vals_mat <- matrix(unlist(vals), nrow = 2L)
-        scores[] <- vals_mat[1L, ]
-        counts[] <- vals_mat[2L, ]
+        for (i in seq_len(nx)) {
+            scores[i, ] <- row_vals[[i]][1L, ]
+            counts[i, ] <- row_vals[[i]][2L, ]
+        }
     }
 
     arr <- array(NA_real_, dim = c(nx, ny, 2L),
