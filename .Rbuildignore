@@ -9,5 +9,6 @@ Makefile
 local_data
 NEWS.md
 README.Rmd
+logo.png
 ^CITATION\.cff$
 ^doc$
