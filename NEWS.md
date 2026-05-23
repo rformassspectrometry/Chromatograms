@@ -1,3 +1,9 @@
+# Version 1.3
+
+## Changes in 1.3.1
+
+- Addition of logo and align to BioC 3.23 release.  
+
 # Version 1.1
 
 ## Changes in 1.1.8
