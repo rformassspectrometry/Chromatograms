@@ -1,0 +1,482 @@
+---
+title: "Supplementary Material 2 — Interoperability workflow"
+subtitle: "Using *chromExtract()* to import external peak tables and run quality assessment"
+author: "Philippine Louail"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    code-fold: false
+    code-tools: true
+    embed-resources: true
+    theme: cosmo
+execute:
+  warning: false
+  message: false
+---
+
+## Motivation
+
+In practice, peak picking and downstream analysis are often performed by
+different tools. A peak list produced by *MZmine*, *MS-DIAL*, *xcms*, or a
+custom script cannot usually be reused by a different package without
+format conversion or wrapper code.
+
+`Chromatograms` addresses this with *chromExtract()* — an R function that
+accepts a plain peak table (a `data.frame` containing m/z and retention-time
+boundaries together with feature identifiers) produced by *any* upstream
+peak-picking software, matches it against the raw mzML data, and returns
+the corresponding chromatograms as a `Chromatograms` object that is
+immediately usable in any R workflow. The only contract is the column
+structure of the input `data.frame`; the software that produced the peak
+list is irrelevant.
+
+Two architectural choices make this possible. First, *chromExtract()*
+relies on the *ChromBackendSpectra* backend, which keeps a reference to
+the underlying `Spectra` object instead of summarising spectra into
+retention-time / intensity traces. The full per-spectrum m/z × intensity
+arrays therefore remain accessible, and *chromExtract()* can filter by
+m/z range when building the extracted-ion chromatograms — a step that
+would be impossible on a backend that had already collapsed the m/z
+dimension. Second, because *ChromBackendSpectra* delegates raw-data I/O
+to `Spectra`, *chromExtract()* inherits support for every backend that
+*Spectra* supports (mzML via *MsBackendMzR*, in-memory, third-party
+backends, etc.).
+
+This document walks through the full workflow:
+
+1. Create a generic peak table CSV that mimics the output of an external
+   peak-picking tool.
+2. Import it into R and match it against raw mzML data.
+3. Extract the corresponding chromatograms with *chromExtract()*.
+4. Verify that the external metadata are preserved on the resulting
+   `Chromatograms` object and pass it to *MsQuality::calculateMetrics()*
+   for automated quality assessment.
+
+```{r}
+#| label: setup
+#| output: false
+library(Chromatograms)
+library(Spectra)
+library(MsBackendMetaboLights)
+library(dplyr)
+library(ggplot2)
+library(MsQuality)
+```
+
+## System Information
+
+```{r}
+#| label: system-info
+#| code-fold: true
+knitr::kable(
+  data.frame(
+    Item  = c("CPU Cores", "R Version", "Platform", "Chromatograms Version"),
+    Value = c(
+      parallel::detectCores(),
+      R.version$version.string,
+      R.version$platform,
+      as.character(packageVersion("Chromatograms"))
+    )
+  ),
+  caption = "System information"
+)
+```
+
+## 1. Create a generic peak table
+
+In a real workflow this CSV would come from any peak-picking software —
+*MZmine*, *MS-DIAL*, *xcms*, a custom Python script, or a commercial
+vendor export. The only requirement is that the file carries columns
+defining the m/z and RT boundaries of each feature.
+
+Here we **derive realistic targets from the raw data** by scanning a few
+representative spectra for the most intense m/z bins and defining narrow
+EIC windows around them. This ensures the extracted chromatograms contain
+actual signal.
+
+```{r}
+#| label: create-peak-table
+#| echo: false
+# Load public data from MetaboLights (MTBLS8735)
+sps <- Spectra(
+  source = MsBackendMetaboLights(),
+  mtblsId = "MTBLS8735",
+  assayName = paste0("a_MTBLS8735_LC-MS_positive_",
+                     "hilic_metabolite_profiling.txt"),
+  filePattern = ".mzML"
+)
+
+# Get individual file paths from the cached data
+mzml_files <- unique(dataOrigin(sps))
+sample_origins <- unique(dataOrigin(sps))
+
+knitr::kable(
+  data.frame(
+    Item  = c("Files", "Total spectra", "RT range (s)"),
+    Value = c(
+      length(mzml_files),
+      length(sps),
+      paste(round(range(rtime(sps)), 1), collapse = " - ")
+    )
+  ),
+  caption = "Loaded data summary"
+)
+
+# --- Find m/z values that carry real signal ---
+# Pool peaks from ~20 spectra in the middle of the run
+rt_vals <- rtime(sps)
+mid_candidates <- which(rt_vals > quantile(rt_vals, 0.3) &
+                        rt_vals < quantile(rt_vals, 0.7))
+mid_idx <- head(mid_candidates, 20)
+
+# Ensure we have spectra to work with
+if (length(mid_idx) == 0) {
+  # Fallback: use first 20 spectra
+  mid_idx <- seq_len(min(20, length(sps)))
+}
+
+all_mz  <- unlist(mz(sps[mid_idx]), use.names = FALSE)
+all_int <- unlist(intensity(sps[mid_idx]), use.names = FALSE)
+
+# Ensure we have m/z and intensity data
+if (length(all_mz) == 0 || length(all_int) == 0) {
+  # Create dummy data if none found
+  top_mz <- c(400, 500, 600, 700, 800)
+} else {
+  # Bin into 0.1 Da bins and pick the top 20 by total intensity
+  bins <- round(all_mz, 1)
+  agg  <- sort(tapply(all_int, bins, sum), decreasing = TRUE)
+  n_features <- min(20, length(agg))
+  top_bins <- as.numeric(names(agg[seq_len(n_features)]))
+
+  # For each bin, locate the precise m/z of the most intense individual peak
+  # (bin centers are rounded — using them directly with tight tolerance misses signal)
+  top_mz <- vapply(top_bins, function(b) {
+    idx <- which(abs(all_mz - b) < 0.05)
+    if (length(idx) == 0) return(b)
+    all_mz[idx[which.max(all_int[idx])]]
+  }, numeric(1))
+}
+
+# Build a peak table that an external tool might export
+mz_tol_da <- 0.05
+rt_range  <- range(rt_vals)
+rt_mid    <- mean(rt_range)
+rt_half   <- diff(rt_range) / 4  # generous RT window
+
+# Generate compound names (cycle through alphabet if needed)
+compound_names <- if (length(top_mz) <= 26) {
+  paste0("Compound_", LETTERS[seq_along(top_mz)])
+} else {
+  paste0("Compound_", seq_along(top_mz))
+}
+
+peak_table_csv <- data.frame(
+  feature_id = paste0("FT_", sprintf("%04d", seq_along(top_mz))),
+  compound_name = compound_names,
+  adduct        = rep(c("[M-H]-", "[M+FA-H]-"), length.out = length(top_mz)),
+  mz_center     = top_mz,
+  mz_tol_da     = mz_tol_da,
+  rt_min_s      = rt_mid - rt_half,
+  rt_max_s      = rt_mid + rt_half,
+  source_software = "SimulatedVendorTool_v2.1"
+) |>
+  mutate(
+    mz_min = mz_center - mz_tol_da,
+    mz_max = mz_center + mz_tol_da
+  )
+
+# Write to CSV — this is the interchange format used between tools.
+csv_path <- file.path(getwd(), "PeakBoundary_Export.csv")
+write.csv(peak_table_csv, csv_path, row.names = FALSE)
+```
+
+```{r}
+#| label: show-peak-table
+#| echo: false
+knitr::kable(
+  peak_table_csv |> select(feature_id, compound_name, adduct,
+                            mz_min, mz_max, rt_min_s, rt_max_s),
+  digits = 3,
+  caption = "Simulated external peak boundary export"
+)
+```
+
+## 2. Import and Prepare for *chromExtract()*
+
+Read the CSV and reshape it into the format expected by *chromExtract()*.
+The function requires `mzMin`, `mzMax`, `rtMin`, `rtMax`, and a `by`
+column to match against the `Chromatograms` object — every other column
+is preserved as metadata on the output.
+
+```{r}
+#| label: import-csv
+# Read the external peak table
+imported <- read.csv(csv_path)
+
+# Ensure sample_origins is defined (in case it wasn't captured from upstream)
+if (!exists("sample_origins") || length(sample_origins) == 0) {
+  sample_origins <- unique(dataOrigin(sps))
+}
+
+# Reshape to Chromatograms convention
+# We expand one row per sample file (cross-join features × files)
+peak_input <- expand.grid(
+  feature_idx = seq_len(nrow(imported)),
+  dataOrigin  = sample_origins,
+  stringsAsFactors = FALSE
+) |>
+  mutate(
+    mzMin         = imported$mz_min[feature_idx],
+    mzMax         = imported$mz_max[feature_idx],
+    rtMin         = imported$rt_min_s[feature_idx],
+    rtMax         = imported$rt_max_s[feature_idx],
+    msLevel       = 1L,
+    feature_id    = imported$feature_id[feature_idx],
+    compound_name = imported$compound_name[feature_idx],
+    adduct        = imported$adduct[feature_idx],
+    source_software = imported$source_software[feature_idx]
+  ) |>
+  select(-feature_idx)
+
+knitr::kable(
+  data.frame(
+    Item  = c("Total rows", "Features", "Files"),
+    Value = c(nrow(peak_input), nrow(imported), length(sample_origins))
+  ),
+  caption = "Expanded peak input (features x files)"
+)
+```
+
+## 3. Extract Chromatograms
+
+### 3.1 Create a base Chromatograms object from raw data
+
+Passing a `Spectra` object to the `Chromatograms()` constructor produces
+an object backed by *ChromBackendSpectra*. This backend keeps a reference
+to the original `Spectra` rather than summarising the spectra into
+retention-time / intensity traces, so the full m/z × intensity arrays
+remain accessible per spectrum. Data are read lazily — nothing is loaded
+into memory until explicitly requested. This is what enables
+*chromExtract()*: with the m/z dimension preserved, the function can
+filter on m/z range and construct extracted-ion chromatograms (EICs) on
+the fly. A backend that had pre-summarised the data into TIC- or BPC-like
+traces would no longer carry enough information for m/z-based extraction.
+
+```{r}
+#| label: create-base-chr
+# Create a Chromatograms object backed by ChromBackendSpectra.
+# The Spectra object is kept by reference — the m/z dimension is preserved.
+chr_base <- Chromatograms(sps, chromData = peak_input)
+
+chr_base
+```
+
+### 3.2 Alternative: using *chromExtract()* on an existing object
+
+If a broad `Chromatograms` object covering the full RT/m/z range already
+exists, *chromExtract()* can be used to narrow it. This only works when
+the object is backed by *ChromBackendSpectra* (i.e. created from a
+`Spectra` object), because *chromExtract()* needs the per-spectrum
+m/z × intensity arrays to filter on m/z range. A `Chromatograms` object
+that has already been summarised into RT vs. intensity traces no longer
+carries the m/z dimension and cannot be used with *chromExtract()*.
+
+```{r}
+#| label: chromExtract-demo
+# Create a broad Chromatograms (full RT range, per-file, per-msLevel).
+# The backend is ChromBackendSpectra — the m/z dimension is preserved.
+chr_broad <- Chromatograms(sps)
+
+chr_broad
+
+# Now extract specific regions using our peak table.
+# chromExtract() matches by the columns specified in `by`.
+# peak.table must have: rtMin, rtMax, mzMin, mzMax, and the `by` columns.
+extract_table <- peak_input |>
+  select(mzMin, mzMax, rtMin, rtMax, msLevel, dataOrigin,
+         feature_id, compound_name, adduct)
+
+# Extract chromatograms for the specified peaks
+chr_extracted <- chromExtract(
+  chr_broad,
+  peak.table = extract_table,
+  by = c("msLevel", "dataOrigin")
+)
+
+chr_extracted
+```
+
+## 4. Verify metadata preservation
+
+Does *chromExtract()* preserve the external metadata (feature IDs,
+compound names, adducts) carried in the input peak table?
+
+```{r}
+#| label: show-chromdata
+knitr::kable(
+  chromData(chr_extracted) |>
+    select(any_of(c("feature_id", "compound_name", "adduct",
+                     "mzMin", "mzMax", "rtMin", "rtMax",
+                     "dataOrigin"))) |>
+    head(10),
+  digits = 3,
+  caption = "chromData of extracted Chromatograms (first 10 rows)"
+)
+```
+
+## 5. Visualize Extracted EICs
+
+```{r}
+#| label: fig-extracted-eics
+#| fig-cap: "Extracted EICs for the first 4 features from file 1"
+#| fig-height: 8
+# Subset to first file and first 4 features
+first_file <- sample_origins[1]
+first_features <- unique(peak_input$feature_id)[1:4]
+
+idx <- which(
+  chr_extracted$dataOrigin == first_file &
+  chr_extracted$feature_id %in% first_features
+)
+
+if (length(idx) > 0) {
+  plotChromatograms(chr_extracted[idx])
+}
+```
+
+## 6. Compute peak metrics with *calculateMetrics()*
+
+The extracted `Chromatograms` object is immediately consumable by any
+downstream R analysis. Here we use the *MsQuality* function
+*calculateMetrics()*, which computes a panel of chromatographic quality
+metrics in a single call. The result is a `data.frame` that can be
+attached directly to `chromData`.
+
+### 6.1 Filter empty chromatograms
+
+Before computing shape-dependent metrics such as FWHM, we remove
+chromatograms that contain no data points using
+*filterEmptyChromatograms()*.
+
+```{r}
+#| label: filter-empty
+n_before <- length(chr_extracted)
+chr_extracted <- filterEmptyChromatograms(chr_extracted)
+n_after <- length(chr_extracted)
+
+## removed
+n_before - n_after
+```
+
+### 6.2 Calculate metrics
+
+We request a broad set of metrics covering peak shape, intensity, and
+noise characteristics. The `f` argument groups each chromatogram on its
+own (one metric row per chromatogram).
+
+```{r}
+#| label: calculate-metrics
+metric_names <- c(
+  "peakCount",
+  "areaUnderTic",
+  "maxIntensity",
+  "baselineIntensity",
+  "signalToNoiseRatio",
+  "xicFwhm"
+)
+
+pk <- calculateMetrics(
+  chr_extracted,
+  metrics = metric_names,
+  na.rm = TRUE,
+  filterEmptyObject = FALSE,
+  baselineQuantile = 0.1
+)
+
+# Attach metrics directly to the Chromatograms chromData
+chromData(chr_extracted) <- cbind(chromData(chr_extracted), pk)
+```
+
+### 6.3 Inspect results
+
+```{r}
+#| label: show-metrics
+#| echo: false
+# Build a summary table with identification + metrics
+cd_metrics <- chromData(chr_extracted) |>
+  select(any_of(c(
+    "feature_id", "compound_name", "dataOrigin",
+    "peakCount", "xicFwhm", "areaUnderTic", "maxIntensity",
+    "baselineIntensity", "signalToNoiseRatio"
+  )))
+
+# Shorten dataOrigin for display
+if ("dataOrigin" %in% names(cd_metrics)) {
+  cd_metrics$dataOrigin <- basename(cd_metrics$dataOrigin)
+}
+
+knitr::kable(
+  head(cd_metrics, 20),
+  digits = 2,
+  caption = "Peak metrics from calculateMetrics() (first 20 rows)"
+)
+```
+
+### 6.4 Metric distributions across features
+
+```{r}
+#| label: fig-metric-distributions
+#| fig-cap: "Distribution of key peak metrics across all extracted chromatograms"
+#| fig-height: 8
+library(tidyr)
+
+plot_data <- cd_metrics |>
+  select(any_of(c("maxIntensity", "signalToNoiseRatio", "xicFwhm",
+                   "areaUnderTic", "baselineIntensity", "peakCount"))) |>
+  pivot_longer(everything(), names_to = "metric", values_to = "value") |>
+  filter(is.finite(value))
+
+ggplot(plot_data, aes(x = value)) +
+  geom_histogram(bins = 30, fill = "steelblue", alpha = 0.7) +
+  facet_wrap(~ metric, scales = "free", ncol = 2) +
+  labs(x = "Value", y = "Count") +
+  theme_minimal()
+```
+
+## Key takeaways
+
+*chromExtract()* accepts a generic peak table — produced by any
+peak-picking tool capable of emitting a CSV — and turns it into a
+ready-to-use `Chromatograms` object linked back to the raw data. In this
+document we:
+
+1. Built a peak table mimicking the export of an external peak-picking
+   tool.
+2. Imported it as a plain CSV — no proprietary format or
+   package-specific object required.
+3. Extracted the corresponding chromatographic signal from the raw mzML
+   files in a single call.
+4. Verified that external metadata (feature IDs, compound names, adducts)
+   were carried through automatically, preserving traceability from the
+   original peak list to the downstream analysis.
+5. Computed a panel of quality metrics with *calculateMetrics()* —
+   FWHM, signal-to-noise ratio, area under TIC, peak count, etc. — and
+   attached them directly to `chromData`.
+
+The only contract on the input is a `data.frame` with m/z and RT
+boundaries. This makes `Chromatograms` a tool-neutral hub for
+chromatographic data, accepting input from *MZmine*, *MS-DIAL*, *xcms*,
+custom Python scripts, or any tool able to produce a CSV. Combined with
+*calculateMetrics()*, the full pipeline from raw data to
+quality-annotated chromatograms is fully scripted and requires no
+tool-specific intermediate objects.
+
+## Session Info
+
+```{r}
+#| label: session-info
+sessionInfo()
+```
