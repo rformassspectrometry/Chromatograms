@@ -2,7 +2,10 @@
 
 ## Changes in 1.3.1
 
-- Addition of logo and align to BioC 3.23 release.  
+- Addition of logo and align to BioC 3.23 release.
+
+- Fix `ChromBackendSpectra` `spectraSortIndex` test to shuffle spectra first,
+  avoiding a spurious failure when input data is already sorted.
 
 # Version 1.1
 

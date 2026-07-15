@@ -1,7 +1,11 @@
 ---
-title: "Supplementary Material 2 — Interoperability workflow"
+title: "Supplementary Material 3: Interoperability workflow"
 subtitle: "Using *chromExtract()* to import external peak tables and run quality assessment"
-author: "Philippine Louail"
+author:
+  - "Philippine Louail"
+  - "Laurent Gatto"
+  - "Sebastian Gibb"
+  - "Johannes Rainer"
 date: today
 format:
   html:
@@ -11,9 +15,33 @@ format:
     code-tools: true
     embed-resources: true
     theme: cosmo
+  pdf:
+    toc: true
+    toc-depth: 3
+    documentclass: article
+    geometry:
+      - margin=1in
+    fontsize: 11pt
+    number-sections: false
+    fig-pos: 'H'
 execute:
   warning: false
   message: false
+---
+
+**Supplementary Material for:**
+
+**Chromatograms: A modular infrastructure for scalable chromatographic data handling in R**
+
+Philippine Louail^1,2,\*^, Laurent Gatto^3^, Sebastian Gibb^4^, Johannes Rainer^1^
+
+^1^ Institute for Biomedicine, Eurac Research, Bolzano, Italy
+^2^ Chair for Bioinformatics, Friedrich-Schiller-University Jena, 07743 Jena, Germany
+^3^ Computational Biology and Bioinformatics, de Duve Institute, UCLouvain, Brussels, Belgium
+^4^ Department of Anaesthesiology and Intensive Care, University Medicine Greifswald, Greifswald, Germany
+
+\* Corresponding author: philippine.louail@outlook.com
+
 ---
 
 ## Motivation
@@ -23,7 +51,7 @@ different tools. A peak list produced by *MZmine*, *MS-DIAL*, *xcms*, or a
 custom script cannot usually be reused by a different package without
 format conversion or wrapper code.
 
-`Chromatograms` addresses this with *chromExtract()* — an R function that
+`Chromatograms` addresses this with *chromExtract()* - an R function that
 accepts a plain peak table (a `data.frame` containing m/z and retention-time
 boundaries together with feature identifiers) produced by *any* upstream
 peak-picking software, matches it against the raw mzML data, and returns
@@ -37,7 +65,7 @@ relies on the *ChromBackendSpectra* backend, which keeps a reference to
 the underlying `Spectra` object instead of summarising spectra into
 retention-time / intensity traces. The full per-spectrum m/z × intensity
 arrays therefore remain accessible, and *chromExtract()* can filter by
-m/z range when building the extracted-ion chromatograms — a step that
+m/z range when building the extracted-ion chromatograms - a step that
 would be impossible on a backend that had already collapsed the m/z
 dimension. Second, because *ChromBackendSpectra* delegates raw-data I/O
 to `Spectra`, *chromExtract()* inherits support for every backend that
@@ -86,7 +114,7 @@ knitr::kable(
 
 ## 1. Create a generic peak table
 
-In a real workflow this CSV would come from any peak-picking software —
+In a real workflow this CSV would come from any peak-picking software -
 *MZmine*, *MS-DIAL*, *xcms*, a custom Python script, or a commercial
 vendor export. The only requirement is that the file carries columns
 defining the m/z and RT boundaries of each feature.
@@ -152,7 +180,7 @@ if (length(all_mz) == 0 || length(all_int) == 0) {
   top_bins <- as.numeric(names(agg[seq_len(n_features)]))
 
   # For each bin, locate the precise m/z of the most intense individual peak
-  # (bin centers are rounded — using them directly with tight tolerance misses signal)
+  # (bin centers are rounded - using them directly with tight tolerance misses signal)
   top_mz <- vapply(top_bins, function(b) {
     idx <- which(abs(all_mz - b) < 0.05)
     if (length(idx) == 0) return(b)
@@ -188,7 +216,7 @@ peak_table_csv <- data.frame(
     mz_max = mz_center + mz_tol_da
   )
 
-# Write to CSV — this is the interchange format used between tools.
+# Write to CSV - this is the interchange format used between tools.
 csv_path <- file.path(getwd(), "PeakBoundary_Export.csv")
 write.csv(peak_table_csv, csv_path, row.names = FALSE)
 ```
@@ -208,7 +236,7 @@ knitr::kable(
 
 Read the CSV and reshape it into the format expected by *chromExtract()*.
 The function requires `mzMin`, `mzMax`, `rtMin`, `rtMax`, and a `by`
-column to match against the `Chromatograms` object — every other column
+column to match against the `Chromatograms` object - every other column
 is preserved as metadata on the output.
 
 ```{r}
@@ -258,7 +286,7 @@ Passing a `Spectra` object to the `Chromatograms()` constructor produces
 an object backed by *ChromBackendSpectra*. This backend keeps a reference
 to the original `Spectra` rather than summarising the spectra into
 retention-time / intensity traces, so the full m/z × intensity arrays
-remain accessible per spectrum. Data are read lazily — nothing is loaded
+remain accessible per spectrum. Data are read lazily - nothing is loaded
 into memory until explicitly requested. This is what enables
 *chromExtract()*: with the m/z dimension preserved, the function can
 filter on m/z range and construct extracted-ion chromatograms (EICs) on
@@ -268,7 +296,7 @@ traces would no longer carry enough information for m/z-based extraction.
 ```{r}
 #| label: create-base-chr
 # Create a Chromatograms object backed by ChromBackendSpectra.
-# The Spectra object is kept by reference — the m/z dimension is preserved.
+# The Spectra object is kept by reference - the m/z dimension is preserved.
 chr_base <- Chromatograms(sps, chromData = peak_input)
 
 chr_base
@@ -287,7 +315,7 @@ carries the m/z dimension and cannot be used with *chromExtract()*.
 ```{r}
 #| label: chromExtract-demo
 # Create a broad Chromatograms (full RT range, per-file, per-msLevel).
-# The backend is ChromBackendSpectra — the m/z dimension is preserved.
+# The backend is ChromBackendSpectra - the m/z dimension is preserved.
 chr_broad <- Chromatograms(sps)
 
 chr_broad
@@ -448,22 +476,22 @@ ggplot(plot_data, aes(x = value)) +
 
 ## Key takeaways
 
-*chromExtract()* accepts a generic peak table — produced by any
-peak-picking tool capable of emitting a CSV — and turns it into a
+*chromExtract()* accepts a generic peak table - produced by any
+peak-picking tool capable of emitting a CSV - and turns it into a
 ready-to-use `Chromatograms` object linked back to the raw data. In this
 document we:
 
 1. Built a peak table mimicking the export of an external peak-picking
    tool.
-2. Imported it as a plain CSV — no proprietary format or
+2. Imported it as a plain CSV - no proprietary format or
    package-specific object required.
 3. Extracted the corresponding chromatographic signal from the raw mzML
    files in a single call.
 4. Verified that external metadata (feature IDs, compound names, adducts)
    were carried through automatically, preserving traceability from the
    original peak list to the downstream analysis.
-5. Computed a panel of quality metrics with *calculateMetrics()* —
-   FWHM, signal-to-noise ratio, area under TIC, peak count, etc. — and
+5. Computed a panel of quality metrics with *calculateMetrics()* -
+   FWHM, signal-to-noise ratio, area under TIC, peak count, etc. - and
    attached them directly to `chromData`.
 
 The only contract on the input is a `data.frame` with m/z and RT

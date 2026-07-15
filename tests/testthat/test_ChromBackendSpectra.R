@@ -493,33 +493,37 @@ test_that("factorize() recalculates spectraSortIndex correctly - in-memory backe
 })
 
 test_that("factorize() works correctly with on-disk spectra backend", {
-    # Use the pre-loaded on-disk spectra from test setup (be_sp)
-    cb_test <- be_sp
+    # Shuffle so the spectra are unsorted and the sort index must be populated
+    set.seed(123)
+    sp_shuffled <- be_sp@spectra[sample(length(be_sp@spectra))]
+    cb_test <- backendInitialize(ChromBackendSpectra(), spectra = sp_shuffled)
 
-    # Verify initial state
     expect_true(length(cb_test@spectra) > 0)
     expect_true(length(cb_test@spectraSortIndex) > 0)
+    expect_false(identical(cb_test@spectraSortIndex,
+                           seq_along(cb_test@spectra)))
 
-    # Verify sort index produces sorted rtimes within groups
+    # Applying the sort index produces rtimes sorted within each group
     sorted_rtimes <- cb_test@spectra$rtime[cb_test@spectraSortIndex]
     sorted_dataOrigin <- cb_test@spectra$dataOrigin[cb_test@spectraSortIndex]
-    # Check rtimes are sorted within each dataOrigin group
     for (do in unique(sorted_dataOrigin)) {
         rtimes_in_group <- sorted_rtimes[sorted_dataOrigin == do]
         expect_true(all(diff(rtimes_in_group) >= 0))
     }
 
+    # rtime() output is sorted within each chromatogram despite unsorted spectra
+    for (r in rtime(cb_test))
+        expect_true(all(diff(r) >= 0))
+
     # Factorize with different grouping
     cb_single <- factorize(cb_test, factorize.by = "dataOrigin")
-
-    # Should have one row per unique dataOrigin
     expect_true(nrow(cb_single@chromData) >= 1)
 
-    # spectraSortIndex should still be valid
     expect_true(all(cb_single@spectraSortIndex <= length(cb_single@spectra)))
-    sorted_rtimes_new <- cb_single@spectra$rtime[cb_single@spectraSortIndex]
-    sorted_dataOrigin_new <- cb_single@spectra$dataOrigin[cb_single@spectraSortIndex]
-    # Check rtimes are sorted within each dataOrigin group
+    eff_idx <- if (length(cb_single@spectraSortIndex))
+        cb_single@spectraSortIndex else seq_along(cb_single@spectra)
+    sorted_rtimes_new <- cb_single@spectra$rtime[eff_idx]
+    sorted_dataOrigin_new <- cb_single@spectra$dataOrigin[eff_idx]
     for (do in unique(sorted_dataOrigin_new)) {
         rtimes_in_group <- sorted_rtimes_new[sorted_dataOrigin_new == do]
         expect_true(all(diff(rtimes_in_group) >= 0))
