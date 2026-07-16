@@ -1,7 +1,11 @@
 ---
-title: "Supplementary Material 3 — Lazy-evaluation benchmark"
+title: "Supplementary Material 2: Lazy-evaluation benchmark"
 subtitle: "Effect of execution strategy, backend, and access pattern on a three-step chromatographic processing pipeline"
-author: "Philippine Louail"
+author:
+  - "Philippine Louail"
+  - "Laurent Gatto"
+  - "Sebastian Gibb"
+  - "Johannes Rainer"
 date: today
 format:
   html:
@@ -11,15 +15,39 @@ format:
     code-tools: true
     embed-resources: true
     theme: cosmo
+  pdf:
+    toc: true
+    toc-depth: 3
+    documentclass: article
+    geometry:
+      - margin=1in
+    fontsize: 11pt
+    number-sections: false
+    fig-pos: 'H'
 execute:
   warning: false
   message: false
 ---
 
+**Supplementary Material for:**
+
+**Chromatograms: A modular infrastructure for scalable chromatographic data handling in R**
+
+Philippine Louail^1,2,\*^, Laurent Gatto^3^, Sebastian Gibb^4^, Johannes Rainer^1^
+
+^1^ Institute for Biomedicine, Eurac Research, Bolzano, Italy
+^2^ Chair for Bioinformatics, Friedrich-Schiller-University Jena, 07743 Jena, Germany
+^3^ Computational Biology and Bioinformatics, de Duve Institute, UCLouvain, Brussels, Belgium
+^4^ Department of Anaesthesiology and Intensive Care, University Medicine Greifswald, Greifswald, Germany
+
+\* Corresponding author: philippine.louail@outlook.com
+
+---
+
 ## Motivation
 
-Legacy R/Bioconductor infrastructures for mass spectrometry data — most
-notably the *MChromatograms* class in *MSnbase*/*xcms* — apply every
+Legacy R/Bioconductor infrastructures for mass spectrometry data - most
+notably the *MChromatograms* class in *MSnbase*/*xcms* - apply every
 data-manipulation operation immediately and to the entire object. The
 *Chromatograms* package follows a different model, taking direct
 inspiration from the *Spectra*/*MSnbase* design[^1][^2]: a **lazy
@@ -53,6 +81,7 @@ pipeline under six scenarios that vary two dimensions:
 ```{r}
 #| label: setup
 #| output: false
+set.seed(123)
 library(Chromatograms)
 library(Spectra)
 library(MsBackendMetaboLights)
@@ -85,10 +114,10 @@ knitr::kable(sys_info, col.names = c("Property", "Value"),
 We load all available mzML files from MetaboLights (MTBLS8735) and prepare
 two starting objects:
 
-- `chr_spectra` — backed by *ChromBackendSpectra* (on-disk, lazy). The raw
+- `chr_spectra` - backed by *ChromBackendSpectra* (on-disk, lazy). The raw
   m/z × intensity arrays remain on disk; data are only read when explicitly
   accessed.
-- `chr_memory` — backed by *ChromBackendMemory* (in-memory), created via
+- `chr_memory` - backed by *ChromBackendMemory* (in-memory), created via
   *setBackend()*, which materialises all chromatographic data into memory.
   This one-time cost is not included in the benchmarks below.
 
@@ -109,7 +138,7 @@ mzml_files <- unique(dataOrigin(sps))
 chr_spectra <- Chromatograms(sps)
 
 # In-memory Chromatograms (ChromBackendMemory)
-# setBackend() reads and summarizes all spectra — a one-time cost.
+# setBackend() reads and summarizes all spectra - a one-time cost.
 chr_memory <- setBackend(chr_spectra, ChromBackendMemory())
 
 knitr::kable(
@@ -128,18 +157,18 @@ knitr::kable(
 
 All six scenarios apply the same three-step pipeline:
 
-1. *filterPeaksData()* — remove data points with intensity ≤ 100.
-2. *imputePeaksData()* — fill gaps by linear interpolation.
-3. *filterPeaksData()* — restrict to a 200–400 s retention-time window.
+1. *filterPeaksData()* - remove data points with intensity ≤ 100.
+2. *imputePeaksData()* - fill gaps by linear interpolation.
+3. *filterPeaksData()* - restrict to a 200–400 s retention-time window.
 
 The scenarios differ along two dimensions:
 
 **Execution strategy.** In *immediate* mode, *applyProcessing()* is called
 after each step, forcing immediate evaluation across **all** chromatograms
-— this mirrors the behaviour of most existing software, where every
+- this mirrors the behaviour of most existing software, where every
 operation reads and writes the full dataset. In *lazy* mode the
 transformations are queued, and the queue is evaluated only when actual
-data are requested — and only for the chromatograms requested.
+data are requested - and only for the chromatograms requested.
 
 **Final data access.** *Pipeline 1* calls *intensity(chr)*, which
 retrieves intensities from every chromatogram and therefore forces the
@@ -158,7 +187,7 @@ rt_window <- c(200, 400)
 
 # Helper to extract elapsed time (s) and peak RAM (MB) from a peakRAM()
 # result. peakRAM measures the high-water mark of resident RAM during the
-# expression — more meaningful than bench::mark()'s cumulative profmem
+# expression - more meaningful than bench::mark()'s cumulative profmem
 # allocation for "how much memory does this need at any moment".
 summarise_pr <- function(pr) {
   c(elapsed_s = as.numeric(pr$Elapsed_Time_sec),
@@ -169,7 +198,7 @@ summarise_pr <- function(pr) {
 ### Scenario (a): in-memory + immediate + full access
 
 Baseline. *applyProcessing()* is called after each step, forcing
-immediate evaluation across all chromatograms — three full passes over
+immediate evaluation across all chromatograms - three full passes over
 the data. The final *intensity()* call simply reads already-processed
 data. This mirrors the behaviour of most traditional tools.
 
@@ -193,7 +222,7 @@ res_a
 
 Same as (a), but the final call requests data from a single
 chromatogram. The timing is comparable to (a) because the three
-*applyProcessing()* calls have already processed the full dataset — the
+*applyProcessing()* calls have already processed the full dataset - the
 subset at the end saves negligible time.
 
 ```{r}
@@ -214,7 +243,7 @@ res_b
 
 ### Scenario (c): in-memory + lazy + full access
 
-No *applyProcessing()* calls — the three steps are queued. *intensity(chr)*
+No *applyProcessing()* calls - the three steps are queued. *intensity(chr)*
 then triggers evaluation of the full queue on **all** chromatograms at once.
 The total work is comparable to (a), but performed in a single pass rather
 than three.
@@ -236,7 +265,7 @@ res_c
 
 The key scenario. The same three steps are queued, but
 *peaksData(chr\[3\])* requests data from a **single** chromatogram. The
-`[` operator subsets the object *without* evaluating the queue — it
+`[` operator subsets the object *without* evaluating the queue - it
 simply carries the pending operations forward. *peaksData()* then
 evaluates the queue **only** for that one chromatogram, skipping all
 others entirely.
@@ -422,13 +451,13 @@ Lazy evaluation combined with subset access (d
 operator carries the pending queue without evaluating it, only one
 chromatogram is processed. The resulting speed-up against the immediate
 baseline (a) is **≈ `r format(round(res_a["elapsed_s"] / res_d["elapsed_s"]), big.mark = ",")`×**
-— i.e.
+- i.e.
 `r round(log10(res_a["elapsed_s"] / res_d["elapsed_s"]), 1)`
 orders of magnitude.
 
 ### The cost of on-disk full access
 
-Scenario (e) — on-disk, lazy, full access — is the most memory-intensive
+Scenario (e) - on-disk, lazy, full access - is the most memory-intensive
 of the six (peak RAM ≈ `r round(res_e["peak_mem_Mb"])` MB), roughly
 `r round(res_e["peak_mem_Mb"] / res_a["peak_mem_Mb"], 1)`× the peak
 footprint of the in-memory equivalents, and slower than lazy in-memory
@@ -453,22 +482,22 @@ The results suggest a two-stage workflow for large datasets:
 1. **Start on disk when the full dataset does not fit in memory.**
    *ChromBackendSpectra* avoids loading all raw data upfront. Combined
    with lazy evaluation, it lets the user build a processing pipeline
-   and explore targeted subsets — individual chromatograms, RT windows,
-   specific samples — without paying the cost of full materialisation.
+   and explore targeted subsets - individual chromatograms, RT windows,
+   specific samples - without paying the cost of full materialisation.
 
 2. **Switch the subset of interest to the in-memory backend.** Once the
    relevant chromatograms have been identified, calling *setBackend()*
    on the subset converts it to *ChromBackendMemory*. Subsequent
-   operations — repeated access, visualisation, iterative analysis —
+   operations - repeated access, visualisation, iterative analysis -
    then benefit from in-memory speed without I/O overhead.
 
 Crucially, **repeated full-data access from an on-disk backend should be
 avoided**. Scenario (e) shows it to be both the slowest and the most
 memory-intensive pattern. The on-disk backend is designed for selective,
-lazy access — not as a substitute for in-memory storage when the full
+lazy access - not as a substitute for in-memory storage when the full
 dataset is needed repeatedly.
 
-In summary, the lazy processing queue is not merely a convenience — it
+In summary, the lazy processing queue is not merely a convenience - it
 is a performance mechanism. By deferring computation until data are
 accessed, subsetting filters *what gets processed and loaded*, not just
 what gets returned. Combined with backend switching, this enables
@@ -485,6 +514,73 @@ still achieving almost immediate response times for targeted queries.
    Processing and Visualization of Raw Mass Spectrometry Data. *J Proteome
    Res.* 2020; 19(4):1063–1069.
    doi:[10.1021/acs.jproteome.0c00313](https://doi.org/10.1021/acs.jproteome.0c00313)
+
+
+## Key results for manuscript
+
+```{r}
+#| label: key-results
+#| echo: false
+key_results <- data.frame(
+  Scenario = c(
+    "(a) Memory + Immediate + All",
+    "(a) Memory + Immediate + All",
+    "(b) Memory + Immediate + Single",
+    "(b) Memory + Immediate + Single",
+    "(c) Memory + Lazy + All",
+    "(c) Memory + Lazy + All",
+    "(d) Memory + Lazy + Single",
+    "(d) Memory + Lazy + Single",
+    "(e) Disk + Lazy + All",
+    "(e) Disk + Lazy + All",
+    "(f) Disk + Lazy + Single",
+    "(f) Disk + Lazy + Single",
+    "Derived",
+    "Derived",
+    "Derived"
+  ),
+  Metric = c(
+    "elapsed (s)",
+    "peak memory (MB)",
+    "elapsed (s)",
+    "peak memory (MB)",
+    "elapsed (s)",
+    "peak memory (MB)",
+    "elapsed (s)",
+    "peak memory (MB)",
+    "elapsed (s)",
+    "peak memory (MB)",
+    "elapsed (s)",
+    "peak memory (MB)",
+    "Lazy speed-up: (a) elapsed / (d) elapsed",
+    "Lazy speed-up: (a) elapsed / (c) elapsed",
+    "Memory reduction: (e) peak / (d) peak"
+  ),
+  Value = c(
+    sprintf("%.2f", res_a["elapsed_s"]),
+    sprintf("%.1f", res_a["peak_mem_Mb"]),
+    sprintf("%.2f", res_b["elapsed_s"]),
+    sprintf("%.1f", res_b["peak_mem_Mb"]),
+    sprintf("%.2f", res_c["elapsed_s"]),
+    sprintf("%.1f", res_c["peak_mem_Mb"]),
+    sprintf("%.2f", res_d["elapsed_s"]),
+    sprintf("%.1f", res_d["peak_mem_Mb"]),
+    sprintf("%.2f", res_e["elapsed_s"]),
+    sprintf("%.1f", res_e["peak_mem_Mb"]),
+    sprintf("%.2f", res_f["elapsed_s"]),
+    sprintf("%.1f", res_f["peak_mem_Mb"]),
+    sprintf("%.0fx (10^%.1f)",
+            res_a["elapsed_s"] / res_d["elapsed_s"],
+            log10(res_a["elapsed_s"] / res_d["elapsed_s"])),
+    sprintf("%.1fx", res_a["elapsed_s"] / res_c["elapsed_s"]),
+    sprintf("%.1fx", res_e["peak_mem_Mb"] / res_d["peak_mem_Mb"])
+  )
+)
+knitr::kable(
+  key_results,
+  caption = "Headline numbers used in the main manuscript. Re-check these against the paper after each rendering."
+)
+```
 
 ## Session Info
 
