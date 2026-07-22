@@ -2,6 +2,12 @@
 
 ## Changes in 1.3.1
 
+- Improve performance of `peakBoundary()`: the valleys flanking the apex
+  are now located by scanning outwards from it instead of locating every
+  valley in the chromatogram with `MsCoreUtils::valleys()`. Results are
+  unchanged; chromatograms containing `NA` still take the `valleys()`
+  path. About 2x faster on real EICs.
+
 - Addition of logo and align to BioC 3.23 release.
 
 - Fix `ChromBackendSpectra` `spectraSortIndex` test to shuffle spectra first,

@@ -1001,9 +1001,9 @@
 
 #' Compute peak boundaries for a single chromatogram.
 #'
-#' Finds the retention time boundaries of the tallest peak in a chromatogram
-#' using `MsCoreUtils::valleys()` to locate the flanking valleys. When the
-#' valley intensities exceed a baseline-relative threshold, falls back to a
+#' Finds the retention time boundaries of the tallest peak in a chromatogram by
+#' scanning outwards from the apex to the flanking valleys. When the valley
+#' intensities exceed a baseline-relative threshold, falls back to a
 #' threshold-based boundary search.
 #'
 #' Used in:
@@ -1028,19 +1028,36 @@
                                baselineQuantile = 0.1) {
     n <- length(intensity)
     na_res <- c(NA_real_, NA_real_)
-    if (n < 3L || all(is.na(intensity)))
+    if (n < 3L)
         return(na_res)
-    max_int <- max(intensity, na.rm = TRUE)
+    max_idx <- which.max(intensity)          # integer(0) if all NA
+    if (!length(max_idx))
+        return(na_res)
+    max_int <- intensity[max_idx]
     if (max_int == 0)
         return(na_res)
-    max_idx <- which.max(intensity)
+    has_na <- anyNA(intensity)
     baseline_int <- quantile(intensity, probs = baselineQuantile,
-                             na.rm = TRUE)
+                             na.rm = TRUE, names = FALSE)
     peak_height <- max_int - baseline_int
     baseline_thresh <- baseline_int + peak_height * baselineThreshold
-    v <- valleys(intensity, max_idx)
-    left_idx  <- if ("left" %in% colnames(v)) v[1L, "left"] else 1L
-    right_idx <- if ("right" %in% colnames(v)) v[1L, "right"] else n
+    ## Flanking valleys: scan outwards from the apex to match valleys() (strict
+    ## `<` on the left keeps a flat minimum at its first index). NA defers.
+    if (has_na) {
+        v <- valleys(intensity, max_idx)
+        left_idx  <- if ("left"  %in% colnames(v)) v[1L, "left"]  else 1L
+        right_idx <- if ("right" %in% colnames(v)) v[1L, "right"] else n
+    } else {
+        left_idx <- max_idx
+        while (left_idx > 1L && !(intensity[left_idx] < intensity[left_idx - 1L] &&
+               (left_idx == n || intensity[left_idx] <= intensity[left_idx + 1L])))
+            left_idx <- left_idx - 1L
+        right_idx <- max_idx
+        while (right_idx < n && !((right_idx == 1L ||
+               intensity[right_idx] < intensity[right_idx - 1L]) &&
+               intensity[right_idx] <= intensity[right_idx + 1L]))
+            right_idx <- right_idx + 1L
+    }
     left_ok <- !is.na(intensity[left_idx]) &&
         intensity[left_idx] <= baseline_thresh &&
         !(left_idx > 1L && is.na(intensity[left_idx - 1L]))

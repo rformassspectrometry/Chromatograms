@@ -1730,3 +1730,64 @@ test_that(".resolve_labels errors on non-character or length != 1", {
     expect_error(.resolve_labels(c_full, c("mz", "msLevel")),
                  "single character string")
 })
+
+test_that(".peak_boundary_one matches the valleys()-based reference", {
+    ## The inlined valley scan must reproduce the boundaries the previous
+    ## implementation derived from MsCoreUtils::valleys(), including on the
+    ## plateau, flat and NA traces that stress its comparison semantics.
+    ref <- function(rtime, intensity, threshold = 0.1,
+                    baselineThreshold = 0.1, baselineQuantile = 0.1) {
+        n <- length(intensity)
+        na_res <- c(NA_real_, NA_real_)
+        if (n < 3L || all(is.na(intensity))) return(na_res)
+        max_int <- max(intensity, na.rm = TRUE)
+        if (max_int == 0) return(na_res)
+        max_idx <- which.max(intensity)
+        baseline_int <- quantile(intensity, probs = baselineQuantile,
+                                 na.rm = TRUE)
+        peak_height <- max_int - baseline_int
+        baseline_thresh <- baseline_int + peak_height * baselineThreshold
+        v <- valleys(intensity, max_idx)
+        left_idx  <- if ("left" %in% colnames(v)) v[1L, "left"] else 1L
+        right_idx <- if ("right" %in% colnames(v)) v[1L, "right"] else n
+        left_ok <- !is.na(intensity[left_idx]) &&
+            intensity[left_idx] <= baseline_thresh &&
+            !(left_idx > 1L && is.na(intensity[left_idx - 1L]))
+        right_ok <- !is.na(intensity[right_idx]) &&
+            intensity[right_idx] <= baseline_thresh &&
+            !(right_idx < n && is.na(intensity[right_idx + 1L]))
+        if (!left_ok || !right_ok) {
+            thresh_val <- baseline_int + peak_height * threshold
+            left_cand  <- which(intensity[seq_len(max_idx)] <= thresh_val)
+            right_cand <- which(intensity[max_idx:n] <= thresh_val)
+            left_idx  <- if (length(left_cand)) max(left_cand) else 1L
+            right_idx <- if (length(right_cand))
+                max_idx + min(right_cand) - 1L else n
+        }
+        c(unname(rtime[left_idx]), unname(rtime[right_idx]))
+    }
+    set.seed(4)
+    ## Sweep baselineQuantile too, so the inlined type-7 quantile is exercised
+    ## across the probability range, not just the default.
+    for (i in seq_len(500)) {
+        n <- sample(3:60, 1)
+        x <- as.numeric(switch(sample(1:4, 1),
+                               round(rnorm(n) * 3), rnorm(n),
+                               rep(1, n), cumsum(rnorm(n))))
+        if (i %% 3L == 0L) x[sample(n, max(1L, n %/% 10L))] <- NA_real_
+        rt <- as.numeric(seq_len(n))
+        bq <- c(0, 0.1, 0.25, 0.5, 0.9, 1)[(i %% 6L) + 1L]
+        expect_equal(.peak_boundary_one(rt, x, baselineQuantile = bq),
+                     ref(rt, x, baselineQuantile = bq))
+    }
+})
+
+test_that(".peak_boundary_one handles degenerate input", {
+    expect_identical(.peak_boundary_one(1:2, c(1, 2)), c(NA_real_, NA_real_))
+    expect_identical(.peak_boundary_one(1:4, rep(NA_real_, 4)),
+                     c(NA_real_, NA_real_))
+    expect_identical(.peak_boundary_one(1:4, rep(0, 4)), c(NA_real_, NA_real_))
+    ## a single non-NA point among NA must not error
+    res_one <- .peak_boundary_one(1:5, c(NA, NA, 5, NA, NA))
+    expect_length(res_one, 2L)
+})
