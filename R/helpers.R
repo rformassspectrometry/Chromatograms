@@ -306,8 +306,7 @@
 #' non-NA values remain.
 #'
 #' Used in:
-#' - `.build_intensity_matrix()`
-#' - `.compute_chrom_intensities()`
+#' - `.spectrum_intensities()`
 #' @noRd
 .strip_na_peaks <- function(mz_j, int_j) {
   if (!anyNA(int_j))
@@ -325,8 +324,7 @@
 #' included) positions for each m/z range in `mzMins`/`mzMaxs`.
 #'
 #' Used in:
-#' - `.build_intensity_matrix()`
-#' - `.compute_chrom_intensities()`
+#' - `.spectrum_intensities()`
 #' @noRd
 .mz_boundaries <- function(mzMins, mzMaxs, mz_j) {
   list(
@@ -427,14 +425,14 @@
 
 #' Compute intensities for one spectrum across one or more m/z ranges.
 #'
-#' Core per-spectrum logic shared by `.build_intensity_matrix()` (matrix
-#' path) and `.compute_chrom_intensities()` (vector path).  Dispatches
-#' through three branches: TIC/BPC (no m/z filtering), cumsum (for
+#' Core per-spectrum logic shared by `.build_intensity_matrix()` (shared-rt
+#' matrix path) and the spectrum-major sweep in `.process_peaks_data()`.
+#' Dispatches through three branches: TIC/BPC (no m/z filtering), cumsum (for
 #' `sumi`), and generic (e.g. `maxi`).
 #'
 #' Used in:
 #' - `.build_intensity_matrix()`
-#' - `.compute_chrom_intensities()`
+#' - `.process_peaks_data()`
 #'
 #' @param mz_j,int_j Numeric vectors of m/z and intensity for one spectrum.
 #' @param mzMins,mzMaxs Numeric vectors of m/z bounds (length = n ranges).
@@ -495,37 +493,13 @@
   int_mat
 }
 
-#' Compute intensity vector for a single chromatogram (different-rt path).
-#'
-#' Thin wrapper around `.spectrum_intensities()` that returns a vector
-#' (one value per spectrum) for a single m/z range.
-#'
-#' Used in:
-#' - `.process_peaks_data()`
-#'
-#' @param valid_mz,valid_int Lists of m/z and intensity vectors.
-#' @param kept Integer indices into `valid_*` for spectra in this chrom's
-#'   rt window.
-#' @param mz_lo,mz_hi Scalar m/z bounds for this chromatogram.
-#' @param fun Summary function.
-#' @param use_cumsum Logical: use cumsum optimisation?
-#' @return Numeric vector of length `length(kept)`.
-#' @noRd
-.compute_chrom_intensities <- function(valid_mz, valid_int, kept, mz_lo,
-                                       mz_hi, fun, use_cumsum) {
-  all_tic <- is.infinite(mz_lo) && mz_lo < 0 && is.infinite(mz_hi)
-  vapply(kept, function(j)
-    .spectrum_intensities(valid_mz[[j]], valid_int[[j]],
-                          mz_lo, mz_hi, fun, all_tic, use_cumsum),
-    numeric(1), USE.NAMES = FALSE)
-}
-
 #' Compute peaks data from Spectra for ChromBackendSpectra.
 #'
-#' Main orchestrator that converts raw spectra into chromatographic peaks data
-#' by aggregating intensities within defined m/z and retention time ranges.
-#' Dispatches to `.build_intensity_matrix()` (shared-rt path) or
-#' `.compute_chrom_intensities()` (per-chromatogram path).
+#' Aggregates spectra intensities within each chromatogram's m/z and rt range.
+#' Shared rt windows use `.build_intensity_matrix()`; otherwise a spectrum-major
+#' sweep aggregates each spectrum once for every chromatogram it falls in. Both
+#' need `valid_rt` sorted ascending, which the `ChromBackendSpectra`
+#' `peaksData()` method guarantees (spectra ordered by `(dataOrigin, rtime)`).
 #'
 #' Used In:
 #' - `peaksData` for `ChromBackendSpectra` class.
@@ -542,7 +516,7 @@
   valid_int <- prep$valid_int
   n_valid <- prep$n_valid
   if (prep$same_rt) {
-    ## Optimized path: all chromatograms share the same rt range
+    ## Shared rt window: one spectrum-major matrix for all chromatograms.
     kept <- .rt_keep(valid_rt, prep$rt_mins[1L], prep$rt_maxs[1L], n_valid)
     n_kept <- length(kept)
     rtime_out <- valid_rt[kept]
@@ -550,30 +524,60 @@
       .build_intensity_matrix(valid_mz, valid_int, kept, prep$mzMins,
                               prep$mzMaxs, n_cd, fun, prep$all_tic,
                               prep$use_cumsum)
-    res <- lapply(seq_len(n_cd), function(i)
+    return(lapply(seq_len(n_cd), function(i)
       .make_chrom_entry(
         rtime_out,
         if (do_int && n_kept > 0L) int_mat[, i] else numeric(0L),
-        do_rt, do_int, columns, drop
-      ))
-  } else {
-    ## Fallback: per-chromatogram rt ranges differ
-    res <- vector("list", n_cd)
-    for (i in seq_len(n_cd)) {
-      kept <- .rt_keep(valid_rt, prep$rt_mins[i], prep$rt_maxs[i], n_valid)
-      n_kept <- length(kept)
-      rtime_out <- valid_rt[kept]
-      intensities <- if (do_int && n_kept > 0L)
-        .compute_chrom_intensities(valid_mz, valid_int, kept,
-                                   prep$mzMins[i], prep$mzMaxs[i],
-                                   fun, prep$use_cumsum)
-      else numeric(n_kept)
-      res[[i]] <- .make_chrom_entry(
-        rtime_out, intensities, do_rt, do_int, columns, drop
-      )
+        do_rt, do_int, columns, drop)))
+  }
+  ## Different rt windows: valid_rt is sorted, so each is a contiguous [lo, hi]
+  ## run. Aggregate each spectrum once, sharing it with every active window.
+  stopifnot(!is.unsorted(valid_rt))
+  lo <- integer(n_cd)
+  hi <- integer(n_cd)
+  for (i in seq_len(n_cd)) {
+    kept <- .rt_keep(valid_rt, prep$rt_mins[i], prep$rt_maxs[i], n_valid)
+    if (length(kept)) {
+      lo[i] <- kept[1L]
+      hi[i] <- kept[length(kept)]
+    } else {
+      lo[i] <- 1L
+      hi[i] <- 0L
     }
   }
-  res
+  n_kept <- hi - lo + 1L
+  n_kept[n_kept < 0L] <- 0L
+  out <- lapply(n_kept, function(m) rep(NA_real_, m))
+  if (do_int) {
+    is_tic <- is.infinite(prep$mzMins) & prep$mzMins < 0 &
+      is.infinite(prep$mzMaxs) & prep$mzMaxs > 0
+    nz <- which(n_kept > 0L)
+    starts <- split(nz, lo[nz])
+    ends <- split(nz, hi[nz])
+    active <- integer(0)
+    for (j in seq_len(n_valid)) {
+      sj <- starts[[as.character(j)]]
+      if (!is.null(sj))
+        active <- c(active, sj)
+      if (length(active)) {
+        vals <- .spectrum_intensities(
+          valid_mz[[j]], valid_int[[j]], prep$mzMins[active],
+          prep$mzMaxs[active], fun, all(is_tic[active]), prep$use_cumsum)
+        for (t in seq_along(active)) {
+          i <- active[t]
+          out[[i]][j - lo[i] + 1L] <- vals[t]
+        }
+      }
+      ej <- ends[[as.character(j)]]
+      if (!is.null(ej))
+        active <- active[!(active %in% ej)]
+    }
+  }
+  lapply(seq_len(n_cd), function(i)
+    .make_chrom_entry(
+      valid_rt[if (n_kept[i]) lo[i]:hi[i] else integer(0)],
+      if (do_int) out[[i]] else numeric(0L),
+      do_rt, do_int, columns, drop))
 }
 
 #' Used in:
