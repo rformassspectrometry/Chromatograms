@@ -329,6 +329,54 @@ test_that("peaksData works correctly with populated spectraSortIndex", {
     expect_true(all(sapply(pd, is.data.frame)))
 })
 
+test_that("peaksData aggregates overlapping different-rt windows correctly", {
+    ## Six spectra with ascending intensity on two m/z channels.
+    sp <- Spectra(DataFrame(
+        mz = NumericList(rep(list(c(100, 200)), 6), compress = FALSE),
+        intensity = NumericList(c(10, 5), c(20, 6), c(30, 7), c(40, 8),
+                                c(50, 9), c(60, 10), compress = FALSE),
+        rtime = as.numeric(1:6), msLevel = rep(1L, 6),
+        dataOrigin = rep("A", 6)))
+    ## Two m/z=100 windows overlapping at rt 3-4, plus one TIC window. This
+    ## exercises the spectrum-major path, where a spectrum shared by several
+    ## windows is aggregated once and fanned out.
+    pt <- data.frame(feature_id = c("f1", "f2", "f3"),
+                     mzMin = c(99, 99, -Inf), mzMax = c(101, 101, Inf),
+                     rtMin = c(1, 3, 1), rtMax = c(4, 6, 3),
+                     dataOrigin = "A", msLevel = 1L)
+    chr <- chromExtract(Chromatograms(sp), peak.table = pt,
+                        by = c("msLevel", "dataOrigin"))
+    pd <- peaksData(chr)
+    expect_equal(pd[[1]]$rtime, c(1, 2, 3, 4))
+    expect_equal(pd[[1]]$intensity, c(10, 20, 30, 40))
+    ## overlap: the shared spectra at rt 3-4 give f2 the same values as f1
+    expect_equal(pd[[2]]$rtime, c(3, 4, 5, 6))
+    expect_equal(pd[[2]]$intensity, c(30, 40, 50, 60))
+    ## TIC sums both channels
+    expect_equal(pd[[3]]$rtime, c(1, 2, 3))
+    expect_equal(pd[[3]]$intensity, c(15, 26, 37))
+})
+
+test_that("peaksData with different-rt windows is invariant to spectra order", {
+    sp <- Spectra(DataFrame(
+        mz = NumericList(rep(list(c(100, 200)), 6), compress = FALSE),
+        intensity = NumericList(c(10, 5), c(20, 6), c(30, 7), c(40, 8),
+                                c(50, 9), c(60, 10), compress = FALSE),
+        rtime = as.numeric(1:6), msLevel = rep(1L, 6),
+        dataOrigin = rep("A", 6)))
+    pt <- data.frame(feature_id = c("f1", "f2", "f3"),
+                     mzMin = c(99, 99, -Inf), mzMax = c(101, 101, Inf),
+                     rtMin = c(1, 3, 1), rtMax = c(4, 6, 3),
+                     dataOrigin = "A", msLevel = 1L)
+    sorted <- peaksData(chromExtract(Chromatograms(sp), peak.table = pt,
+                                     by = c("msLevel", "dataOrigin")))
+    ## Reordered input: the backend re-sorts, so peaksData must be unchanged.
+    shuffled <- peaksData(chromExtract(Chromatograms(sp[c(4, 1, 6, 2, 5, 3)]),
+                                       peak.table = pt,
+                                       by = c("msLevel", "dataOrigin")))
+    expect_equal(sorted, shuffled)
+})
+
 test_that("spectraSortIndex is set and used for sorting", {
     sp <- Spectra(DataFrame(
         mz = NumericList(c(1, 2), c(1, 2), c(1, 2), c(1, 2), compress = FALSE),
