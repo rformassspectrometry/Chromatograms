@@ -490,6 +490,9 @@ matchRtime <- function(x, y, tolerance = Inf, ...) {
 }
 
 #' @rdname peaksData
+#'
+#' @importMethodsFrom ProtGenerics compareChromatograms
+#'
 #' @export
 setMethod("compareChromatograms",
           signature(x = "Chromatograms", y = "Chromatograms"),

@@ -5,7 +5,6 @@
 [![codecov](https://codecov.io/gh/rformassspectrometry/Chromatograms/branch/main/graph/badge.svg?token=jy0Mid9gKn)](https://codecov.io/gh/rformassspectrometry/Chromatograms)
 [![license](https://img.shields.io/badge/license-Artistic--2.0-brightgreen.svg)](https://opensource.org/licenses/Artistic-2.0)
 
-
 This package, part of the [*R for Mass
 Spectrometry*](https://www.rformassspectrometry.org/) initiative,
 provides support for handling and analysing chromatographic mass spectrometry
@@ -28,21 +27,21 @@ chromatographic data, with the actual chromatographic MS data being stored
 within *backend* classes. Different implementations of backend classes can be
 designed for high performance or low memory footprint.
 
-The existing backend classes are: 
+The existing backend classes are:
 
 - `ChromBackendMemory`: a memory-based backend, storing the data in
   memory. This is the default backend and is used for testing purposes.
 - The `ChromBackendMzR` inherits all slots and methods from the base
-  `ChromBackendMemory` backend, providing additional functionality for reading 
+  `ChromBackendMemory` backend, providing additional functionality for reading
   chromatographic data from mzML files.
 
 - `ChromBackendSpectra`: The `ChromBackendSpectra` inherits all slots and
    methods from the base `ChromBackendMemory` backend, providing additional
    functionality for reading chromatographic data from `Spectra` objects.
-   
+
 These backend are then handled on a user level by the `Chromatograms` class,
 which provides a unified interface to access and manipulate the chromatographic
-data. 
+data.
 
 ## Installation
 
@@ -53,4 +52,7 @@ BiocManager::install("Chromatograms")
 
 ## Contributions
 
-Please the *R for Mass Spectrometry* [code of conduct](https://rformassspectrometry.github.io/RforMassSpectrometry/articles/RforMassSpectrometry.html#code-of-conduct) and [contribution guidelines](https://rformassspectrometry.github.io/RforMassSpectrometry/articles/RforMassSpectrometry.html#contributions).
+Please the *R for Mass Spectrometry* [code of
+conduct](https://rformassspectrometry.github.io/RforMassSpectrometry/articles/RforMassSpectrometry.html#code-of-conduct)
+and [contribution
+guidelines](https://rformassspectrometry.github.io/RforMassSpectrometry/articles/RforMassSpectrometry.html#contributions).
