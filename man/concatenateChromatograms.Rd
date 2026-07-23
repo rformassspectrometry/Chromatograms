@@ -40,8 +40,8 @@ chromatograms variables. Concatenation will fail if the processing queue
 of any of the \code{Chromatograms} objects is not empty or if different backends
 are used for the \code{Chromatograms} objects. In such cases it is suggested to
 first change the backends of all \code{Chromatograms} to the same type of
-backend (using the \code{\link[ProtGenerics:backendInitialize]{ProtGenerics::setBackend()}} function) and to eventually (if needed)
-apply the processing queue using the \code{\link[ProtGenerics:processingQueue]{ProtGenerics::applyProcessing()}} function.
+backend (using the \code{\link[ProtGenerics:setBackend]{setBackend()}} function) and to eventually (if needed)
+apply the processing queue using the \code{\link[ProtGenerics:applyProcessing]{applyProcessing()}} function.
 \item \code{split()}: splits the \code{Chromatograms} object based on a provided grouping
 factor returning a \code{list} of \code{Chromatograms} objects.
 }

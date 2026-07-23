@@ -29,7 +29,7 @@
 
 \item{f}{\code{factor} defining the grouping to split the \code{Chromatograms} object.}
 
-\item{BPPARAM}{Parallel setup configuration. See \code{\link[BiocParallel:register]{BiocParallel::bpparam()}}
+\item{BPPARAM}{Parallel setup configuration. See \code{\link[BiocParallel:bpparam]{BiocParallel::bpparam()}}
 for more information.}
 
 \item{...}{Additional arguments passed to the methods.}

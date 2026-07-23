@@ -1,6 +1,6 @@
 # Version 1.3
 
-## Changes in 1.3.2
+## Changes in 1.3.3
 
 - Improve performance of `peaksData()` for `ChromBackendSpectra` with
   overlapping chromatogram windows (e.g. from `chromExtract()`): each
@@ -12,12 +12,18 @@
   located by scanning outwards from it rather than scanning the whole
   chromatogram. Results are unchanged.
 
+## Changes in 1.3.2
+
+- Change `plotChromatograms()` and `plotChromatogramsOverlay()` to methods.
+- Import `compareChromatograms()` from *ProtGenerics*.
+
 ## Changes in 1.3.1
 
 - Addition of logo and align to BioC 3.23 release.
 
 - Fix `ChromBackendSpectra` `spectraSortIndex` test to shuffle spectra first,
   avoiding a spurious failure when input data is already sorted.
+  
 
 # Version 1.1
 

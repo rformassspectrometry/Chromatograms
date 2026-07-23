@@ -8,7 +8,7 @@ vignette: >
     %\VignetteEngine{knitr::rmarkdown}
     %\VignetteEncoding{UTF-8}
     %\VignettePackage{Chromatograms}
-    %\VignetteDepends{Chromatograms,BiocStyle,mzR,msdata,Spectra,MsBackendMetaboLights}
+    %\VignetteDepends{Chromatograms,BiocStyle,mzR,MsDataHub,Spectra,MsBackendMetaboLights}
 ---
 
 ```{r style, echo = FALSE, results = 'asis', message=FALSE}
@@ -209,9 +209,8 @@ demand. See section [Backends](#backends) for more details on backends and
 their properties.
 
 ```{r}
-MRM_file <- system.file("proteomics", "MRM-standmix-5.mzML.gz",
-    package = "msdata"
-)
+library(MsDataHub)
+MRM_file <- MRM.standmix.5.mzML()
 
 be <- backendInitialize(ChromBackendMzR(),
     files = MRM_file,

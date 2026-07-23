@@ -14,7 +14,7 @@ ChromBackendMzR()
 
 \item{files}{A character vector of file paths to mzML files.}
 
-\item{BPPARAM}{Parallel setup configuration. See \code{\link[BiocParallel:register]{BiocParallel::bpparam()}}
+\item{BPPARAM}{Parallel setup configuration. See \code{\link[BiocParallel:bpparam]{BiocParallel::bpparam()}}
 for more information.}
 
 \item{...}{Additional parameters to be passed.}
@@ -44,12 +44,10 @@ simplified as much as possible and reuse the methods already implemented for
 }
 \examples{
 library(mzR)
-library(msdata)
+library(MsDataHub)
 
 ## Load an mzML file
-MRM_file <- system.file("proteomics", "MRM-standmix-5.mzML.gz",
-    package = "msdata"
-)
+MRM_file <- MRM.standmix.5.mzML()
 
 ## Initialize the ChromBackendMzR object
 be_empty <- ChromBackendMzR()

@@ -243,16 +243,18 @@ of the single column requested.}
 
 \item{peak.table}{For \code{chromExtract()} A \verb{data frame} containing the
 following minimum columns:
-- rtMin: Minimum retention time for each peak. Cannot be NA.
-- rtMax: Maximum retention time for each peak. Cannot be NA.
-- mzMin: Minimum m/z value for each peak.
-- mzMax: Maximum m/z value for each peak.
+\itemize{
+\item rtMin: Minimum retention time for each peak. Cannot be NA.
+\item rtMax: Maximum retention time for each peak. Cannot be NA.
+\item mzMin: Minimum m/z value for each peak.
+\item mzMax: Maximum m/z value for each peak.
 Additionally, the \code{peak.table} must include columns that uniquely
 identify chromatograms in the \code{object}. Common choices are
 "msLevel" and/or "dataOrigin". These columns must also be present
 in the \code{chromData} of the \code{object}. Any extra columns in
 \code{peak.table} will be added to the \code{chromData} of the newly created
-object.}
+object.
+}}
 
 \item{by}{for \code{chromExtract() }A \code{character} vector specifying one or more
 column names that are present in both \code{peak.table} and
@@ -264,7 +266,7 @@ The combination of these columns must be unique in
 
 \item{j}{For \code{[} and \code{[[}: ignored.}
 
-\item{BPPARAM}{Parallel setup configuration. See \code{\link[BiocParallel:register]{BiocParallel::bpparam()}}
+\item{BPPARAM}{Parallel setup configuration. See \code{\link[BiocParallel:bpparam]{BiocParallel::bpparam()}}
 for more information.}
 
 \item{f}{\code{factor} defining the grouping to split \code{x}. See \code{\link[=split]{split()}}.}
@@ -477,7 +479,7 @@ support \code{logical} and eventually \code{character}). While being apparently
 redundant to \code{[}, this methods avoids package namespace errors/problems
 that can result in implementations of \code{[} being not found by R (which
 can happen sometimes in parallel processing using the
-\code{\link[BiocParallel:SnowParam-class]{BiocParallel::SnowParam()}}). This method is used internally to
+\code{\link[BiocParallel:SnowParam]{BiocParallel::SnowParam()}}). This method is used internally to
 extract/subset its backend. Implementation of this method is mandatory.
 \item \code{peaksData()}: returns a \code{list} of \code{data.frame} with the data
 (e.g. retention time - intensity pairs) from each chromatogram. The length

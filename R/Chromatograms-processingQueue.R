@@ -101,8 +101,11 @@
 #' @return Refer to the individual function description for information on the
 #'         return value.
 #'
-#' @importMethodsFrom ProtGenerics processingChunkSize processingChunkSize<-
-#'   processingChunkFactor
+#' @importMethodsFrom ProtGenerics processingChunkSize
+#'
+#' @importMethodsFrom ProtGenerics processingChunkSize<-
+#'
+#' @importMethodsFrom ProtGenerics processingChunkFactor
 #'
 #' @examples
 #' # Create a Chromatograms object

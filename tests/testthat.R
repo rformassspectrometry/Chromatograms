@@ -4,6 +4,7 @@ library(Spectra)
 library(MsBackendMetaboLights) ## remove MsbackendMetaboLights dependency for test and examples
 library(IRanges)
 library(S4Vectors)
+library(MsDataHub)
 
 ### Test ChromBackendSpectra
 be <- backendInitialize(MsBackendMetaboLights(),
@@ -23,9 +24,7 @@ c_sp <- Chromatograms(be)
 
 ### Test ChrombackendMzR
 # fetch files
-MRM_file <- system.file("proteomics", "MRM-standmix-5.mzML.gz",
-    package = "msdata"
-)
+MRM_file <- MRM.standmix.5.mzML()
 be_empty <- ChromBackendMzR()
 be <- backendInitialize(be_empty, files = MRM_file, BPPARAM = SerialParam())
 

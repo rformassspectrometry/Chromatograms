@@ -33,7 +33,7 @@ Imports:
     MsCoreUtils (>= 1.7.5),
     Spectra
 Suggests:
-    msdata (>= 0.19.3),
+    MsDataHub,
     roxygen2,
     BiocStyle (>= 2.5.19),
     testthat,
@@ -52,7 +52,6 @@ BugReports: https://github.com/RforMassSpectrometry/Chromatograms/issues
 URL: https://github.com/RforMassSpectrometry/Chromatograms
 biocViews: Infrastructure, Metabolomics, MassSpectrometry, Proteomics
 Roxygen: list(markdown=TRUE)
-RoxygenNote: 7.3.3
 Collate:
     'AllGenerics.R'
     'ChromBackend-functions.R'
@@ -67,3 +66,4 @@ Collate:
     'Chromatograms-peaksData.R'
     'Chromatograms-plot.R'
     'Chromatograms-processingQueue.R'
+Config/roxygen2/version: 8.0.0

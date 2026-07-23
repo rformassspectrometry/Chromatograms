@@ -148,7 +148,7 @@ object.}
 
 \item{f}{\code{factor} defining the grouping to split the \code{Chromatograms} object.}
 
-\item{BPPARAM}{Parallel setup configuration. See \code{\link[BiocParallel:register]{BiocParallel::bpparam()}}
+\item{BPPARAM}{Parallel setup configuration. See \code{\link[BiocParallel:bpparam]{BiocParallel::bpparam()}}
 for more information.}
 
 \item{drop}{\code{logical(1)} For \code{peaksData()}, default to \code{FALSE}. If \code{TRUE},
@@ -334,7 +334,7 @@ other (the \emph{overlap}). Within that range, it builds a shared RT grid from
 all of \code{x}'s RT points, adding any RT points from \code{y} that have no close
 match in \code{x} (within \code{tolerance}). Both intensity vectors are then linearly
 interpolated at grid positions they do not natively cover, using
-\code{\link[stats:approxfun]{stats::approx()}}. If either chromatogram has fewer than 2 data points, or
+\code{\link[stats:approx]{stats::approx()}}. If either chromatogram has fewer than 2 data points, or
 the two chromatograms do not overlap, empty vectors are returned.
 
 The \code{tolerance} parameter (default \code{Inf}, meaning all RT points are
