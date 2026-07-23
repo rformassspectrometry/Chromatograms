@@ -2,11 +2,12 @@
 % Please edit documentation in R/Chromatograms-plot.R
 \name{plotChromatograms}
 \alias{plotChromatograms}
-\alias{plotChromatogramsOverlay}
+\alias{plotChromatograms,Chromatograms-method}
+\alias{plotChromatogramsOverlay,Chromatograms-method}
 \title{Plot chromatograms}
 \usage{
-plotChromatograms(
-  x,
+\S4method{plotChromatograms}{Chromatograms}(
+  object,
   xlab = "rtime (s)",
   ylab = "intensity",
   type = "o",
@@ -21,8 +22,8 @@ plotChromatograms(
   ...
 )
 
-plotChromatogramsOverlay(
-  x,
+\S4method{plotChromatogramsOverlay}{Chromatograms}(
+  object,
   xlab = "rtime (s)",
   ylab = "intensity",
   type = "o",
@@ -31,7 +32,7 @@ plotChromatogramsOverlay(
   lwd = 1.5,
   xlim = numeric(),
   ylim = numeric(),
-  main = paste(length(x), "chromatograms"),
+  main = paste(length(object), "chromatograms"),
   col = "#00000080",
   axes = TRUE,
   frame.plot = axes,
@@ -39,7 +40,7 @@ plotChromatogramsOverlay(
 )
 }
 \arguments{
-\item{x}{A \link{Chromatograms} object.}
+\item{object}{A \link{Chromatograms} object.}
 
 \item{xlab}{\code{character(1)} with the label for the x-axis (by default
 \code{xlab = "rtime (s)"}).}

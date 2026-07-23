@@ -87,7 +87,7 @@ will be mapped using the \code{chromSpectraIndex} variable.}
 
 \item{f}{\code{factor} defining the grouping to split the \code{Chromatograms} object.}
 
-\item{BPPARAM}{Parallel setup configuration. See \code{\link[BiocParallel:register]{BiocParallel::bpparam()}}
+\item{BPPARAM}{Parallel setup configuration. See \code{\link[BiocParallel:bpparam]{BiocParallel::bpparam()}}
 for more information.}
 
 \item{x}{A \link{Chromatograms} object.}
@@ -105,16 +105,18 @@ access.}
 
 \item{peak.table}{For \code{chromExtract()} A \verb{data frame} containing the
 following minimum columns:
-- rtMin: Minimum retention time for each peak. Cannot be NA.
-- rtMax: Maximum retention time for each peak. Cannot be NA.
-- mzMin: Minimum m/z value for each peak.
-- mzMax: Maximum m/z value for each peak.
+\itemize{
+\item rtMin: Minimum retention time for each peak. Cannot be NA.
+\item rtMax: Maximum retention time for each peak. Cannot be NA.
+\item mzMin: Minimum m/z value for each peak.
+\item mzMax: Maximum m/z value for each peak.
 Additionally, the \code{peak.table} must include columns that uniquely
 identify chromatograms in the \code{object}. Common choices are
 "msLevel" and/or "dataOrigin". These columns must also be present
 in the \code{chromData} of the \code{object}. Any extra columns in
 \code{peak.table} will be added to the \code{chromData} of the newly created
-object.}
+object.
+}}
 
 \item{by}{A \code{character} vector naming one or more columns that uniquely
 identify chromatograms in both \code{peak.table} and

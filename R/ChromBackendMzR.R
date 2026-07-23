@@ -41,12 +41,10 @@ NULL
 #'
 #' @examples
 #' library(mzR)
-#' library(msdata)
+#' library(MsDataHub)
 #'
 #' ## Load an mzML file
-#' MRM_file <- system.file("proteomics", "MRM-standmix-5.mzML.gz",
-#'     package = "msdata"
-#' )
+#' MRM_file <- MRM.standmix.5.mzML()
 #'
 #' ## Initialize the ChromBackendMzR object
 #' be_empty <- ChromBackendMzR()

@@ -1,5 +1,10 @@
 # Version 1.3
 
+## Changes in 1.3.2
+
+- Change `plotChromatograms()` and `plotChromatogramsOverlay()` to methods.
+- Import `compareChromatograms()` from *ProtGenerics*.
+
 ## Changes in 1.3.1
 
 - Addition of logo and align to BioC 3.23 release.

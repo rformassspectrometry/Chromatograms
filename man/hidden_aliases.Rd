@@ -5,6 +5,7 @@
 \docType{methods}
 \name{reset}
 \alias{reset}
+\alias{plotChromatogramsOverlay}
 \alias{fillCoreChromVariables}
 \alias{validChromData}
 \alias{validPeaksData}
@@ -55,6 +56,8 @@
 \title{Fill data.frame with columns for missing core chromatogram variables.}
 \usage{
 reset(object, ...)
+
+plotChromatogramsOverlay(object, ...)
 
 fillCoreChromVariables(x = data.frame())
 
