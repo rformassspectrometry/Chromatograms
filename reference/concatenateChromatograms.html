@@ -8,8 +8,8 @@ chromatograms variables. Concatenation will fail if the processing queue
 of any of the Chromatograms objects is not empty or if different backends
 are used for the Chromatograms objects. In such cases it is suggested to
 first change the backends of all Chromatograms to the same type of
-backend (using the ProtGenerics::setBackend() function) and to eventually (if needed)
-apply the processing queue using the ProtGenerics::applyProcessing() function.
+backend (using the setBackend() function) and to eventually (if needed)
+apply the processing queue using the applyProcessing() function.
 split(): splits the Chromatograms object based on a provided grouping
 factor returning a list of Chromatograms objects.
 
@@ -31,7 +31,7 @@ factor returning a list of Chromatograms objects.
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">Chromatograms</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.3.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.3.2</span>
       </span>
     </div>
 
@@ -84,8 +84,8 @@ chromatograms variables. Concatenation will fail if the processing queue
 of any of the <code>Chromatograms</code> objects is not empty or if different backends
 are used for the <code>Chromatograms</code> objects. In such cases it is suggested to
 first change the backends of all <code>Chromatograms</code> to the same type of
-backend (using the <code><a href="https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html" class="external-link">ProtGenerics::setBackend()</a></code> function) and to eventually (if needed)
-apply the processing queue using the <code><a href="https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html" class="external-link">ProtGenerics::applyProcessing()</a></code> function.</p></li>
+backend (using the <code><a href="https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html" class="external-link">setBackend()</a></code> function) and to eventually (if needed)
+apply the processing queue using the <code><a href="https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html" class="external-link">applyProcessing()</a></code> function.</p></li>
 <li><p><code><a href="https://rdrr.io/r/base/split.html" class="external-link">split()</a></code>: splits the <code>Chromatograms</code> object based on a provided grouping
 factor returning a <code>list</code> of <code>Chromatograms</code> objects.</p></li>
 </ul></div>
@@ -175,7 +175,7 @@ containing the data from all input objects.</p></li>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ... 4 more  chromatogram variables/columns</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ... 2 peaksData variables</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Processing:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Merged 2 Chromatograms into one [Thu Jul 16 10:07:06 2026] </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Merged 2 Chromatograms into one [Thu Jul 23 09:38:13 2026] </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## Combine using concatenateChromatograms</span></span></span>
 <span class="r-in"><span><span class="va">chr_combined2</span> <span class="op">&lt;-</span> <span class="fu">concatenateChromatograms</span><span class="op">(</span><span class="va">chr1</span>, <span class="va">chr2</span><span class="op">)</span></span></span>
@@ -195,7 +195,7 @@ containing the data from all input objects.</p></li>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ... 2 more  chromatogram variables/columns</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ... 2 peaksData variables</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Processing:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Merged 2 Chromatograms into one [Thu Jul 16 10:07:06 2026] </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Merged 2 Chromatograms into one [Thu Jul 23 09:38:13 2026] </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $`2`</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Chromatographic data (Chromatograms) with 2 chromatograms in a ChromBackendMemory backend:</span>
@@ -205,7 +205,7 @@ containing the data from all input objects.</p></li>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ... 2 more  chromatogram variables/columns</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> ... 2 peaksData variables</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> Processing:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  Merged 2 Chromatograms into one [Thu Jul 16 10:07:06 2026] </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  Merged 2 Chromatograms into one [Thu Jul 23 09:38:13 2026] </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

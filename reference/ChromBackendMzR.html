@@ -30,7 +30,7 @@ ChromBackendMemory when possible.'><meta property="og:image" content="/logo.png"
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">Chromatograms</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.3.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.3.2</span>
       </span>
     </div>
 
@@ -133,17 +133,12 @@ return value.</p>
     <h2>Examples</h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/sneumann/mzR/" class="external-link">mzR</a></span><span class="op">)</span></span></span>
 <span class="r-msg co"><span class="r-pr">#&gt;</span> Loading required package: Rcpp</span>
-<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">msdata</span><span class="op">)</span></span></span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span> </span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>  IMPORTANT: msdata will be deprecated and replaced by the new</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>  MsDataHub package -- see https://bioconductor.org/packages/MsDataHub.</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>  Please open an issue at https://github.com/rformassspectrometry/MsDataHub/issues</span>
-<span class="r-msg co"><span class="r-pr">#&gt;</span>  to inform us of any data from msdata that would need to be moved to MsDataHub.</span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rformassspectrometry.github.io/MsDataHub" class="external-link">MsDataHub</a></span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## Load an mzML file</span></span></span>
-<span class="r-in"><span><span class="va">MRM_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"proteomics"</span>, <span class="st">"MRM-standmix-5.mzML.gz"</span>,</span></span>
-<span class="r-in"><span>    package <span class="op">=</span> <span class="st">"msdata"</span></span></span>
-<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">MRM_file</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rformassspectrometry.github.io/MsDataHub/reference/MRM.html" class="external-link">MRM.standmix.5.mzML</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> see ?MsDataHub and browseVignettes('MsDataHub') for documentation</span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> loading from cache</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co">## Initialize the ChromBackendMzR object</span></span></span>
 <span class="r-in"><span><span class="va">be_empty</span> <span class="op">&lt;-</span> <span class="fu">ChromBackendMzR</span><span class="op">(</span><span class="op">)</span></span></span>

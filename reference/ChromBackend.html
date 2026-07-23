@@ -43,7 +43,7 @@ Filter the peak data based on the provided ranges for the given variables."><met
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">Chromatograms</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.3.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.3.2</span>
       </span>
     </div>
 
@@ -364,17 +364,17 @@ of the single column requested.</p></dd>
 
 <dt id="arg-peak-table">peak.table<a class="anchor" aria-label="anchor" href="#arg-peak-table"></a></dt>
 <dd><p>For <code><a href="Chromatograms.html">chromExtract()</a></code> A <code>data frame</code> containing the
-following minimum columns:
-- rtMin: Minimum retention time for each peak. Cannot be NA.
-- rtMax: Maximum retention time for each peak. Cannot be NA.
-- mzMin: Minimum m/z value for each peak.
-- mzMax: Maximum m/z value for each peak.
+following minimum columns:</p><ul><li><p>rtMin: Minimum retention time for each peak. Cannot be NA.</p></li>
+<li><p>rtMax: Maximum retention time for each peak. Cannot be NA.</p></li>
+<li><p>mzMin: Minimum m/z value for each peak.</p></li>
+<li><p>mzMax: Maximum m/z value for each peak.
 Additionally, the <code>peak.table</code> must include columns that uniquely
 identify chromatograms in the <code>object</code>. Common choices are
 "msLevel" and/or "dataOrigin". These columns must also be present
 in the <code>chromData</code> of the <code>object</code>. Any extra columns in
 <code>peak.table</code> will be added to the <code>chromData</code> of the newly created
-object.</p></dd>
+object.</p></li>
+</ul></dd>
 
 
 <dt id="arg-by">by<a class="anchor" aria-label="anchor" href="#arg-by"></a></dt>
