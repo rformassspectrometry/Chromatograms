@@ -1,0 +1,406 @@
+---
+title: "Benchmark C: Interoperable, cohort-scale targeted reanalysis"
+subtitle: "Recovering published biomarkers across a public cohort with *chromExtract()*"
+author:
+  - "Philippine Louail"
+  - "Laurent Gatto"
+  - "Sebastian Gibb"
+  - "Johannes Rainer"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    code-fold: false
+    code-tools: true
+    embed-resources: true
+    theme: cosmo
+  pdf:
+    toc: true
+    toc-depth: 3
+    documentclass: article
+    geometry:
+      - margin=1in
+    fontsize: 11pt
+    number-sections: false
+    fig-pos: 'H'
+execute:
+  warning: false
+  message: false
+---
+
+**Supplementary Material for:**
+
+**Chromatograms: A modular infrastructure for scalable chromatographic data handling in R**
+
+Philippine Louail^1,2,\*^, Laurent Gatto^3^, Sebastian Gibb^4^, Johannes Rainer^1^
+
+^1^ Institute for Biomedicine, Eurac Research, Bolzano, Italy
+^2^ Chair for Bioinformatics, Friedrich-Schiller-University Jena, 07743 Jena, Germany
+^3^ Computational Biology and Bioinformatics, de Duve Institute, UCLouvain, Brussels, Belgium
+^4^ Department of Anaesthesiology and Intensive Care, University Medicine Greifswald, Greifswald, Germany
+
+\* Corresponding author: philippine.louail@outlook.com
+
+---
+
+## Motivation
+
+Once a study has annotated a set of compounds (m/z and retention time), those
+annotations can be revisited in the raw data: pulled out and re-quantified,
+across the whole cohort or in new samples. Doing this the untargeted way -
+re-running peak detection, alignment and correspondence - is expensive. The
+[Metabonaut](https://rformassspectrometry.github.io/Metabonaut/) large-scale
+analysis tutorial performs exactly that untargeted *xcms* workflow on the
+cohort used here, and it takes many hours of processing and hundreds of GB of
+intermediate data.
+
+`Chromatograms::chromExtract()` offers a lightweight, targeted alternative.
+Given a plain peak table of m/z / retention-time windows, it pulls the
+corresponding extracted-ion chromatograms (EICs) directly from the raw data -
+no peak detection, no alignment - and returns a `Chromatograms` object. The
+recovered EICs are then quantified and quality-assessed with the package's own
+functions (`peakBoundary()`) together with *MsQuality*, and visualised with
+`plotChromatogramsOverlay()`. Because the workflow consumes *published
+annotations* and *raw public data*, it is tool-agnostic: the peak table can come
+from any study or software (*MZmine*, *MS-DIAL*, *xcms*, a vendor export, or, as
+here, a published table), and the resulting `Chromatograms` object flows on into
+any downstream analysis.
+
+This document reanalyses **MTBLS93** (Ganna *et al.* 2014, *PLOS Genetics*,
+doi:10.1371/journal.pgen.1004801; the TwinGene cohort, ~4063 MS1 samples),
+recovering the coronary-heart-disease lipid biomarkers the study annotated. It
+demonstrates, using native `Chromatograms` functionality throughout:
+
+1. targeted EIC extraction of the published biomarkers with `chromExtract()`;
+2. quantification and quality assessment with `peakBoundary()` and *MsQuality*;
+3. locating an annotation with no published retention time (SM 28:1) directly
+   from the data;
+4. how targeted extraction scales across the cohort (number of files).
+
+```{r}
+#| label: setup
+#| output: false
+library(Chromatograms)
+library(Spectra)
+library(MsBackendMetaboLights)
+library(MsQuality)
+library(BiocParallel)
+library(peakRAM)
+
+## Run serially so scaling reflects design, not the number of workers.
+register(SerialParam())
+```
+
+```{r}
+#| label: params
+## TEST RUN: small file count so the document renders quickly. The full-cohort
+## run (hundreds/thousands of files) is done separately.
+N_FILES  <- 3L
+RT_RANGE <- c(20, 900)   # elution window (s)
+```
+
+## System Information
+
+```{r}
+#| label: system-info
+#| code-fold: true
+knitr::kable(
+  data.frame(
+    Item  = c("CPU Cores", "R Version", "Platform", "Chromatograms Version"),
+    Value = c(
+      parallel::detectCores(),
+      R.version$version.string,
+      R.version$platform,
+      as.character(packageVersion("Chromatograms"))
+    )
+  ),
+  caption = "System information"
+)
+```
+
+## 1. Target compounds
+
+The four replicated biomarkers from the study (MSI level 1). Both the m/z
+(`[M+H]+`) and the retention times are taken from the article's targeted MS/MS
+confirmation figure (S2 Figure), which reports elution times in minutes:
+LysoPC 18:1 at 6.37 min (382.2 s), LysoPC 18:2 at 5.78 min (346.8 s) and
+MG 18:2 at 6.40 min (384.0 s). SM 28:1 is confirmed by accurate mass
+(m/z 661.526) but the article gives **no** retention time for it; Section 2.1
+shows how to locate it directly from the data before it joins the other targets.
+
+```{r}
+#| label: targets
+targets <- data.frame(
+  name = c("LysoPC_18:1", "LysoPC_18:2", "MG_18:2", "SM_28:1"),
+  mz   = c(522.356, 520.341, 337.269, 661.526),
+  rt   = c(382.2, 346.8, 384.0, NA),   # S2 Figure (min x 60), SM 28:1 not given
+  stringsAsFactors = FALSE
+)
+targets$mzmin <- targets$mz - 0.01
+targets$mzmax <- targets$mz + 0.01
+targets$rtmin <- targets$rt - 20
+targets$rtmax <- targets$rt + 20
+
+knitr::kable(targets, digits = 3, caption = "Annotated target biomarkers")
+```
+
+## 2. Import and subset
+
+MTBLS93 holds ~4063 MS1 files and ~800 GB of raw data, so we subset *before*
+touching the peaks: the file names are read from the assay table (metadata
+only), a deterministic subset (the first `N_FILES` files) is chosen, and only
+those files are loaded - `MsBackendMetaboLights` caches them on demand, so only
+the subset downloads. Retention time is restricted to the elution window to cut
+I/O.
+
+```{r}
+#| label: load-data
+#| output: false
+assay <- mtbls_assay_data("MTBLS93")
+ms1 <- unique(grep("01\\.CDF$",
+                   assay[["Raw Spectral Data File"]], value = TRUE))
+picked <- basename(head(ms1, N_FILES))
+sps <- Spectra(source = MsBackendMetaboLights(), mtblsId = "MTBLS93",
+               filePattern = paste0("(", paste(picked, collapse = "|"), ")$"))
+sps <- filterRt(sps, rt = RT_RANGE)
+files <- unique(dataOrigin(sps))
+```
+
+```{r}
+#| label: data-summary
+#| echo: false
+knitr::kable(
+  data.frame(
+    Item  = c("Files", "Total spectra", "RT range (s)"),
+    Value = c(length(files), length(sps),
+              paste(round(range(rtime(sps)), 1), collapse = " - "))
+  ),
+  caption = "Loaded MTBLS93 subset"
+)
+```
+
+### 2.1 Locating an unannotated retention time (SM 28:1)
+
+The article confirms SM 28:1 by accurate mass and MS/MS but does not report a
+retention time for it. Rather than borrow a value from an untargeted result, we
+locate it directly with the same targeted machinery, used here as a discovery
+step: extract the EIC across the *entire* elution window at the target m/z, see
+where the peak falls, then narrow the retention-time window and re-extract.
+
+```{r}
+#| label: sm-discover
+sm <- which(targets$name == "SM_28:1")
+
+## SM 28:1 over the full elution window, one row per file
+sm_table <- data.frame(
+  name = "SM_28:1", mzMin = targets$mzmin[sm], mzMax = targets$mzmax[sm],
+  rtMin = RT_RANGE[1], rtMax = RT_RANGE[2], msLevel = 1L, dataOrigin = files)
+sm_chr <- filterEmptyChromatograms(
+  chromExtract(Chromatograms(sps), peak.table = sm_table,
+               by = c("msLevel", "dataOrigin")))
+
+## consensus apex across the cohort: per-file apex retention time, median
+apex_rt <- mapply(function(int, rt) rt[which.max(int)],
+                  intensity(sm_chr), rtime(sm_chr))
+sm_rt <- round(median(apex_rt), 2)
+```
+
+Over the full window a single peak stands out; its consensus apex across the
+files is at `r sm_rt` s. We record that retention time and narrow the EIC we
+already extracted - `filterPeaksData()` trims each trace to the located window,
+no re-extraction from the raw data needed.
+
+```{r}
+#| label: fig-sm-discover
+#| fig-cap: "SM 28:1 EIC over the full elution window (left) and narrowed to the located peak (right). Dashed line: consensus apex."
+#| fig-width: 10
+#| fig-height: 4
+targets$rt[sm]    <- sm_rt
+targets$rtmin[sm] <- sm_rt - 20
+targets$rtmax[sm] <- sm_rt + 20
+
+sm_chr2 <- filterPeaksData(sm_chr, variables = "rtime",
+                           ranges = c(sm_rt - 20, sm_rt + 20))
+
+par(mfrow = c(1, 2), mar = c(4, 4, 3, 1))
+Chromatograms::plotChromatogramsOverlay(
+  sm_chr, col = "#0000AA55", main = "SM 28:1 - full window")
+abline(v = sm_rt, col = "red", lty = 2)
+Chromatograms::plotChromatogramsOverlay(
+  sm_chr2, col = "#0000AA55",
+  main = sprintf("SM 28:1 - narrowed (rt = %.1f s)", sm_rt))
+abline(v = sm_rt, col = "red", lty = 2)
+```
+
+With its retention time fixed at `r sm_rt` s, SM 28:1 joins the other three
+targets and is treated identically from here on.
+
+## 3. Extract EICs with *chromExtract()*
+
+The target table is expanded to one row per (target, file). `chromExtract()`
+requires `mzMin`, `mzMax`, `rtMin`, `rtMax` and the `by` columns. Every other
+column (here the compound name and expected m/z / rt) is carried through and
+preserved on the output `chromData`.
+
+```{r}
+#| label: build-peaktable
+peak_table <- data.frame(
+  name = targets$name, target_mz = targets$mz, target_rt = targets$rt,
+  mzMin = targets$mzmin, mzMax = targets$mzmax,
+  rtMin = targets$rtmin, rtMax = targets$rtmax,
+  msLevel = 1L, dataOrigin = rep(files, each = nrow(targets)))
+```
+
+```{r}
+#| label: chromextract
+chr <- chromExtract(Chromatograms(sps), peak.table = peak_table,
+                    by = c("msLevel", "dataOrigin"))
+chr <- filterEmptyChromatograms(chr)
+chr
+```
+
+The external metadata are preserved on `chromData`:
+
+```{r}
+#| label: show-chromdata
+#| echo: false
+cd <- chromData(chr)
+cd$dataOrigin <- basename(as.character(cd$dataOrigin))
+knitr::kable(
+  head(cd[, c("name", "target_mz", "target_rt",
+              "mzMin", "mzMax", "rtMin", "rtMax", "dataOrigin")], 6),
+  digits = 3, caption = "chromData of extracted EICs (first 6 rows)"
+)
+```
+
+## 4. Quantify and quality-assess the EICs
+
+Rather than integrate the traces by hand, we use the package's own peak
+functions. `peakBoundary()` locates the retention-time boundaries of the
+tallest peak in each EIC, and *MsQuality*'s `calculateMetrics()` computes
+abundance and shape metrics (apex intensity, area under the trace, peak width
+at half maximum). Both are attached to `chromData`.
+
+```{r}
+#| label: quantify
+bounds <- peakBoundary(chr)
+
+metrics <- calculateMetrics(
+  chr,
+  metrics = c("maxIntensity", "areaUnderTic", "xicFwhm"),
+  na.rm = TRUE, filterEmptyObject = FALSE, baselineQuantile = 0.1
+)
+metrics <- as.data.frame(metrics, row.names = NULL)
+
+chromData(chr) <- cbind(chromData(chr),
+                        left_boundary = bounds[, "left_boundary"],
+                        right_boundary = bounds[, "right_boundary"],
+                        metrics)
+```
+
+Per-target summary. The LysoPCs are high-abundance and recovered in every
+sample, MG 18:2 is weaker. The peak boundaries from `peakBoundary()` bracket
+the annotated retention time in every case.
+
+```{r}
+#| label: quant-summary
+#| echo: false
+cd <- chromData(chr)
+summ <- do.call(rbind, lapply(split(seq_len(nrow(cd)), cd$name), function(i) {
+  r <- cd[i, ]
+  tgt <- targets[targets$name == r$name[1], ]
+  brackets <- r$left_boundary <= tgt$rt & r$right_boundary >= tgt$rt
+  data.frame(
+    name = r$name[1],
+    n_files = nrow(r),
+    with_signal = sum(r$maxIntensity > 0, na.rm = TRUE),
+    boundary_brackets_rt = sum(brackets, na.rm = TRUE),
+    median_apex = round(median(r$maxIntensity, na.rm = TRUE)),
+    median_fwhm_s = round(median(r$xicFwhm, na.rm = TRUE), 2),
+    target_rt = tgt$rt
+  )
+}))
+knitr::kable(summ, row.names = FALSE,
+             caption = "Recovery, quantification and quality per target")
+```
+
+## 5. EIC overlay
+
+`plotChromatogramsOverlay()` overlays the extracted EICs across the subset for
+each target. A clear peak appears near the annotated retention time (dashed
+line), with the sample-to-sample retention-time drift characteristic of this
+cohort.
+
+```{r}
+#| label: fig-eic-overlay
+#| fig-cap: "Extracted-ion chromatograms of the annotated biomarkers across the subset (`plotChromatogramsOverlay()`). Dashed line: annotated retention time."
+#| fig-width: 14
+#| fig-height: 3.6
+cd <- chromData(chr)
+par(mfrow = c(1, nrow(targets)), mar = c(4, 4, 3, 1))
+for (nm in targets$name) {
+  tgt <- targets[targets$name == nm, ]
+  idx <- which(cd$name == nm)
+  Chromatograms::plotChromatogramsOverlay(
+    chr[idx], col = "#0000AA55",
+    main = sprintf("%s (m/z %.3f)", nm, tgt$mz))
+  abline(v = tgt$rt, col = "grey60", lty = 2)
+}
+```
+
+## 6. Scaling across the cohort
+
+The targeted workflow processes each file independently, so it scales with the
+number of files. We sweep the file count and record the time and peak RAM to
+extract all target EICs (materialised into memory with `setBackend()`), using
+`peakRAM`. This is the throughput of the extraction itself, over the same four
+biomarkers.
+
+```{r}
+#| label: scaling
+file_counts <- seq_len(N_FILES)   # test run; the full cohort is swept separately
+
+throughput <- do.call(rbind, lapply(file_counts, function(n) {
+  fsub <- files[seq_len(n)]
+  ssub <- sps[dataOrigin(sps) %in% fsub]
+  pt <- peak_table[peak_table$dataOrigin %in% fsub, ]
+  pr <- peakRAM(setBackend(Chromatograms(ssub, chromData = pt),
+                           ChromBackendMemory()))
+  data.frame(n_files = n,
+             extract_s = pr$Elapsed_Time_sec, peak_MB = pr$Peak_RAM_Used_MiB)
+}))
+knitr::kable(throughput, digits = 2, row.names = FALSE,
+             caption = "chromExtract throughput vs number of files")
+```
+
+```{r}
+#| label: fig-scaling
+#| fig-cap: "Targeted extraction time and peak RAM vs number of files."
+#| fig-width: 9
+#| fig-height: 4.5
+par(mfrow = c(1, 2))
+plot(throughput$n_files, throughput$extract_s, type = "b", pch = 19,
+     col = "#1B9E77", xlab = "number of files", ylab = "seconds",
+     main = "Extraction time")
+plot(throughput$n_files, throughput$peak_MB, type = "b", pch = 19,
+     col = "#D95F02", xlab = "number of files", ylab = "peak RAM (MiB)",
+     main = "Peak memory")
+```
+
+## Key takeaways
+
+Starting from a study's published annotations (m/z + retention time) and its
+raw public files, `chromExtract()` recovers the target compounds across a cohort
+in a single pass over the data.
+
+The untargeted route on the same cohort (the Metabonaut large-scale-analysis
+tutorial) requires many hours of *xcms* preprocessing. Targeted reanalysis with
+`chromExtract()` is a lightweight, annotation-driven alternative.
+
+## Session Info
+
+```{r}
+#| label: session-info
+sessionInfo()
+```
