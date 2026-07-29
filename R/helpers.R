@@ -681,12 +681,8 @@
              paste(missing_keys, collapse = ", "))
     }
 
-    ## Keep only the chromData rows matched by the peak table. Subsetting the
-    ## data.frame is all that is needed here: callers that also need the spectra
-    ## or peaks re-subset the backend themselves from `keep_idx`. Subsetting the
-    ## whole backend at this point would needlessly re-validate it (for
-    ## ChromBackendSpectra that re-stats every backing file via the Spectra
-    ## validity), which is pure overhead when only the chromData is used.
+    ## Subset the matched chromData only; callers re-subset the backend from
+    ## `keep_idx`. Avoids re-validating the whole backend here.
     keep_idx <- chrom_keys %in% peak_keys
     cd <- cd[keep_idx, , drop = FALSE]
     chrom_keys <- droplevels(chrom_keys[keep_idx])
