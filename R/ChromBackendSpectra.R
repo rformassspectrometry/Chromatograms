@@ -462,7 +462,7 @@ setMethod("chromExtract", "ChromBackendSpectra",
                   peak.table = peak.table,
                   by = by
               )
-              cd <- .chromData(matched$object)
+              cd <- matched$cd
               chrom_keys <- matched$chrom_keys
               peak_keys  <- matched$peak_keys
               cd_split <- split(cd, chrom_keys) ##  UT need to check that

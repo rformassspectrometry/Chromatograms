@@ -1,5 +1,13 @@
 # Version 1.3
 
+## Changes in 1.3.3
+
+- Improve `chromExtract()` performance: `.match_chromdata_peaktable()` now
+  subsets the matched `chromData` directly instead of the whole backend. This
+  avoids re-validating the backend on every call (which, for
+  `ChromBackendSpectra`, re-stated every backing file via the `Spectra`
+  validity), so `chromExtract()` no longer scales with the number of files.
+
 ## Changes in 1.3.2
 
 - Change `plotChromatograms()` and `plotChromatogramsOverlay()` to methods.
