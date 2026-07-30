@@ -94,9 +94,6 @@ register(SerialParam())
 
 ```{r}
 #| label: params
-## TEST RUN: small file count so the document renders quickly. The full-cohort
-## run (hundreds/thousands of files) is done separately.
-N_FILES  <- 3L
 RT_RANGE <- c(20, 900)   # elution window (s)
 ```
 
@@ -147,22 +144,14 @@ knitr::kable(targets, digits = 3, caption = "Annotated target biomarkers")
 
 ## 2. Import and subset
 
-MTBLS93 holds ~4063 MS1 files and ~800 GB of raw data, so we subset *before*
-touching the peaks: the file names are read from the assay table (metadata
-only), a deterministic subset (the first `N_FILES` files) is chosen, and only
-those files are loaded - `MsBackendMetaboLights` caches them on demand, so only
-the subset downloads. Retention time is restricted to the elution window to cut
-I/O.
+MTBLS93 holds ~4063 MS1 files and ~800 GB of raw data. This data is loaded
+below. Retention time is restricted to the elution window to cut I/O.
 
 ```{r}
 #| label: load-data
 #| output: false
-assay <- mtbls_assay_data("MTBLS93")
-ms1 <- unique(grep("01\\.CDF$",
-                   assay[["Raw Spectral Data File"]], value = TRUE))
-picked <- basename(head(ms1, N_FILES))
 sps <- Spectra(source = MsBackendMetaboLights(), mtblsId = "MTBLS93",
-               filePattern = paste0("(", paste(picked, collapse = "|"), ")$"))
+               filePattern = "01.CDF$")
 sps <- filterRt(sps, rt = RT_RANGE)
 files <- unique(dataOrigin(sps))
 ```
@@ -176,7 +165,7 @@ knitr::kable(
     Value = c(length(files), length(sps),
               paste(round(range(rtime(sps)), 1), collapse = " - "))
   ),
-  caption = "Loaded MTBLS93 subset"
+  caption = "Loaded MTBLS93 data set"
 )
 ```
 
@@ -185,20 +174,26 @@ knitr::kable(
 The article confirms SM 28:1 by accurate mass and MS/MS but does not report a
 retention time for it. Rather than borrow a value from an untargeted result, we
 locate it directly with the same targeted machinery, used here as a discovery
-step: extract the EIC across the *entire* elution window at the target m/z, see
-where the peak falls, then narrow the retention-time window and re-extract.
+step: extract the EIC across the *entire* elution window at the target m/z from
+a data subset (n = 10 files), see where the peak falls, then narrow the
+retention-time window and re-extract.
 
 ```{r}
 #| label: sm-discover
 sm <- which(targets$name == "SM_28:1")
 
+sps_sub <- filterDataOrigin(sps, files[1:10])
+
 ## SM 28:1 over the full elution window, one row per file
 sm_table <- data.frame(
   name = "SM_28:1", mzMin = targets$mzmin[sm], mzMax = targets$mzmax[sm],
-  rtMin = RT_RANGE[1], rtMax = RT_RANGE[2], msLevel = 1L, dataOrigin = files)
+  rtMin = RT_RANGE[1], rtMax = RT_RANGE[2], msLevel = 1L,
+  dataOrigin = files[1:10])
 sm_chr <- filterEmptyChromatograms(
-  chromExtract(Chromatograms(sps), peak.table = sm_table,
-               by = c("msLevel", "dataOrigin")))
+    chromExtract(Chromatograms(sps_sub, summarize.method = "max"),
+                 peak.table = sm_table,
+                 by = c("msLevel", "dataOrigin"))) |>
+    setBackend(backend = ChromBackendMemory())
 
 ## consensus apex across the cohort: per-file apex retention time, median
 apex_rt <- mapply(function(int, rt) rt[which.max(int)],
@@ -254,8 +249,10 @@ peak_table <- data.frame(
 
 ```{r}
 #| label: chromextract
-chr <- chromExtract(Chromatograms(sps), peak.table = peak_table,
+chr <- chromExtract(Chromatograms(sps, summarize.method = "max"),
+                    peak.table = peak_table,
                     by = c("msLevel", "dataOrigin"))
+chr <- setBackend(chr, backend = ChromBackendMemory())
 chr <- filterEmptyChromatograms(chr)
 chr
 ```
@@ -269,7 +266,7 @@ cd <- chromData(chr)
 cd$dataOrigin <- basename(as.character(cd$dataOrigin))
 knitr::kable(
   head(cd[, c("name", "target_mz", "target_rt",
-              "mzMin", "mzMax", "rtMin", "rtMax", "dataOrigin")], 6),
+              "mzMin", "mzMax", "dataOrigin")], 6),
   digits = 3, caption = "chromData of extracted EICs (first 6 rows)"
 )
 ```
@@ -287,9 +284,9 @@ at half maximum). Both are attached to `chromData`.
 bounds <- peakBoundary(chr)
 
 metrics <- calculateMetrics(
-  chr,
-  metrics = c("maxIntensity", "areaUnderTic", "xicFwhm"),
-  na.rm = TRUE, filterEmptyObject = FALSE, baselineQuantile = 0.1
+    chr,
+    metrics = c("maxIntensity", "areaUnderTic", "xicFwhm"),
+    na.rm = TRUE, filterEmptyObject = FALSE, baselineQuantile = 0.1
 )
 metrics <- as.data.frame(metrics, row.names = NULL)
 
@@ -308,18 +305,18 @@ the annotated retention time in every case.
 #| echo: false
 cd <- chromData(chr)
 summ <- do.call(rbind, lapply(split(seq_len(nrow(cd)), cd$name), function(i) {
-  r <- cd[i, ]
-  tgt <- targets[targets$name == r$name[1], ]
-  brackets <- r$left_boundary <= tgt$rt & r$right_boundary >= tgt$rt
-  data.frame(
-    name = r$name[1],
-    n_files = nrow(r),
-    with_signal = sum(r$maxIntensity > 0, na.rm = TRUE),
-    boundary_brackets_rt = sum(brackets, na.rm = TRUE),
-    median_apex = round(median(r$maxIntensity, na.rm = TRUE)),
-    median_fwhm_s = round(median(r$xicFwhm, na.rm = TRUE), 2),
-    target_rt = tgt$rt
-  )
+    r <- cd[i, ]
+    tgt <- targets[targets$name == r$name[1], ]
+    brackets <- r$left_boundary <= tgt$rt & r$right_boundary >= tgt$rt
+    data.frame(
+        name = r$name[1],
+        n_files = nrow(r),
+        with_signal = sum(r$maxIntensity > 0, na.rm = TRUE),
+        boundary_brackets_rt = sum(brackets, na.rm = TRUE),
+        median_apex = round(median(r$maxIntensity, na.rm = TRUE)),
+        median_fwhm_s = round(median(r$xicFwhm, na.rm = TRUE), 2),
+        target_rt = tgt$rt
+    )
 }))
 knitr::kable(summ, row.names = FALSE,
              caption = "Recovery, quantification and quality per target")
@@ -340,12 +337,12 @@ cohort.
 cd <- chromData(chr)
 par(mfrow = c(1, nrow(targets)), mar = c(4, 4, 3, 1))
 for (nm in targets$name) {
-  tgt <- targets[targets$name == nm, ]
-  idx <- which(cd$name == nm)
-  Chromatograms::plotChromatogramsOverlay(
-    chr[idx], col = "#0000AA55",
-    main = sprintf("%s (m/z %.3f)", nm, tgt$mz))
-  abline(v = tgt$rt, col = "grey60", lty = 2)
+    tgt <- targets[targets$name == nm, ]
+    idx <- which(cd$name == nm)
+    Chromatograms::plotChromatogramsOverlay(
+                       chr[idx], col = "#0000AA55",
+                       main = sprintf("%s (m/z %.3f)", nm, tgt$mz))
+    abline(v = tgt$rt, col = "grey60", lty = 2)
 }
 ```
 
@@ -359,13 +356,14 @@ biomarkers.
 
 ```{r}
 #| label: scaling
-file_counts <- seq_len(N_FILES)   # test run; the full cohort is swept separately
+file_counts <- c(1, 10, 50, 100, 500, 1000, 2000, 4000)
 
 throughput <- do.call(rbind, lapply(file_counts, function(n) {
   fsub <- files[seq_len(n)]
   ssub <- sps[dataOrigin(sps) %in% fsub]
   pt <- peak_table[peak_table$dataOrigin %in% fsub, ]
-  pr <- peakRAM(setBackend(Chromatograms(ssub, chromData = pt),
+  pr <- peakRAM(setBackend(Chromatograms(ssub, chromData = pt,
+                                         summarize.method = "max"),
                            ChromBackendMemory()))
   data.frame(n_files = n,
              extract_s = pr$Elapsed_Time_sec, peak_MB = pr$Peak_RAM_Used_MiB)
