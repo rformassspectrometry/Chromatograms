@@ -2,11 +2,13 @@
 
 ## Changes in 1.3.3
 
-- Improve `chromExtract()` performance: `.match_chromdata_peaktable()` now
-  subsets the matched `chromData` directly instead of the whole backend. This
-  avoids re-validating the backend on every call (which, for
-  `ChromBackendSpectra`, re-stated every backing file via the `Spectra`
-  validity), so `chromExtract()` no longer scales with the number of files.
+- Major `ChromBackendSpectra` performance improvement: `chromExtract()`,
+  `Chromatograms(spectra)`, `peaksData()` and `[` no longer re-validate the
+  wrapped `Spectra` on every call (which re-stated every backing file), so they
+  no longer scale with the number of files.
+
+- Order `dataOrigin` by first appearance when computing the spectra sort index,
+  consistent with `backendParallelFactor()`.
 
 ## Changes in 1.3.2
 
