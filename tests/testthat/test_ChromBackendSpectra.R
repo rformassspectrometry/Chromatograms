@@ -221,16 +221,18 @@ test_that("spectraSortIndex is set for unsorted data with multiple dataOrigins",
     cb <- ChromBackendSpectra()
     cb <- backendInitialize(cb, spectra = sp)
 
-    ## For unsorted data, spectraSortIndex should be set
+    ## For unsorted data, spectraSortIndex should be set. dataOrigin groups are
+    ## ordered by first appearance ("B" before "A"), then by rtime within group.
     expect_true(length(cb@spectraSortIndex) > 0)
-    expected_sort <- order(sp$dataOrigin, sp$rtime)
+    expected_sort <- order(factor(sp$dataOrigin, levels = unique(sp$dataOrigin)),
+                           sp$rtime)
     expect_identical(cb@spectraSortIndex, expected_sort)
 
     ## Verify sorting is correct
     sorted_do <- sp$dataOrigin[cb@spectraSortIndex]
     sorted_rt <- sp$rtime[cb@spectraSortIndex]
-    expect_identical(sorted_do, c("A", "A", "A", "B", "B", "B"))
-    expect_identical(sorted_rt, c(1, 2, 4, 3, 5, 6))
+    expect_identical(sorted_do, c("B", "B", "B", "A", "A", "A"))
+    expect_identical(sorted_rt, c(3, 5, 6, 1, 2, 4))
 })
 
 test_that("factorize() clears spectraSortIndex when data is sorted", {
@@ -378,8 +380,9 @@ test_that("[ maintains spectra and spectraSortIndex", {
     # spectraSortIndex should be set since data is unsorted
     expect_true(length(cb@spectraSortIndex) > 0)
 
-    # Verify spectraSortIndex is correctly set
-    expected_sort <- order(sp$dataOrigin, sp$rtime)
+    # Verify spectraSortIndex is correctly set (groups by first appearance)
+    expected_sort <- order(factor(sp$dataOrigin, levels = unique(sp$dataOrigin)),
+                           sp$rtime)
     expect_identical(cb@spectraSortIndex, expected_sort)
 
     # Get chromSpectraIndex before subsetting
