@@ -580,27 +580,26 @@
 #' - `backendInitialize()` for `ChrombackendSpectra`
 #' @noRd
 .spectra_format_chromData <- function(sps) {
-    res <- data.frame(
-        msLevel = unique(sps$msLevel),
-        rtMin = min(sps$rtime, na.rm = TRUE),
-        rtMax = max(sps$rtime, na.rm = TRUE),
+    sv <- intersect(
+        spectraVariables(sps), c("msLevel", "rtime", "dataOrigin", "polarity",
+                                 "scanWindowLowerMz", "scanWindowUpperMz",
+                                 "chromSpectraIndex"))
+    s <- spectraData(sps, sv)
+    data.frame(
+        msLevel = unique(s$msLevel),
+        rtMin = min(s$rtime, na.rm = TRUE),
+        rtMax = max(s$rtime, na.rm = TRUE),
         mzMin = -Inf,
         mzMax = Inf,
         mz = Inf,
-        dataOrigin = unique(sps$dataOrigin),
-        chromSpectraIndex = unique(sps$chromSpectraIndex)
+        dataOrigin = unique(s$dataOrigin),
+        chromSpectraIndex = unique(s$chromSpectraIndex),
+        polarity = s$polarity[1L],
+        scanWindowLowerLimit = ifelse("scanWindowLowerLimit" %in% sv,
+                                      s$scanWindowLowerLimit[1L], NA_real_),
+        scanWindowUpperLimit = ifelse("scanWindowUpperLimit" %in% sv,
+                                      s$scanWindowUpperLimit[1L], NA_real_)
     )
-    ## Add optional columns if present
-    if ("polarity" %in% spectraVariables(sps)) {
-        res$polarity <- sps$polarity[1]
-    }
-    if ("scanWindowLowerLimit" %in% spectraVariables(sps)) {
-        res$scanWindowLowerLimit <- sps$scanWindowLowerLimit[1]
-    }
-    if ("scanWindowUpperLimit" %in% spectraVariables(sps)) {
-        res$scanWindowUpperLimit <- sps$scanWindowUpperLimit[1]
-    }
-    res
 }
 
 #' Used in:
@@ -1059,4 +1058,3 @@
     }
     c(unname(rtime[left_idx]), unname(rtime[right_idx]))
 }
-
