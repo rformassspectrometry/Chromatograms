@@ -1,12 +1,6 @@
 ---
-title: "Supplementary Material 1: Demonstration of *xcms* integration and performance comparisons"
-subtitle: "`featureChromatograms()` or `chromatogram()` returning `MChromatograms` vs `Chromatograms` on the MTBLS8735 HILIC and MTBLS93 RPLC data set"
-author:
-  - "Philippine Louail"
-  - "Laurent Gatto"
-  - "Sebastian Gibb"
-  - "Johannes Rainer"
-date: today
+title: "Demonstration of *xcms* integration and performance comparisons"
+subtitle: "Supporting Information for: *Chromatograms: A modular infrastructure for scalable chromatographic data handling in R*"
 format:
   html:
     toc: true
@@ -23,6 +17,7 @@ format:
       - margin=1in
     fontsize: 11pt
     number-sections: false
+    keep-tex: true
     fig-pos: 'H'
 execute:
   warning: false
@@ -30,11 +25,16 @@ execute:
   cache: false
 ---
 
-**Supplementary Material for:**
-
-**Chromatograms: A modular infrastructure for scalable chromatographic data handling in R**
+```{=latex}
+\renewcommand{\thepage}{S\arabic{page}}
+\vspace{-2cm}
+```
 
 Philippine Louail^1,2,\*^, Laurent Gatto^3^, Sebastian Gibb^4^, Johannes Rainer^1^
+
+```{=latex}
+\scriptsize
+```
 
 ^1^ Institute for Biomedicine, Eurac Research, Bolzano, Italy
 ^2^ Chair for Bioinformatics, Friedrich-Schiller-University Jena, 07743 Jena, Germany
@@ -42,6 +42,10 @@ Philippine Louail^1,2,\*^, Laurent Gatto^3^, Sebastian Gibb^4^, Johannes Rainer^
 ^4^ Department of Anaesthesiology and Intensive Care, University Medicine Greifswald, Greifswald, Germany
 
 \* Corresponding author: philippine.louail@outlook.com
+
+```{=latex}
+\normalsize
+```
 
 ---
 

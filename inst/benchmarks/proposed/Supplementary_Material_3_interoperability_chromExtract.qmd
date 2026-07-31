@@ -1,12 +1,6 @@
 ---
-title: "Supplementary Material 3: Interoperable, cohort-scale targeted reanalysis"
-subtitle: "Recovering published biomarkers across a public cohort with *chromExtract()*"
-author:
-  - "Philippine Louail"
-  - "Laurent Gatto"
-  - "Sebastian Gibb"
-  - "Johannes Rainer"
-date: today
+title: "Interoperable, cohort-scale targeted reanalysis with Chromatograms"
+subtitle: "Supporting Information for: *Chromatograms: A modular infrastructure for scalable chromatographic data handling in R*"
 format:
   html:
     toc: true
@@ -31,11 +25,16 @@ execute:
   message: false
 ---
 
-**Supplementary Material for:**
-
-**Chromatograms: A modular infrastructure for scalable chromatographic data handling in R**
+```{=latex}
+\renewcommand{\thepage}{S\arabic{page}}
+\vspace{-2cm}
+```
 
 Philippine Louail^1,2,\*^, Laurent Gatto^3^, Sebastian Gibb^4^, Johannes Rainer^1^
+
+```{=latex}
+\scriptsize
+```
 
 ^1^ Institute for Biomedicine, Eurac Research, Bolzano, Italy
 ^2^ Chair for Bioinformatics, Friedrich-Schiller-University Jena, 07743 Jena, Germany
@@ -43,6 +42,10 @@ Philippine Louail^1,2,\*^, Laurent Gatto^3^, Sebastian Gibb^4^, Johannes Rainer^
 ^4^ Department of Anaesthesiology and Intensive Care, University Medicine Greifswald, Greifswald, Germany
 
 \* Corresponding author: philippine.louail@outlook.com
+
+```{=latex}
+\normalsize
+```
 
 ---
 
