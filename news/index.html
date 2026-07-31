@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">Chromatograms</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.3.2</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.3.3</span>
       </span>
     </div>
 
@@ -63,12 +63,17 @@
     <div class="section level2">
 <h2 class="page-header" data-toc-text="1.3" id="version-13">Version 1.3<a class="anchor" aria-label="anchor" href="#version-13"></a></h2>
 <div class="section level3">
-<h3 id="changes-in-1-3">Changes in 1.3.2<a class="anchor" aria-label="anchor" href="#changes-in-1-3"></a></h3>
+<h3 id="changes-in-1-3">Changes in 1.3.3<a class="anchor" aria-label="anchor" href="#changes-in-1-3"></a></h3>
+<ul><li><p>Major <code>ChromBackendSpectra</code> performance improvements: <code><a href="../reference/Chromatograms.html">chromExtract()</a></code>, <code>Chromatograms(spectra)</code>, <code><a href="../reference/peaksData.html">peaksData()</a></code> and <code>[</code> no longer re-validate the wrapped <code>Spectra</code> on every call (which re-stated every backing file), so they no longer scale with the number of files.</p></li>
+<li><p>Order <code>dataOrigin</code> by first appearance when computing the spectra sort index, consistent with <code><a href="https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html" class="external-link">backendParallelFactor()</a></code>.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="changes-in-1-3-1">Changes in 1.3.2<a class="anchor" aria-label="anchor" href="#changes-in-1-3-1"></a></h3>
 <ul><li>Change <code><a href="../reference/plotChromatograms.html">plotChromatograms()</a></code> and <code><a href="../reference/hidden_aliases.html">plotChromatogramsOverlay()</a></code> to methods.</li>
 <li>Import <code><a href="../reference/peaksData.html">compareChromatograms()</a></code> from <em>ProtGenerics</em>.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="changes-in-1-3-1">Changes in 1.3.1<a class="anchor" aria-label="anchor" href="#changes-in-1-3-1"></a></h3>
+<h3 id="changes-in-1-3-2">Changes in 1.3.1<a class="anchor" aria-label="anchor" href="#changes-in-1-3-2"></a></h3>
 <ul><li><p>Addition of logo and align to BioC 3.23 release.</p></li>
 <li><p>Fix <code>ChromBackendSpectra</code> <code>spectraSortIndex</code> test to shuffle spectra first, avoiding a spurious failure when input data is already sorted.</p></li>
 </ul></div>
