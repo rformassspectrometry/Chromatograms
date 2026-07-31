@@ -2,7 +2,7 @@
 
 ## Changes in 1.3.3
 
-- Major `ChromBackendSpectra` performance improvement: `chromExtract()`,
+- Major `ChromBackendSpectra` performance improvements: `chromExtract()`,
   `Chromatograms(spectra)`, `peaksData()` and `[` no longer re-validate the
   wrapped `Spectra` on every call (which re-stated every backing file), so they
   no longer scale with the number of files.

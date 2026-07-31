@@ -305,10 +305,10 @@ setMethod("factorize", "ChromBackendSpectra",
                 ## chromData is empty: create it from spectra
                 object@spectra <- .set_spectra_var(
                     object@spectra, "chromSpectraIndex", spectra_f)
-                full_sp <- rbindlist(
+                full_sp <- as.data.frame(rbindlist(
                     lapply(split(.spectra(object), spectra_f),
                            .spectra_format_chromData),
-                    use.names = TRUE, fill = TRUE)
+                    use.names = TRUE, fill = TRUE))
                 rownames(full_sp) <- NULL
                 object@chromData <- full_sp
             }
