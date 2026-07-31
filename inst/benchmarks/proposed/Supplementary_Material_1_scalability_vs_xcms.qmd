@@ -1,6 +1,6 @@
 ---
-title: "Benchmark A: feature chromatograms - legacy vs new return type"
-subtitle: "`featureChromatograms()` returning `MChromatograms` vs `Chromatograms` on the MTBLS8735 HILIC cohort"
+title: "Supplementary Material 1: Scalability benchmark against xcms"
+subtitle: "`featureChromatograms()` or `chromatogram()` returning `MChromatograms` vs `Chromatograms` on the MTBLS8735 HILIC and MTBLS93 RPLC data set"
 author:
   - "Philippine Louail"
   - "Laurent Gatto"
@@ -51,21 +51,37 @@ xcms version >= 4.11.2 [PR #837](https://github.com/sneumann/xcms/pull/837)
 supports in addition to the legacy `MChromatograms` chromatographic data
 infrastructure defined in the *MSnbase* R package also the new functionality
 from the *Chromatograms* package, i.e., all functions to extract chromatographic
-data, such as `featureChromatograms()` can return either `Chromatograms` object
-(with the lazy `ChromBackendSpectra` backend) or the legacy `MChromatograms`.
-After a full LC-MS data preprocessing, this function extracts one EIC per
-feature per sample.
+data, such as `featureChromatograms()` or `chromatogram()` can return either a
+`Chromatograms` object (with the lazy `ChromBackendSpectra` backend) or the
+legacy `MChromatograms`. *lazy* data in this context means that no actual data
+is realized and loaded into memory at the time of object creation, while *eager*
+refers to the traditional approach where all data is processed and loaded at the
+time of object creation. The `featureChromatograms()` function extracts EICs for
+LC-MS features after a full LC-MS data preprocessing while `chromatogram()`
+allows to extract EICs for pre-defined m/z - retention time ranges.
 
 On the **MTBLS8735** HILIC data set (preprocessed with *xcms*) we compare three
-objects built from the same features - each feature area padded by 30 s on each
+objects built from the same features - each feature area padded by 10 s on each
 retention-time side and 20 ppm on each m/z side:
 
 - **MChromatograms** - `return.type = "MChromatograms"`, legacy eager;
-- **featureChromatograms (lazy)** - `return.type = "Chromatograms"`, lazy `ChromBackendSpectra`;
-- **featureChromatograms (mem)** - the lazy object then `setBackend(ChromBackendMemory())`.
+- **Chromatograms (lazy)** - `return.type = "Chromatograms"`,
+  lazy `ChromBackendSpectra`;
+- **Chromatograms (mem)** - initial lazy object creation with data being loaded
+  into memory with `setBackend(ChromBackendMemory())`.
 
-Part a scales the number of **features** in one file; part b scales the number
-of **files** for a fixed feature set.
+Part *a* scales the number of **features** in one file; part *b* scales the
+number of **files** for a fixed feature set.
+
+To evaluate large-scale performance of `Chromatograms`, we use the
+[**MTBLS93**](https://www.ebi.ac.uk/metabolights/editor/MTBLS93/descriptors)
+RPLC LC-MS data set. The preprocessing of this data set with *xcms* is described
+in detail in the [large-scale
+workflow](https://rformassspectrometry.github.io/Metabonaut/articles/large-scale-analysis.html)
+of *Metabonaut*. The *xcms* `featureArea()` function was used to define the
+m/z - retention time windows for all 4,980 LC-MS features of the data set. Part
+*c* evaluates the processing time to extract these EICs from an increasing
+number of data files.
 
 ```{r}
 #| label: setup
@@ -266,17 +282,10 @@ knitr::kable(res_b[, c("n_files", "method", "median_s", "sd_s",
 
 ## Part c - large-scale RPLC twin study
 
-To evaluate large-scale performance, we extract EICs for features from a large
-(RPLC) LC-MS data set available in the MetaboLights repository with the
-accession ID
-[MTBLS93](https://www.ebi.ac.uk/metabolights/editor/MTBLS93/descriptors). The
-preprocessing of this data set with *xcms* is described in detail in the
-[large-scale
-workflow](https://rformassspectrometry.github.io/Metabonaut/articles/large-scale-analysis.html)
-of *Metabonaut*. The *xcms* `featureArea()` function was used to define the
-m/z - retention time windows for all 4,980 LC-MS features of the data set. The
-*xcms* `chromatogram()` function with parameter `aggregationFun = "max"` is used
-to extract the such defined EICs for increasing subsets of the full data set,
+Evaluate the performance extracting a fixed number of EICs (n = 4,980) from an
+increasing number of files of the large RPLC **MTBLS93** LC-MS data set. The
+*xcms* `chromatogram()` function with parameter `aggregationFun = "max"` and the
+pre-defined features' m/z - retention time windows is used to extract the EICs,
 using either the legacy `MChromatograms` or the new `Chromatograms`
 infrastructure.
 
@@ -312,7 +321,7 @@ extracted from every file, hence extracting in total from 49,800 up to
 
 ```{r}
 #| label: large-scale-evaluation
-nmbrs <- c(10, 50, 100, 500)
+nmbrs <- c(10, 50, 100, 500, 1000, 2000, 4000)
 
 res_c <- lapply(nmbrs, function(n) {
     a <- twins[seq_len(n)]
