@@ -20,6 +20,7 @@ format:
     fig-pos: 'H'
     fig-format: png
     fig-dpi: 600
+    keep-tex: true
 execute:
   warning: false
   message: false
