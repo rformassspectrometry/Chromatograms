@@ -144,8 +144,10 @@ knitr::kable(targets, digits = 3, caption = "Annotated target biomarkers")
 
 ## 2. Import and subset
 
-MTBLS93 holds ~4063 MS1 files and ~800 GB of raw data. This data is loaded
-below. Retention time is restricted to the elution window to cut I/O.
+MTBLS93 holds ~4063 MS1 files and ~800 GB of raw data. This data is retrieved
+below and lazy-loaded as a `Spectra` object (i.e., without loading the actual MS
+data into memory). Retention time is restricted to the elution window to cut
+I/O.
 
 ```{r}
 #| label: load-data
