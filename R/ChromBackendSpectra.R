@@ -266,6 +266,8 @@ chromSpectraIndex <- function(object) {
 }
 
 #' @rdname hidden_aliases
+#'
+#' @importFrom data.table rbindlist
 setMethod("factorize", "ChromBackendSpectra",
           function(object, factorize.by = c("msLevel", "dataOrigin"),...) {
             if (!all(factorize.by %in%
@@ -273,9 +275,8 @@ setMethod("factorize", "ChromBackendSpectra",
                   stop("All 'factorize.by' variables must be in the ",
                        "Spectra object.")
             spectra_f <- interaction(as.list(
-               spectraData(.spectra(object))[,
-                                            factorize.by, drop = FALSE]),
-               drop = TRUE, sep = "_")
+                spectraData(.spectra(object), columns = factorize.by)),
+                drop = TRUE, sep = "_")
             cd <- .chromData(object)
 
             if (nrow(cd)) {
@@ -283,8 +284,8 @@ setMethod("factorize", "ChromBackendSpectra",
                 if (!all(factorize.by %in% chromVariables(object)))
                     stop("All 'factorize.by' variables must be in chromData.")
                 cd$chromSpectraIndex <- interaction(cd[, factorize.by,
-                                                        drop = FALSE],
-                                                     drop = TRUE, sep = "_")
+                                                       drop = FALSE],
+                                                    drop = TRUE, sep = "_")
                 object@spectra <- .set_spectra_var(
                     object@spectra, "chromSpectraIndex",
                     factor(as.character(spectra_f),
@@ -302,11 +303,12 @@ setMethod("factorize", "ChromBackendSpectra",
                                                           sorted_spectra_f)
             } else {
                 ## chromData is empty: create it from spectra
-                object@spectra <- .set_spectra_var(object@spectra,
-                                                   "chromSpectraIndex", spectra_f)
-                full_sp <- do.call(rbindFill,
-                                   lapply(split(.spectra(object), spectra_f),
-                                          .spectra_format_chromData))
+                object@spectra <- .set_spectra_var(
+                    object@spectra, "chromSpectraIndex", spectra_f)
+                full_sp <- rbindlist(
+                    lapply(split(.spectra(object), spectra_f),
+                           .spectra_format_chromData),
+                    use.names = TRUE, fill = TRUE)
                 rownames(full_sp) <- NULL
                 object@chromData <- full_sp
             }
