@@ -1,5 +1,5 @@
 ---
-title: "Supplementary Material 1: Scalability benchmark against xcms"
+title: "Supplementary Material 1: Demonstration of *xcms* integration and performance comparisons"
 subtitle: "`featureChromatograms()` or `chromatogram()` returning `MChromatograms` vs `Chromatograms` on the MTBLS8735 HILIC and MTBLS93 RPLC data set"
 author:
   - "Philippine Louail"
