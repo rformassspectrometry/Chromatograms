@@ -17,9 +17,6 @@
 #' @param ylab `character(1)` with the label for the y-axis (by default
 #'        `ylab = "intensity"`).
 #'
-#' @param type `character(1)` specifying the type of plot. See [plot.default()]
-#'        for details. Defaults to `type = "l"` which draws each peak as a line.
-#'
 #' @param xlim `numeric(2)` defining the x-axis limits. The range of m/z values
 #'        are used by default.
 #'
@@ -33,11 +30,6 @@
 #'        or equal to the number of chromatograms (to plot each chromatograms
 #'        in a different color) or be a `list` with colors for each individual
 #'        peak in each spectrum.
-#'
-#' @param axes `logical(1)` whether (x and y) axes should be drawn.
-#'
-#' @param asp `numeric(1)` the aspect ratio of the plot, i.e. the ratio of
-#'        the y-axis to the x-axis. Defaults to 1.
 #'
 #' @param pch `numeric(1)` specifying the symbol to be used for the peaks.
 #'        Defaults to 20, a filled circle. See [points()] for details.
@@ -111,65 +103,44 @@ NULL
 
 
 #' @rdname plotChromatograms
-#' @importFrom graphics par
-#' @importFrom grDevices n2mfrow
 #' @exportMethod plotChromatograms
 setMethod("plotChromatograms", "Chromatograms",
           function(object, xlab = "rtime (s)", ylab = "intensity",
-                   type = "o", pch = 20, cex = 0.6, lwd = 1.5,
                    xlim = numeric(), ylim = numeric(),
                    main = character(), col = "#00000080",
-                   asp = 1, ...) {
-              if (!length(main))
-                  main <- paste0("m/z: ", round(mz(object), 1))
+                   pch = 20, cex = 1.5, lwd = 0.5, bs = 16, ...) {
               nsp <- length(object)
-              if (nsp == 1)
-                  col <- list(col)
               if (length(col) != nsp)
                   col <- rep(col[1], nsp)
+              if (!length(main))
+                  main <- paste0("m/z: ", round(mz(object), 1))
               if (length(main) != nsp)
                   main <- rep(main[1], nsp)
-              if (nsp > 1)
-                  par(mfrow = n2mfrow(nsp, asp = asp))
-              for (i in seq_len(nsp)) {
-                  .plot_single_chromatogram(
-                      object[i], xlab = xlab, ylab = ylab, type = type,
-                      xlim = xlim, ylim = ylim, main = main[i], col = col[[i]],
-                      pch = pch, cex = cex, lwd = lwd, ...)
-              }
+
+              .plot_single_chromatogram(
+                      object, xlab = xlab, ylab = ylab,
+                      xlim = xlim, ylim = ylim, main = main, col = col,
+                      pch = pch, cex = cex, lwd = lwd, bs = bs, ...)
           })
 
 #' @rdname plotChromatograms
 #' @exportMethod plotChromatogramsOverlay
 setMethod("plotChromatogramsOverlay", "Chromatograms",
           function(object, xlab = "rtime (s)", ylab = "intensity",
-                   type = "o", pch = 20, cex = 0.6, lwd = 1.5, xlim = numeric(),
-                   ylim = numeric(),
+                   xlim = numeric(), ylim = numeric(),
                    main = paste(length(object), "chromatograms"),
-                   col = "#00000080", axes = TRUE, frame.plot = axes, ...) {
+                   col = "#00000080",
+                   pch = 20, cex = 1.5, lwd = 0.5, bs = 16, ...) {
               nsp <- length(object)
-              if (nsp == 1)
-                  col <- list(col)
               if (length(col) != nsp)
                   col <- rep(col[1], nsp)
               if (!length(xlim))
                   xlim <- range(unlist(rtime(object)), na.rm = TRUE)
               if (!length(ylim))
                   ylim <- c(0, max(unlist(intensity(object)), na.rm = TRUE))
-              dev.hold()
-              on.exit(dev.flush())
-              plot.new()
-              plot.window(xlim = xlim, ylim = ylim)
-              if (axes) {
-                  axis(side = 1, ...)
-                  axis(side = 2, ...)
-              }
-              if (frame.plot)
-                  box(...)
-              title(main = main, xlab = xlab, ylab = ylab, ...)
-              for (i in seq_len(nsp)) {
-                  .plot_single_chromatogram(
-                      object[i], add = TRUE, type = type, col = col[[i]],
-                      pch = pch, cex = cex, lwd = lwd, ...)
-              }
+
+              .plot_single_chromatogram(
+                      object, add = TRUE, lab = xlab, ylab = ylab,
+                      xlim = xlim, ylim = ylim, main = main, col = col,
+                      pch = pch, cex = cex, lwd = lwd, bs = bs, ...)
           })

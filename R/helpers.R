@@ -255,50 +255,56 @@
 #' - `plotChromatograms()`
 #' - `plotChromatogramsOverlay()`
 #'
-#' @importFrom graphics plot.new plot.window plot.xy axis box title par
-#' @importFrom grDevices dev.hold dev.flush xy.coords n2mfrow
+#' @importFrom ggplot2 ggplot geom_line geom_point scale_color_manual labs aes
+#' @importFrom ggplot2 theme theme_bw facet_wrap scale_y_continuous as_labeller
+#' @importFrom ggplot2 element_blank xlim ylim ggtitle
+#' @importFrom Spectra rbindlistWithRownames
 #' @noRd
 .plot_single_chromatogram <- function(x, xlab = "rtime (s)",
-    ylab = "intensity",
-    type = "l", xlim = numeric(),
-    ylim = numeric(),
-    main = paste("m/z", round(mz(x), 1)),
-    col = "#00000080", add = FALSE,
-    axes = TRUE, frame.plot = axes,
-    orientation = 1, ...) {
-    v <- peaksData(x)[[1L]]
-    rts <- v$rtime
-    raw_ints <- v[, "intensity"]
-    ints <- orientation * raw_ints
-    if (!length(xlim)) {
-        xlim <- range(rts, na.rm = TRUE)
+        ylab = "intensity",
+        xlim = numeric(),
+        ylim = numeric(),
+        main = paste("m/z", round(mz(x), 1)),
+        col = "#00000080", add = FALSE,
+        pch = 20, cex = 5, lwd = 1.5, bs = 16,
+        orientation = 1, ...) {
+    v_l <- peaksData(x)
+    mz_name <- mz(x)
+    if(any(!is.na(mz_name)))
+        names(v_l) <- mz_name
+    v <- rbindlistWithRownames(v_l, idcol = "mz")
+    v$mz <- as.character(v$mz)
+    v$intensity_orient <- orientation * v[, "intensity"]
+
+    gg <- ggplot(v, aes(x = rtime, y = intensity_orient)) +
+        geom_line(aes(group = mz, color = mz),
+                    linewidth = lwd, na.rm = TRUE) +
+        geom_point(aes(group = mz, color = mz),
+                    size = cex, shape = pch, na.rm = TRUE) +
+        scale_color_manual(values = col) +
+        labs(x = xlab, y = ylab) +
+        theme_bw(base_size = bs) +
+        theme(legend.position = "none", panel.grid = element_blank())
+
+    if(!add) {
+        if(length(main))
+            titles <- main
+        else
+            titles <- paste0("m/z: ", round(mz_name, 1))
+
+        if(any(!is.na(mz_name)))
+            names(titles) <- as.character(mz_name)
+        else
+            names(titles) <- as.character(1:length(titles))
+
+        gg <- gg +
+            theme(strip.background = element_blank()) +
+            facet_wrap(mz ~ ., scales = "free", labeller = as_labeller(titles)) +
+            scale_y_continuous(limits = c(0, max(v$intensity_orient)))
+    } else {
+        gg <- gg + xlim(xlim) + ylim(ylim) + ggtitle(main)
     }
-    if (!length(ylim)) {
-        ylim <- range(orientation * c(0, max(abs(ints), na.rm = TRUE)))
-    }
-    if (any(is.infinite(xlim))) {
-        xlim <- c(0, 0)
-    }
-    if (any(is.infinite(ylim))) {
-        ylim <- c(0, 0)
-    }
-    if (!add) {
-        dev.hold()
-        on.exit(dev.flush())
-        plot.new()
-        plot.window(xlim = xlim, ylim = ylim)
-    }
-    if (!add) {
-        if (axes) {
-            axis(side = 1, ...)
-            axis(side = 2, ...)
-        }
-        if (frame.plot) {
-            box(...)
-        }
-        title(main = main, xlab = xlab, ylab = ylab, ...)
-    }
-    plot.xy(xy.coords(rts, ints), type = type, col = col, ...)
+    gg
 }
 #' Strip NA intensities from paired mz/intensity vectors.
 #'

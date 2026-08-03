@@ -24,7 +24,7 @@
 \alias{rtime,ChromBackendMemory-method}
 \alias{show,ChromBackendMemory-method}
 \alias{supportsSetBackend,ChromBackendMemory-method}
-\alias{[,ChromBackendMemory-method}
+\alias{[,ChromBackendMemory,ANY,ANY,ANY-method}
 \alias{$,ChromBackendMemory-method}
 \alias{$<-,ChromBackendMemory-method}
 \alias{chromExtract,ChromBackendMemory-method}
@@ -38,7 +38,7 @@
 \alias{intensity,ChromBackendMzR-method}
 \alias{rtime,ChromBackendMzR-method}
 \alias{lengths,ChromBackendMzR-method}
-\alias{[,ChromBackendMzR-method}
+\alias{[,ChromBackendMzR,ANY,ANY,ANY-method}
 \alias{chromExtract,ChromBackendMzR-method}
 \alias{show,ChromBackendSpectra-method}
 \alias{factorize,ChromBackendSpectra-method}
@@ -50,7 +50,7 @@
 \alias{intensity,ChromBackendSpectra-method}
 \alias{rtime,ChromBackendSpectra-method}
 \alias{lengths,ChromBackendSpectra-method}
-\alias{[,ChromBackendSpectra-method}
+\alias{[,ChromBackendSpectra,ANY,ANY,ANY-method}
 \alias{chromExtract,ChromBackendSpectra-method}
 \alias{show,Chromatograms-method}
 \title{Fill data.frame with columns for missing core chromatogram variables.}
@@ -93,7 +93,7 @@ validPeaksData(x = list(), error = TRUE)
 
 \S4method{supportsSetBackend}{ChromBackendMemory}(object, ...)
 
-\S4method{[}{ChromBackendMemory}(x, i, j, ..., drop = FALSE)
+\S4method{[}{ChromBackendMemory,ANY,ANY,ANY}(x, i, j, ..., drop = FALSE)
 
 \S4method{$}{ChromBackendMemory}(x, name)
 
@@ -127,7 +127,7 @@ validPeaksData(x = list(), error = TRUE)
 
 \S4method{lengths}{ChromBackendMzR}(x)
 
-\S4method{[}{ChromBackendMzR}(x, i, j, ..., drop = TRUE)
+\S4method{[}{ChromBackendMzR,ANY,ANY,ANY}(x, i, j, ..., drop = TRUE)
 
 \S4method{chromExtract}{ChromBackendMzR}(object, peak.table, by, ...)
 
@@ -151,7 +151,7 @@ validPeaksData(x = list(), error = TRUE)
 
 \S4method{lengths}{ChromBackendSpectra}(x)
 
-\S4method{[}{ChromBackendSpectra}(x, i, j, ..., drop = TRUE)
+\S4method{[}{ChromBackendSpectra,ANY,ANY,ANY}(x, i, j, ..., drop = TRUE)
 
 \S4method{chromExtract}{ChromBackendSpectra}(object, peak.table, by, ...)
 

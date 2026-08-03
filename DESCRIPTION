@@ -29,6 +29,7 @@ Depends:
 Imports:
     data.table,
     methods,
+    ggplot2,
     S4Vectors,
     MsCoreUtils (>= 1.7.5),
     Spectra
