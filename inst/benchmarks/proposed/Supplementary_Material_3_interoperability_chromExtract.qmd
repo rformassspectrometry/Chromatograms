@@ -1,12 +1,6 @@
 ---
-title: "Benchmark C: Interoperable, cohort-scale targeted reanalysis"
-subtitle: "Recovering published biomarkers across a public cohort with *chromExtract()*"
-author:
-  - "Philippine Louail"
-  - "Laurent Gatto"
-  - "Sebastian Gibb"
-  - "Johannes Rainer"
-date: today
+title: "Interoperable, cohort-scale targeted reanalysis with Chromatograms"
+subtitle: "Supporting Information for: *Chromatograms: A modular infrastructure for scalable chromatographic data handling in R*"
 format:
   html:
     toc: true
@@ -24,16 +18,24 @@ format:
     fontsize: 11pt
     number-sections: false
     fig-pos: 'H'
+    fig-format: png
+    fig-dpi: 600
+    keep-tex: true
 execute:
   warning: false
   message: false
 ---
 
-**Supplementary Material for:**
-
-**Chromatograms: A modular infrastructure for scalable chromatographic data handling in R**
+```{=latex}
+\renewcommand{\thepage}{S\arabic{page}}
+\vspace{-2cm}
+```
 
 Philippine Louail^1,2,\*^, Laurent Gatto^3^, Sebastian Gibb^4^, Johannes Rainer^1^
+
+```{=latex}
+\scriptsize
+```
 
 ^1^ Institute for Biomedicine, Eurac Research, Bolzano, Italy
 ^2^ Chair for Bioinformatics, Friedrich-Schiller-University Jena, 07743 Jena, Germany
@@ -41,6 +43,10 @@ Philippine Louail^1,2,\*^, Laurent Gatto^3^, Sebastian Gibb^4^, Johannes Rainer^
 ^4^ Department of Anaesthesiology and Intensive Care, University Medicine Greifswald, Greifswald, Germany
 
 \* Corresponding author: philippine.louail@outlook.com
+
+```{=latex}
+\normalsize
+```
 
 ---
 
@@ -94,9 +100,6 @@ register(SerialParam())
 
 ```{r}
 #| label: params
-## TEST RUN: small file count so the document renders quickly. The full-cohort
-## run (hundreds/thousands of files) is done separately.
-N_FILES  <- 3L
 RT_RANGE <- c(20, 900)   # elution window (s)
 ```
 
@@ -147,22 +150,16 @@ knitr::kable(targets, digits = 3, caption = "Annotated target biomarkers")
 
 ## 2. Import and subset
 
-MTBLS93 holds ~4063 MS1 files and ~800 GB of raw data, so we subset *before*
-touching the peaks: the file names are read from the assay table (metadata
-only), a deterministic subset (the first `N_FILES` files) is chosen, and only
-those files are loaded - `MsBackendMetaboLights` caches them on demand, so only
-the subset downloads. Retention time is restricted to the elution window to cut
+MTBLS93 holds ~4063 MS1 files and ~800 GB of raw data. This data is retrieved
+below and lazy-loaded as a `Spectra` object (i.e., without loading the actual MS
+data into memory). Retention time is restricted to the elution window to cut
 I/O.
 
 ```{r}
 #| label: load-data
 #| output: false
-assay <- mtbls_assay_data("MTBLS93")
-ms1 <- unique(grep("01\\.CDF$",
-                   assay[["Raw Spectral Data File"]], value = TRUE))
-picked <- basename(head(ms1, N_FILES))
 sps <- Spectra(source = MsBackendMetaboLights(), mtblsId = "MTBLS93",
-               filePattern = paste0("(", paste(picked, collapse = "|"), ")$"))
+               filePattern = "01.CDF$")
 sps <- filterRt(sps, rt = RT_RANGE)
 files <- unique(dataOrigin(sps))
 ```
@@ -176,7 +173,7 @@ knitr::kable(
     Value = c(length(files), length(sps),
               paste(round(range(rtime(sps)), 1), collapse = " - "))
   ),
-  caption = "Loaded MTBLS93 subset"
+  caption = "MTBLS93 MS1 data set"
 )
 ```
 
@@ -185,20 +182,26 @@ knitr::kable(
 The article confirms SM 28:1 by accurate mass and MS/MS but does not report a
 retention time for it. Rather than borrow a value from an untargeted result, we
 locate it directly with the same targeted machinery, used here as a discovery
-step: extract the EIC across the *entire* elution window at the target m/z, see
-where the peak falls, then narrow the retention-time window and re-extract.
+step: extract the EIC across the *entire* elution window at the target m/z from
+a data subset (n = 10 files), see where the peak falls, then narrow the
+retention-time window and re-extract.
 
 ```{r}
 #| label: sm-discover
 sm <- which(targets$name == "SM_28:1")
 
+sps_sub <- filterDataOrigin(sps, files[1:10])
+
 ## SM 28:1 over the full elution window, one row per file
 sm_table <- data.frame(
   name = "SM_28:1", mzMin = targets$mzmin[sm], mzMax = targets$mzmax[sm],
-  rtMin = RT_RANGE[1], rtMax = RT_RANGE[2], msLevel = 1L, dataOrigin = files)
+  rtMin = RT_RANGE[1], rtMax = RT_RANGE[2], msLevel = 1L,
+  dataOrigin = files[1:10])
 sm_chr <- filterEmptyChromatograms(
-  chromExtract(Chromatograms(sps), peak.table = sm_table,
-               by = c("msLevel", "dataOrigin")))
+    chromExtract(Chromatograms(sps_sub, summarize.method = "max"),
+                 peak.table = sm_table,
+                 by = c("msLevel", "dataOrigin"))) |>
+    setBackend(backend = ChromBackendMemory())
 
 ## consensus apex across the cohort: per-file apex retention time, median
 apex_rt <- mapply(function(int, rt) rt[which.max(int)],
@@ -254,8 +257,10 @@ peak_table <- data.frame(
 
 ```{r}
 #| label: chromextract
-chr <- chromExtract(Chromatograms(sps), peak.table = peak_table,
+chr <- chromExtract(Chromatograms(sps, summarize.method = "max"),
+                    peak.table = peak_table,
                     by = c("msLevel", "dataOrigin"))
+chr <- setBackend(chr, backend = ChromBackendMemory())
 chr <- filterEmptyChromatograms(chr)
 chr
 ```
@@ -269,7 +274,7 @@ cd <- chromData(chr)
 cd$dataOrigin <- basename(as.character(cd$dataOrigin))
 knitr::kable(
   head(cd[, c("name", "target_mz", "target_rt",
-              "mzMin", "mzMax", "rtMin", "rtMax", "dataOrigin")], 6),
+              "mzMin", "mzMax", "dataOrigin")], 6),
   digits = 3, caption = "chromData of extracted EICs (first 6 rows)"
 )
 ```
@@ -287,9 +292,9 @@ at half maximum). Both are attached to `chromData`.
 bounds <- peakBoundary(chr)
 
 metrics <- calculateMetrics(
-  chr,
-  metrics = c("maxIntensity", "areaUnderTic", "xicFwhm"),
-  na.rm = TRUE, filterEmptyObject = FALSE, baselineQuantile = 0.1
+    chr,
+    metrics = c("maxIntensity", "areaUnderTic", "xicFwhm"),
+    na.rm = TRUE, filterEmptyObject = FALSE, baselineQuantile = 0.1
 )
 metrics <- as.data.frame(metrics, row.names = NULL)
 
@@ -308,18 +313,18 @@ the annotated retention time in every case.
 #| echo: false
 cd <- chromData(chr)
 summ <- do.call(rbind, lapply(split(seq_len(nrow(cd)), cd$name), function(i) {
-  r <- cd[i, ]
-  tgt <- targets[targets$name == r$name[1], ]
-  brackets <- r$left_boundary <= tgt$rt & r$right_boundary >= tgt$rt
-  data.frame(
-    name = r$name[1],
-    n_files = nrow(r),
-    with_signal = sum(r$maxIntensity > 0, na.rm = TRUE),
-    boundary_brackets_rt = sum(brackets, na.rm = TRUE),
-    median_apex = round(median(r$maxIntensity, na.rm = TRUE)),
-    median_fwhm_s = round(median(r$xicFwhm, na.rm = TRUE), 2),
-    target_rt = tgt$rt
-  )
+    r <- cd[i, ]
+    tgt <- targets[targets$name == r$name[1], ]
+    brackets <- r$left_boundary <= tgt$rt & r$right_boundary >= tgt$rt
+    data.frame(
+        name = r$name[1],
+        n_files = nrow(r),
+        with_signal = sum(r$maxIntensity > 0, na.rm = TRUE),
+        boundary_brackets_rt = sum(brackets, na.rm = TRUE),
+        median_apex = round(median(r$maxIntensity, na.rm = TRUE)),
+        median_fwhm_s = round(median(r$xicFwhm, na.rm = TRUE), 2),
+        target_rt = tgt$rt
+    )
 }))
 knitr::kable(summ, row.names = FALSE,
              caption = "Recovery, quantification and quality per target")
@@ -335,40 +340,47 @@ cohort.
 ```{r}
 #| label: fig-eic-overlay
 #| fig-cap: "Extracted-ion chromatograms of the annotated biomarkers across the subset (`plotChromatogramsOverlay()`). Dashed line: annotated retention time."
-#| fig-width: 14
-#| fig-height: 3.6
+#| fig-width: 12
+#| fig-height: 10
 cd <- chromData(chr)
-par(mfrow = c(1, nrow(targets)), mar = c(4, 4, 3, 1))
+par(mfrow = c(2, ceiling(nrow(targets) / 2)), mar = c(4, 4, 3, 1))
 for (nm in targets$name) {
-  tgt <- targets[targets$name == nm, ]
-  idx <- which(cd$name == nm)
-  Chromatograms::plotChromatogramsOverlay(
-    chr[idx], col = "#0000AA55",
-    main = sprintf("%s (m/z %.3f)", nm, tgt$mz))
-  abline(v = tgt$rt, col = "grey60", lty = 2)
+    tgt <- targets[targets$name == nm, ]
+    idx <- which(cd$name == nm)
+    Chromatograms::plotChromatogramsOverlay(
+                       chr[idx], col = "#0000AA55",
+                       main = sprintf("%s (m/z %.3f)", nm, tgt$mz))
+    abline(v = tgt$rt, col = "grey60", lty = 2)
 }
 ```
+
+Plotting the EICs for the full data set allows us also to identify possible
+batch effects. Indeed, the signal from the 4 compounds seems to be shifted along
+the retention time axis in a subset of samples.
 
 ## 6. Scaling across the cohort
 
 The targeted workflow processes each file independently, so it scales with the
-number of files. We sweep the file count and record the time and peak RAM to
+number of files. We sweep the file count and record the time and memory usage to
 extract all target EICs (materialised into memory with `setBackend()`), using
 `peakRAM`. This is the throughput of the extraction itself, over the same four
 biomarkers.
 
 ```{r}
 #| label: scaling
-file_counts <- seq_len(N_FILES)   # test run; the full cohort is swept separately
+file_counts <- c(10, 50, 100, 500, 1000, 2000, 4000)
 
 throughput <- do.call(rbind, lapply(file_counts, function(n) {
   fsub <- files[seq_len(n)]
   ssub <- sps[dataOrigin(sps) %in% fsub]
   pt <- peak_table[peak_table$dataOrigin %in% fsub, ]
-  pr <- peakRAM(setBackend(Chromatograms(ssub, chromData = pt),
+  pr <- peakRAM(setBackend(Chromatograms(ssub, chromData = pt,
+                                         summarize.method = "max"),
                            ChromBackendMemory()))
   data.frame(n_files = n,
-             extract_s = pr$Elapsed_Time_sec, peak_MB = pr$Peak_RAM_Used_MiB)
+             extract_s = pr$Elapsed_Time_sec,
+             peak_MB = pr$Peak_RAM_Used_MiB,
+             total_MB = pr$Total_RAM_Used_MiB)
 }))
 knitr::kable(throughput, digits = 2, row.names = FALSE,
              caption = "chromExtract throughput vs number of files")
@@ -376,23 +388,25 @@ knitr::kable(throughput, digits = 2, row.names = FALSE,
 
 ```{r}
 #| label: fig-scaling
-#| fig-cap: "Targeted extraction time and peak RAM vs number of files."
+#| fig-cap: "Targeted extraction time and object's size in memory vs number of files."
 #| fig-width: 9
 #| fig-height: 4.5
 par(mfrow = c(1, 2))
 plot(throughput$n_files, throughput$extract_s, type = "b", pch = 19,
      col = "#1B9E77", xlab = "number of files", ylab = "seconds",
      main = "Extraction time")
-plot(throughput$n_files, throughput$peak_MB, type = "b", pch = 19,
-     col = "#D95F02", xlab = "number of files", ylab = "peak RAM (MiB)",
-     main = "Peak memory")
+grid()
+plot(throughput$n_files, throughput$total_MB, type = "b", pch = 19,
+     col = "#D95F02", xlab = "number of files", ylab = "total RAM (MiB)",
+     main = "Total memory")
+grid()
 ```
 
 ## Key takeaways
 
 Starting from a study's published annotations (m/z + retention time) and its
-raw public files, `chromExtract()` recovers the target compounds across a cohort
-in a single pass over the data.
+raw public files, `chromExtract()` recovers the target compounds in a memory
+efficient way across a cohort's full data in a single pass.
 
 The untargeted route on the same cohort (the Metabonaut large-scale-analysis
 tutorial) requires many hours of *xcms* preprocessing. Targeted reanalysis with
