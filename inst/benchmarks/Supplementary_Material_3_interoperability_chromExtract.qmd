@@ -304,6 +304,22 @@ chromData(chr) <- cbind(chromData(chr),
                         metrics)
 ```
 
+The result is a single `data.frame` in which the carried-through annotation
+(`name`, `target_rt`), the peak boundaries and the quality metrics sit side by
+side - one row per extracted EIC.
+
+```{r}
+#| label: chromdata-collage
+#| echo: false
+cd <- chromData(chr)
+cd$dataOrigin <- basename(as.character(cd$dataOrigin))
+knitr::kable(
+  cd[5:10, c("name", "target_rt", "left_boundary", "right_boundary",
+             "maxIntensity", "areaUnderTic", "xicFwhm")],
+  digits = 2, row.names = FALSE,
+  caption = "chromData: annotation, peak boundaries and metrics (rows 5-10)")
+```
+
 Per-target summary. The LysoPCs are high-abundance and recovered in every
 sample, MG 18:2 is weaker. The peak boundaries from `peakBoundary()` bracket
 the annotated retention time in every case.
@@ -315,12 +331,10 @@ cd <- chromData(chr)
 summ <- do.call(rbind, lapply(split(seq_len(nrow(cd)), cd$name), function(i) {
     r <- cd[i, ]
     tgt <- targets[targets$name == r$name[1], ]
-    brackets <- r$left_boundary <= tgt$rt & r$right_boundary >= tgt$rt
     data.frame(
         name = r$name[1],
         n_files = nrow(r),
         with_signal = sum(r$maxIntensity > 0, na.rm = TRUE),
-        boundary_brackets_rt = sum(brackets, na.rm = TRUE),
         median_apex = round(median(r$maxIntensity, na.rm = TRUE)),
         median_fwhm_s = round(median(r$xicFwhm, na.rm = TRUE), 2),
         target_rt = tgt$rt
@@ -358,13 +372,44 @@ Plotting the EICs for the full data set allows us also to identify possible
 batch effects. Indeed, the signal from the 4 compounds seems to be shifted along
 the retention time axis in a subset of samples.
 
+### 5.1 Retention-time deviation across the cohort
+
+That visual impression can be turned into a quick quality check: for a single
+biomarker, take the retention time of the apex (`rtime` at maximum intensity) in
+each sample and plot the distribution. The apex times split into two clusters,
+confirming a systematic retention-time deviation between subsets of the cohort
+(a batch effect) rather than random scatter.
+
+```{r}
+#| label: fig-rt-deviation
+#| echo: false
+#| fig-cap: "Distribution of the per-sample apex retention time for LysoPC 18:1. The two well-separated modes are the batch retention-time deviation across the cohort. Dashed line: annotated retention time."
+#| fig-width: 8
+#| fig-height: 3.4
+lip <- "LysoPC_18:1"
+cd  <- chromData(chr)
+idx <- which(cd$name == lip)
+rt_at_max <- mapply(
+  function(rt, i) { w <- which.max(i); if (length(w)) rt[w] else NA_real_ },
+  rtime(chr[idx]), intensity(chr[idx]))
+rt_at_max <- rt_at_max[is.finite(rt_at_max)]
+
+par(mar = c(4, 4, 1, 1))
+hist(rt_at_max,
+     breaks = seq(floor(min(rt_at_max)), ceiling(max(rt_at_max)), by = 0.4),
+     col = "#4477AA", border = "white", main = "",
+     xlab = "retention time at apex (s)")
+abline(v = targets$rt[targets$name == lip], col = "grey40", lty = 2)
+```
+
 ## 6. Scaling across the cohort
 
 The targeted workflow processes each file independently, so it scales with the
 number of files. We sweep the file count and record the time and memory usage to
 extract all target EICs (materialised into memory with `setBackend()`), using
-`peakRAM`. This is the throughput of the extraction itself, over the same four
-biomarkers.
+`peakRAM`. The `extract_+_metrics_s` column adds the time to run `peakBoundary()`
+and `calculateMetrics()` on top of the extraction, i.e. the cost of the full
+quantified workflow. Both are measured over the same four biomarkers.
 
 ```{r}
 #| label: scaling
@@ -374,13 +419,21 @@ throughput <- do.call(rbind, lapply(file_counts, function(n) {
   fsub <- files[seq_len(n)]
   ssub <- sps[dataOrigin(sps) %in% fsub]
   pt <- peak_table[peak_table$dataOrigin %in% fsub, ]
-  pr <- peakRAM(setBackend(Chromatograms(ssub, chromData = pt,
-                                         summarize.method = "max"),
-                           ChromBackendMemory()))
+  pr <- peakRAM(cn <- setBackend(Chromatograms(ssub, chromData = pt,
+                                               summarize.method = "max"),
+                                 ChromBackendMemory()))
+  cn <- filterEmptyChromatograms(cn)
+  metrics_s <- system.time({
+    peakBoundary(cn)
+    calculateMetrics(cn, metrics = c("maxIntensity", "areaUnderTic", "xicFwhm"),
+                     na.rm = TRUE, filterEmptyObject = FALSE,
+                     baselineQuantile = 0.1)
+  })[["elapsed"]]
   data.frame(n_files = n,
              extract_s = pr$Elapsed_Time_sec,
+             `extract_+_metrics_s` = pr$Elapsed_Time_sec + metrics_s,
              peak_MB = pr$Peak_RAM_Used_MiB,
-             total_MB = pr$Total_RAM_Used_MiB)
+             total_MB = pr$Total_RAM_Used_MiB, check.names = FALSE)
 }))
 knitr::kable(throughput, digits = 2, row.names = FALSE,
              caption = "chromExtract throughput vs number of files")
