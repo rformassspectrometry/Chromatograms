@@ -361,7 +361,7 @@ the retention time axis in a subset of samples.
 ## 6. Scaling across the cohort
 
 The targeted workflow processes each file independently, so it scales with the
-number of files. We sweep the file count and record the time and peak RAM to
+number of files. We sweep the file count and record the time and memory usage to
 extract all target EICs (materialised into memory with `setBackend()`), using
 `peakRAM`. This is the throughput of the extraction itself, over the same four
 biomarkers.
@@ -378,7 +378,9 @@ throughput <- do.call(rbind, lapply(file_counts, function(n) {
                                          summarize.method = "max"),
                            ChromBackendMemory()))
   data.frame(n_files = n,
-             extract_s = pr$Elapsed_Time_sec, peak_MB = pr$Peak_RAM_Used_MiB)
+             extract_s = pr$Elapsed_Time_sec,
+             peak_MB = pr$Peak_RAM_Used_MiB,
+             total_MB = pr$Total_RAM_Used_MiB)
 }))
 knitr::kable(throughput, digits = 2, row.names = FALSE,
              caption = "chromExtract throughput vs number of files")
@@ -386,16 +388,18 @@ knitr::kable(throughput, digits = 2, row.names = FALSE,
 
 ```{r}
 #| label: fig-scaling
-#| fig-cap: "Targeted extraction time and peak RAM vs number of files."
+#| fig-cap: "Targeted extraction time and object's size in memory vs number of files."
 #| fig-width: 9
 #| fig-height: 4.5
 par(mfrow = c(1, 2))
 plot(throughput$n_files, throughput$extract_s, type = "b", pch = 19,
      col = "#1B9E77", xlab = "number of files", ylab = "seconds",
      main = "Extraction time")
-plot(throughput$n_files, throughput$peak_MB, type = "b", pch = 19,
-     col = "#D95F02", xlab = "number of files", ylab = "peak RAM (MiB)",
-     main = "Peak memory")
+grid()
+plot(throughput$n_files, throughput$total_MB, type = "b", pch = 19,
+     col = "#D95F02", xlab = "number of files", ylab = "total RAM (MiB)",
+     main = "Total memory")
+grid()
 ```
 
 ## Key takeaways
