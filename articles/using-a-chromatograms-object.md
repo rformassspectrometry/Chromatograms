@@ -1,7 +1,7 @@
 # Using and understanding a Chromatograms object
 
 **Package**: Chromatograms 1.3.3\
-**Compiled**: Wed Aug 5 11:48:22 2026
+**Compiled**: Wed Aug 5 12:05:32 2026
 
 ## Introduction
 
@@ -596,7 +596,7 @@ chr_2
     ## ... 11 more  chromatogram variables/columns
     ## ... 2 peaksData variables
     ## Processing:
-    ##  Applied processing queue with 1 steps [Wed Aug  5 11:48:30 2026]
+    ##  Applied processing queue with 1 steps [Wed Aug  5 12:05:40 2026]
 
 Before
 [`applyProcessing()`](https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html)
@@ -644,13 +644,13 @@ processingChunkFactor(chr_mzr) |>
   head()
 ```
 
-    ## [1] /github/home/.cache/R/ExperimentHub/4fe6efe3299_10396
-    ## [2] /github/home/.cache/R/ExperimentHub/4fe6efe3299_10396
-    ## [3] /github/home/.cache/R/ExperimentHub/4fe6efe3299_10396
-    ## [4] /github/home/.cache/R/ExperimentHub/4fe6efe3299_10396
-    ## [5] /github/home/.cache/R/ExperimentHub/4fe6efe3299_10396
-    ## [6] /github/home/.cache/R/ExperimentHub/4fe6efe3299_10396
-    ## Levels: /github/home/.cache/R/ExperimentHub/4fe6efe3299_10396
+    ## [1] /github/home/.cache/R/ExperimentHub/4261ed0c1a0_10396
+    ## [2] /github/home/.cache/R/ExperimentHub/4261ed0c1a0_10396
+    ## [3] /github/home/.cache/R/ExperimentHub/4261ed0c1a0_10396
+    ## [4] /github/home/.cache/R/ExperimentHub/4261ed0c1a0_10396
+    ## [5] /github/home/.cache/R/ExperimentHub/4261ed0c1a0_10396
+    ## [6] /github/home/.cache/R/ExperimentHub/4261ed0c1a0_10396
+    ## Levels: /github/home/.cache/R/ExperimentHub/4261ed0c1a0_10396
 
 Here the factor would on yl be of length 1, meaning that all
 chromatograms will be processed in one go. however the length would be
@@ -717,7 +717,7 @@ chr_mzr
     ## ... 6 more  chromatogram variables/columns
     ## ... 2 peaksData variables
     ## Processing:
-    ##  Switch backend from ChromBackendMzR to ChromBackendMemory [Wed Aug  5 11:48:31 2026]
+    ##  Switch backend from ChromBackendMzR to ChromBackendMemory [Wed Aug  5 12:05:41 2026]
 
 ``` r
 
@@ -1233,8 +1233,8 @@ chr_mzr_imputed
     ## ... 2 peaksData variables
     ## Lazy evaluation queue: 1 processing step(s)
     ## Processing:
-    ##  Switch backend from ChromBackendMzR to ChromBackendMemory [Wed Aug  5 11:48:31 2026]
-    ##  Impute: replace missing peaks data using the 'gaussian' method [Wed Aug  5 11:48:33 2026]
+    ##  Switch backend from ChromBackendMzR to ChromBackendMemory [Wed Aug  5 12:05:41 2026]
+    ##  Impute: replace missing peaks data using the 'gaussian' method [Wed Aug  5 12:05:43 2026]
 
 The imputation is **not** performed immediately. Instead, it’s stored in
 the processing queue. When you call

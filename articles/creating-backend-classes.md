@@ -1,7 +1,7 @@
 # Creating new \`ChromBackend\` classes for Chromatograms
 
 **Package**: Chromatograms 1.3.3\
-**Compiled**: Wed Aug 5 11:48:09 2026
+**Compiled**: Wed Aug 5 12:05:20 2026
 
 ## Introduction
 
