@@ -228,10 +228,10 @@ sm_chr2 <- filterPeaksData(sm_chr, variables = "rtime",
 
 par(mfrow = c(1, 2), mar = c(4, 4, 3, 1))
 Chromatograms::plotChromatogramsOverlay(
-  sm_chr, col = "#0000AA55", main = "SM 28:1 - full window")
+  sm_chr, col = "#0000AA40", main = "SM 28:1 - full window")
 abline(v = sm_rt, col = "red", lty = 2)
 Chromatograms::plotChromatogramsOverlay(
-  sm_chr2, col = "#0000AA55",
+  sm_chr2, col = "#0000AA40",
   main = sprintf("SM 28:1 - narrowed (rt = %.1f s)", sm_rt))
 abline(v = sm_rt, col = "red", lty = 2)
 ```
@@ -362,7 +362,7 @@ for (nm in targets$name) {
     tgt <- targets[targets$name == nm, ]
     idx <- which(cd$name == nm)
     Chromatograms::plotChromatogramsOverlay(
-                       chr[idx], col = "#0000AA55",
+                       chr[idx], col = "#0000AA40",
                        main = sprintf("%s (m/z %.3f)", nm, tgt$mz))
     abline(v = tgt$rt, col = "grey60", lty = 2)
 }
@@ -450,7 +450,7 @@ plot(throughput$n_files, throughput$extract_s, type = "b", pch = 19,
      main = "Extraction time")
 grid()
 plot(throughput$n_files, throughput$total_MB, type = "b", pch = 19,
-     col = "#D95F02", xlab = "number of files", ylab = "total RAM (MiB)",
+     col = "#D95F02", xlab = "number of files", ylab = "object size (MiB)",
      main = "Total memory")
 grid()
 ```
