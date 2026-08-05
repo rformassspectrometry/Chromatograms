@@ -1,0 +1,264 @@
+# Low level infrastructure to handle chromatographic data
+
+[![Project Status: Active – The project has reached a stable, usable
+state and is being actively
+developed.](https://www.repostatus.org/badges/latest/active.svg)](https://www.repostatus.org/#active)
+[![years in
+bioc](http://bioconductor.org/shields/years-in-bioc/Chromatograms.svg)](https://bioconductor.org/packages/release/bioc/html/Chromatograms.html)
+[![R-CMD-check-bioc](https://github.com/RforMassSpectrometry/Chromatograms/workflows/R-CMD-check-bioc/badge.svg)](https://github.com/RforMassSpectrometry/Chromatograms/actions?query=workflow%3AR-CMD-check-bioc)
+[![codecov](https://codecov.io/gh/rformassspectrometry/Chromatograms/branch/main/graph/badge.svg?token=jy0Mid9gKn)](https://codecov.io/gh/rformassspectrometry/Chromatograms)
+[![license](https://img.shields.io/badge/license-Artistic--2.0-brightgreen.svg)](https://opensource.org/licenses/Artistic-2.0)
+
+This package, part of the [*R for Mass
+Spectrometry*](https://www.rformassspectrometry.org/) initiative,
+provides a powerful and expandable infrastructure for handling and
+analysing chromatographic mass spectrometry (MS) data.
+
+It will replace the legacy classes to handle chromatographic data in R
+provided by the [*MSnbase*](http://lgatto.github.io/MSnbase/index.md)
+package.
+
+This package is part of **Bioconductor**:
+<https://bioconductor.org/packages/Chromatograms>.
+
+## ⚙️ General concept
+
+A `Chromatograms` object is designed to contain multiple chromatographic
+data (i.e. chromatogram entities). The data will be stored linearly,
+i.e. as a long list of chromatograms. The `Chromatograms` object will be
+the main object for the end user, providing functionality to access,
+filter or process chromatographic data, with the actual chromatographic
+MS data being stored within *backend* classes. Different implementations
+of backend classes can be designed for high performance or low memory
+footprint.
+
+The existing backend classes are:
+
+- `ChromBackendMemory`: a memory-based backend, storing the data in
+  memory. This is the default backend and is used for testing purposes.
+
+- The `ChromBackendMzR` inherits all slots and methods from the base
+  `ChromBackendMemory` backend, providing additional functionality for
+  reading chromatographic data from mzML files.
+
+- `ChromBackendSpectra`: The `ChromBackendSpectra` inherits all slots
+  and methods from the base `ChromBackendMemory` backend, providing
+  additional functionality for reading chromatographic data from
+  `Spectra` objects.
+
+These backend are then handled on a user level by the `Chromatograms`
+class, which provides a unified interface to access and manipulate the
+chromatographic data.
+
+## ⤵️ Installation
+
+    install.packages("BiocManager")
+    BiocManager::install("Chromatograms")
+
+## 🤝 Contribution
+
+Please help us improving and completing the package! Any type of
+contribution welcome 👐 - including discussions, suggestions or actual
+code. Don’t be afraid - we’re friendly ☺️! 👉 get involved by opening an
+[issue](https://github.com/rformassspectrometry/Chromatograms/issues).
+
+Please also check out the [**RforMassSpectrometry Contributions
+Guide**](https://rformassspectrometry.github.io/RforMassSpectrometry/articles/RforMassSpectrometry.html#contributions).
+
+### 📜 Code of Conduct
+
+We follow the [**RforMassSpectrometry Code of
+Conduct**](https://rformassspectrometry.github.io/RforMassSpectrometry/articles/RforMassSpectrometry.html#code-of-conduct)
+to maintain an inclusive and respectful community.
+
+## License
+
+This package is licensed under the **Artistic 2.0** license: 📄
+<https://opensource.org/license/Artistic-2.0>
+
+Documentation (manuals, vignettes) is licensed under **CC BY-NC-SA
+4.0**: 📄 <https://creativecommons.org/licenses/by-nc-sa/4.0/>
+
+------------------------------------------------------------------------
+
+# Funding information
+
+Part of this work was funded by the **European Union** under the
+**HORIZON-MSCA-2021** project **101073062: HUMAN – Harmonising and
+Unifying Blood Metabolic Analysis Networks**.
+
+![EU
+Logo](https://github.com/rformassspectrometry/Metabonaut/raw/main/vignettes/images/EULogo.jpg)
+
+EU Logo
+
+# Package index
+
+## All functions
+
+- [`coreChromVariables()`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`corePeaksVariables()`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`` `$`( ``*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`` `$<-`( ``*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`backendMerge(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`chromData(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`` `chromData<-`( ``*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`chromExtract(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`factorize(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`peaksData(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`` `peaksData<-`( ``*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`` `[`( ``*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`` `[[`( ``*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`` `[[<-`( ``*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`backendBpparam(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`backendInitialize(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`backendParallelFactor(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`backendMerge(`*`<list>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`chromIndex(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`` `chromIndex<-`( ``*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`chromVariables(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`collisionEnergy(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`` `collisionEnergy<-`( ``*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`dataOrigin(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`` `dataOrigin<-`( ``*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`extractByIndex(`*`<ChromBackend>`*`,`*`<ANY>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`extractByIndex(`*`<ChromBackend>`*`,`*`<missing>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`intensity(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`` `intensity<-`( ``*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`isEmpty(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`isReadOnly(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`length(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`lengths(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`msLevel(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`` `msLevel<-`( ``*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`mz(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`` `mz<-`( ``*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`mzMax(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`` `mzMax<-`( ``*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`mzMin(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`` `mzMin<-`( ``*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`peaksVariables(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`precursorMz(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`` `precursorMz<-`( ``*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`precursorMzMax(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`` `precursorMzMax<-`( ``*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`precursorMzMin(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`` `precursorMzMin<-`( ``*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`productMz(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`` `productMz<-`( ``*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`productMzMax(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`` `productMzMax<-`( ``*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`productMzMin(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`` `productMzMin<-`( ``*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`reset(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`rtime(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`` `rtime<-`( ``*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`split(`*`<ChromBackend>`*`,`*`<ANY>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`filterChromData(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`filterEmptyChromatograms(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`filterPeaksData(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`supportsSetBackend(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  [`imputePeaksData(`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
+  : Chromatographic MS Data Backends
+
+- [`ChromBackendMemory()`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackendMemory.md)
+  [`backendInitialize(`*`<ChromBackendMemory>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackendMemory.md)
+  : Improved in-memory Chromatographic data backend
+
+- [`ChromBackendMzR()`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackendMzR.md)
+  [`backendInitialize(`*`<ChromBackendMzR>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackendMzR.md)
+  : Chromatographic Data Backend for Reading mzML Files
+
+- [`ChromBackendSpectra()`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackendSpectra.md)
+  [`backendInitialize(`*`<ChromBackendSpectra>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackendSpectra.md)
+  [`chromSpectraIndex()`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackendSpectra.md)
+  : Chromatographic Data Backend for Spectra Objects
+
+- [`Chromatograms(`*`<ChromBackendOrMissing>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/Chromatograms.md)
+  [`Chromatograms(`*`<Spectra>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/Chromatograms.md)
+  [`setBackend(`*`<Chromatograms>`*`,`*`<ChromBackend>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/Chromatograms.md)
+  [`` `$`( ``*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/Chromatograms.md)
+  [`` `$<-`( ``*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/Chromatograms.md)
+  [`` `[`( ``*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/Chromatograms.md)
+  [`` `[[`( ``*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/Chromatograms.md)
+  [`` `[[<-`( ``*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/Chromatograms.md)
+  [`factorize(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/Chromatograms.md)
+  [`chromExtract(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/Chromatograms.md)
+  [`filterEmptyChromatograms(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/Chromatograms.md)
+  : The Chromatograms class to manage and access chromatographic data
+
+- [`chromData(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  [`` `chromData<-`( ``*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  [`chromVariables(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  [`chromIndex(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  [`` `chromIndex<-`( ``*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  [`collisionEnergy(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  [`` `collisionEnergy<-`( ``*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  [`dataOrigin(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  [`` `dataOrigin<-`( ``*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  [`msLevel(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  [`` `msLevel<-`( ``*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  [`mz(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  [`` `mz<-`( ``*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  [`mzMax(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  [`` `mzMax<-`( ``*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  [`mzMin(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  [`` `mzMin<-`( ``*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  [`length(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  [`precursorMz(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  [`` `precursorMz<-`( ``*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  [`precursorMzMin(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  [`` `precursorMzMin<-`( ``*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  [`precursorMzMax(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  [`` `precursorMzMax<-`( ``*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  [`productMz(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  [`` `productMz<-`( ``*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  [`productMzMin(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  [`` `productMzMin<-`( ``*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  [`productMzMax(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  [`` `productMzMax<-`( ``*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  [`filterChromData(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
+  : Chromatographic Peaks Metadata.
+
+- [`concatenateChromatograms()`](https://rformassspectrometry.github.io/Chromatograms/reference/concatenateChromatograms.md)
+  [`c(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/concatenateChromatograms.md)
+  [`split(`*`<Chromatograms>`*`,`*`<ANY>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/concatenateChromatograms.md)
+  : Merging, combining and splitting Chromatograms
+
+- [`imputePeaksData(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)
+  [`filterPeaksData(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)
+  [`intensity(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)
+  [`` `intensity<-`( ``*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)
+  [`peaksData(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)
+  [`` `peaksData<-`( ``*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)
+  [`peaksVariables(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)
+  [`rtime(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)
+  [`` `rtime<-`( ``*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)
+  [`lengths(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)
+  [`matchRtime()`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)
+  [`compareChromatograms(`*`<Chromatograms>`*`,`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)
+  [`compareChromatograms(`*`<Chromatograms>`*`,`*`<missing>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)
+  [`peakBoundary(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)
+  : Chromatographic peaks data
+
+- [`plotChromatograms(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/plotChromatograms.md)
+  [`plotChromatogramsOverlay(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/plotChromatograms.md)
+  : Plot chromatograms
+
+- [`applyProcessing(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/processingQueue.md)
+  [`addProcessing(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/processingQueue.md)
+  [`processingChunkSize(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/processingQueue.md)
+  [`` `processingChunkSize<-`( ``*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/processingQueue.md)
+  [`processingChunkFactor(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/processingQueue.md)
+  :
+
+  Efficiently processing `Chromatograms` objects.
+
+# Articles
+
+### All vignettes
+
+- [Creating new \`ChromBackend\` classes for
+  Chromatograms](https://rformassspectrometry.github.io/Chromatograms/articles/creating-backend-classes.md):
+- [Using and understanding a Chromatograms
+  object](https://rformassspectrometry.github.io/Chromatograms/articles/using-a-chromatograms-object.md):
