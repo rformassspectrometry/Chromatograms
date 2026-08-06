@@ -4,9 +4,44 @@
 \alias{plotChromatograms}
 \alias{plotChromatograms,Chromatograms-method}
 \alias{plotChromatogramsOverlay,Chromatograms-method}
+\alias{ggplotChromatograms,Chromatograms-method}
+\alias{ggplotChromatogramsOverlay,Chromatograms-method}
 \title{Plot chromatograms}
 \usage{
 \S4method{plotChromatograms}{Chromatograms}(
+  object,
+  xlab = "rtime (s)",
+  ylab = "intensity",
+  type = "o",
+  pch = 20,
+  cex = 0.6,
+  lwd = 1.5,
+  xlim = numeric(),
+  ylim = numeric(),
+  main = character(),
+  col = "#00000080",
+  asp = 1,
+  ...
+)
+
+\S4method{plotChromatogramsOverlay}{Chromatograms}(
+  object,
+  xlab = "rtime (s)",
+  ylab = "intensity",
+  type = "o",
+  pch = 20,
+  cex = 0.6,
+  lwd = 1.5,
+  xlim = numeric(),
+  ylim = numeric(),
+  main = paste(length(object), "chromatograms"),
+  col = "#00000080",
+  axes = TRUE,
+  frame.plot = axes,
+  ...
+)
+
+\S4method{ggplotChromatograms}{Chromatograms}(
   object,
   xlab = "rtime (s)",
   ylab = "intensity",
@@ -17,11 +52,12 @@
   pch = 20,
   cex = 1.5,
   lwd = 0.5,
-  bs = 16,
+  bs = 8,
+  interactive = FALSE,
   ...
 )
 
-\S4method{plotChromatogramsOverlay}{Chromatograms}(
+\S4method{ggplotChromatogramsOverlay}{Chromatograms}(
   object,
   xlab = "rtime (s)",
   ylab = "intensity",
@@ -33,6 +69,7 @@
   cex = 1.5,
   lwd = 0.5,
   bs = 16,
+  interactive = FALSE,
   ...
 )
 }
@@ -44,6 +81,17 @@
 
 \item{ylab}{\code{character(1)} with the label for the y-axis (by default
 \code{ylab = "intensity"}).}
+
+\item{type}{\code{character(1)} specifying the type of plot. See \code{\link[=plot.default]{plot.default()}}
+for details. Defaults to \code{type = "l"} which draws each peak as a line.}
+
+\item{pch}{\code{integer(1)} or \code{character(1)} specifying the plotting symbol
+(see \code{\link[=plot.default]{plot.default()}}).}
+
+\item{cex}{\code{numeric(1)} specifying the size of the plotting symbol (see
+\code{\link[=plot.default]{plot.default()}}).}
+
+\item{lwd}{\code{numeric(1)} specifying the line width (see \code{\link[=plot.default]{plot.default()}}).}
 
 \item{xlim}{\code{numeric(2)} defining the x-axis limits. The range of m/z values
 are used by default.}
@@ -59,18 +107,20 @@ or equal to the number of chromatograms (to plot each chromatograms
 in a different color) or be a \code{list} with colors for each individual
 peak in each spectrum.}
 
-\item{pch}{\code{integer(1)} or \code{character(1)} specifying the plotting symbol
-(see \code{\link[=plot.default]{plot.default()}}).}
-
-\item{cex}{\code{numeric(1)} specifying the size of the plotting symbol (see
-\code{\link[=plot.default]{plot.default()}}).}
-
-\item{lwd}{\code{numeric(1)} specifying the line width (see \code{\link[=plot.default]{plot.default()}}).}
+\item{asp}{\code{numeric(1)} the aspect ratio of the plot, i.e. the ratio of
+the y-axis to the x-axis. Defaults to 1.}
 
 \item{...}{Additional arguments to be passed to \code{\link[=plot.default]{plot.default()}}.}
 
+\item{axes}{\code{logical(1)} whether (x and y) axes should be drawn.}
+
 \item{frame.plot}{\code{logical(1)} whether a box should be drawn around the
 plotting area.}
+
+\item{bs}{\code{numeric(1)} font size for ggplot.}
+
+\item{interactive}{\code{logical(1)} return the interactive ggplot based on
+ggiraph.}
 }
 \value{
 These functions create a plot.

@@ -30,6 +30,7 @@ Imports:
     data.table,
     methods,
     ggplot2,
+    ggiraph,
     S4Vectors,
     MsCoreUtils (>= 1.7.5),
     Spectra

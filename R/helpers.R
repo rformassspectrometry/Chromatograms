@@ -255,12 +255,64 @@
 #' - `plotChromatograms()`
 #' - `plotChromatogramsOverlay()`
 #'
+#' @importFrom graphics plot.new plot.window plot.xy axis box title par
+#' @importFrom grDevices dev.hold dev.flush xy.coords n2mfrow
+#' @noRd
+.plot_single_chromatogram <- function(x, xlab = "rtime (s)",
+    ylab = "intensity",
+    type = "l", xlim = numeric(),
+    ylim = numeric(),
+    main = paste("m/z", round(mz(x), 1)),
+    col = "#00000080", add = FALSE,
+    axes = TRUE, frame.plot = axes,
+    orientation = 1, ...) {
+    v <- peaksData(x)[[1L]]
+    rts <- v$rtime
+    raw_ints <- v[, "intensity"]
+    ints <- orientation * raw_ints
+    if (!length(xlim)) {
+        xlim <- range(rts, na.rm = TRUE)
+    }
+    if (!length(ylim)) {
+        ylim <- range(orientation * c(0, max(abs(ints), na.rm = TRUE)))
+    }
+    if (any(is.infinite(xlim))) {
+        xlim <- c(0, 0)
+    }
+    if (any(is.infinite(ylim))) {
+        ylim <- c(0, 0)
+    }
+    if (!add) {
+        dev.hold()
+        on.exit(dev.flush())
+        plot.new()
+        plot.window(xlim = xlim, ylim = ylim)
+    }
+    if (!add) {
+        if (axes) {
+            axis(side = 1, ...)
+            axis(side = 2, ...)
+        }
+        if (frame.plot) {
+            box(...)
+        }
+        title(main = main, xlab = xlab, ylab = ylab, ...)
+    }
+    plot.xy(xy.coords(rts, ints), type = type, col = col, ...)
+}
+
+#' Helper function to plot a single chromatogram.
+#' @note:
+#' Used in:
+#' - `plotChromatograms()`
+#' - `plotChromatogramsOverlay()`
+#'
 #' @importFrom ggplot2 ggplot geom_line geom_point scale_color_manual labs aes
 #' @importFrom ggplot2 theme theme_bw facet_wrap scale_y_continuous as_labeller
 #' @importFrom ggplot2 element_blank xlim ylim ggtitle
 #' @importFrom Spectra rbindlistWithRownames
 #' @noRd
-.plot_single_chromatogram <- function(x, xlab = "rtime (s)",
+.ggplot_single_chromatogram <- function(x, xlab = "rtime (s)",
         ylab = "intensity",
         xlim = numeric(),
         ylim = numeric(),
@@ -284,7 +336,8 @@
         scale_color_manual(values = col) +
         labs(x = xlab, y = ylab) +
         theme_bw(base_size = bs) +
-        theme(legend.position = "none", panel.grid = element_blank())
+        theme(legend.position = "none", panel.grid = element_blank(),
+              aspect.ratio = 0.5)
 
     if(!add) {
         if(length(main))
@@ -306,6 +359,80 @@
     }
     gg
 }
+
+
+#' @importFrom ggplot2 ggplot scale_color_manual labs aes element_blank
+#' @importFrom ggplot2 theme theme_bw scale_y_continuous xlim ylim ggtitle
+#' @importFrom ggplot2 as_labeller
+#'
+#' @importFrom ggiraph set_girafe_defaults opts_zoom opts_tooltip opts_sizing
+#' @importFrom ggiraph opts_toolbar geom_line_interactive geom_point_interactive
+#' @importFrom ggiraph facet_wrap_interactive
+#'
+#' @importFrom Spectra rbindlistWithRownames
+#'
+#' @noRd
+.ggplot_single_chromatogram_interactive <- function(x, xlab = "rtime (s)",
+        ylab = "intensity",
+        xlim = numeric(),
+        ylim = numeric(),
+        main = paste("m/z", round(mz(x), 1)),
+        col = "#00000080", add = FALSE,
+        pch = 20, cex = 5, lwd = 1.5, bs = 16,
+        orientation = 1, ...) {
+    v_l <- peaksData(x)
+    mz_name <- mz(x)
+    if(any(!is.na(mz_name)))
+        names(v_l) <- mz_name
+    v <- rbindlistWithRownames(v_l, idcol = "mz")
+    v$mz <- as.character(v$mz)
+    v$intensity_orient <- orientation * v[, "intensity"]
+
+    set_girafe_defaults(
+        opts_zoom = opts_zoom(min = 1, max = 4),
+        opts_tooltip = opts_tooltip(css = "padding:3px;background-color:#333333;color:white;"),
+        opts_sizing = opts_sizing(rescale = TRUE),
+        opts_toolbar = opts_toolbar(saveaspng = TRUE, position = "topright", delay_mouseout = 5000, fixed = TRUE)
+    )
+
+    gg <- ggplot(v, aes(x = rtime, y = intensity_orient)) +
+        geom_line_interactive(aes(group = mz, color = mz, data_id = mz),
+                    linewidth = lwd, na.rm = TRUE, hover_nearest = TRUE) +
+        geom_point_interactive(aes(group = mz, color = mz, data_id = mz,
+                    tooltip = paste0(ifelse(any(!is.na(mz_name)),
+                                            "m/z: ", "index: "), mz,
+                                    "\nintensity: ", round(intensity, 2),
+                                    "\nrtime: ", round(rtime, 2))
+                    ),
+                    size = cex, shape = pch, na.rm = TRUE,
+                    hover_nearest = TRUE) +
+        scale_color_manual_interactive(values = col) +
+        labs(x = xlab, y = ylab) +
+        theme_bw(base_size = bs) +
+        theme(legend.position = "none", panel.grid = element_blank(),
+              aspect.ratio = 0.5)
+
+    if(!add) {
+        if(length(main))
+            titles <- main
+        else
+            titles <- paste0("m/z: ", round(mz_name, 1))
+
+        if(any(!is.na(mz_name)))
+            names(titles) <- as.character(mz_name)
+        else
+            names(titles) <- as.character(1:length(titles))
+
+        gg <- gg +
+            theme(strip.background = element_blank()) +
+            facet_wrap_interactive(mz ~ ., scales = "free", labeller = as_labeller(titles)) +
+            scale_y_continuous(limits = c(0, max(v$intensity_orient)))
+    } else {
+        gg <- gg + xlim(xlim) + ylim(ylim) + ggtitle(main)
+    }
+    gg
+}
+
 #' Strip NA intensities from paired mz/intensity vectors.
 #'
 #' Returns a list with cleaned `mz`, `int`, and `n`, or `NULL` if no

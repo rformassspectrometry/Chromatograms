@@ -22,7 +22,7 @@
 \alias{factorize,ChromBackend-method}
 \alias{peaksData,ChromBackend-method}
 \alias{peaksData<-,ChromBackend-method}
-\alias{[,ChromBackend,ANY,ANY,ANY-method}
+\alias{[,ChromBackend,ANY,ANY-method}
 \alias{[[,ChromBackend,ANY,ANY-method}
 \alias{[[<-,ChromBackend,ANY,ANY,ANY-method}
 \alias{backendBpparam,ChromBackend-method}
@@ -98,7 +98,7 @@ corePeaksVariables()
 
 \S4method{peaksData}{ChromBackend}(object) <- value
 
-\S4method{[}{ChromBackend,ANY,ANY,ANY}(x, i, j, ..., drop = FALSE)
+\S4method{[}{ChromBackend,ANY,ANY}(x, i, j, ..., drop = FALSE)
 
 \S4method{[[}{ChromBackend,ANY,ANY}(x, i, j, ...)
 
