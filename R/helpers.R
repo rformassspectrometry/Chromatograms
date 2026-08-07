@@ -319,7 +319,7 @@
         main = paste("m/z", round(mz(x), 1)),
         col = "#00000080", add = FALSE,
         pch = 20, cex = 5, lwd = 1.5, bs = 16,
-        orientation = 1, ...) {
+        orientation = 1, axes = TRUE, frame.plot = axes, ...) {
     v_l <- peaksData(x)
     mz_name <- mz(x)
     if(any(!is.na(mz_name)))
@@ -357,6 +357,16 @@
     } else {
         gg <- gg + xlim(xlim) + ylim(ylim) + ggtitle(main)
     }
+
+    if (!axes) {
+        gg <- gg +
+            theme(axis.text = element_blank(), axis.ticks = element_blank(),
+                axis.line = element_blank())
+    }
+    if (!frame.plot) {
+        gg <- gg +
+            theme(panel.border = element_blank())
+    }
     gg
 }
 
@@ -379,7 +389,7 @@
         main = paste("m/z", round(mz(x), 1)),
         col = "#00000080", add = FALSE,
         pch = 20, cex = 5, lwd = 1.5, bs = 16,
-        orientation = 1, ...) {
+        orientation = 1, axes = TRUE, frame.plot = axes, ...) {
     v_l <- peaksData(x)
     mz_name <- mz(x)
     if(any(!is.na(mz_name)))
@@ -429,6 +439,16 @@
             scale_y_continuous(limits = c(0, max(v$intensity_orient)))
     } else {
         gg <- gg + xlim(xlim) + ylim(ylim) + ggtitle(main)
+    }
+
+    if (!axes) {
+        gg <- gg +
+            theme(axis.text = element_blank(), axis.ticks = element_blank(),
+                axis.line = element_blank())
+    }
+    if (!frame.plot) {
+        gg <- gg +
+            theme(panel.border = element_blank())
     }
     gg
 }

@@ -70,6 +70,8 @@
   lwd = 0.5,
   bs = 16,
   interactive = FALSE,
+  axes = TRUE,
+  frame.plot = axes,
   ...
 )
 }

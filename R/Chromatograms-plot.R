@@ -218,7 +218,8 @@ setMethod("ggplotChromatogramsOverlay", "Chromatograms",
                    main = paste(length(object), "chromatograms"),
                    col = "#00000080",
                    pch = 20, cex = 1.5, lwd = 0.5, bs = 16,
-                   interactive = FALSE, ...) {
+                   interactive = FALSE,
+                   axes = TRUE, frame.plot = axes, ...) {
               nsp <- length(object)
               if (length(col) != nsp)
                   col <- rep(col[1], nsp)
@@ -232,12 +233,14 @@ setMethod("ggplotChromatogramsOverlay", "Chromatograms",
                 gg <- .ggplot_single_chromatogram_interactive(
                         object, add = TRUE, xlab = xlab, ylab = ylab,
                         xlim = xlim, ylim = ylim, main = main, col = col,
-                        pch = pch, cex = cex, lwd = lwd, bs = bs, ...)
+                        pch = pch, cex = cex, lwd = lwd, bs = bs,
+                        axes = axes, frame.plot = frame.plot, ...)
                 girafe(gg)
               } else {
                 .ggplot_single_chromatogram(
                         object, add = TRUE, xlab = xlab, ylab = ylab,
                         xlim = xlim, ylim = ylim, main = main, col = col,
-                        pch = pch, cex = cex, lwd = lwd, bs = bs, ...)
+                        pch = pch, cex = cex, lwd = lwd, bs = bs,
+                        axes = axes, frame.plot = frame.plot, ...)
               }
             })
