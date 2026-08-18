@@ -494,9 +494,9 @@ test_that(".match_chromdata_peaktable aligns correctly", {
     by = c("msLevel", "dataOrigin")
   )
 
-  # Expect a subset of object
-  expect_s4_class(matched$object, "ChromBackendMemory")
-  expect_equal(length(matched$chrom_keys), nrow(.chromData(matched$object)))
+  # Expect the matched (subsetted) chromData
+  expect_s3_class(matched$cd, "data.frame")
+  expect_equal(length(matched$chrom_keys), nrow(matched$cd))
 
   # Check factor levels alignment
   expect_true(all(levels(matched$peak_keys) %in% levels(matched$chrom_keys)))

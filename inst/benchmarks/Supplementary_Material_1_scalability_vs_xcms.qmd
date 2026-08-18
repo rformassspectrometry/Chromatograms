@@ -1,0 +1,405 @@
+---
+title: "Demonstration of *xcms* integration and performance comparisons"
+subtitle: "Supporting Information for: *Chromatograms: A modular infrastructure for scalable chromatographic data handling in R*"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    code-fold: false
+    code-tools: true
+    embed-resources: true
+    theme: cosmo
+  pdf:
+    toc: true
+    toc-depth: 3
+    documentclass: article
+    geometry:
+      - margin=1in
+    fontsize: 11pt
+    number-sections: false
+    keep-tex: true
+    fig-pos: 'H'
+execute:
+  warning: false
+  message: false
+  cache: false
+---
+
+```{=latex}
+\renewcommand{\thepage}{S\arabic{page}}
+\vspace{-2cm}
+```
+
+Philippine Louail^1,2,\*^, Laurent Gatto^3^, Sebastian Gibb^4^, Johannes Rainer^1^
+
+```{=latex}
+\scriptsize
+```
+
+^1^ Institute for Biomedicine, Eurac Research, Bolzano, Italy
+^2^ Chair for Bioinformatics, Friedrich-Schiller-University Jena, 07743 Jena, Germany
+^3^ Computational Biology and Bioinformatics, de Duve Institute, UCLouvain, Brussels, Belgium
+^4^ Department of Anaesthesiology and Intensive Care, University Medicine Greifswald, Greifswald, Germany
+
+\* Corresponding author: philippine.louail@outlook.com
+
+```{=latex}
+\normalsize
+```
+
+---
+
+## Motivation
+
+xcms version >= 4.11.2 [PR #837](https://github.com/sneumann/xcms/pull/837)
+supports in addition to the legacy `MChromatograms` chromatographic data
+infrastructure defined in the *MSnbase* R package also the new functionality
+from the *Chromatograms* package, i.e., all functions to extract chromatographic
+data, such as `featureChromatograms()` or `chromatogram()` can return either a
+`Chromatograms` object (with the lazy `ChromBackendSpectra` backend) or the
+legacy `MChromatograms`. *lazy* data in this context means that no actual data
+is realized and loaded into memory at the time of object creation, while *eager*
+refers to the traditional approach where all data is processed and loaded at the
+time of object creation. The `featureChromatograms()` function extracts EICs for
+LC-MS features after a full LC-MS data preprocessing while `chromatogram()`
+allows to extract EICs for pre-defined m/z - retention time ranges.
+
+On the **MTBLS8735** HILIC data set (preprocessed with *xcms*) we compare three
+objects built from the same features - each feature area padded by 10 s on each
+retention-time side and 20 ppm on each m/z side:
+
+- **MChromatograms** - `return.type = "MChromatograms"`, legacy eager;
+- **Chromatograms (lazy)** - `return.type = "Chromatograms"`,
+  lazy `ChromBackendSpectra`;
+- **Chromatograms (mem)** - initial lazy object creation with data being loaded
+  into memory with `setBackend(ChromBackendMemory())`.
+
+Part *a* scales the number of **features** in one file; part *b* scales the
+number of **files** for a fixed feature set.
+
+To evaluate large-scale performance of `Chromatograms`, we use the
+[**MTBLS93**](https://www.ebi.ac.uk/metabolights/editor/MTBLS93/descriptors)
+RPLC LC-MS data set. The preprocessing of this data set with *xcms* is described
+in detail in the [large-scale
+workflow](https://rformassspectrometry.github.io/Metabonaut/articles/large-scale-analysis.html)
+of *Metabonaut*. The *xcms* `featureArea()` function was used to define the
+m/z - retention time windows for all 4,980 LC-MS features of the data set. Part
+*c* evaluates the processing time to extract these EICs from an increasing
+number of data files.
+
+```{r}
+#| label: setup
+#| output: false
+library(Chromatograms)
+library(xcms)
+library(Spectra)
+library(MsBackendMetaboLights)
+library(MsExperiment)
+library(S4Vectors)
+library(BiocParallel)
+library(peakRAM)
+library(ggplot2)
+
+register(SerialParam())
+
+methods <- c("MChromatograms", "Chromatograms (lazy)",
+             "Chromatograms (mem)")
+cols <- setNames(c("#7570B3", "#1B9E77", "#D95F02"), methods)
+```
+
+```{r}
+#| label: params
+N_FEATURES <- c(10L, 50L, 100L, 500L, 1000L, 5000L)  # part a: features, one file
+N_ITER     <- 5L                                     # timing iterations
+CACHE_DIR  <- file.path("chrom_bm")
+```
+
+## System information
+
+```{r}
+#| label: system-info
+#| code-fold: true
+knitr::kable(data.frame(
+  Item = c("R version", "Platform", "Chromatograms", "xcms"),
+  Value = c(R.version$version.string, R.version$platform,
+            as.character(packageVersion("Chromatograms")),
+            as.character(packageVersion("xcms")))),
+  caption = "System information")
+```
+
+## Preprocessing
+
+Every file is preprocessed to features once (`findChromPeaks()` +
+`groupChromPeaks()`, Metabonaut end-to-end settings) and cached. File subsets for
+the scaling use `filterFile(..., keepFeatures = TRUE)`.
+
+```{r}
+#| label: preprocess
+#| output: false
+dir.create(CACHE_DIR, showWarnings = FALSE, recursive = TRUE)
+cache <- file.path(CACHE_DIR, "hilic_xe_all.rds")
+xe_full <- if (file.exists(cache)) readRDS(cache) else {
+  sps <- Spectra(source = MsBackendMetaboLights(), mtblsId = "MTBLS8735",
+                 assayName = paste0("a_MTBLS8735_LC-MS_positive_",
+                                    "hilic_metabolite_profiling.txt"),
+                 filePattern = ".mzML")
+  sps <- filterRt(sps, c(10, 240))
+  f <- unique(dataOrigin(sps))
+  mse <- MsExperiment()
+  spectra(mse) <- sps
+  sampleData(mse) <- DataFrame(sample_name = basename(f), dataOrigin = f,
+                               phenotype = "sample")
+  mse <- linkSampleData(mse, with = "sampleData.dataOrigin = spectra.dataOrigin")
+  mse <- findChromPeaks(mse, CentWaveParam(peakwidth = c(1, 8), ppm = 15,
+                                           integrate = 2), chunkSize = 2)
+  mse <- groupChromPeaks(mse, PeakDensityParam(
+           sampleGroups = sampleData(mse)$phenotype, minFraction = 0.5,
+           binSize = 0.01, ppm = 10, bw = 1.8))
+  saveRDS(mse, cache)
+  mse
+}
+```
+
+```{r}
+#| label: bench-fun
+#| output: false
+## median time, median peak RAM and object size of the three return types over
+## N_ITER builds, for `sel` features of `xe` (areas padded 30 s / 20 ppm)
+bench_cell <- function(xe, sel) {
+  ex <- median(featureDefinitions(xe)$mzmed) * 20e-6
+  one <- function(type, memory = FALSE) {
+    t <- r <- numeric(N_ITER)
+    for (i in seq_len(N_ITER)) {
+      p <- peakRAM(o <- {
+        x <- featureChromatograms(xe, features = sel, expandRt = 10,
+                                  expandMz = ex, return.type = type)
+        if (memory) setBackend(x, ChromBackendMemory()) else x
+      })
+      t[i] <- p$Elapsed_Time_sec
+      r[i] <- p$Peak_RAM_Used_MiB
+    }
+    data.frame(median_s = median(t), sd_s = sd(t), peak_MB = median(r),
+               size_MB = as.numeric(object.size(o)) / 1024^2)
+  }
+  data.frame(method = factor(methods, methods),
+             rbind(one("MChromatograms"), one("Chromatograms"),
+                   one("Chromatograms", memory = TRUE)))
+}
+
+plot_metric <- function(d, x, y, ylab, log_y = FALSE) {
+  p <- ggplot(d, aes(factor(.data[[x]]), .data[[y]], colour = method,
+                     group = method)) +
+    geom_line(linewidth = 1) + geom_point(size = 2.5) +
+    scale_colour_manual(values = cols) +
+    labs(x = if (x == "n_features") "Number of features" else "Number of files",
+         y = ylab, colour = "Return type") +
+    theme_minimal(base_size = 13)
+  if (y == "median_s")
+    p <- p + geom_errorbar(aes(ymin = pmax(median_s - sd_s, 0),
+                               ymax = median_s + sd_s), width = 0.2, alpha = 0.6)
+  if (log_y) p + scale_y_log10() else p
+}
+```
+
+## Part a - scaling the number of features (one file)
+
+```{r}
+#| label: part-a
+xe1 <- filterFile(xe_full, 1L, keepFeatures = TRUE)
+set.seed(1)
+fids1 <- sample(rownames(featureDefinitions(xe1)))   # shuffled: random, nested
+res_a <- do.call(
+    rbind,
+    lapply(N_FEATURES[N_FEATURES <= length(fids1)],
+           function(k) cbind(bench_cell(xe1, fids1[seq_len(k)]), n_features = k)))
+```
+
+Subsets of `r length(fids1)` features (in random order) extracted from one file.
+
+```{r}
+#| label: fig-a-time
+#| fig-cap: "Median creation time vs number of features (one file)."
+#| fig-width: 8
+#| fig-height: 4.5
+plot_metric(res_a, "n_features", "median_s", "Median creation time (s)")
+```
+
+```{r}
+#| label: fig-a-ram
+#| fig-cap: "Peak RAM vs number of features (one file). Log scale."
+#| fig-width: 8
+#| fig-height: 4.5
+plot_metric(res_a, "n_features", "peak_MB", "Peak RAM (MB, log)", log_y = TRUE)
+```
+
+```{r}
+#| label: tbl-a
+#| echo: false
+knitr::kable(res_a[, c("n_features", "method", "median_s", "sd_s",
+                       "peak_MB", "size_MB")],
+             digits = c(0, 0, 3, 3, 1, 2),
+             col.names = c("Features", "Return type", "Median time (s)",
+                           "SD (s)", "Peak RAM (MB)", "Size (MB)"),
+             row.names = FALSE)
+```
+
+## Part b - scaling the number of files (fixed features)
+
+For a fixed number of features (n = `r nrow(featureDefinitions(xe_full))`)
+evaluate performance extracting EICs from an increasing number of files.
+
+```{r}
+#| label: part-b
+set.seed(1)
+res_b <- do.call(rbind, lapply(seq_along(fileNames(xe_full)), function(n) {
+  xe <- filterFile(xe_full, seq_len(n), keepFeatures = TRUE)
+  fids <- rownames(featureDefinitions(xe))
+  cbind(bench_cell(xe, sample(fids, min(1000L, length(fids)))), n_files = n)
+}))
+```
+
+```{r}
+#| label: fig-b-time
+#| fig-cap: "Median creation time vs number of files (1000 random features)."
+#| fig-width: 8
+#| fig-height: 4.5
+plot_metric(res_b, "n_files", "median_s", "Median creation time (s)")
+```
+
+```{r}
+#| label: fig-b-ram
+#| fig-cap: "Peak RAM vs number of files (1000 random features). Log scale."
+#| fig-width: 8
+#| fig-height: 4.5
+plot_metric(res_b, "n_files", "peak_MB", "Peak RAM (MB, log)", log_y = TRUE)
+```
+
+```{r}
+#| label: tbl-b
+#| echo: false
+knitr::kable(res_b[, c("n_files", "method", "median_s", "sd_s",
+                       "peak_MB", "size_MB")],
+             digits = c(0, 0, 3, 3, 1, 2),
+             col.names = c("Files", "Return type", "Median time (s)", "SD (s)",
+                           "Peak RAM (MB)", "Size (MB)"), row.names = FALSE)
+```
+
+## Part c - large-scale RPLC twin study
+
+Evaluate the performance extracting a fixed number of EICs (n = 4,980) from an
+increasing number of files of the large RPLC **MTBLS93** LC-MS data set. The
+*xcms* `chromatogram()` function with parameter `aggregationFun = "max"` and the
+pre-defined features' m/z - retention time windows is used to extract the EICs,
+using either the legacy `MChromatograms` or the new `Chromatograms`
+infrastructure.
+
+```{r}
+#| label: load-feature-area
+#' Loading the feature's m/z - retention time windows
+fa <- read.table("twins-feature-area.txt", sep = "\t", header = TRUE)
+```
+
+*Note*: running the code in this section requires downloading and caching the
+full MS data (~ 4,000 CDF files) of the MTBLS93 data set from MetaboLights and
+requires approximately 600GB of disk space.
+
+```{r}
+#| label: load-large-scale-data
+library(MsBackendMetaboLights)
+library(MsExperiment)
+library(MsIO)
+library(xcms)
+
+#' Retrieve the MS1 data from the MetaboLights data set
+mlp <- MetaboLightsParam(mtblsId = "MTBLS93", filePattern = "01.CDF$")
+
+twins <- readMsObject(MsExperiment(), mlp, keepOntology = FALSE,
+                      keepProtocol = FALSE, simplify = FALSE)
+twins
+```
+
+Running the performance comparison for extraction of feature EICs from an
+increasing number of samples/files. Note that EICs for the same 4980 windows are
+extracted from every file, hence extracting in total from 49,800 up to
+19,920,000 EICs from the smallest (n = 10) to largest data subset (n = 4,000).
+
+```{r}
+#| label: large-scale-evaluation
+nmbrs <- c(10, 50, 100, 500, 1000, 2000, 4000)
+
+res_c <- lapply(nmbrs, function(n) {
+    a <- twins[seq_len(n)]
+    rt <- as.matrix(fa[, c("rtmin", "rtmax")])
+    rt[, 1L] <- rt[, 1L] - 10
+    rt[, 2L] <- rt[, 2L] + 10
+    mz <- as.matrix(fa[, c("mzmin", "mzmax")])
+    res <- peakRAM(
+        chromatogram(a, rt = rt, mz = mz, return.type = "MChromatograms",
+                     aggregationFun = "max"),
+        chromatogram(a, rt = rt, mz = mz, return.type = "Chromatograms",
+                     aggregationFun = "max"),
+        {
+            setBackend(chromatogram(
+                a, rt = rt, mz = mz, return.type = "Chromatograms",
+                aggregationFun = "max"),
+                backend = ChromBackendMemory())
+        }
+    )
+    res$method <- factor(c("MChromatograms", "Chromatograms (lazy)",
+                           "Chromatograms (mem)"), methods)
+    res$n_files <- n
+    res
+})
+res_c <- do.call(rbind, res_c)
+res_c$minutes <- res_c$Elapsed_Time_sec / 60
+```
+
+```{r}
+#| label: fig-c-time
+#| fig-cap: "Median creation time vs number of files (4980 features)."
+#| fig-width: 8
+#| fig-height: 4.5
+plot_metric(res_c, "n_files", "minutes", "Creation time (min)")
+```
+
+```{r}
+#| label: fig-c-ram
+#| fig-cap: "Peak RAM vs number of files (4980 features). Log scale."
+#| fig-width: 8
+#| fig-height: 4.5
+plot_metric(res_c, "n_files", "Peak_RAM_Used_MiB", "Peak RAM (MB, log)",
+            log_y = TRUE)
+```
+
+```{r}
+#| label: tbl-c
+#| echo: false
+knitr::kable(res_c[, c("n_files", "method", "minutes",
+                       "Peak_RAM_Used_MiB", "Total_RAM_Used_MiB")],
+             digits = c(0, 0, 3, 3, 1, 2),
+             col.names = c("Files", "Return type", "Creation time (min)",
+                           "Peak RAM (MB)", "Size (MB)"), row.names = FALSE)
+```
+
+## Key takeaways
+
+Returning a `Chromatograms` from `featureChromatograms()` (xcms #837) creates a
+lazy `ChromBackendSpectra` that is far less computationally demanding to build
+and holds far less peak RAM than the legacy `MChromatograms`, independent of the
+number of features or files. Materialising it with `setBackend(memory)` (i.e.,
+loading the MS data into memory and aggregating the mass peak intensities to
+generate chromatographic data) pays the extraction, matching
+`MChromatograms`. The lazy advantage scales with the deferred extraction cost -
+modest here (narrow feature windows), large for wide windows or big feature
+sets.
+
+Performance advantages of `Chromatograms` is independent on the type of LC-MS
+data set (HILIC or RPLC) or MS data file format (the first test data set used
+mzML files, the second, large-scale data set files in CDF format).
+
+## Session info
+
+```{r}
+#| label: session-info
+sessionInfo()
+```

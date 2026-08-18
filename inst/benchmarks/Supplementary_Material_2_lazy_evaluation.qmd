@@ -1,12 +1,6 @@
 ---
-title: "Supplementary Material 2: Lazy-evaluation benchmark"
-subtitle: "Effect of execution strategy, backend, and access pattern on a three-step chromatographic processing pipeline"
-author:
-  - "Philippine Louail"
-  - "Laurent Gatto"
-  - "Sebastian Gibb"
-  - "Johannes Rainer"
-date: today
+title: "Effect of execution strategy, backend, and access pattern on a three-step chromatographic processing pipeline"
+subtitle: "Supporting Information for: *Chromatograms: A modular infrastructure for scalable chromatographic data handling in R*"
 format:
   html:
     toc: true
@@ -24,16 +18,25 @@ format:
     fontsize: 11pt
     number-sections: false
     fig-pos: 'H'
+    fig-format: png
+    fig-dpi: 600
+    keep-tex: true
 execute:
   warning: false
   message: false
+  cache: false
 ---
 
-**Supplementary Material for:**
-
-**Chromatograms: A modular infrastructure for scalable chromatographic data handling in R**
+```{=latex}
+\renewcommand{\thepage}{S\arabic{page}}
+\vspace{-2cm}
+```
 
 Philippine Louail^1,2,\*^, Laurent Gatto^3^, Sebastian Gibb^4^, Johannes Rainer^1^
+
+```{=latex}
+\scriptsize
+```
 
 ^1^ Institute for Biomedicine, Eurac Research, Bolzano, Italy
 ^2^ Chair for Bioinformatics, Friedrich-Schiller-University Jena, 07743 Jena, Germany
@@ -42,6 +45,9 @@ Philippine Louail^1,2,\*^, Laurent Gatto^3^, Sebastian Gibb^4^, Johannes Rainer^
 
 \* Corresponding author: philippine.louail@outlook.com
 
+```{=latex}
+\normalsize
+```
 ---
 
 ## Motivation

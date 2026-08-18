@@ -584,27 +584,26 @@
 #' - `backendInitialize()` for `ChrombackendSpectra`
 #' @noRd
 .spectra_format_chromData <- function(sps) {
-    res <- data.frame(
-        msLevel = unique(sps$msLevel),
-        rtMin = min(sps$rtime, na.rm = TRUE),
-        rtMax = max(sps$rtime, na.rm = TRUE),
+    sv <- intersect(
+        spectraVariables(sps), c("msLevel", "rtime", "dataOrigin", "polarity",
+                                 "scanWindowLowerMz", "scanWindowUpperMz",
+                                 "chromSpectraIndex"))
+    s <- spectraData(sps, sv)
+    data.frame(
+        msLevel = unique(s$msLevel),
+        rtMin = min(s$rtime, na.rm = TRUE),
+        rtMax = max(s$rtime, na.rm = TRUE),
         mzMin = -Inf,
         mzMax = Inf,
         mz = Inf,
-        dataOrigin = unique(sps$dataOrigin),
-        chromSpectraIndex = unique(sps$chromSpectraIndex)
+        dataOrigin = unique(s$dataOrigin),
+        chromSpectraIndex = unique(s$chromSpectraIndex),
+        polarity = s$polarity[1L],
+        scanWindowLowerLimit = ifelse("scanWindowLowerLimit" %in% sv,
+                                      s$scanWindowLowerLimit[1L], NA_real_),
+        scanWindowUpperLimit = ifelse("scanWindowUpperLimit" %in% sv,
+                                      s$scanWindowUpperLimit[1L], NA_real_)
     )
-    ## Add optional columns if present
-    if ("polarity" %in% spectraVariables(sps)) {
-        res$polarity <- sps$polarity[1]
-    }
-    if ("scanWindowLowerLimit" %in% spectraVariables(sps)) {
-        res$scanWindowLowerLimit <- sps$scanWindowLowerLimit[1]
-    }
-    if ("scanWindowUpperLimit" %in% spectraVariables(sps)) {
-        res$scanWindowUpperLimit <- sps$scanWindowUpperLimit[1]
-    }
-    res
 }
 
 #' Used in:
@@ -685,9 +684,10 @@
              paste(missing_keys, collapse = ", "))
     }
 
-    ## Subset chromdata and only keep the row of interest.
+    ## Subset the matched chromData only; callers re-subset the backend from
+    ## `keep_idx`. Avoids re-validating the whole backend here.
     keep_idx <- chrom_keys %in% peak_keys
-    object <- object[keep_idx]
+    cd <- cd[keep_idx, , drop = FALSE]
     chrom_keys <- droplevels(chrom_keys[keep_idx])
 
     # align factor levels (so splitting matches between cd and peak.table)
@@ -695,7 +695,8 @@
     chrom_keys <- factor(as.character(chrom_keys), levels = shared_levels)
     peak_keys  <- factor(as.character(peak_keys),  levels = shared_levels)
 
-    list(object = object, chrom_keys = chrom_keys, peak_keys = peak_keys)
+    list(cd = cd, keep_idx = keep_idx,
+         chrom_keys = chrom_keys, peak_keys = peak_keys)
 }
 
 #' Used in:
@@ -1078,4 +1079,3 @@
     }
     c(unname(rtime[left_idx]), unname(rtime[right_idx]))
 }
-

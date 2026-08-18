@@ -343,7 +343,7 @@ setMethod("chromExtract", "ChromBackendMemory", function(object, peak.table, by)
         peak.table = peak.table,
         by = by
     )
-    object <- matched$object
+    object <- object[matched$keep_idx]
     chrom_keys <- matched$chrom_keys
     peak_keys  <- matched$peak_keys
     obj_sp <- split(object, chrom_keys) ##  UT need to check that
