@@ -1,7 +1,7 @@
 # Using and understanding a Chromatograms object
 
 **Package**: Chromatograms 1.3.3\
-**Compiled**: Wed Aug 5 12:05:32 2026
+**Compiled**: Tue Aug 18 12:08:28 2026
 
 ## Introduction
 
@@ -596,7 +596,7 @@ chr_2
     ## ... 11 more  chromatogram variables/columns
     ## ... 2 peaksData variables
     ## Processing:
-    ##  Applied processing queue with 1 steps [Wed Aug  5 12:05:40 2026]
+    ##  Applied processing queue with 1 steps [Tue Aug 18 12:08:36 2026]
 
 Before
 [`applyProcessing()`](https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html)
@@ -644,13 +644,13 @@ processingChunkFactor(chr_mzr) |>
   head()
 ```
 
-    ## [1] /github/home/.cache/R/ExperimentHub/4261ed0c1a0_10396
-    ## [2] /github/home/.cache/R/ExperimentHub/4261ed0c1a0_10396
-    ## [3] /github/home/.cache/R/ExperimentHub/4261ed0c1a0_10396
-    ## [4] /github/home/.cache/R/ExperimentHub/4261ed0c1a0_10396
-    ## [5] /github/home/.cache/R/ExperimentHub/4261ed0c1a0_10396
-    ## [6] /github/home/.cache/R/ExperimentHub/4261ed0c1a0_10396
-    ## Levels: /github/home/.cache/R/ExperimentHub/4261ed0c1a0_10396
+    ## [1] /github/home/.cache/R/ExperimentHub/91432176746_10396
+    ## [2] /github/home/.cache/R/ExperimentHub/91432176746_10396
+    ## [3] /github/home/.cache/R/ExperimentHub/91432176746_10396
+    ## [4] /github/home/.cache/R/ExperimentHub/91432176746_10396
+    ## [5] /github/home/.cache/R/ExperimentHub/91432176746_10396
+    ## [6] /github/home/.cache/R/ExperimentHub/91432176746_10396
+    ## Levels: /github/home/.cache/R/ExperimentHub/91432176746_10396
 
 Here the factor would on yl be of length 1, meaning that all
 chromatograms will be processed in one go. however the length would be
@@ -717,7 +717,7 @@ chr_mzr
     ## ... 6 more  chromatogram variables/columns
     ## ... 2 peaksData variables
     ## Processing:
-    ##  Switch backend from ChromBackendMzR to ChromBackendMemory [Wed Aug  5 12:05:41 2026]
+    ##  Switch backend from ChromBackendMzR to ChromBackendMemory [Tue Aug 18 12:08:37 2026]
 
 ``` r
 
@@ -1233,8 +1233,8 @@ chr_mzr_imputed
     ## ... 2 peaksData variables
     ## Lazy evaluation queue: 1 processing step(s)
     ## Processing:
-    ##  Switch backend from ChromBackendMzR to ChromBackendMemory [Wed Aug  5 12:05:41 2026]
-    ##  Impute: replace missing peaks data using the 'gaussian' method [Wed Aug  5 12:05:43 2026]
+    ##  Switch backend from ChromBackendMzR to ChromBackendMemory [Tue Aug 18 12:08:37 2026]
+    ##  Impute: replace missing peaks data using the 'gaussian' method [Tue Aug 18 12:08:39 2026]
 
 The imputation is **not** performed immediately. Instead, it’s stored in
 the processing queue. When you call
@@ -1546,8 +1546,8 @@ sessionInfo()
     ## 
     ## other attached packages:
     ##  [1] pheatmap_1.0.13      RColorBrewer_1.1-3   IRanges_2.47.2      
-    ##  [4] Spectra_1.23.3       S4Vectors_0.51.6     BiocGenerics_0.59.10
-    ##  [7] generics_0.1.4       MsDataHub_1.13.0     Chromatograms_1.3.3 
+    ##  [4] Spectra_1.23.3       S4Vectors_0.51.6     BiocGenerics_0.59.12
+    ##  [7] generics_0.1.4       MsDataHub_1.13.1     Chromatograms_1.3.3 
     ## [10] ProtGenerics_1.45.0  BiocParallel_1.47.0  BiocStyle_2.41.0    
     ## 
     ## loaded via a namespace (and not attached):
@@ -1560,7 +1560,7 @@ sessionInfo()
     ## [19] yaml_2.3.12            data.table_1.18.4      knitr_1.51            
     ## [22] htmlwidgets_1.6.4      bit_4.6.0              curl_7.1.0            
     ## [25] withr_3.0.3            purrr_1.2.2            desc_1.4.3            
-    ## [28] grid_4.6.1             ExperimentHub_3.3.0    scales_1.4.0          
+    ## [28] grid_4.6.1             ExperimentHub_3.3.2    scales_1.4.0          
     ## [31] MASS_7.3-66            cli_3.6.6              mzR_2.47.0            
     ## [34] rmarkdown_2.31         crayon_1.5.3           ragg_1.5.2            
     ## [37] otel_0.2.0             httr_1.4.8             BiocBaseUtils_1.15.1  

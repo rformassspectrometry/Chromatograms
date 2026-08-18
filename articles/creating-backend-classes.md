@@ -1,7 +1,7 @@
 # Creating new \`ChromBackend\` classes for Chromatograms
 
 **Package**: Chromatograms 1.3.3\
-**Compiled**: Wed Aug 5 12:05:20 2026
+**Compiled**: Tue Aug 18 12:08:16 2026
 
 ## Introduction
 
@@ -1823,7 +1823,7 @@ sessionInfo()
     ##  [4] parallel_4.6.1         cluster_2.1.8.3        jquerylib_0.1.4       
     ##  [7] systemfonts_1.3.2      IRanges_2.47.2         textshaping_1.0.5     
     ## [10] yaml_2.3.12            fastmap_1.2.0          R6_2.6.1              
-    ## [13] generics_0.1.4         knitr_1.51             BiocGenerics_0.59.10  
+    ## [13] generics_0.1.4         knitr_1.51             BiocGenerics_0.59.12  
     ## [16] htmlwidgets_1.6.4      MASS_7.3-66            bookdown_0.47         
     ## [19] desc_1.4.3             Spectra_1.23.3         bslib_0.12.0          
     ## [22] rlang_1.3.0            cachem_1.1.0           xfun_0.60             

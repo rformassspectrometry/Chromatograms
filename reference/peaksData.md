@@ -523,8 +523,8 @@ filterPeaksData(chr, variables = "rtime", ranges = c(12.5, 13.5))
 #> ... 2 peaksData variables
 #> Lazy evaluation queue: 1 processing step(s)
 #> Processing:
-#>  Filter: remove peaks based on the variables: rtimethe ranges: 12.5, 13.5and the match condition: any [Wed Aug  5 12:05:17 2026]
-#>  Filter: remove peaks based on the variables: rtimethe ranges: 12.5, 13.5and the match condition: all [Wed Aug  5 12:05:17 2026] 
+#>  Filter: remove peaks based on the variables: rtimethe ranges: 12.5, 13.5and the match condition: any [Tue Aug 18 12:08:13 2026]
+#>  Filter: remove peaks based on the variables: rtimethe ranges: 12.5, 13.5and the match condition: all [Tue Aug 18 12:08:13 2026] 
 
 # Pairwise similarity: returns a 3D array [i, j, layer]
 res <- compareChromatograms(chr)

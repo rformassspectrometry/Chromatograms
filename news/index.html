@@ -41,6 +41,8 @@
 <div class="section level3">
 <h3 id="changes-in-1-3">Changes in 1.3.3<a class="anchor" aria-label="anchor" href="#changes-in-1-3"></a></h3>
 <ul><li><p>Major <code>ChromBackendSpectra</code> performance improvements: <code><a href="../reference/Chromatograms.html">chromExtract()</a></code>, <code>Chromatograms(spectra)</code>, <code><a href="../reference/peaksData.html">peaksData()</a></code> and <code>[</code> no longer re-validate the wrapped <code>Spectra</code> on every call (which re-stated every backing file), so they no longer scale with the number of files.</p></li>
+<li><p>Improve performance of <code><a href="../reference/peaksData.html">peaksData()</a></code> for <code>ChromBackendSpectra</code> with overlapping chromatogram windows (e.g. from <code><a href="../reference/Chromatograms.html">chromExtract()</a></code>): each spectrum is aggregated once and shared across the windows it falls in, instead of once per window. Results are unchanged; the speed-up grows with the number of overlapping windows.</p></li>
+<li><p>Improve performance of <code><a href="../reference/peaksData.html">peakBoundary()</a></code>: valleys flanking the apex are located by scanning outwards from it rather than scanning the whole chromatogram. Results are unchanged.</p></li>
 <li><p>Order <code>dataOrigin</code> by first appearance when computing the spectra sort index, consistent with <code><a href="https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html" class="external-link">backendParallelFactor()</a></code>.</p></li>
 </ul></div>
 <div class="section level3">

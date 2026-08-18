@@ -12,6 +12,20 @@
   (which re-stated every backing file), so they no longer scale with the
   number of files.
 
+- Improve performance of
+  [`peaksData()`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)
+  for `ChromBackendSpectra` with overlapping chromatogram windows
+  (e.g. from
+  [`chromExtract()`](https://rformassspectrometry.github.io/Chromatograms/reference/Chromatograms.md)):
+  each spectrum is aggregated once and shared across the windows it
+  falls in, instead of once per window. Results are unchanged; the
+  speed-up grows with the number of overlapping windows.
+
+- Improve performance of
+  [`peakBoundary()`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md):
+  valleys flanking the apex are located by scanning outwards from it
+  rather than scanning the whole chromatogram. Results are unchanged.
+
 - Order `dataOrigin` by first appearance when computing the spectra sort
   index, consistent with
   [`backendParallelFactor()`](https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html).

@@ -110,7 +110,7 @@ chr_combined
 #> ... 4 more  chromatogram variables/columns
 #> ... 2 peaksData variables
 #> Processing:
-#>  Merged 2 Chromatograms into one [Wed Aug  5 12:05:16 2026] 
+#>  Merged 2 Chromatograms into one [Tue Aug 18 12:08:12 2026] 
 
 ## Combine using concatenateChromatograms
 chr_combined2 <- concatenateChromatograms(chr1, chr2)
@@ -130,7 +130,7 @@ chr_split
 #> ... 2 more  chromatogram variables/columns
 #> ... 2 peaksData variables
 #> Processing:
-#>  Merged 2 Chromatograms into one [Wed Aug  5 12:05:16 2026] 
+#>  Merged 2 Chromatograms into one [Tue Aug 18 12:08:12 2026] 
 #> 
 #> $`2`
 #> Chromatographic data (Chromatograms) with 2 chromatograms in a ChromBackendMemory backend:
@@ -140,6 +140,6 @@ chr_split
 #> ... 2 more  chromatogram variables/columns
 #> ... 2 peaksData variables
 #> Processing:
-#>  Merged 2 Chromatograms into one [Wed Aug  5 12:05:16 2026] 
+#>  Merged 2 Chromatograms into one [Tue Aug 18 12:08:12 2026] 
 #> 
 ```
