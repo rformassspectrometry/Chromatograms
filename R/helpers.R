@@ -352,12 +352,17 @@
 
         gg <- gg +
             theme(strip.background = element_blank()) +
-            facet_wrap(mz ~ ., scales = "free", labeller = as_labeller(titles)) +
+            facet_wrap(mz~., scales = "free",
+                       labeller = as_labeller(titles)) +
             scale_y_continuous(limits = c(0, max(v$intensity_orient)))
     } else {
-        gg <- gg + xlim(xlim) + ylim(ylim) + ggtitle(main)
+        gg <- gg + ggtitle(main)
     }
 
+    if (length(xlim))
+        gg <- gg + xlim(xlim)
+    if (length(ylim))
+        gg <- gg + ylim(ylim)
     if (!axes) {
         gg <- gg +
             theme(axis.text = element_blank(), axis.ticks = element_blank(),
@@ -377,7 +382,7 @@
 #'
 #' @importFrom ggiraph set_girafe_defaults opts_zoom opts_tooltip opts_sizing
 #' @importFrom ggiraph opts_toolbar geom_line_interactive geom_point_interactive
-#' @importFrom ggiraph facet_wrap_interactive
+#' @importFrom ggiraph facet_wrap_interactive scale_color_manual_interactive
 #'
 #' @importFrom Spectra rbindlistWithRownames
 #'
