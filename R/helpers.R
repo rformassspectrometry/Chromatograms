@@ -382,7 +382,7 @@
 #'
 #' @importFrom ggiraph set_girafe_defaults opts_zoom opts_tooltip opts_sizing
 #' @importFrom ggiraph opts_toolbar geom_line_interactive geom_point_interactive
-#' @importFrom ggiraph facet_wrap_interactive scale_color_manual_interactive
+#' @importFrom ggiraph facet_wrap_interactive
 #'
 #' @importFrom Spectra rbindlistWithRownames
 #'
@@ -405,9 +405,12 @@
 
     set_girafe_defaults(
         opts_zoom = opts_zoom(min = 1, max = 4),
-        opts_tooltip = opts_tooltip(css = "padding:3px;background-color:#333333;color:white;"),
+        opts_tooltip = opts_tooltip(
+            css = "padding:3px;background-color:#333333;color:white;"),
         opts_sizing = opts_sizing(rescale = TRUE),
-        opts_toolbar = opts_toolbar(saveaspng = TRUE, position = "topright", delay_mouseout = 5000, fixed = TRUE)
+        opts_toolbar = opts_toolbar(saveaspng = TRUE, position = "topright",
+                                    delay_mouseout = 5000, fixed = TRUE),
+        
     )
 
     gg <- ggplot(v, aes(x = rtime, y = intensity_orient)) +
@@ -421,7 +424,7 @@
                     ),
                     size = cex, shape = pch, na.rm = TRUE,
                     hover_nearest = TRUE) +
-        scale_color_manual_interactive(values = col) +
+        scale_color_manual(values = col) +
         labs(x = xlab, y = ylab) +
         theme_bw(base_size = bs) +
         theme(legend.position = "none", panel.grid = element_blank(),
@@ -443,8 +446,13 @@
             facet_wrap_interactive(mz ~ ., scales = "free", labeller = as_labeller(titles)) +
             scale_y_continuous(limits = c(0, max(v$intensity_orient)))
     } else {
-        gg <- gg + xlim(xlim) + ylim(ylim) + ggtitle(main)
+        gg <- gg + ggtitle(main)
     }
+
+    if (length(xlim))
+        gg <- gg + xlim(xlim)
+    if (length(ylim))
+        gg <- gg + ylim(ylim)
 
     if (!axes) {
         gg <- gg +

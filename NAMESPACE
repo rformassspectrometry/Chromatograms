@@ -128,7 +128,6 @@ importFrom(ggiraph,
   opts_toolbar,
   opts_tooltip,
   opts_zoom,
-  scale_color_manual_interactive,
   set_girafe_defaults
 )
 importFrom(ggplot2,
