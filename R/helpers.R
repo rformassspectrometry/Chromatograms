@@ -301,16 +301,18 @@
     plot.xy(xy.coords(rts, ints), type = type, col = col, ...)
 }
 
-#' Helper function to plot a single chromatogram.
+#' Helper function to ggplot a single chromatogram.
 #' @note:
 #' Used in:
-#' - `plotChromatograms()`
-#' - `plotChromatogramsOverlay()`
+#' - `ggplotChromatograms()`
+#' - `ggplotChromatogramsOverlay()`
 #'
 #' @importFrom ggplot2 ggplot geom_line geom_point scale_color_manual labs aes
 #' @importFrom ggplot2 theme theme_bw facet_wrap scale_y_continuous as_labeller
 #' @importFrom ggplot2 element_blank xlim ylim ggtitle
+#'
 #' @importFrom Spectra rbindlistWithRownames
+#'
 #' @noRd
 .ggplot_single_chromatogram <- function(x, xlab = "rtime (s)",
         ylab = "intensity",
@@ -375,7 +377,12 @@
     gg
 }
 
-
+#' Helper function to ggiraph-ready single chromatogram.
+#' @note:
+#' Used in:
+#' - `ggplotChromatograms()`
+#' - `ggplotChromatogramsOverlay()`
+#'
 #' @importFrom ggplot2 ggplot scale_color_manual labs aes element_blank
 #' @importFrom ggplot2 theme theme_bw scale_y_continuous xlim ylim ggtitle
 #' @importFrom ggplot2 as_labeller
@@ -410,7 +417,7 @@
         opts_sizing = opts_sizing(rescale = TRUE),
         opts_toolbar = opts_toolbar(saveaspng = TRUE, position = "topright",
                                     delay_mouseout = 5000, fixed = TRUE),
-        
+
     )
 
     gg <- ggplot(v, aes(x = rtime, y = intensity_orient)) +
