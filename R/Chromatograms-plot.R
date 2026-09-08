@@ -59,6 +59,11 @@
 #'
 #' @param lwd `numeric(1)` specifying the line width (see [plot.default()]).
 #'
+#' @param bs `numeric(1)` font size for ggplot.
+#'
+#' @param interactive `logical(1)` return the interactive ggplot based on
+#'     ggiraph.
+#'
 #' @param ... Additional arguments to be passed to [plot.default()].
 #'
 #' @return These functions create a plot.
@@ -108,7 +113,6 @@
 #' plotChromatogramsOverlay(chr[1:2], col = c("green", "blue"))
 #'
 NULL
-
 
 #' @rdname plotChromatograms
 #' @importFrom graphics par
@@ -173,3 +177,70 @@ setMethod("plotChromatogramsOverlay", "Chromatograms",
                       pch = pch, cex = cex, lwd = lwd, ...)
               }
           })
+
+#' @rdname plotChromatograms
+#' @importFrom ggiraph girafe
+#' @exportMethod ggplotChromatograms
+setMethod("ggplotChromatograms", "Chromatograms",
+          function(object, xlab = "rtime (s)", ylab = "intensity",
+                   xlim = numeric(), ylim = numeric(),
+                   main = character(), col = "#00000080",
+                   pch = 20, cex = 1.5, lwd = 0.5, bs = 8,
+                   interactive = FALSE, ...) {
+              nsp <- length(object)
+              if (length(col) != nsp)
+                  col <- rep(col[1], nsp)
+              if (!length(main))
+                  main <- paste0("m/z: ", round(mz(object), 1))
+              if (length(main) != nsp)
+                  main <- rep(main[1], nsp)
+
+              if (interactive) {
+                gg <- .ggplot_single_chromatogram_interactive(
+                        object, xlab = xlab, ylab = ylab,
+                        xlim = xlim, ylim = ylim, main = main, col = col,
+                        pch = pch, cex = cex, lwd = lwd, bs = bs, ...)
+                girafe(gg)
+              } else {
+                .ggplot_single_chromatogram(
+                        object, xlab = xlab, ylab = ylab,
+                        xlim = xlim, ylim = ylim, main = main, col = col,
+                        pch = pch, cex = cex, lwd = lwd, bs = bs, ...)
+              }
+            })
+
+#' @rdname plotChromatograms
+#' @importFrom ggiraph girafe
+#' @exportMethod ggplotChromatogramsOverlay
+setMethod("ggplotChromatogramsOverlay", "Chromatograms",
+          function(object, xlab = "rtime (s)", ylab = "intensity",
+                   xlim = numeric(), ylim = numeric(),
+                   main = paste(length(object), "chromatograms"),
+                   col = "#00000080",
+                   pch = 20, cex = 1.5, lwd = 0.5, bs = 16,
+                   interactive = FALSE,
+                   axes = TRUE, frame.plot = axes, ...) {
+              nsp <- length(object)
+              if (length(col) != nsp)
+                  col <- rep(col[1], nsp)
+              if (!length(xlim))
+                  xlim <- range(unlist(rtime(object)), na.rm = TRUE)
+              if (!length(ylim))
+                  ylim <- c(0, max(unlist(intensity(object)), na.rm = TRUE))
+
+
+              if (interactive) {
+                gg <- .ggplot_single_chromatogram_interactive(
+                        object, add = TRUE, xlab = xlab, ylab = ylab,
+                        xlim = xlim, ylim = ylim, main = main, col = col,
+                        pch = pch, cex = cex, lwd = lwd, bs = bs,
+                        axes = axes, frame.plot = frame.plot, ...)
+                girafe(gg)
+              } else {
+                .ggplot_single_chromatogram(
+                        object, add = TRUE, xlab = xlab, ylab = ylab,
+                        xlim = xlim, ylim = ylim, main = main, col = col,
+                        pch = pch, cex = cex, lwd = lwd, bs = bs,
+                        axes = axes, frame.plot = frame.plot, ...)
+              }
+            })

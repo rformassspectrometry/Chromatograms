@@ -4,6 +4,8 @@
 \alias{plotChromatograms}
 \alias{plotChromatograms,Chromatograms-method}
 \alias{plotChromatogramsOverlay,Chromatograms-method}
+\alias{ggplotChromatograms,Chromatograms-method}
+\alias{ggplotChromatogramsOverlay,Chromatograms-method}
 \title{Plot chromatograms}
 \usage{
 \S4method{plotChromatograms}{Chromatograms}(
@@ -34,6 +36,40 @@
   ylim = numeric(),
   main = paste(length(object), "chromatograms"),
   col = "#00000080",
+  axes = TRUE,
+  frame.plot = axes,
+  ...
+)
+
+\S4method{ggplotChromatograms}{Chromatograms}(
+  object,
+  xlab = "rtime (s)",
+  ylab = "intensity",
+  xlim = numeric(),
+  ylim = numeric(),
+  main = character(),
+  col = "#00000080",
+  pch = 20,
+  cex = 1.5,
+  lwd = 0.5,
+  bs = 8,
+  interactive = FALSE,
+  ...
+)
+
+\S4method{ggplotChromatogramsOverlay}{Chromatograms}(
+  object,
+  xlab = "rtime (s)",
+  ylab = "intensity",
+  xlim = numeric(),
+  ylim = numeric(),
+  main = paste(length(object), "chromatograms"),
+  col = "#00000080",
+  pch = 20,
+  cex = 1.5,
+  lwd = 0.5,
+  bs = 16,
+  interactive = FALSE,
   axes = TRUE,
   frame.plot = axes,
   ...
@@ -82,6 +118,11 @@ the y-axis to the x-axis. Defaults to 1.}
 
 \item{frame.plot}{\code{logical(1)} whether a box should be drawn around the
 plotting area.}
+
+\item{bs}{\code{numeric(1)} font size for ggplot.}
+
+\item{interactive}{\code{logical(1)} return the interactive ggplot based on
+ggiraph.}
 }
 \value{
 These functions create a plot.
