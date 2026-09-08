@@ -1,7 +1,7 @@
 # Using and understanding a Chromatograms object
 
 **Package**: Chromatograms 1.3.3\
-**Compiled**: Tue Aug 18 12:08:28 2026
+**Compiled**: Tue Sep 8 05:44:02 2026
 
 ## Introduction
 
@@ -158,36 +158,7 @@ index columns, and peaks data. The metadata includes the MS level, m/z,
 and chromatogram index, while the peaks data includes the retention time
 and intensity in a list of data.frames.
 
-``` r
-
-# A data.frame with chromatogram variables.
-cdata <- data.frame(
-    msLevel = c(1L, 1L),
-    mz = c(112.2, 123.3),
-    chromIndex = c(1L, 2L)
-)
-
-# Retention time and intensity values for each chromatogram.
-pdata <- list(
-    data.frame(
-        rtime = c(11, 12.4, 12.8, 13.2, 14.6, 15.1, 16.5),
-        intensity = c(50.5, 123.3, 153.6, 2354.3, 243.4, 123.4, 83.2)
-    ),
-    data.frame(
-        rtime = c(45.1, 46.2, 53, 54.2, 55.3, 56.4, 57.5),
-        intensity = c(100, 180.1, 300.45, 1400, 1200.3, 300.2, 150.1)
-    )
-)
-
-# Create and initialize the backend
-be <- backendInitialize(ChromBackendMemory(),
-    chromData = cdata, peaksData = pdata
-)
-
-# Create Chromatograms object
-chr <- Chromatograms(be)
-chr
-```
+`# A data.frame with chromatogram variables.`` ``cdata`` ``<-`` `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(`` `` msLevel ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``1L``, ``1L``)``,`` `` mz ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``112.2``, ``123.3``)``,`` `` chromIndex ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``1L``, ``2L``)`` ``)`` `` ``# Retention time and intensity values for each chromatogram.`` ``pdata`` ``<-`` `[`list`](https://rdrr.io/r/base/list.html)`(`` `` `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(`` `` rtime ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``11``, ``12.4``, ``12.8``, ``13.2``, ``14.6``, ``15.1``, ``16.5``)``,`` `` intensity ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``50.5``, ``123.3``, ``153.6``, ``2354.3``, ``243.4``, ``123.4``, ``83.2``)`` `` ``)``,`` `` `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(`` `` rtime ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``45.1``, ``46.2``, ``53``, ``54.2``, ``55.3``, ``56.4``, ``57.5``)``,`` `` intensity ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``100``, ``180.1``, ``300.45``, ``1400``, ``1200.3``, ``300.2``, ``150.1``)`` `` ``)`` ``)`` `` ``# Create and initialize the backend`` ``be`` ``<-`` `[`backendInitialize`](https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html)`(`[`ChromBackendMemory`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackendMemory.md)`(``)``,`` `` chromData ``=`` ``cdata``, peaksData ``=`` ``pdata`` ``)`` `` ``# Create Chromatograms object`` ``chr`` ``<-`` `[`Chromatograms`](https://rformassspectrometry.github.io/Chromatograms/reference/Chromatograms.md)`(``be``)`` ``chr`
 
     ## Chromatographic data (Chromatograms) with 2 chromatograms in a ChromBackendMemory backend:
     ##   chromIndex msLevel    mz
@@ -207,25 +178,13 @@ the retention time and intensity values from the original data files
 only on demand. See section [Backends](#backends) for more details on
 backends and their properties.
 
-``` r
-
-library(MsDataHub)
-MRM_file <- MRM.standmix.5.mzML()
-```
+[`library`](https://rdrr.io/r/base/library.html)`(`[`MsDataHub`](https://rformassspectrometry.github.io/MsDataHub)`)`` ``MRM_file`` ``<-`` `[`MRM.standmix.5.mzML`](https://rformassspectrometry.github.io/MsDataHub/reference/MRM.html)`(``)`
 
     ## see ?MsDataHub and browseVignettes('MsDataHub') for documentation
 
     ## loading from cache
 
-``` r
-
-be <- backendInitialize(ChromBackendMzR(),
-    files = MRM_file,
-    BPPARAM = SerialParam()
-)
-
-chr_mzr <- Chromatograms(be)
-```
+`be`` ``<-`` `[`backendInitialize`](https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html)`(`[`ChromBackendMzR`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackendMzR.md)`(``)``,`` `` files ``=`` ``MRM_file``,`` `` BPPARAM ``=`` `[`SerialParam`](https://rdrr.io/pkg/BiocParallel/man/SerialParam-class.html)`(``)`` ``)`` `` ``chr_mzr`` ``<-`` `[`Chromatograms`](https://rformassspectrometry.github.io/Chromatograms/reference/Chromatograms.md)`(``be``)`
 
 The `Chromatograms` object `chr_mzr` now contains the chromatograms from
 the mzML file `MRM_file`. The chromatograms can be accessed and
@@ -242,17 +201,11 @@ Basic information about the `Chromatograms` object can be accessed using
 functions such as [`length()`](https://rdrr.io/r/base/length.html),
 which tell us how many chromatograms are contained in the object:
 
-``` r
-
-length(chr)
-```
+[`length`](https://rdrr.io/r/base/length.html)`(``chr``)`
 
     ## [1] 2
 
-``` r
-
-length(chr_mzr)
-```
+[`length`](https://rdrr.io/r/base/length.html)`(``chr_mzr``)`
 
     ## [1] 138
 
@@ -270,10 +223,7 @@ The main function to access the full or a part of the peaks data is
 each data.frame contains the retention time and intensity values for one
 chromatogram. It is used such as below:
 
-``` r
-
-peaksData(chr)
-```
+[`peaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``chr``)`
 
     ## [[1]]
     ##   rtime intensity
@@ -300,10 +250,7 @@ Specific peaks variables can be accessed by either precising the
 [`peaksData()`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)
 or using `$`.
 
-``` r
-
-peaksData(chr, columns = c("rtime"), drop = TRUE)
-```
+[`peaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``chr``, columns ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``"rtime"``)``, drop ``=`` ``TRUE``)`
 
     ## [[1]]
     ## [1] 11.0 12.4 12.8 13.2 14.6 15.1 16.5
@@ -311,10 +258,7 @@ peaksData(chr, columns = c("rtime"), drop = TRUE)
     ## [[2]]
     ## [1] 45.1 46.2 53.0 54.2 55.3 56.4 57.5
 
-``` r
-
-chr$rtime
-```
+`chr``$``rtime`
 
     ## [[1]]
     ## [1] 11.0 12.4 12.8 13.2 14.6 15.1 16.5
@@ -325,29 +269,11 @@ chr$rtime
 The methods above also allows to replace the peaks data. It can either
 be the full peaks data:
 
-``` r
-
-peaksData(chr) <- list(
-    data.frame(
-        rtime = c(1, 2, 3, 4, 5, 6, 7),
-        intensity = c(1, 2, 3, 4, 5, 6, 7)
-    ),
-    data.frame(
-        rtime = c(1, 2, 3, 4, 5, 6, 7),
-        intensity = c(1, 2, 3, 4, 5, 6, 7)
-    )
-)
-```
+[`peaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``chr``)`` ``<-`` `[`list`](https://rdrr.io/r/base/list.html)`(`` `` `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(`` `` rtime ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``1``, ``2``, ``3``, ``4``, ``5``, ``6``, ``7``)``,`` `` intensity ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``1``, ``2``, ``3``, ``4``, ``5``, ``6``, ``7``)`` `` ``)``,`` `` `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(`` `` rtime ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``1``, ``2``, ``3``, ``4``, ``5``, ``6``, ``7``)``,`` `` intensity ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``1``, ``2``, ``3``, ``4``, ``5``, ``6``, ``7``)`` `` ``)`` ``)`
 
 Or for specific variables:
 
-``` r
-
-chr$rtime <- list(
-    c(8, 9, 10, 11, 12, 13, 14),
-    c(8, 9, 10, 11, 12, 13, 14)
-)
-```
+`chr``$``rtime`` ``<-`` `[`list`](https://rdrr.io/r/base/list.html)`(`` `` `[`c`](https://rdrr.io/r/base/c.html)`(``8``, ``9``, ``10``, ``11``, ``12``, ``13``, ``14``)``,`` `` `[`c`](https://rdrr.io/r/base/c.html)`(``8``, ``9``, ``10``, ``11``, ``12``, ``13``, ``14``)`` ``)`
 
 The peak data can be therefore accessed, replaced but also
 filtered/subsetted. The filtering can be done using the
@@ -357,19 +283,11 @@ the specified numerical ranges parameter. This function does not reduce
 the number of chromatograms in the object, but it removes the specified
 peaks data (e.g., “rtime” and “intensity” pairs) from the peaksData.
 
-``` r
-
-chr_filt <- filterPeaksData(chr, variables = "rtime", ranges = c(12, 15))
-
-length(chr_filt)
-```
+`chr_filt`` ``<-`` `[`filterPeaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``chr``, variables ``=`` ``"rtime"``, ranges ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``12``, ``15``)``)`` `` `[`length`](https://rdrr.io/r/base/length.html)`(``chr_filt``)`
 
     ## [1] 2
 
-``` r
-
-length(rtime(chr_filt))
-```
+[`length`](https://rdrr.io/r/base/length.html)`(`[`rtime`](https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html)`(``chr_filt``)``)`
 
     ## [1] 2
 
@@ -383,10 +301,7 @@ The main function to access the full chromatographic metadata is
 function returns the metadata of the chromatograms stored in the
 `Chromatograms` object. It can be used as follows:
 
-``` r
-
-chromData(chr)
-```
+[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``chr``)`
 
     ##   msLevel    mz chromIndex collisionEnergy dataOrigin mzMin mzMax precursorMz
     ## 1       1 112.2          1              NA       <NA>    NA    NA          NA
@@ -400,31 +315,20 @@ Specific chromatogram variables can be accessed by either precising the
 [`chromData()`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
 or using `$`.
 
-``` r
-
-chromData(chr, columns = c("msLevel"))
-```
+[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``chr``, columns ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``"msLevel"``)``)`
 
     ##   msLevel
     ## 1       1
     ## 2       1
 
-``` r
-
-chr$chromIndex
-```
+`chr``$``chromIndex`
 
     ## [1] 1 2
 
 The metadata can be replaced using the same methods as for the peaks
 data.
 
-``` r
-
-chr$msLevel <- c(2L, 2L)
-
-chromData(chr)
-```
+`chr``$``msLevel`` ``<-`` `[`c`](https://rdrr.io/r/base/c.html)`(``2L``, ``2L``)`` `` `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``chr``)`
 
     ##   msLevel    mz chromIndex collisionEnergy dataOrigin mzMin mzMax precursorMz
     ## 1       2 112.2          1              NA       <NA>    NA    NA          NA
@@ -435,11 +339,7 @@ chromData(chr)
 
 extra columns can also be added by the user using the `$` operator.
 
-``` r
-
-chr$extra <- c("extra1", "extra2")
-chromData(chr)
-```
+`chr``$``extra`` ``<-`` `[`c`](https://rdrr.io/r/base/c.html)`(``"extra1"``, ``"extra2"``)`` `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``chr``)`
 
     ##   msLevel    mz chromIndex collisionEnergy dataOrigin mzMin mzMax precursorMz
     ## 1       2 112.2          1              NA       <NA>    NA    NA          NA
@@ -454,22 +354,11 @@ function. This function filters the chromatogram variables based on the
 specified ranges parameter. However, contrarily to the peaks data, the
 filtering *does* reduces the number of chromatograms in the object.
 
-``` r
-
-chr_filt <- filterChromData(chr,
-    variables = "chromIndex", ranges = c(1, 2),
-    keep = TRUE
-)
-
-length(chr_filt)
-```
+`chr_filt`` ``<-`` `[`filterChromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``chr``,`` `` variables ``=`` ``"chromIndex"``, ranges ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``1``, ``2``)``,`` `` keep ``=`` ``TRUE`` ``)`` `` `[`length`](https://rdrr.io/r/base/length.html)`(``chr_filt``)`
 
     ## [1] 2
 
-``` r
-
-length(chr)
-```
+[`length`](https://rdrr.io/r/base/length.html)`(``chr``)`
 
     ## [1] 2
 
@@ -510,20 +399,7 @@ function to the processing queue of a `Chromatograms` object. Below we
 define a function that divides the intensities of each peak by a value
 which can be passed with argument `y`.
 
-``` r
-
-## Define a function that takes the backend as an input, divides the intensity
-## by parameter y and returns it. Note that ... is required in
-## the function's definition.
-divide_intensities <- function(x, y, ...) {
-    intensity(x) <- lapply(intensity(x), `/`, y)
-    x
-}
-
-## Add the function to the procesing queue
-chr_2 <- addProcessing(chr, divide_intensities, y = 2)
-chr_2
-```
+`## Define a function that takes the backend as an input, divides the intensity`` ``## by parameter y and returns it. Note that ... is required in`` ``## the function's definition.`` ``divide_intensities`` ``<-`` ``function``(``x``, ``y``, ``...``)`` ``{`` `` `[`intensity`](https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html)`(``x``)`` ``<-`` `[`lapply`](https://rdrr.io/r/base/lapply.html)`(`[`intensity`](https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html)`(``x``)``, ``` `/` ```, ``y``)`` `` ``x`` ``}`` `` ``## Add the function to the procesing queue`` ``chr_2`` ``<-`` `[`addProcessing`](https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html)`(``chr``, ``divide_intensities``, y ``=`` ``2``)`` ``chr_2`
 
     ## Chromatographic data (Chromatograms) with 2 chromatograms in a ChromBackendMemory backend:
     ##   chromIndex msLevel    mz
@@ -539,10 +415,7 @@ Calling
 on this object will now return intensities that are half of the
 intensities of the original objects `chr`.
 
-``` r
-
-intensity(chr_2)
-```
+[`intensity`](https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html)`(``chr_2``)`
 
     ## [[1]]
     ## [1] 0.5 1.0 1.5 2.0 2.5 3.0 3.5
@@ -550,10 +423,7 @@ intensity(chr_2)
     ## [[2]]
     ## [1] 0.5 1.0 1.5 2.0 2.5 3.0 3.5
 
-``` r
-
-intensity(chr)
-```
+[`intensity`](https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html)`(``chr``)`
 
     ## [[1]]
     ## [1] 1 2 3 4 5 6 7
@@ -568,26 +438,15 @@ peak data and write that back to the data storage with the
 function. Below we use this to make all data manipulations on peak data
 of the `sps_rep` object persistent.
 
-``` r
-
-length(chr_2@processingQueue)
-```
+[`length`](https://rdrr.io/r/base/length.html)`(``chr_2``@``processingQueue``)`
 
     ## [1] 1
 
-``` r
-
-chr_2 <- applyProcessing(chr_2)
-
-length(chr_2@processingQueue)
-```
+`chr_2`` ``<-`` `[`applyProcessing`](https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html)`(``chr_2``)`` `` `[`length`](https://rdrr.io/r/base/length.html)`(``chr_2``@``processingQueue``)`
 
     ## [1] 0
 
-``` r
-
-chr_2
-```
+`chr_2`
 
     ## Chromatographic data (Chromatograms) with 2 chromatograms in a ChromBackendMemory backend:
     ##   chromIndex msLevel    mz
@@ -596,7 +455,7 @@ chr_2
     ## ... 11 more  chromatogram variables/columns
     ## ... 2 peaksData variables
     ## Processing:
-    ##  Applied processing queue with 1 steps [Tue Aug 18 12:08:36 2026]
+    ##  Applied processing queue with 1 steps [Tue Sep  8 05:44:11 2026]
 
 Before
 [`applyProcessing()`](https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html)
@@ -624,10 +483,7 @@ function can be used to evaluate how the data will be split. Below, we
 use this function to assess how chunk-wise processing would be performed
 with two `Chromatograms` objects:
 
-``` r
-
-processingChunkFactor(chr)
-```
+[`processingChunkFactor`](https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html)`(``chr``)`
 
     ## factor()
     ## Levels:
@@ -638,19 +494,15 @@ chunk-wise processing will be performed. We next evaluate whether the
 `Chromatograms` with the `ChromBackendMzR` on-disk backend would use
 chunk-wise processing.
 
-``` r
+[`processingChunkFactor`](https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html)`(``chr_mzr``)`` ``|>`` `` `[`head`](https://rdrr.io/r/utils/head.html)`(``)`
 
-processingChunkFactor(chr_mzr) |>
-  head()
-```
-
-    ## [1] /github/home/.cache/R/ExperimentHub/91432176746_10396
-    ## [2] /github/home/.cache/R/ExperimentHub/91432176746_10396
-    ## [3] /github/home/.cache/R/ExperimentHub/91432176746_10396
-    ## [4] /github/home/.cache/R/ExperimentHub/91432176746_10396
-    ## [5] /github/home/.cache/R/ExperimentHub/91432176746_10396
-    ## [6] /github/home/.cache/R/ExperimentHub/91432176746_10396
-    ## Levels: /github/home/.cache/R/ExperimentHub/91432176746_10396
+    ## [1] /github/home/.cache/R/ExperimentHub/c6259a5bbc4_10396
+    ## [2] /github/home/.cache/R/ExperimentHub/c6259a5bbc4_10396
+    ## [3] /github/home/.cache/R/ExperimentHub/c6259a5bbc4_10396
+    ## [4] /github/home/.cache/R/ExperimentHub/c6259a5bbc4_10396
+    ## [5] /github/home/.cache/R/ExperimentHub/c6259a5bbc4_10396
+    ## [6] /github/home/.cache/R/ExperimentHub/c6259a5bbc4_10396
+    ## Levels: /github/home/.cache/R/ExperimentHub/c6259a5bbc4_10396
 
 Here the factor would on yl be of length 1, meaning that all
 chromatograms will be processed in one go. however the length would be
@@ -658,12 +510,7 @@ higher if more than one file is used. As this data is quite big (138
 chromatograms), we can set the `processingChunkSize` to 10 to process
 the data in chunks of 10 chromatograms.
 
-``` r
-
-processingChunkSize(chr_mzr) <- 10
-
-processingChunkFactor(chr_mzr) |> table()
-```
+[`processingChunkSize`](https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html)`(``chr_mzr``)`` ``<-`` ``10`` `` `[`processingChunkFactor`](https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html)`(``chr_mzr``)`` ``|>`` `[`table`](https://rdrr.io/r/base/table.html)`(``)`
 
     ## 
     ##  1  2  3  4  5  6  7  8  9 10 11 12 13 14 
@@ -692,19 +539,11 @@ one with the
 function. As of now it is only possible to change the `ChrombackendMzR`
 to an in-memory backend such as `ChromBackendMemory`.
 
-``` r
-
-print(object.size(chr_mzr), units = "Mb")
-```
+[`print`](https://rdrr.io/r/base/print.html)`(`[`object.size`](https://rdrr.io/r/utils/object.size.html)`(``chr_mzr``)``, units ``=`` ``"Mb"``)`
 
     ## 0.1 Mb
 
-``` r
-
-chr_mzr <- setBackend(chr_mzr, ChromBackendMemory(), BPPARAM = SerialParam())
-
-chr_mzr
-```
+`chr_mzr`` ``<-`` `[`setBackend`](https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html)`(``chr_mzr``, `[`ChromBackendMemory`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackendMemory.md)`(``)``, BPPARAM ``=`` `[`SerialParam`](https://rdrr.io/pkg/BiocParallel/man/SerialParam-class.html)`(``)``)`` `` ``chr_mzr`
 
     ## Chromatographic data (Chromatograms) with 138 chromatograms in a ChromBackendMemory backend:
     ##   chromIndex msLevel mz
@@ -717,12 +556,9 @@ chr_mzr
     ## ... 6 more  chromatogram variables/columns
     ## ... 2 peaksData variables
     ## Processing:
-    ##  Switch backend from ChromBackendMzR to ChromBackendMemory [Tue Aug 18 12:08:37 2026]
+    ##  Switch backend from ChromBackendMzR to ChromBackendMemory [Tue Sep  8 05:44:12 2026]
 
-``` r
-
-chr_mzr@backend@peaksData[[1]] |> head() # data is now in memory
-```
+`chr_mzr``@``backend``@``peaksData``[[``1``]``]`` ``|>`` `[`head`](https://rdrr.io/r/utils/head.html)`(``)`` ``# data is now in memory`
 
     ##          rtime intensity
     ## 1 1.666667e-05  45.37833
@@ -736,10 +572,7 @@ With the call the full peak data was imported from the original mzML
 files into the object. This has obviously an impact on the object’s
 size, which is now much larger than before.
 
-``` r
-
-print(object.size(chr_mzr), units = "Mb")
-```
+[`print`](https://rdrr.io/r/base/print.html)`(`[`object.size`](https://rdrr.io/r/utils/object.size.html)`(``chr_mzr``)``, units ``=`` ``"Mb"``)`
 
     ## 2.8 Mb
 
@@ -769,37 +602,12 @@ For this purpose let’s create a lightweight in-memory `Spectra` object
 and derive a `Chromatograms` from it. This avoids any external downloads
 while still illustrating the `ChromBackendSpectra` workflow.
 
-``` r
-
-library(Spectra)
-library(IRanges)
-sp <- Spectra(
-  DataFrame(
-    rtime = c(100, 110, 120, 130, 140),
-    msLevel = c(1L, 1L, 1L, 1L, 1L),
-    dataOrigin = rep("example", 5L),
-    mz = NumericList(
-      c(100, 101), c(100, 101), c(100, 101), c(100, 101), c(100, 101),
-      compress = FALSE
-    ),
-    intensity = NumericList(
-      c(10, 20), c(15, 25), c(30, 5), c(12, 18), c(40, 2),
-      compress = FALSE
-    )
-  ),
-  source = MsBackendDataFrame()
-)
-
-chr_s <- Chromatograms(sp)
-```
+[`library`](https://rdrr.io/r/base/library.html)`(`[`Spectra`](https://github.com/RforMassSpectrometry/Spectra)`)`` `[`library`](https://rdrr.io/r/base/library.html)`(`[`IRanges`](https://bioconductor.org/packages/IRanges)`)`` ``sp`` ``<-`` `[`Spectra`](https://rdrr.io/pkg/Spectra/man/Spectra.html)`(`` `` `[`DataFrame`](https://rdrr.io/pkg/S4Vectors/man/DataFrame-class.html)`(`` `` rtime ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``100``, ``110``, ``120``, ``130``, ``140``)``,`` `` msLevel ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``1L``, ``1L``, ``1L``, ``1L``, ``1L``)``,`` `` dataOrigin ``=`` `[`rep`](https://rdrr.io/r/base/rep.html)`(``"example"``, ``5L``)``,`` `` mz ``=`` `[`NumericList`](https://rdrr.io/pkg/IRanges/man/AtomicList-class.html)`(`` `` `[`c`](https://rdrr.io/r/base/c.html)`(``100``, ``101``)``, `[`c`](https://rdrr.io/r/base/c.html)`(``100``, ``101``)``, `[`c`](https://rdrr.io/r/base/c.html)`(``100``, ``101``)``, `[`c`](https://rdrr.io/r/base/c.html)`(``100``, ``101``)``, `[`c`](https://rdrr.io/r/base/c.html)`(``100``, ``101``)``,`` `` compress ``=`` ``FALSE`` `` ``)``,`` `` intensity ``=`` `[`NumericList`](https://rdrr.io/pkg/IRanges/man/AtomicList-class.html)`(`` `` `[`c`](https://rdrr.io/r/base/c.html)`(``10``, ``20``)``, `[`c`](https://rdrr.io/r/base/c.html)`(``15``, ``25``)``, `[`c`](https://rdrr.io/r/base/c.html)`(``30``, ``5``)``, `[`c`](https://rdrr.io/r/base/c.html)`(``12``, ``18``)``, `[`c`](https://rdrr.io/r/base/c.html)`(``40``, ``2``)``,`` `` compress ``=`` ``FALSE`` `` ``)`` `` ``)``,`` `` source ``=`` `[`MsBackendDataFrame`](https://rdrr.io/pkg/Spectra/man/MsBackend.html)`(``)`` ``)`` `` ``chr_s`` ``<-`` `[`Chromatograms`](https://rformassspectrometry.github.io/Chromatograms/reference/Chromatograms.md)`(``sp``)`
 
 We now have a `Chromatograms` object `chr_s` with a
 `ChromBackendSpectra` backend. one chromatogram was generated per file.
 
-``` r
-
-chr_s
-```
+`chr_s`
 
     ## Chromatographic data (Chromatograms) with 1 chromatograms in a ChromBackendSpectra backend:
     ##   chromIndex msLevel  mz
@@ -841,19 +649,7 @@ granular groupings.
 Additionally, you can provide custom chromatogram metadata to define
 specific m/z and retention time ranges:
 
-``` r
-
-## Create custom metadata for EIC extraction
-custom_cd <- data.frame(
-    msLevel = c(1L, 1L),
-    dataOrigin = rep(dataOrigin(sp)[1], 2),
-    mzMin = c(100, 200),
-    mzMax = c(100.5, 200.5)
-)
-
-chr_custom <- Chromatograms(sp, chromData = custom_cd)
-chr_custom
-```
+`## Create custom metadata for EIC extraction`` ``custom_cd`` ``<-`` `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(`` `` msLevel ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``1L``, ``1L``)``,`` `` dataOrigin ``=`` `[`rep`](https://rdrr.io/r/base/rep.html)`(`[`dataOrigin`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``sp``)``[``1``]``, ``2``)``,`` `` mzMin ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``100``, ``200``)``,`` `` mzMax ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``100.5``, ``200.5``)`` ``)`` `` ``chr_custom`` ``<-`` `[`Chromatograms`](https://rformassspectrometry.github.io/Chromatograms/reference/Chromatograms.md)`(``sp``, chromData ``=`` ``custom_cd``)`` ``chr_custom`
 
     ## Chromatographic data (Chromatograms) with 2 chromatograms in a ChromBackendSpectra backend:
     ##   chromIndex msLevel mz
@@ -875,19 +671,7 @@ the data to update the groupings. This can be done using the
 [`factorize()`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
 function:
 
-``` r
-
-## Work on a copy so downstream examples are not affected
-chr_s_tmp <- chr_s
-
-## Modify metadata
-chr_s_tmp$msLevel <- rep(2L, length(chr_s_tmp))
-
-## Re-factorize to update the groupings
-chr_s_tmp <- factorize(chr_s_tmp)
-
-chromData(chr_s_tmp)
-```
+`## Work on a copy so downstream examples are not affected`` ``chr_s_tmp`` ``<-`` ``chr_s`` `` ``## Modify metadata`` ``chr_s_tmp``$``msLevel`` ``<-`` `[`rep`](https://rdrr.io/r/base/rep.html)`(``2L``, `[`length`](https://rdrr.io/r/base/length.html)`(``chr_s_tmp``)``)`` `` ``## Re-factorize to update the groupings`` ``chr_s_tmp`` ``<-`` `[`factorize`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)`(``chr_s_tmp``)`` `` `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``chr_s_tmp``)`
 
     ##   msLevel rtMin rtMax mzMin mzMax  mz dataOrigin chromSpectraIndex chromIndex
     ## 1       2   100   140  -Inf   Inf Inf    example         2_example         NA
@@ -901,13 +685,7 @@ the updated metadata.
 
 Now, let’s say we want to plot specific area of the chromatograms.
 
-``` r
-
-chromData(chr_s)$rtmin <- 125
-chromData(chr_s)$rtmax <- 180
-chromData(chr_s)$mzmin <- 100
-chromData(chr_s)$mzmax <- 100.5
-```
+[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``chr_s``)``$``rtmin`` ``<-`` ``125`` `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``chr_s``)``$``rtmax`` ``<-`` ``180`` `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``chr_s``)``$``mzmin`` ``<-`` ``100`` `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``chr_s``)``$``mzmax`` ``<-`` ``100.5`
 
 The `Chromatograms` object provides a set of functions to plot the
 chromatograms and their peaks data. The
@@ -915,13 +693,7 @@ chromatograms and their peaks data. The
 function can be used to plot each single chromatograms into its own
 plot.
 
-``` r
-
-library(RColorBrewer)
-col3 <- brewer.pal(3, "Dark2")
-
-plotChromatograms(chr_s, col = col3)
-```
+[`library`](https://rdrr.io/r/base/library.html)`(``RColorBrewer``)`` ``col3`` ``<-`` `[`brewer.pal`](https://rdrr.io/pkg/RColorBrewer/man/ColorBrewer.html)`(``3``, ``"Dark2"``)`` `` `[`plotChromatograms`](https://rformassspectrometry.github.io/Chromatograms/reference/plotChromatograms.md)`(``chr_s``, col ``=`` ``col3``)`
 
 ![](using-a-chromatograms-object_files/figure-html/unnamed-chunk-25-1.png)
 
@@ -930,10 +702,7 @@ the
 [`plotChromatogramsOverlay()`](https://rformassspectrometry.github.io/Chromatograms/reference/hidden_aliases.md)
 function can be used to overlay all chromatograms into one plot.
 
-``` r
-
-plotChromatogramsOverlay(chr_s, col = col3)
-```
+[`plotChromatogramsOverlay`](https://rformassspectrometry.github.io/Chromatograms/reference/hidden_aliases.md)`(``chr_s``, col ``=`` ``col3``)`
 
 ![](using-a-chromatograms-object_files/figure-html/unnamed-chunk-26-1.png)
 
@@ -951,22 +720,7 @@ ranges that correspond to detected peaks or features of interest.
 For backends like `ChromBackendMemory` and `ChromBackendMzR`, you can
 extract regions based on retention time ranges:
 
-``` r
-
-## Define peaks of interest with retention time windows
-peak_table <- data.frame(
-    rtMin = c(8, 11),
-    rtMax = c(10, 13),
-    msLevel = c(2L, 2L),
-    chromIndex = c(1L, 2L)
-)
-
-## Extract those regions
-chr_extracted <- chromExtract(chr, peak_table,
-                              by = c("msLevel", "chromIndex"))
-
-chr_extracted
-```
+`## Define peaks of interest with retention time windows`` ``peak_table`` ``<-`` `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(`` `` rtMin ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``8``, ``11``)``,`` `` rtMax ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``10``, ``13``)``,`` `` msLevel ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``2L``, ``2L``)``,`` `` chromIndex ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``1L``, ``2L``)`` ``)`` `` ``## Extract those regions`` ``chr_extracted`` ``<-`` `[`chromExtract`](https://rformassspectrometry.github.io/Chromatograms/reference/Chromatograms.md)`(``chr``, ``peak_table``,`` `` by ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``"msLevel"``, ``"chromIndex"``)``)`` `` ``chr_extracted`
 
     ## Chromatographic data (Chromatograms) with 2 chromatograms in a ChromBackendMemory backend:
     ##   chromIndex msLevel    mz
@@ -979,10 +733,7 @@ The resulting `Chromatograms` object contains only the data within the
 specified retention time windows. Note that extra columns in
 `peak_table` are added to the chromatogram metadata:
 
-``` r
-
-chromData(chr_extracted)
-```
+[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``chr_extracted``)`
 
     ##   msLevel    mz chromIndex  extra rtMin rtMax collisionEnergy dataOrigin mzMin
     ## 1       2 112.2          1 extra1     8    10              NA       <NA>    NA
@@ -1000,25 +751,7 @@ When using `ChromBackendSpectra`, you can also filter by m/z ranges,
 which is useful for extracting ion chromatograms (EICs) for specific
 mass windows:
 
-``` r
-
-## Define peak table with both retention time and m/z windows
-peak_table_mz <- data.frame(
-    rtMin = c(125, 125),
-    rtMax = c(180, 180),
-    mzMin = c(100, 140),
-    mzMax = c(100.5, 140.5),
-    msLevel = c(1L, 1L),
-    dataOrigin = rep(dataOrigin(chr_s)[1], 2),
-    featureID = c("feature_1", "feature_2")
-)
-
-## Extract EICs for these features
-chr_eics <- chromExtract(chr_s, peak_table_mz,
-                        by = c("msLevel", "dataOrigin"))
-
-chr_eics
-```
+`## Define peak table with both retention time and m/z windows`` ``peak_table_mz`` ``<-`` `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(`` `` rtMin ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``125``, ``125``)``,`` `` rtMax ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``180``, ``180``)``,`` `` mzMin ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``100``, ``140``)``,`` `` mzMax ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``100.5``, ``140.5``)``,`` `` msLevel ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``1L``, ``1L``)``,`` `` dataOrigin ``=`` `[`rep`](https://rdrr.io/r/base/rep.html)`(`[`dataOrigin`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``chr_s``)``[``1``]``, ``2``)``,`` `` featureID ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``"feature_1"``, ``"feature_2"``)`` ``)`` `` ``## Extract EICs for these features`` ``chr_eics`` ``<-`` `[`chromExtract`](https://rformassspectrometry.github.io/Chromatograms/reference/Chromatograms.md)`(``chr_s``, ``peak_table_mz``,`` `` by ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``"msLevel"``, ``"dataOrigin"``)``)`` `` ``chr_eics`
 
     ## Chromatographic data (Chromatograms) with 2 chromatograms in a ChromBackendSpectra backend:
     ##   chromIndex msLevel  mz
@@ -1032,10 +765,7 @@ chr_eics
 Notice that the custom column `featureID` from the peak table is now
 part of the chromatogram metadata:
 
-``` r
-
-chromData(chr_eics)
-```
+[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``chr_eics``)`
 
     ##   msLevel rtMin rtMax mzMin mzMax  mz dataOrigin chromSpectraIndex chromIndex
     ## 1       1   125   180   100 100.5 Inf    example         1_example         NA
@@ -1091,35 +821,7 @@ To demonstrate imputation we first build a small `Spectra` object that
 already contains a few `NA` intensity values — mimicking a real-world
 EIC with gaps — and then extract a chromatogram from it.
 
-``` r
-
-## A small Spectra with some missing intensities at m/z 100
-sp_gaps <- Spectra(
-    DataFrame(
-        rtime      = c(100, 110, 120, 130, 140, 150, 160, 170, 180),
-        msLevel    = rep(1L, 9),
-        dataOrigin = rep("impute_demo", 9),
-        mz = NumericList(100, 100, 100, 100, 100, 100, 100, 100, 100,
-                         compress = FALSE),
-        intensity = NumericList(50, NA, 120, 200, NA, NA, 80, 30, 10,
-                               compress = FALSE)
-    ),
-    source = MsBackendDataFrame()
-)
-
-## Derive a Chromatograms and extract the EIC for m/z ≈ 100
-chr_gaps <- Chromatograms(sp_gaps)
-eic_table <- data.frame(
-    rtMin = 100, rtMax = 180,
-    mzMin = 99.5, mzMax = 100.5,
-    msLevel = 1L,
-    dataOrigin = "impute_demo"
-)
-
-chr_eic <- chromExtract(chr_gaps, eic_table,
-                        by = c("msLevel", "dataOrigin"))
-chr_eic
-```
+`## A small Spectra with some missing intensities at m/z 100`` ``sp_gaps`` ``<-`` `[`Spectra`](https://rdrr.io/pkg/Spectra/man/Spectra.html)`(`` `` `[`DataFrame`](https://rdrr.io/pkg/S4Vectors/man/DataFrame-class.html)`(`` `` rtime ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``100``, ``110``, ``120``, ``130``, ``140``, ``150``, ``160``, ``170``, ``180``)``,`` `` msLevel ``=`` `[`rep`](https://rdrr.io/r/base/rep.html)`(``1L``, ``9``)``,`` `` dataOrigin ``=`` `[`rep`](https://rdrr.io/r/base/rep.html)`(``"impute_demo"``, ``9``)``,`` `` mz ``=`` `[`NumericList`](https://rdrr.io/pkg/IRanges/man/AtomicList-class.html)`(``100``, ``100``, ``100``, ``100``, ``100``, ``100``, ``100``, ``100``, ``100``,`` `` compress ``=`` ``FALSE``)``,`` `` intensity ``=`` `[`NumericList`](https://rdrr.io/pkg/IRanges/man/AtomicList-class.html)`(``50``, ``NA``, ``120``, ``200``, ``NA``, ``NA``, ``80``, ``30``, ``10``,`` `` compress ``=`` ``FALSE``)`` `` ``)``,`` `` source ``=`` `[`MsBackendDataFrame`](https://rdrr.io/pkg/Spectra/man/MsBackend.html)`(``)`` ``)`` `` ``## Derive a Chromatograms and extract the EIC for m/z ≈ 100`` ``chr_gaps`` ``<-`` `[`Chromatograms`](https://rformassspectrometry.github.io/Chromatograms/reference/Chromatograms.md)`(``sp_gaps``)`` ``eic_table`` ``<-`` `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(`` `` rtMin ``=`` ``100``, rtMax ``=`` ``180``,`` `` mzMin ``=`` ``99.5``, mzMax ``=`` ``100.5``,`` `` msLevel ``=`` ``1L``,`` `` dataOrigin ``=`` ``"impute_demo"`` ``)`` `` ``chr_eic`` ``<-`` `[`chromExtract`](https://rformassspectrometry.github.io/Chromatograms/reference/Chromatograms.md)`(``chr_gaps``, ``eic_table``,`` `` by ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``"msLevel"``, ``"dataOrigin"``)``)`` ``chr_eic`
 
     ## Chromatographic data (Chromatograms) with 1 chromatograms in a ChromBackendSpectra backend:
     ##   chromIndex msLevel  mz
@@ -1131,48 +833,19 @@ chr_eic
 
 Now let’s examine the raw data and apply different imputation methods:
 
-``` r
-
-## Create copies for comparison
-chr_linear <- imputePeaksData(chr_eic, method = "linear")
-chr_spline <- imputePeaksData(chr_eic, method = "spline")
-chr_gaussian <- imputePeaksData(chr_eic, method = "gaussian",
-                                window = 2, sd = 1)
-chr_loess <- imputePeaksData(chr_eic, method = "loess", span = 0.75)
-
-## Plot all methods for comparison
-par(mfrow = c(3, 2), mar = c(4, 4, 2, 1))
-
-## Original data
-plotChromatograms(chr_eic, main = "Original EIC")
-
-## Linear interpolation
-plotChromatograms(chr_linear, main = "Linear Imputation")
-```
+`## Create copies for comparison`` ``chr_linear`` ``<-`` `[`imputePeaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``chr_eic``, method ``=`` ``"linear"``)`` ``chr_spline`` ``<-`` `[`imputePeaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``chr_eic``, method ``=`` ``"spline"``)`` ``chr_gaussian`` ``<-`` `[`imputePeaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``chr_eic``, method ``=`` ``"gaussian"``,`` `` window ``=`` ``2``, sd ``=`` ``1``)`` ``chr_loess`` ``<-`` `[`imputePeaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``chr_eic``, method ``=`` ``"loess"``, span ``=`` ``0.75``)`` `` ``## Plot all methods for comparison`` `[`par`](https://rdrr.io/r/graphics/par.html)`(``mfrow ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``3``, ``2``)``, mar ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``4``, ``4``, ``2``, ``1``)``)`` `` ``## Original data`` `[`plotChromatograms`](https://rformassspectrometry.github.io/Chromatograms/reference/plotChromatograms.md)`(``chr_eic``, main ``=`` ``"Original EIC"``)`` `` ``## Linear interpolation`` `[`plotChromatograms`](https://rformassspectrometry.github.io/Chromatograms/reference/plotChromatograms.md)`(``chr_linear``, main ``=`` ``"Linear Imputation"``)`
 
     ## The `peaksData` slot will be modified but the changes will not affect the Spectra object.
 
-``` r
-
-## Spline interpolation
-plotChromatograms(chr_spline, main = "Spline Imputation")
-```
+`## Spline interpolation`` `[`plotChromatograms`](https://rformassspectrometry.github.io/Chromatograms/reference/plotChromatograms.md)`(``chr_spline``, main ``=`` ``"Spline Imputation"``)`
 
     ## The `peaksData` slot will be modified but the changes will not affect the Spectra object.
 
-``` r
-
-## Gaussian smoothing
-plotChromatograms(chr_gaussian, main = "Gaussian Smoothing (window=2, sd=1)")
-```
+`## Gaussian smoothing`` `[`plotChromatograms`](https://rformassspectrometry.github.io/Chromatograms/reference/plotChromatograms.md)`(``chr_gaussian``, main ``=`` ``"Gaussian Smoothing (window=2, sd=1)"``)`
 
     ## The `peaksData` slot will be modified but the changes will not affect the Spectra object.
 
-``` r
-
-## LOESS smoothing
-plotChromatograms(chr_loess, main = "LOESS Smoothing (span=0.75)")
-```
+`## LOESS smoothing`` `[`plotChromatograms`](https://rformassspectrometry.github.io/Chromatograms/reference/plotChromatograms.md)`(``chr_loess``, main ``=`` ``"LOESS Smoothing (span=0.75)"``)`
 
     ## Warning in simpleLoess(y, x, w, span, degree = degree, parametric = parametric,
     ## : pseudoinverse used at 4
@@ -1208,18 +881,7 @@ useful when combined with the lazy evaluation queue. The imputation
 function is added to the processing queue and is only applied when peak
 data is actually accessed:
 
-``` r
-
-## For on-disk backends, add imputation to the lazy queue
-chr_mzr_imputed <- imputePeaksData(
-  chr_mzr,
-  method = "gaussian",
-  window = 5,
-  sd = 2
-)
-
-chr_mzr_imputed
-```
+`## For on-disk backends, add imputation to the lazy queue`` ``chr_mzr_imputed`` ``<-`` `[`imputePeaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(`` `` ``chr_mzr``,`` `` method ``=`` ``"gaussian"``,`` `` window ``=`` ``5``,`` `` sd ``=`` ``2`` ``)`` `` ``chr_mzr_imputed`
 
     ## Chromatographic data (Chromatograms) with 138 chromatograms in a ChromBackendMemory backend:
     ##   chromIndex msLevel mz
@@ -1233,8 +895,8 @@ chr_mzr_imputed
     ## ... 2 peaksData variables
     ## Lazy evaluation queue: 1 processing step(s)
     ## Processing:
-    ##  Switch backend from ChromBackendMzR to ChromBackendMemory [Tue Aug 18 12:08:37 2026]
-    ##  Impute: replace missing peaks data using the 'gaussian' method [Tue Aug 18 12:08:39 2026]
+    ##  Switch backend from ChromBackendMzR to ChromBackendMemory [Tue Sep  8 05:44:12 2026]
+    ##  Impute: replace missing peaks data using the 'gaussian' method [Tue Sep  8 05:44:14 2026]
 
 The imputation is **not** performed immediately. Instead, it’s stored in
 the processing queue. When you call
@@ -1242,11 +904,7 @@ the processing queue. When you call
 on the object, the raw data is read from the file and then imputation is
 applied on-the-fly:
 
-``` r
-
-## This reads from disk and applies imputation in one step
-peak_data <- peaksData(chr_mzr_imputed[1])
-```
+`## This reads from disk and applies imputation in one step`` ``peak_data`` ``<-`` `[`peaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``chr_mzr_imputed``[``1``]``)`
 
 This approach is highly efficient for large datasets because:
 
@@ -1257,10 +915,7 @@ This approach is highly efficient for large datasets because:
 
 You can verify the processing queue contains your imputation step:
 
-``` r
-
-length(chr_mzr_imputed@processingQueue)
-```
+[`length`](https://rdrr.io/r/base/length.html)`(``chr_mzr_imputed``@``processingQueue``)`
 
     ## [1] 1
 
@@ -1268,15 +923,7 @@ And if you want to make the imputation permanent (for in-memory
 backends), use
 [`applyProcessing()`](https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html):
 
-``` r
-
-## For in-memory backends, you can persist the imputation
-chr_in_memory <- setBackend(chr_mzr_imputed, ChromBackendMemory())
-chr_in_memory <- applyProcessing(chr_in_memory)
-
-# Now imputation is permanently applied
-length(chr_in_memory@processingQueue)
-```
+`## For in-memory backends, you can persist the imputation`` ``chr_in_memory`` ``<-`` `[`setBackend`](https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html)`(``chr_mzr_imputed``, `[`ChromBackendMemory`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackendMemory.md)`(``)``)`` ``chr_in_memory`` ``<-`` `[`applyProcessing`](https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html)`(``chr_in_memory``)`` `` ``# Now imputation is permanently applied`` `[`length`](https://rdrr.io/r/base/length.html)`(``chr_in_memory``@``processingQueue``)`
 
     ## [1] 0
 
@@ -1315,14 +962,7 @@ array.
 
 Let’s pick a subset of the MRM chromatograms we loaded earlier:
 
-``` r
-
-## Pick 8 MRM chromatograms, skipping the first (a TIC with no m/z info)
-chr_sub <- chr_mzr[2:9]
-
-cor_arr <- compareChromatograms(chr_sub)
-cor_arr[, , "score"]   ## similarity scores
-```
+`## Pick 8 MRM chromatograms, skipping the first (a TIC with no m/z info)`` ``chr_sub`` ``<-`` ``chr_mzr``[``2``:``9``]`` `` ``cor_arr`` ``<-`` `[`compareChromatograms`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``chr_sub``)`` ``cor_arr``[``, , ``"score"``]`` ``## similarity scores`
 
     ##            [,1]       [,2]      [,3]      [,4]      [,5]       [,6]      [,7]
     ## [1,] 1.00000000 0.95316189 0.8226159 0.8006447 0.9070273 0.04796832 0.9008680
@@ -1343,10 +983,7 @@ cor_arr[, , "score"]   ## similarity scores
     ## [7,] 0.9995715
     ## [8,] 1.0000000
 
-``` r
-
-cor_arr[, , "n_peaks"] ## number of overlapping RT points per pair
-```
+`cor_arr``[``, , ``"n_peaks"``]`` ``## number of overlapping RT points per pair`
 
     ##      [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8]
     ## [1,]  962  961  444  444  444  444  444  444
@@ -1358,12 +995,7 @@ cor_arr[, , "n_peaks"] ## number of overlapping RT points per pair
     ## [7,]  444  444  522  522  521  521  523  522
     ## [8,]  444  444  522  522  521  521  522  523
 
-``` r
-
-## Use a chromData column as row/column labels
-cor_arr_labeled <- compareChromatograms(chr_sub, labelsColumn = "chromIndex")
-cor_arr_labeled[, , "score"]
-```
+`## Use a chromData column as row/column labels`` ``cor_arr_labeled`` ``<-`` `[`compareChromatograms`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``chr_sub``, labelsColumn ``=`` ``"chromIndex"``)`` ``cor_arr_labeled``[``, , ``"score"``]`
 
     ##            2          3         4         5         6          7         8
     ## 2 1.00000000 0.95316189 0.8226159 0.8006447 0.9070273 0.04796832 0.9008680
@@ -1388,17 +1020,7 @@ We can visualise the score layer as a heatmap, labelling rows and
 columns with the MRM precursor → product m/z transitions stored in
 [`chromData()`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md):
 
-``` r
-
-library(pheatmap)
-## Label rows/columns with precursor → product m/z transitions
-mz_labels <- paste0(round(chromData(chr_sub)$precursorMz, 1), " → ",
-                     round(chromData(chr_sub)$productMz, 1))
-score_mat <- cor_arr[, , "score"]
-rownames(score_mat) <- colnames(score_mat) <- mz_labels
-pheatmap(score_mat, main = "Pairwise Pearson correlation",
-         color = hcl.colors(30, palette = "RdYlBu", rev = TRUE))
-```
+[`library`](https://rdrr.io/r/base/library.html)`(``pheatmap``)`` ``## Label rows/columns with precursor → product m/z transitions`` ``mz_labels`` ``<-`` `[`paste0`](https://rdrr.io/r/base/paste.html)`(`[`round`](https://rdrr.io/r/base/Round.html)`(`[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``chr_sub``)``$``precursorMz``, ``1``)``, ``" → "``,`` `` `[`round`](https://rdrr.io/r/base/Round.html)`(`[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``chr_sub``)``$``productMz``, ``1``)``)`` ``score_mat`` ``<-`` ``cor_arr``[``, , ``"score"``]`` `[`rownames`](https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html)`(``score_mat``)`` ``<-`` `[`colnames`](https://rdrr.io/pkg/BiocGenerics/man/row_colnames.html)`(``score_mat``)`` ``<-`` ``mz_labels`` `[`pheatmap`](https://rdrr.io/pkg/pheatmap/man/pheatmap.html)`(``score_mat``, main ``=`` ``"Pairwise Pearson correlation"``,`` `` color ``=`` `[`hcl.colors`](https://rdrr.io/r/grDevices/palettes.html)`(``30``, palette ``=`` ``"RdYlBu"``, rev ``=`` ``TRUE``)``)`
 
 ![](using-a-chromatograms-object_files/figure-html/compare-chromatograms-heatmap-1.png)
 
@@ -1406,15 +1028,7 @@ A custom similarity function can be passed via `FUN`. For example,
 cosine similarity, useful for checking co-elution regardless of absolute
 intensity differences:
 
-``` r
-
-cosine <- function(x, y) {
-    sum(x * y) / (sqrt(sum(x^2)) * sqrt(sum(y^2)))
-}
-
-cos_arr <- compareChromatograms(chr_sub, FUN = cosine)
-cos_arr[, , "score"]
-```
+`cosine`` ``<-`` ``function``(``x``, ``y``)`` ``{`` `` `[`sum`](https://rdrr.io/r/base/sum.html)`(``x`` ``*`` ``y``)`` ``/`` ``(`[`sqrt`](https://rdrr.io/r/base/MathFun.html)`(`[`sum`](https://rdrr.io/r/base/sum.html)`(``x``^``2``)``)`` ``*`` `[`sqrt`](https://rdrr.io/r/base/MathFun.html)`(`[`sum`](https://rdrr.io/r/base/sum.html)`(``y``^``2``)``)``)`` ``}`` `` ``cos_arr`` ``<-`` `[`compareChromatograms`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``chr_sub``, FUN ``=`` ``cosine``)`` ``cos_arr``[``, , ``"score"``]`
 
     ##           [,1]      [,2]      [,3]      [,4]      [,5]      [,6]      [,7]
     ## [1,] 1.0000000 0.8627648 0.9644232 0.4951596 0.4579415 0.9727773 0.3352872
@@ -1440,12 +1054,7 @@ shows how many RT points overlapped, letting you distinguish *no overlap
 at all* (`n_peaks = 0`) from *some overlap but below the threshold*
 (`n_peaks > 0` but `score = NA`):
 
-``` r
-
-## Require at least 10 overlapping RT points to compute a score
-cor_strict <- compareChromatograms(chr_sub, minPeaks = 10L)
-cor_strict[, , "score"]   ## NAs for pairs with < 10 common RT points
-```
+`## Require at least 10 overlapping RT points to compute a score`` ``cor_strict`` ``<-`` `[`compareChromatograms`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``chr_sub``, minPeaks ``=`` ``10L``)`` ``cor_strict``[``, , ``"score"``]`` ``## NAs for pairs with < 10 common RT points`
 
     ##            [,1]       [,2]      [,3]      [,4]      [,5]       [,6]      [,7]
     ## [1,] 1.00000000 0.95316189 0.8226159 0.8006447 0.9070273 0.04796832 0.9008680
@@ -1466,10 +1075,7 @@ cor_strict[, , "score"]   ## NAs for pairs with < 10 common RT points
     ## [7,] 0.9995715
     ## [8,] 1.0000000
 
-``` r
-
-cor_strict[, , "n_peaks"] ## actual overlap counts are always recorded
-```
+`cor_strict``[``, , ``"n_peaks"``]`` ``## actual overlap counts are always recorded`
 
     ##      [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8]
     ## [1,]  962  961  444  444  444  444  444  444
@@ -1488,12 +1094,7 @@ When called with two `Chromatograms` objects,
 similarities between each chromatogram in `x` (rows) and each in `y`
 (columns).
 
-``` r
-
-## Compare the first 4 chromatograms against the last 4
-res <- compareChromatograms(chr_sub[1:4], chr_sub[5:8])
-res[, , "score"]
-```
+`## Compare the first 4 chromatograms against the last 4`` ``res`` ``<-`` `[`compareChromatograms`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``chr_sub``[``1``:``4``]``, ``chr_sub``[``5``:``8``]``)`` ``res``[``, , ``"score"``]`
 
     ##           [,1]       [,2]      [,3]      [,4]
     ## [1,] 0.9070273 0.04796832 0.9008680 0.8993826
@@ -1508,18 +1109,11 @@ split the object first and apply
 [`compareChromatograms()`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)
 to each subset:
 
-``` r
-
-grp_list <- split(chr_sub, chromData(chr_sub)$dataOrigin)
-lapply(grp_list, compareChromatograms)
-```
+`grp_list`` ``<-`` `[`split`](https://rdrr.io/r/base/split.html)`(``chr_sub``, `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``chr_sub``)``$``dataOrigin``)`` `[`lapply`](https://rdrr.io/pkg/BiocGenerics/man/lapply.html)`(``grp_list``, ``compareChromatograms``)`
 
 ## Session information
 
-``` r
-
-sessionInfo()
-```
+[`sessionInfo`](https://rdrr.io/r/utils/sessionInfo.html)`(``)`
 
     ## R version 4.6.1 (2026-06-24)
     ## Platform: x86_64-pc-linux-gnu
@@ -1545,33 +1139,33 @@ sessionInfo()
     ## [8] base     
     ## 
     ## other attached packages:
-    ##  [1] pheatmap_1.0.13      RColorBrewer_1.1-3   IRanges_2.47.2      
-    ##  [4] Spectra_1.23.3       S4Vectors_0.51.6     BiocGenerics_0.59.12
+    ##  [1] pheatmap_1.0.13      RColorBrewer_1.1-3   IRanges_2.47.5      
+    ##  [4] Spectra_1.23.4       S4Vectors_0.51.9     BiocGenerics_0.59.12
     ##  [7] generics_0.1.4       MsDataHub_1.13.1     Chromatograms_1.3.3 
     ## [10] ProtGenerics_1.45.0  BiocParallel_1.47.0  BiocStyle_2.41.0    
     ## 
     ## loaded via a namespace (and not attached):
     ##  [1] tidyselect_1.2.1       farver_2.1.2           dplyr_1.2.1           
-    ##  [4] blob_1.3.0             filelock_1.0.3         Biostrings_2.81.6     
+    ##  [4] blob_1.3.0             filelock_1.0.3         Biostrings_2.81.9     
     ##  [7] fastmap_1.2.0          BiocFileCache_3.3.0    digest_0.6.39         
     ## [10] lifecycle_1.0.5        cluster_2.1.8.3        KEGGREST_1.53.6       
     ## [13] RSQLite_3.53.3         magrittr_2.0.5         compiler_4.6.1        
     ## [16] rlang_1.3.0            sass_0.4.10            tools_4.6.1           
-    ## [19] yaml_2.3.12            data.table_1.18.4      knitr_1.51            
-    ## [22] htmlwidgets_1.6.4      bit_4.6.0              curl_7.1.0            
+    ## [19] yaml_2.3.12            data.table_1.18.6.1    knitr_1.52            
+    ## [22] htmlwidgets_1.6.4      bit_4.6.0              curl_8.0.0            
     ## [25] withr_3.0.3            purrr_1.2.2            desc_1.4.3            
     ## [28] grid_4.6.1             ExperimentHub_3.3.2    scales_1.4.0          
-    ## [31] MASS_7.3-66            cli_3.6.6              mzR_2.47.0            
-    ## [34] rmarkdown_2.31         crayon_1.5.3           ragg_1.5.2            
-    ## [37] otel_0.2.0             httr_1.4.8             BiocBaseUtils_1.15.1  
+    ## [31] MASS_7.3-66            cli_3.6.6              mzR_2.47.1            
+    ## [34] rmarkdown_2.32         crayon_1.5.3           ragg_1.5.2            
+    ## [37] otel_0.2.0             httr_1.4.9             BiocBaseUtils_1.15.1  
     ## [40] ncdf4_1.24             DBI_1.3.0              cachem_1.1.0          
     ## [43] parallel_4.6.1         AnnotationDbi_1.75.2   BiocManager_1.30.27   
     ## [46] XVector_0.53.0         vctrs_0.7.3            jsonlite_2.0.0        
-    ## [49] bookdown_0.47          bit64_4.8.2            clue_0.3-68           
+    ## [49] bookdown_0.48          bit64_4.8.6            clue_0.3-68           
     ## [52] systemfonts_1.3.2      jquerylib_0.1.4        glue_1.8.1            
     ## [55] pkgdown_2.2.1.9000     codetools_0.2-20       gtable_0.3.6          
     ## [58] BiocVersion_3.24.0     tibble_3.3.1           pillar_1.11.1         
-    ## [61] rappdirs_0.3.4         htmltools_0.5.9        Seqinfo_1.3.0         
+    ## [61] rappdirs_0.3.4         htmltools_0.5.9        Seqinfo_1.3.2         
     ## [64] R6_2.6.1               dbplyr_2.6.0           httr2_1.3.0           
     ## [67] textshaping_1.0.5      evaluate_1.0.5         Biobase_2.73.2        
     ## [70] AnnotationHub_4.3.2    png_0.1-9              memoise_2.0.1         
