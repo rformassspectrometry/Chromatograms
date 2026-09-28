@@ -6,6 +6,8 @@
 \name{reset}
 \alias{reset}
 \alias{plotChromatogramsOverlay}
+\alias{ggplotChromatogramsOverlay}
+\alias{ggplotChromatograms}
 \alias{fillCoreChromVariables}
 \alias{validChromData}
 \alias{validPeaksData}
@@ -58,6 +60,10 @@
 reset(object, ...)
 
 plotChromatogramsOverlay(object, ...)
+
+ggplotChromatogramsOverlay(object, ...)
+
+ggplotChromatograms(object, ...)
 
 fillCoreChromVariables(x = data.frame())
 

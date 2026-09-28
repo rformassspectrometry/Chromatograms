@@ -1,5 +1,10 @@
 # Version 1.3
 
+## Change in 1.3.4
+
+- Add funtions to generate `ggplot` figures: `ggplotChromatograms()` and
+  `ggplotChromatogramsOverlay()`.
+
 ## Changes in 1.3.3
 
 - Major `ChromBackendSpectra` performance improvements: `chromExtract()`,
