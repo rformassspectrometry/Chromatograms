@@ -119,17 +119,6 @@ importFrom(Spectra,
   spectraVariables
 )
 importFrom(data.table,rbindlist)
-importFrom(ggiraph,
-  facet_wrap_interactive,
-  geom_line_interactive,
-  geom_point_interactive,
-  girafe,
-  opts_sizing,
-  opts_toolbar,
-  opts_tooltip,
-  opts_zoom,
-  set_girafe_defaults
-)
 importFrom(ggplot2,
   aes,
   as_labeller,

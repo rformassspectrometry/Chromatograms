@@ -179,7 +179,7 @@ setMethod("plotChromatogramsOverlay", "Chromatograms",
           })
 
 #' @rdname plotChromatograms
-#' @importFrom ggiraph girafe
+#'
 #' @exportMethod ggplotChromatograms
 setMethod("ggplotChromatograms", "Chromatograms",
           function(object, xlab = "rtime (s)", ylab = "intensity",
@@ -200,7 +200,7 @@ setMethod("ggplotChromatograms", "Chromatograms",
                         object, xlab = xlab, ylab = ylab,
                         xlim = xlim, ylim = ylim, main = main, col = col,
                         pch = pch, cex = cex, lwd = lwd, bs = bs, ...)
-                girafe(gg)
+                ggiraph::girafe(gg)
               } else {
                 .ggplot_single_chromatogram(
                         object, xlab = xlab, ylab = ylab,
@@ -210,7 +210,7 @@ setMethod("ggplotChromatograms", "Chromatograms",
             })
 
 #' @rdname plotChromatograms
-#' @importFrom ggiraph girafe
+#'
 #' @exportMethod ggplotChromatogramsOverlay
 setMethod("ggplotChromatogramsOverlay", "Chromatograms",
           function(object, xlab = "rtime (s)", ylab = "intensity",
@@ -235,7 +235,7 @@ setMethod("ggplotChromatogramsOverlay", "Chromatograms",
                         xlim = xlim, ylim = ylim, main = main, col = col,
                         pch = pch, cex = cex, lwd = lwd, bs = bs,
                         axes = axes, frame.plot = frame.plot, ...)
-                girafe(gg)
+                ggiraph::girafe(gg)
               } else {
                 .ggplot_single_chromatogram(
                         object, add = TRUE, xlab = xlab, ylab = ylab,

@@ -387,10 +387,6 @@
 #' @importFrom ggplot2 theme theme_bw scale_y_continuous xlim ylim ggtitle
 #' @importFrom ggplot2 as_labeller
 #'
-#' @importFrom ggiraph set_girafe_defaults opts_zoom opts_tooltip opts_sizing
-#' @importFrom ggiraph opts_toolbar geom_line_interactive geom_point_interactive
-#' @importFrom ggiraph facet_wrap_interactive
-#'
 #' @importFrom Spectra rbindlistWithRownames
 #'
 #' @noRd
@@ -402,6 +398,10 @@
         col = "#00000080", add = FALSE,
         pch = 20, cex = 5, lwd = 1.5, bs = 16,
         orientation = 1, axes = TRUE, frame.plot = axes, ...) {
+    if (!requireNamespace("ggiraph", quietly = TRUE))
+        stop("Required package 'ggiraph' for the interactivity is missing. ",
+                "Please install it and try again.", call. = FALSE)
+
     v_l <- peaksData(x)
     mz_name <- mz(x)
     if(any(!is.na(mz_name)))
@@ -410,20 +410,23 @@
     v$mz <- as.character(v$mz)
     v$intensity_orient <- orientation * v[, "intensity"]
 
-    set_girafe_defaults(
-        opts_zoom = opts_zoom(min = 1, max = 4),
-        opts_tooltip = opts_tooltip(
+    ggiraph::set_girafe_defaults(
+        opts_zoom = ggiraph::opts_zoom(min = 1, max = 4),
+        opts_tooltip = ggiraph::opts_tooltip(
             css = "padding:3px;background-color:#333333;color:white;"),
-        opts_sizing = opts_sizing(rescale = TRUE),
-        opts_toolbar = opts_toolbar(saveaspng = TRUE, position = "topright",
+        opts_sizing = ggiraph::opts_sizing(rescale = TRUE),
+        opts_toolbar = ggiraph::opts_toolbar(saveaspng = TRUE,
+                                    position = "topright",
                                     delay_mouseout = 5000, fixed = TRUE),
 
     )
 
     gg <- ggplot(v, aes(x = rtime, y = intensity_orient)) +
-        geom_line_interactive(aes(group = mz, color = mz, data_id = mz),
+        ggiraph::geom_line_interactive(
+                    aes(group = mz, color = mz, data_id = mz),
                     linewidth = lwd, na.rm = TRUE, hover_nearest = TRUE) +
-        geom_point_interactive(aes(group = mz, color = mz, data_id = mz,
+        ggiraph::geom_point_interactive(
+                    aes(group = mz, color = mz, data_id = mz,
                     tooltip = paste0(ifelse(any(!is.na(mz_name)),
                                             "m/z: ", "index: "), mz,
                                     "\nintensity: ", round(intensity, 2),
@@ -450,7 +453,8 @@
 
         gg <- gg +
             theme(strip.background = element_blank()) +
-            facet_wrap_interactive(mz ~ ., scales = "free", labeller = as_labeller(titles)) +
+            ggiraph::facet_wrap_interactive(mz ~ ., scales = "free",
+                                            labeller = as_labeller(titles)) +
             scale_y_continuous(limits = c(0, max(v$intensity_orient)))
     } else {
         gg <- gg + ggtitle(main)

@@ -30,7 +30,6 @@ Imports:
     data.table,
     methods,
     ggplot2,
-    ggiraph,
     S4Vectors,
     MsCoreUtils (>= 1.7.5),
     Spectra
@@ -46,7 +45,8 @@ Suggests:
     pheatmap,
     vdiffr,
     IRanges,
-    RColorBrewer
+    RColorBrewer,
+    ggiraph
 License: Artistic-2.0
 Encoding: UTF-8
 VignetteBuilder: knitr
