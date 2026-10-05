@@ -17,6 +17,14 @@ by the [*MSnbase*](http://lgatto.github.io/MSnbase/index.html) package.
 This package is part of **Bioconductor**:
 [https://bioconductor.org/packages/Chromatograms](https://bioconductor.org/packages/Chromatograms).
 
+## 📰 Cite us
+
+Philippine Louail, Laurent Gatto, Sebastian Gibb, Johannes Rainer;
+Chromatograms: A Modular Infrastructure for Scalable Chromatographic Data
+Handling in R. *Anal. Chem.* 29 September 2026; 98
+(38):28337–28344. doi:
+[10.1021/acs.analchem.6c03926](https://doi.org/10.1021/acs.analchem.6c03926)
+
 
 ## ⚙️ General concept
 
