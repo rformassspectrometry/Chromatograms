@@ -1,5 +1,11 @@
 # Version 1.3
 
+## Changes in 1.3.4
+
+- Add package logo.
+
+- Add citation to the *Analytical Chemistry* publication.
+
 ## Changes in 1.3.3
 
 - Major `ChromBackendSpectra` performance improvements: `chromExtract()`,
