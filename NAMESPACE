@@ -113,7 +113,6 @@ importFrom(Spectra,
   filterRanges,
   filterRt,
   peaksData,
-  rbindlistWithRownames,
   rtime,
   spectraData,
   spectraVariables

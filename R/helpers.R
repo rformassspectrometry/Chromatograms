@@ -311,8 +311,6 @@
 #' @importFrom ggplot2 theme theme_bw facet_wrap scale_y_continuous as_labeller
 #' @importFrom ggplot2 element_blank xlim ylim ggtitle
 #'
-#' @importFrom Spectra rbindlistWithRownames
-#'
 #' @noRd
 .ggplot_single_chromatogram <- function(x, xlab = "rtime (s)",
         ylab = "intensity",
@@ -322,13 +320,9 @@
         col = "#00000080", add = FALSE,
         pch = 20, cex = 5, lwd = 1.5, bs = 16,
         orientation = 1, axes = TRUE, frame.plot = axes, ...) {
-    v_l <- peaksData(x)
-    mz_name <- mz(x)
-    if(any(!is.na(mz_name)))
-        names(v_l) <- mz_name
-    v <- rbindlistWithRownames(v_l, idcol = "mz")
-    v$mz <- as.character(v$mz)
+    v <- as.data.frame.chromatogram(x, orientation = orientation)
     v$intensity_orient <- orientation * v[, "intensity"]
+    mz_name <- mz(x)
 
     gg <- ggplot(v, aes(x = rtime, y = intensity_orient)) +
         geom_line(aes(group = mz, color = mz),
@@ -387,8 +381,6 @@
 #' @importFrom ggplot2 theme theme_bw scale_y_continuous xlim ylim ggtitle
 #' @importFrom ggplot2 as_labeller
 #'
-#' @importFrom Spectra rbindlistWithRownames
-#'
 #' @noRd
 .ggplot_single_chromatogram_interactive <- function(x, xlab = "rtime (s)",
         ylab = "intensity",
@@ -402,13 +394,9 @@
         stop("Required package 'ggiraph' for the interactivity is missing. ",
                 "Please install it and try again.", call. = FALSE)
 
-    v_l <- peaksData(x)
-    mz_name <- mz(x)
-    if(any(!is.na(mz_name)))
-        names(v_l) <- mz_name
-    v <- rbindlistWithRownames(v_l, idcol = "mz")
-    v$mz <- as.character(v$mz)
+    v <- as.data.frame.chromatogram(x, orientation = orientation)
     v$intensity_orient <- orientation * v[, "intensity"]
+    mz_name <- mz(x)
 
     ggiraph::set_girafe_defaults(
         opts_zoom = ggiraph::opts_zoom(min = 1, max = 4),
@@ -475,6 +463,28 @@
             theme(panel.border = element_blank())
     }
     gg
+}
+
+#' Convert a chromatogram object to a data.frame.
+#'
+#' Returns a data.frame with columns `rtime`, `intensity`, and `mz` (the
+#' m/z value of the chromatogram).
+#'
+#' Used in:
+#' - `.ggplot_single_chromatogram()`
+#' - `.ggplot_single_chromatogram_interactive()`
+#'
+#' @importFrom data.table rbindlist
+#'
+#' @noRd
+as.data.frame.chromatogram <- function(x, ...) {
+    v_l <- peaksData(x)
+    mz_name <- mz(x)
+    if(any(!is.na(mz_name)))
+        names(v_l) <- mz_name
+    v <- as.data.frame(rbindlist(v_l, idcol = "mz"))
+    v$mz <- as.character(v$mz)
+    v
 }
 
 #' Strip NA intensities from paired mz/intensity vectors.
