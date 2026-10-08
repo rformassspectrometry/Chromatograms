@@ -57,6 +57,9 @@ setGeneric("imputePeaksData", function(object, ...)
 setGeneric("peakBoundary", function(object, threshold = 0.1,
     baselineThreshold = 0.1, baselineQuantile = 0.1, ...)
     standardGeneric("peakBoundary"))
+setGeneric("as.data.frame.chromatogram", function(x, row.names = NULL,
+    optional = FALSE, chromVariables = character(), ...)
+    standardGeneric("as.data.frame.chromatogram"))
 #' @rdname hidden_aliases
 setGeneric("reset", function(object, ...) {
     standardGeneric("reset")

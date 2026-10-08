@@ -50,9 +50,9 @@
   main = character(),
   col = "#00000080",
   pch = 20,
-  cex = 1.5,
-  lwd = 0.5,
-  bs = 8,
+  cex = 5,
+  lwd = 1.5,
+  bs = 16,
   interactive = FALSE,
   ...
 )
@@ -66,8 +66,8 @@
   main = paste(length(object), "chromatograms"),
   col = "#00000080",
   pch = 20,
-  cex = 1.5,
-  lwd = 0.5,
+  cex = 5,
+  lwd = 1.5,
   bs = 16,
   interactive = FALSE,
   axes = TRUE,

@@ -185,14 +185,12 @@ setMethod("ggplotChromatograms", "Chromatograms",
           function(object, xlab = "rtime (s)", ylab = "intensity",
                    xlim = numeric(), ylim = numeric(),
                    main = character(), col = "#00000080",
-                   pch = 20, cex = 1.5, lwd = 0.5, bs = 8,
+                   pch = 20, cex = 5, lwd = 1.5, bs = 16,
                    interactive = FALSE, ...) {
               nsp <- length(object)
               if (length(col) != nsp)
                   col <- rep(col[1], nsp)
-              if (!length(main))
-                  main <- paste0("m/z: ", round(mz(object), 1))
-              if (length(main) != nsp)
+              if (length(main) && length(main) != nsp)
                   main <- rep(main[1], nsp)
 
               if (interactive) {
@@ -217,7 +215,7 @@ setMethod("ggplotChromatogramsOverlay", "Chromatograms",
                    xlim = numeric(), ylim = numeric(),
                    main = paste(length(object), "chromatograms"),
                    col = "#00000080",
-                   pch = 20, cex = 1.5, lwd = 0.5, bs = 16,
+                   pch = 20, cex = 5, lwd = 1.5, bs = 16,
                    interactive = FALSE,
                    axes = TRUE, frame.plot = axes, ...) {
               nsp <- length(object)

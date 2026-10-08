@@ -316,18 +316,17 @@
         ylab = "intensity",
         xlim = numeric(),
         ylim = numeric(),
-        main = paste("m/z", round(mz(x), 1)),
+        main = character(),
         col = "#00000080", add = FALSE,
         pch = 20, cex = 5, lwd = 1.5, bs = 16,
         orientation = 1, axes = TRUE, frame.plot = axes, ...) {
-    v <- as.data.frame.chromatogram(x, orientation = orientation)
+    v <- as.data.frame.chromatogram(x)
     v$intensity_orient <- orientation * v[, "intensity"]
-    mz_name <- mz(x)
 
     gg <- ggplot(v, aes(x = rtime, y = intensity_orient)) +
-        geom_line(aes(group = mz, color = mz),
+        geom_line(aes(group = index, color = index),
                     linewidth = lwd, na.rm = TRUE) +
-        geom_point(aes(group = mz, color = mz),
+        geom_point(aes(group = index, color = index),
                     size = cex, shape = pch, na.rm = TRUE) +
         scale_color_manual(values = col) +
         labs(x = xlab, y = ylab) +
@@ -339,16 +338,13 @@
         if(length(main))
             titles <- main
         else
-            titles <- paste0("m/z: ", round(mz_name, 1))
+            titles <- paste0("index: ", unique(v$index))
 
-        if(any(!is.na(mz_name)))
-            names(titles) <- as.character(mz_name)
-        else
-            names(titles) <- as.character(1:length(titles))
+        names(titles) <- unique(v$index)
 
         gg <- gg +
             theme(strip.background = element_blank()) +
-            facet_wrap(mz~., scales = "free",
+            facet_wrap(index~., scales = "free",
                        labeller = as_labeller(titles)) +
             scale_y_continuous(limits = c(0, max(v$intensity_orient)))
     } else {
@@ -386,7 +382,7 @@
         ylab = "intensity",
         xlim = numeric(),
         ylim = numeric(),
-        main = paste("m/z", round(mz(x), 1)),
+        main = character(),
         col = "#00000080", add = FALSE,
         pch = 20, cex = 5, lwd = 1.5, bs = 16,
         orientation = 1, axes = TRUE, frame.plot = axes, ...) {
@@ -394,9 +390,8 @@
         stop("Required package 'ggiraph' for the interactivity is missing. ",
                 "Please install it and try again.", call. = FALSE)
 
-    v <- as.data.frame.chromatogram(x, orientation = orientation)
+    v <- as.data.frame.chromatogram(x)
     v$intensity_orient <- orientation * v[, "intensity"]
-    mz_name <- mz(x)
 
     ggiraph::set_girafe_defaults(
         opts_zoom = ggiraph::opts_zoom(min = 1, max = 4),
@@ -411,12 +406,11 @@
 
     gg <- ggplot(v, aes(x = rtime, y = intensity_orient)) +
         ggiraph::geom_line_interactive(
-                    aes(group = mz, color = mz, data_id = mz),
+                    aes(group = index, color = index, data_id = index),
                     linewidth = lwd, na.rm = TRUE, hover_nearest = TRUE) +
         ggiraph::geom_point_interactive(
-                    aes(group = mz, color = mz, data_id = mz,
-                    tooltip = paste0(ifelse(any(!is.na(mz_name)),
-                                            "m/z: ", "index: "), mz,
+                    aes(group = index, color = index, data_id = index,
+                    tooltip = paste0("index: ", index,
                                     "\nintensity: ", round(intensity, 2),
                                     "\nrtime: ", round(rtime, 2))
                     ),
@@ -432,16 +426,13 @@
         if(length(main))
             titles <- main
         else
-            titles <- paste0("m/z: ", round(mz_name, 1))
+            titles <- paste0("index: ", unique(v$index))
 
-        if(any(!is.na(mz_name)))
-            names(titles) <- as.character(mz_name)
-        else
-            names(titles) <- as.character(1:length(titles))
+        names(titles) <- unique(v$index)
 
         gg <- gg +
             theme(strip.background = element_blank()) +
-            ggiraph::facet_wrap_interactive(mz ~ ., scales = "free",
+            ggiraph::facet_wrap_interactive(index ~ ., scales = "free",
                                             labeller = as_labeller(titles)) +
             scale_y_continuous(limits = c(0, max(v$intensity_orient)))
     } else {
@@ -465,25 +456,65 @@
     gg
 }
 
-#' Convert a chromatogram object to a data.frame.
+#' @title Convert a chromatogram object to a data.frame.
 #'
-#' Returns a data.frame with columns `rtime`, `intensity`, and `mz` (the
-#' m/z value of the chromatogram).
+#' @description
+#' Returns a data.frame in long format with one row per data point and
+#' columns `rtime`, `intensity` and `index`. `index` is the position of the
+#' chromatogram within `x` (an integer, `seq_along(x)`) and uniquely
+#' identifies each chromatogram.
+#'
+#' Additional chromatogram variables (e.g. `"mz"`) can be added with
+#' `chromVariables`.
 #'
 #' Used in:
 #' - `.ggplot_single_chromatogram()`
 #' - `.ggplot_single_chromatogram_interactive()`
 #'
+#' @param x chromatogram object.
+#'
+#' @param row.names optional row names for the returned data.frame.
+#'
+#' @param optional currently ignored; present for consistency with the
+#'     [base](as.data.frame) generic.
+#'
+#' @param chromVariables `character` with the names of additional
+#'     chromatogram variables (available in `chromVariables(x)`) to be
+#'     added as columns from `chromData(x)`.
+#'
+#' @param ... currently ignored.
+#'
 #' @importFrom data.table rbindlist
 #'
-#' @noRd
-as.data.frame.chromatogram <- function(x, ...) {
+#' @author Gabriele Tomè
+#'
+#' @export
+as.data.frame.chromatogram <- function(x, row.names = NULL, optional = FALSE,
+                                        chromVariables = character(), ...) {
     v_l <- peaksData(x)
-    mz_name <- mz(x)
-    if(any(!is.na(mz_name)))
-        names(v_l) <- mz_name
-    v <- as.data.frame(rbindlist(v_l, idcol = "mz"))
-    v$mz <- as.character(v$mz)
+    names(v_l) <- seq_along(v_l)
+    v <- as.data.frame(rbindlist(v_l, idcol = "index"))
+    v$index <- as.factor(v$index)
+
+    if (length(chromVariables)) {
+        chromVariables <- unique(as.character(chromVariables))
+        chromVariables <- intersect(chromVariables, chromVariables(x))
+        if (!length(chromVariables))
+            stop("None of the chromVariables not available in 'x'",
+                 call. = FALSE)
+        cd <- chromData(x, columns = chromVariables)
+        ## number of data points per chromatogram, used to repeat the
+        ## chromatogram-level values for each of its rows
+        n_rows <- vapply(v_l, nrow, integer(1), USE.NAMES = FALSE)
+        for (col in chromVariables)
+            v[[col]] <- rep(cd[[col]], times = n_rows)
+    }
+    if (!is.null(row.names)) {
+        if(length(row.names) != nrow(v))
+            stop("row.names must be NULL or a vector of length ", nrow(v))
+
+        rownames(v) <- row.names
+    }
     v
 }
 
