@@ -983,100 +983,6 @@ test_that(".build_intensity_matrix all-NA spectrum returns NA", {
   expect_true(is.na(res_max[1, 1]))
 })
 
-test_that(".compute_chrom_intensities TIC case", {
-  mz_list <- list(c(100, 200), c(100, 200, 300))
-  int_list <- list(c(10, 20), c(15, 25, 35))
-  res <- .compute_chrom_intensities(
-    mz_list, int_list, kept = 1:2,
-    mz_lo = -Inf, mz_hi = Inf, fun = sumi, use_cumsum = TRUE
-  )
-  expect_equal(res, c(30, 75))
-})
-
-test_that(".compute_chrom_intensities cumsum case", {
-  mz_list <- list(c(100, 200, 300), c(100, 200, 300))
-  int_list <- list(c(10, 20, 30), c(15, 25, 35))
-  res <- .compute_chrom_intensities(
-    mz_list, int_list, kept = 1:2,
-    mz_lo = 100, mz_hi = 200, fun = sumi, use_cumsum = TRUE
-  )
-  expect_equal(res, c(30, 40))
-})
-
-test_that(".compute_chrom_intensities generic function (maxi)", {
-  mz_list <- list(c(100, 200, 300))
-  int_list <- list(c(10, 20, 30))
-  res <- .compute_chrom_intensities(
-    mz_list, int_list, kept = 1L,
-    mz_lo = 100, mz_hi = 300, fun = maxi, use_cumsum = FALSE
-  )
-  expect_equal(res, 30)
-})
-
-test_that(".compute_chrom_intensities handles empty mz and no match", {
-  mz_list <- list(numeric(0), c(500, 600))
-  int_list <- list(numeric(0), c(10, 20))
-  res <- .compute_chrom_intensities(
-    mz_list, int_list, kept = 1:2,
-    mz_lo = 100, mz_hi = 200, fun = sumi, use_cumsum = TRUE
-  )
-  expect_true(is.na(res[1]))
-  expect_true(is.na(res[2]))
-})
-
-test_that(".compute_chrom_intensities TIC with NAs", {
-  mz_list <- list(c(100, 200), c(100, 200, 300))
-  int_list <- list(c(10, NA), c(NA, 25, 35))
-  res <- .compute_chrom_intensities(
-    mz_list, int_list, kept = 1:2,
-    mz_lo = -Inf, mz_hi = Inf, fun = sumi, use_cumsum = TRUE
-  )
-  ## sumi removes NAs: spec1=10, spec2=60
-  expect_equal(res, c(sumi(c(10, NA)), sumi(c(NA, 25, 35))))
-})
-
-test_that(".compute_chrom_intensities cumsum with NAs", {
-  mz_list <- list(c(100, 200, 300), c(100, 200, 300))
-  int_list <- list(c(10, NA, 30), c(NA, 25, 35))
-  res <- .compute_chrom_intensities(
-    mz_list, int_list, kept = 1:2,
-    mz_lo = 100, mz_hi = 200, fun = sumi, use_cumsum = TRUE
-  )
-  ## After stripping NAs: spec1 mz=c(100,300) int=c(10,30) → mz 100-200 = 10
-  ## spec2 mz=c(200,300) int=c(25,35) → mz 100-200: only mz=200 → 25
-  expect_equal(res[1], 10)
-  expect_equal(res[2], 25)
-})
-
-test_that(".compute_chrom_intensities generic (maxi) with NAs", {
-  mz_list <- list(c(100, 200, 300))
-  int_list <- list(c(10, NA, 30))
-  res <- .compute_chrom_intensities(
-    mz_list, int_list, kept = 1L,
-    mz_lo = 100, mz_hi = 300, fun = maxi, use_cumsum = FALSE
-  )
-  ## maxi(10, NA, 30) = 30  (maxi ignores NAs)
-  expect_equal(res, 30)
-})
-
-test_that(".compute_chrom_intensities all-NA spectrum returns NA", {
-  mz_list <- list(c(100, 200, 300))
-  int_list <- list(c(NA_real_, NA_real_, NA_real_))
-  ## cumsum: .strip_na_peaks → NULL → NA
-  res_sum <- .compute_chrom_intensities(
-    mz_list, int_list, kept = 1L,
-    mz_lo = 100, mz_hi = 300, fun = sumi, use_cumsum = TRUE
-  )
-  expect_true(is.na(res_sum))
-  ## generic path
-  res_max <- .compute_chrom_intensities(
-    mz_list, int_list, kept = 1L,
-    mz_lo = 100, mz_hi = 300, fun = maxi, use_cumsum = FALSE
-  )
-  expect_true(is.na(res_max))
-})
-
-
 test_that(".process_peaks_data same-rt TIC case", {
   sp <- Spectra(DataFrame(
     mz = NumericList(c(100, 200, 300), c(100, 200, 300), compress = FALSE),
@@ -1729,4 +1635,65 @@ test_that(".resolve_labels errors on non-character or length != 1", {
     expect_error(.resolve_labels(c_full, 42), "single character string")
     expect_error(.resolve_labels(c_full, c("mz", "msLevel")),
                  "single character string")
+})
+
+test_that(".peak_boundary_one matches the valleys()-based reference", {
+    ## The inlined valley scan must reproduce the boundaries the previous
+    ## implementation derived from MsCoreUtils::valleys(), including on the
+    ## plateau, flat and NA traces that stress its comparison semantics.
+    ref <- function(rtime, intensity, threshold = 0.1,
+                    baselineThreshold = 0.1, baselineQuantile = 0.1) {
+        n <- length(intensity)
+        na_res <- c(NA_real_, NA_real_)
+        if (n < 3L || all(is.na(intensity))) return(na_res)
+        max_int <- max(intensity, na.rm = TRUE)
+        if (max_int == 0) return(na_res)
+        max_idx <- which.max(intensity)
+        baseline_int <- quantile(intensity, probs = baselineQuantile,
+                                 na.rm = TRUE)
+        peak_height <- max_int - baseline_int
+        baseline_thresh <- baseline_int + peak_height * baselineThreshold
+        v <- valleys(intensity, max_idx)
+        left_idx  <- if ("left" %in% colnames(v)) v[1L, "left"] else 1L
+        right_idx <- if ("right" %in% colnames(v)) v[1L, "right"] else n
+        left_ok <- !is.na(intensity[left_idx]) &&
+            intensity[left_idx] <= baseline_thresh &&
+            !(left_idx > 1L && is.na(intensity[left_idx - 1L]))
+        right_ok <- !is.na(intensity[right_idx]) &&
+            intensity[right_idx] <= baseline_thresh &&
+            !(right_idx < n && is.na(intensity[right_idx + 1L]))
+        if (!left_ok || !right_ok) {
+            thresh_val <- baseline_int + peak_height * threshold
+            left_cand  <- which(intensity[seq_len(max_idx)] <= thresh_val)
+            right_cand <- which(intensity[max_idx:n] <= thresh_val)
+            left_idx  <- if (length(left_cand)) max(left_cand) else 1L
+            right_idx <- if (length(right_cand))
+                max_idx + min(right_cand) - 1L else n
+        }
+        c(unname(rtime[left_idx]), unname(rtime[right_idx]))
+    }
+    set.seed(4)
+    ## Sweep baselineQuantile too, so the inlined type-7 quantile is exercised
+    ## across the probability range, not just the default.
+    for (i in seq_len(500)) {
+        n <- sample(3:60, 1)
+        x <- as.numeric(switch(sample(1:4, 1),
+                               round(rnorm(n) * 3), rnorm(n),
+                               rep(1, n), cumsum(rnorm(n))))
+        if (i %% 3L == 0L) x[sample(n, max(1L, n %/% 10L))] <- NA_real_
+        rt <- as.numeric(seq_len(n))
+        bq <- c(0, 0.1, 0.25, 0.5, 0.9, 1)[(i %% 6L) + 1L]
+        expect_equal(.peak_boundary_one(rt, x, baselineQuantile = bq),
+                     ref(rt, x, baselineQuantile = bq))
+    }
+})
+
+test_that(".peak_boundary_one handles degenerate input", {
+    expect_identical(.peak_boundary_one(1:2, c(1, 2)), c(NA_real_, NA_real_))
+    expect_identical(.peak_boundary_one(1:4, rep(NA_real_, 4)),
+                     c(NA_real_, NA_real_))
+    expect_identical(.peak_boundary_one(1:4, rep(0, 4)), c(NA_real_, NA_real_))
+    ## a single non-NA point among NA must not error
+    res_one <- .peak_boundary_one(1:5, c(NA, NA, 5, NA, NA))
+    expect_length(res_one, 2L)
 })

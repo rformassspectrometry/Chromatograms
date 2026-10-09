@@ -1,0 +1,24 @@
+citHeader("To cite this package:")
+
+citEntry(entry = "article",
+         title  = "Chromatograms: A Modular Infrastructure for Scalable Chromatographic Data Handling in R",
+         author = personList(
+           person(given = "Philippine", family = "Louail"),
+           person(given = "Laurent", family = "Gatto"),
+           person(given = "Sebastian", family = "Gibb"),
+           person(given = "Johannes", family = "Rainer")
+         ),
+         publisher = "Analytical Chemistry",
+         year = "2026",
+         month = "September",
+         doi = "10.1021/acs.analchem.6c03926",
+         url = " https://doi.org/10.1021/acs.analchem.6c03926",
+         volume = "98",
+         issue = "38",
+         pages = "28337-28344"
+         textVersion = paste0("Louail P, Gatto L, Gibb S and Rainer J. ",
+                              "Chromatograms: A Modular Infrastructure for ",
+                              "Scalable Chromatographic Data Handling in R. ",
+                              "Anal. Chem. (2026) 98(38):28337-28344. ",
+                              "doi: 10.1021/acs.analchem.6c03926")
+)
