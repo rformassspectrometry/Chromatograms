@@ -300,6 +300,224 @@
     }
     plot.xy(xy.coords(rts, ints), type = type, col = col, ...)
 }
+
+#' Helper function to ggplot a single chromatogram.
+#' @note:
+#' Used in:
+#' - `ggplotChromatograms()`
+#' - `ggplotChromatogramsOverlay()`
+#'
+#' @importFrom ggplot2 ggplot geom_line geom_point scale_color_manual labs aes
+#' @importFrom ggplot2 theme theme_bw facet_wrap scale_y_continuous as_labeller
+#' @importFrom ggplot2 element_blank xlim ylim ggtitle
+#'
+#' @noRd
+.ggplot_single_chromatogram <- function(x, xlab = "rtime (s)",
+        ylab = "intensity",
+        xlim = numeric(),
+        ylim = numeric(),
+        main = character(),
+        col = "#00000080", add = FALSE,
+        pch = 20, cex = 5, lwd = 1.5, bs = 16,
+        orientation = 1, axes = TRUE, frame.plot = axes, ...) {
+    v <- as.data.frame.chromatogram(x)
+    v$intensity_orient <- orientation * v[, "intensity"]
+
+    gg <- ggplot(v, aes(x = rtime, y = intensity_orient)) +
+        geom_line(aes(group = index, color = index),
+                    linewidth = lwd, na.rm = TRUE) +
+        geom_point(aes(group = index, color = index),
+                    size = cex, shape = pch, na.rm = TRUE) +
+        scale_color_manual(values = col) +
+        labs(x = xlab, y = ylab) +
+        theme_bw(base_size = bs) +
+        theme(legend.position = "none", panel.grid = element_blank(),
+              aspect.ratio = 0.5)
+
+    if(!add) {
+        if(length(main))
+            titles <- main
+        else
+            titles <- paste0("index: ", unique(v$index))
+
+        names(titles) <- unique(v$index)
+
+        gg <- gg +
+            theme(strip.background = element_blank()) +
+            facet_wrap(index~., scales = "free",
+                       labeller = as_labeller(titles)) +
+            scale_y_continuous(limits = c(0, max(v$intensity_orient)))
+    } else {
+        gg <- gg + ggtitle(main)
+    }
+
+    if (length(xlim))
+        gg <- gg + xlim(xlim)
+    if (length(ylim))
+        gg <- gg + ylim(ylim)
+    if (!axes) {
+        gg <- gg +
+            theme(axis.text = element_blank(), axis.ticks = element_blank(),
+                axis.line = element_blank())
+    }
+    if (!frame.plot) {
+        gg <- gg +
+            theme(panel.border = element_blank())
+    }
+    gg
+}
+
+#' Helper function to ggiraph-ready single chromatogram.
+#' @note:
+#' Used in:
+#' - `ggplotChromatograms()`
+#' - `ggplotChromatogramsOverlay()`
+#'
+#' @importFrom ggplot2 ggplot scale_color_manual labs aes element_blank
+#' @importFrom ggplot2 theme theme_bw scale_y_continuous xlim ylim ggtitle
+#' @importFrom ggplot2 as_labeller
+#'
+#' @noRd
+.ggplot_single_chromatogram_interactive <- function(x, xlab = "rtime (s)",
+        ylab = "intensity",
+        xlim = numeric(),
+        ylim = numeric(),
+        main = character(),
+        col = "#00000080", add = FALSE,
+        pch = 20, cex = 5, lwd = 1.5, bs = 16,
+        orientation = 1, axes = TRUE, frame.plot = axes, ...) {
+    if (!requireNamespace("ggiraph", quietly = TRUE))
+        stop("Required package 'ggiraph' for the interactivity is missing. ",
+                "Please install it and try again.", call. = FALSE)
+
+    v <- as.data.frame.chromatogram(x)
+    v$intensity_orient <- orientation * v[, "intensity"]
+
+    ggiraph::set_girafe_defaults(
+        opts_zoom = ggiraph::opts_zoom(min = 1, max = 4),
+        opts_tooltip = ggiraph::opts_tooltip(
+            css = "padding:3px;background-color:#333333;color:white;"),
+        opts_sizing = ggiraph::opts_sizing(rescale = TRUE),
+        opts_toolbar = ggiraph::opts_toolbar(saveaspng = TRUE,
+                                    position = "topright",
+                                    delay_mouseout = 5000, fixed = TRUE),
+
+    )
+
+    gg <- ggplot(v, aes(x = rtime, y = intensity_orient)) +
+        ggiraph::geom_line_interactive(
+                    aes(group = index, color = index, data_id = index),
+                    linewidth = lwd, na.rm = TRUE, hover_nearest = TRUE) +
+        ggiraph::geom_point_interactive(
+                    aes(group = index, color = index, data_id = index,
+                    tooltip = paste0("index: ", index,
+                                    "\nintensity: ", round(intensity, 2),
+                                    "\nrtime: ", round(rtime, 2))
+                    ),
+                    size = cex, shape = pch, na.rm = TRUE,
+                    hover_nearest = TRUE) +
+        scale_color_manual(values = col) +
+        labs(x = xlab, y = ylab) +
+        theme_bw(base_size = bs) +
+        theme(legend.position = "none", panel.grid = element_blank(),
+              aspect.ratio = 0.5)
+
+    if(!add) {
+        if(length(main))
+            titles <- main
+        else
+            titles <- paste0("index: ", unique(v$index))
+
+        names(titles) <- unique(v$index)
+
+        gg <- gg +
+            theme(strip.background = element_blank()) +
+            ggiraph::facet_wrap_interactive(index ~ ., scales = "free",
+                                            labeller = as_labeller(titles)) +
+            scale_y_continuous(limits = c(0, max(v$intensity_orient)))
+    } else {
+        gg <- gg + ggtitle(main)
+    }
+
+    if (length(xlim))
+        gg <- gg + xlim(xlim)
+    if (length(ylim))
+        gg <- gg + ylim(ylim)
+
+    if (!axes) {
+        gg <- gg +
+            theme(axis.text = element_blank(), axis.ticks = element_blank(),
+                axis.line = element_blank())
+    }
+    if (!frame.plot) {
+        gg <- gg +
+            theme(panel.border = element_blank())
+    }
+    gg
+}
+
+#' @title Convert a chromatogram object to a data.frame.
+#'
+#' @description
+#' Returns a data.frame in long format with one row per data point and
+#' columns `rtime`, `intensity` and `index`. `index` is the position of the
+#' chromatogram within `x` (an integer, `seq_along(x)`) and uniquely
+#' identifies each chromatogram.
+#'
+#' Additional chromatogram variables (e.g. `"mz"`) can be added with
+#' `chromVariables`.
+#'
+#' Used in:
+#' - `.ggplot_single_chromatogram()`
+#' - `.ggplot_single_chromatogram_interactive()`
+#'
+#' @param x chromatogram object.
+#'
+#' @param row.names optional row names for the returned data.frame.
+#'
+#' @param optional currently ignored; present for consistency with the
+#'     [base](as.data.frame) generic.
+#'
+#' @param chromVariables `character` with the names of additional
+#'     chromatogram variables (available in `chromVariables(x)`) to be
+#'     added as columns from `chromData(x)`.
+#'
+#' @param ... currently ignored.
+#'
+#' @importFrom data.table rbindlist
+#'
+#' @author Gabriele Tomè
+#'
+#' @export
+as.data.frame.chromatogram <- function(x, row.names = NULL, optional = FALSE,
+                                        chromVariables = character(), ...) {
+    v_l <- peaksData(x)
+    names(v_l) <- seq_along(v_l)
+    v <- as.data.frame(rbindlist(v_l, idcol = "index"))
+    v$index <- as.factor(v$index)
+
+    if (length(chromVariables)) {
+        chromVariables <- unique(as.character(chromVariables))
+        chromVariables <- intersect(chromVariables, chromVariables(x))
+        if (!length(chromVariables))
+            stop("None of the chromVariables not available in 'x'",
+                 call. = FALSE)
+        cd <- chromData(x, columns = chromVariables)
+        ## number of data points per chromatogram, used to repeat the
+        ## chromatogram-level values for each of its rows
+        n_rows <- vapply(v_l, nrow, integer(1), USE.NAMES = FALSE)
+        for (col in chromVariables)
+            v[[col]] <- rep(cd[[col]], times = n_rows)
+    }
+    if (!is.null(row.names)) {
+        if(length(row.names) != nrow(v))
+            stop("row.names must be NULL or a vector of length ", nrow(v))
+
+        rownames(v) <- row.names
+    }
+    v
+}
+
 #' Strip NA intensities from paired mz/intensity vectors.
 #'
 #' Returns a list with cleaned `mz`, `int`, and `n`, or `NULL` if no

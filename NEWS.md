@@ -1,5 +1,10 @@
 # Version 1.3
 
+## Change in 1.3.5
+
+- Add funtions to generate `ggplot` figures: `ggplotChromatograms()` and
+  `ggplotChromatogramsOverlay()`.
+
 ## Changes in 1.3.4
 
 - Add package logo.
@@ -37,7 +42,7 @@
 
 - Fix `ChromBackendSpectra` `spectraSortIndex` test to shuffle spectra first,
   avoiding a spurious failure when input data is already sorted.
-  
+
 
 # Version 1.1
 
