@@ -320,7 +320,7 @@
         col = "#00000080", add = FALSE,
         pch = 20, cex = 5, lwd = 1.5, bs = 16,
         orientation = 1, axes = TRUE, frame.plot = axes, ...) {
-    v <- as.data.frame.chromatogram(x)
+    v <- as.data.frame.Chromatograms(x)
     v$intensity_orient <- orientation * v[, "intensity"]
 
     gg <- ggplot(v, aes(x = rtime, y = intensity_orient)) +
@@ -390,7 +390,7 @@
         stop("Required package 'ggiraph' for the interactivity is missing. ",
                 "Please install it and try again.", call. = FALSE)
 
-    v <- as.data.frame.chromatogram(x)
+    v <- as.data.frame.Chromatograms(x)
     v$intensity_orient <- orientation * v[, "intensity"]
 
     ggiraph::set_girafe_defaults(
@@ -459,21 +459,18 @@
 #' @title Convert a chromatogram object to a data.frame.
 #'
 #' @description
-#' Returns a data.frame in long format with one row per data point and
-#' columns `rtime`, `intensity` and `index`. `index` is the position of the
-#' chromatogram within `x` (an integer, `seq_along(x)`) and uniquely
+#' Returns a `data.frame` in long format with one row per data point and
+#' columns `rtime`, `intensity` and `index`. `index` is a `factor` with the
+#' position of the chromatogram within `x` (`seq_along(x)`) and uniquely
 #' identifies each chromatogram.
 #'
-#' Additional chromatogram variables (e.g. `"mz"`) can be added with
-#' `chromVariables`.
+#' To add additional chromatogram variables (e.g. `"mz"`) request them through
+#' the `chromVariables` parameter.
 #'
-#' Used in:
-#' - `.ggplot_single_chromatogram()`
-#' - `.ggplot_single_chromatogram_interactive()`
+#' @param x Chromatograms object.
 #'
-#' @param x chromatogram object.
-#'
-#' @param row.names optional row names for the returned data.frame.
+#' @param row.names optional row names for the returned `data.frame`. Must be
+#'     equal to the number of rows in the returned `data.frame`.
 #'
 #' @param optional currently ignored; present for consistency with the
 #'     [base](as.data.frame) generic.
@@ -489,7 +486,7 @@
 #' @author Gabriele Tomè
 #'
 #' @export
-as.data.frame.chromatogram <- function(x, row.names = NULL, optional = FALSE,
+as.data.frame.Chromatograms <- function(x, row.names = NULL, optional = FALSE,
                                         chromVariables = character(), ...) {
     v_l <- peaksData(x)
     names(v_l) <- seq_along(v_l)
@@ -500,7 +497,7 @@ as.data.frame.chromatogram <- function(x, row.names = NULL, optional = FALSE,
         chromVariables <- unique(as.character(chromVariables))
         chromVariables <- intersect(chromVariables, chromVariables(x))
         if (!length(chromVariables))
-            stop("None of the chromVariables not available in 'x'",
+            stop("None of the requested 'chromVariables' available in 'x'",
                  call. = FALSE)
         cd <- chromData(x, columns = chromVariables)
         ## number of data points per chromatogram, used to repeat the
