@@ -373,7 +373,7 @@
         if(length(main))
             titles <- main
         else
-            titles <- paste0("m/z: ", round(mz_name, 1))
+            titles <- paste0("m/z: ", round(mz(x), 1))
 
         names(titles) <- unique(v$index)
 
