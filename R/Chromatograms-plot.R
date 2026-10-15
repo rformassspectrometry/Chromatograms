@@ -37,7 +37,8 @@
 #' @param axes `logical(1)` whether (x and y) axes should be drawn.
 #'
 #' @param asp `numeric(1)` the aspect ratio of the plot, i.e. the ratio of
-#'        the y-axis to the x-axis. Defaults to 1.
+#'        the y-axis to the x-axis. Defaults to 1 for R base plot and 1/2 for
+#'        ggplot.
 #'
 #' @param pch `numeric(1)` specifying the symbol to be used for the peaks.
 #'        Defaults to 20, a filled circle. See [points()] for details.
@@ -185,27 +186,27 @@ setMethod("ggplotChromatograms", "Chromatograms",
           function(object, xlab = "rtime (s)", ylab = "intensity",
                    xlim = numeric(), ylim = numeric(),
                    main = character(), col = "#00000080",
-                   pch = 20, cex = 5, lwd = 1.5, bs = 16,
+                   pch = 20, cex = 5, lwd = 1.5, bs = 16, asp = 1/2,
                    interactive = FALSE, ...) {
               nsp <- length(object)
               if (length(col) != nsp)
                   col <- rep(col[1], nsp)
-              if (length(main) && length(main) != nsp)
+              if (!length(main))
+                  main <- paste0("m/z: ", round(mz(object), 1))
+              if (length(main) != nsp)
                   main <- rep(main[1], nsp)
 
+              gg <- .ggplot_single_chromatogram(
+                        object, xlab = xlab, ylab = ylab,
+                        xlim = xlim, ylim = ylim, main = main, col = col,
+                        pch = pch, cex = cex, lwd = lwd, bs = bs, asp = asp,
+                        interactive = interactive, ...)
               if (interactive) {
-                gg <- .ggplot_single_chromatogram_interactive(
-                        object, xlab = xlab, ylab = ylab,
-                        xlim = xlim, ylim = ylim, main = main, col = col,
-                        pch = pch, cex = cex, lwd = lwd, bs = bs, ...)
-                ggiraph::girafe(gg)
+                  ggiraph::girafe(gg)
               } else {
-                .ggplot_single_chromatogram(
-                        object, xlab = xlab, ylab = ylab,
-                        xlim = xlim, ylim = ylim, main = main, col = col,
-                        pch = pch, cex = cex, lwd = lwd, bs = bs, ...)
+                  gg
               }
-            })
+          })
 
 #' @rdname plotChromatograms
 #'
@@ -215,7 +216,7 @@ setMethod("ggplotChromatogramsOverlay", "Chromatograms",
                    xlim = numeric(), ylim = numeric(),
                    main = paste(length(object), "chromatograms"),
                    col = "#00000080",
-                   pch = 20, cex = 5, lwd = 1.5, bs = 16,
+                   pch = 20, cex = 5, lwd = 1.5, bs = 16, asp = 1/2,
                    interactive = FALSE,
                    axes = TRUE, frame.plot = axes, ...) {
               nsp <- length(object)
@@ -226,19 +227,15 @@ setMethod("ggplotChromatogramsOverlay", "Chromatograms",
               if (!length(ylim))
                   ylim <- c(0, max(unlist(intensity(object)), na.rm = TRUE))
 
-
+              gg <- .ggplot_single_chromatogram(
+                        object, add = TRUE, xlab = xlab, ylab = ylab,
+                        xlim = xlim, ylim = ylim, main = main, col = col,
+                        pch = pch, cex = cex, lwd = lwd, bs = bs, asp = asp,
+                        axes = axes, frame.plot = frame.plot,
+                        interactive = interactive, ...)
               if (interactive) {
-                gg <- .ggplot_single_chromatogram_interactive(
-                        object, add = TRUE, xlab = xlab, ylab = ylab,
-                        xlim = xlim, ylim = ylim, main = main, col = col,
-                        pch = pch, cex = cex, lwd = lwd, bs = bs,
-                        axes = axes, frame.plot = frame.plot, ...)
-                ggiraph::girafe(gg)
+                  ggiraph::girafe(gg)
               } else {
-                .ggplot_single_chromatogram(
-                        object, add = TRUE, xlab = xlab, ylab = ylab,
-                        xlim = xlim, ylim = ylim, main = main, col = col,
-                        pch = pch, cex = cex, lwd = lwd, bs = bs,
-                        axes = axes, frame.plot = frame.plot, ...)
+                  gg
               }
             })

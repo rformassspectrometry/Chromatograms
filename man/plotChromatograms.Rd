@@ -53,6 +53,7 @@
   cex = 5,
   lwd = 1.5,
   bs = 16,
+  asp = 1/2,
   interactive = FALSE,
   ...
 )
@@ -69,6 +70,7 @@
   cex = 5,
   lwd = 1.5,
   bs = 16,
+  asp = 1/2,
   interactive = FALSE,
   axes = TRUE,
   frame.plot = axes,
@@ -110,7 +112,8 @@ in a different color) or be a \code{list} with colors for each individual
 peak in each spectrum.}
 
 \item{asp}{\code{numeric(1)} the aspect ratio of the plot, i.e. the ratio of
-the y-axis to the x-axis. Defaults to 1.}
+the y-axis to the x-axis. Defaults to 1 for R base plot and 1/2 for
+ggplot.}
 
 \item{...}{Additional arguments to be passed to \code{\link[=plot.default]{plot.default()}}.}
 

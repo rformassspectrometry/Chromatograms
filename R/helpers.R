@@ -301,7 +301,7 @@
     plot.xy(xy.coords(rts, ints), type = type, col = col, ...)
 }
 
-#' Helper function to ggplot a single chromatogram.
+#' Helper function to ggplot/ggiraph a single chromatogram.
 #' @note:
 #' Used in:
 #' - `ggplotChromatograms()`
@@ -309,132 +309,86 @@
 #'
 #' @importFrom ggplot2 ggplot geom_line geom_point scale_color_manual labs aes
 #' @importFrom ggplot2 theme theme_bw facet_wrap scale_y_continuous as_labeller
-#' @importFrom ggplot2 element_blank xlim ylim ggtitle
+#' @importFrom ggplot2 element_blank xlim ylim ggtitle expand_limits
 #'
 #' @noRd
 .ggplot_single_chromatogram <- function(x, xlab = "rtime (s)",
         ylab = "intensity",
         xlim = numeric(),
         ylim = numeric(),
-        main = character(),
+        main = paste("m/z", round(mz(x), 1)),
         col = "#00000080", add = FALSE,
-        pch = 20, cex = 5, lwd = 1.5, bs = 16,
-        orientation = 1, axes = TRUE, frame.plot = axes, ...) {
-    v <- as.data.frame.Chromatograms(x)
-    v$intensity_orient <- orientation * v[, "intensity"]
-
-    gg <- ggplot(v, aes(x = rtime, y = intensity_orient)) +
-        geom_line(aes(group = index, color = index),
-                    linewidth = lwd, na.rm = TRUE) +
-        geom_point(aes(group = index, color = index),
-                    size = cex, shape = pch, na.rm = TRUE) +
-        scale_color_manual(values = col) +
-        labs(x = xlab, y = ylab) +
-        theme_bw(base_size = bs) +
-        theme(legend.position = "none", panel.grid = element_blank(),
-              aspect.ratio = 0.5)
-
-    if(!add) {
-        if(length(main))
-            titles <- main
-        else
-            titles <- paste0("index: ", unique(v$index))
-
-        names(titles) <- unique(v$index)
-
-        gg <- gg +
-            theme(strip.background = element_blank()) +
-            facet_wrap(index~., scales = "free",
-                       labeller = as_labeller(titles)) +
-            scale_y_continuous(limits = c(0, max(v$intensity_orient)))
-    } else {
-        gg <- gg + ggtitle(main)
-    }
-
-    if (length(xlim))
-        gg <- gg + xlim(xlim)
-    if (length(ylim))
-        gg <- gg + ylim(ylim)
-    if (!axes) {
-        gg <- gg +
-            theme(axis.text = element_blank(), axis.ticks = element_blank(),
-                axis.line = element_blank())
-    }
-    if (!frame.plot) {
-        gg <- gg +
-            theme(panel.border = element_blank())
-    }
-    gg
-}
-
-#' Helper function to ggiraph-ready single chromatogram.
-#' @note:
-#' Used in:
-#' - `ggplotChromatograms()`
-#' - `ggplotChromatogramsOverlay()`
-#'
-#' @importFrom ggplot2 ggplot scale_color_manual labs aes element_blank
-#' @importFrom ggplot2 theme theme_bw scale_y_continuous xlim ylim ggtitle
-#' @importFrom ggplot2 as_labeller
-#'
-#' @noRd
-.ggplot_single_chromatogram_interactive <- function(x, xlab = "rtime (s)",
-        ylab = "intensity",
-        xlim = numeric(),
-        ylim = numeric(),
-        main = character(),
-        col = "#00000080", add = FALSE,
-        pch = 20, cex = 5, lwd = 1.5, bs = 16,
-        orientation = 1, axes = TRUE, frame.plot = axes, ...) {
-    if (!requireNamespace("ggiraph", quietly = TRUE))
+        pch = 20, cex = 5, lwd = 1.5, bs = 16, asp = 1/2,
+        orientation = 1, axes = TRUE, frame.plot = axes,
+        interactive = FALSE, ...) {
+    if (interactive & !requireNamespace("ggiraph", quietly = TRUE))
         stop("Required package 'ggiraph' for the interactivity is missing. ",
                 "Please install it and try again.", call. = FALSE)
 
+    if (interactive)
+        ggiraph::set_girafe_defaults(
+            opts_zoom = ggiraph::opts_zoom(min = 1, max = 4),
+            opts_tooltip = ggiraph::opts_tooltip(
+                css = "padding:3px;background-color:#333333;color:white;"),
+            opts_sizing = ggiraph::opts_sizing(rescale = TRUE),
+            opts_toolbar = ggiraph::opts_toolbar(saveaspng = TRUE,
+                                        position = "topright",
+                                        delay_mouseout = 5000, fixed = TRUE),
+
+        )
+
     v <- as.data.frame.Chromatograms(x)
     v$intensity_orient <- orientation * v[, "intensity"]
 
-    ggiraph::set_girafe_defaults(
-        opts_zoom = ggiraph::opts_zoom(min = 1, max = 4),
-        opts_tooltip = ggiraph::opts_tooltip(
-            css = "padding:3px;background-color:#333333;color:white;"),
-        opts_sizing = ggiraph::opts_sizing(rescale = TRUE),
-        opts_toolbar = ggiraph::opts_toolbar(saveaspng = TRUE,
-                                    position = "topright",
-                                    delay_mouseout = 5000, fixed = TRUE),
+    gg <- ggplot(v, aes(x = rtime, y = intensity_orient))
 
-    )
+    if (interactive)
+        gg <- gg +
+            ggiraph::geom_line_interactive(
+                        aes(group = index, color = index, data_id = index),
+                        linewidth = lwd, na.rm = TRUE, hover_nearest = TRUE) +
+            ggiraph::geom_point_interactive(
+                        aes(group = index, color = index, data_id = index,
+                        tooltip = paste0("index: ", index,
+                                        "\nintensity: ", round(intensity, 2),
+                                        "\nrtime: ", round(rtime, 2))
+                        ),
+                        size = cex, shape = pch, na.rm = TRUE,
+                        hover_nearest = TRUE)
+    else
+        gg <- gg +
+            geom_line(aes(group = index, color = index),
+                        linewidth = lwd, na.rm = TRUE) +
+            geom_point(aes(group = index, color = index),
+                        size = cex, shape = pch, na.rm = TRUE)
 
-    gg <- ggplot(v, aes(x = rtime, y = intensity_orient)) +
-        ggiraph::geom_line_interactive(
-                    aes(group = index, color = index, data_id = index),
-                    linewidth = lwd, na.rm = TRUE, hover_nearest = TRUE) +
-        ggiraph::geom_point_interactive(
-                    aes(group = index, color = index, data_id = index,
-                    tooltip = paste0("index: ", index,
-                                    "\nintensity: ", round(intensity, 2),
-                                    "\nrtime: ", round(rtime, 2))
-                    ),
-                    size = cex, shape = pch, na.rm = TRUE,
-                    hover_nearest = TRUE) +
+    gg <- gg +
         scale_color_manual(values = col) +
         labs(x = xlab, y = ylab) +
         theme_bw(base_size = bs) +
         theme(legend.position = "none", panel.grid = element_blank(),
-              aspect.ratio = 0.5)
+              aspect.ratio = asp)
 
     if(!add) {
         if(length(main))
             titles <- main
         else
-            titles <- paste0("index: ", unique(v$index))
+            titles <- paste0("m/z: ", round(mz_name, 1))
 
         names(titles) <- unique(v$index)
 
         gg <- gg +
-            theme(strip.background = element_blank()) +
-            ggiraph::facet_wrap_interactive(index ~ ., scales = "free",
-                                            labeller = as_labeller(titles)) +
-            scale_y_continuous(limits = c(0, max(v$intensity_orient)))
+            theme(strip.background = element_blank())
+
+        if (interactive)
+            gg <- gg +
+                ggiraph::facet_wrap_interactive(index ~ ., scales = "free",
+                                                labeller = as_labeller(titles))
+        else
+            gg <- gg +
+                facet_wrap(index~., scales = "free",
+                        labeller = as_labeller(titles)) +
+                expand_limits(y = 0)
     } else {
         gg <- gg + ggtitle(main)
     }
@@ -443,7 +397,6 @@
         gg <- gg + xlim(xlim)
     if (length(ylim))
         gg <- gg + ylim(ylim)
-
     if (!axes) {
         gg <- gg +
             theme(axis.text = element_blank(), axis.ticks = element_blank(),
@@ -491,7 +444,10 @@ as.data.frame.Chromatograms <- function(x, row.names = NULL, optional = FALSE,
     v_l <- peaksData(x)
     names(v_l) <- seq_along(v_l)
     v <- as.data.frame(rbindlist(v_l, idcol = "index"))
-    v$index <- as.factor(v$index)
+    if(length(removed <- setdiff(names(v_l), unique(v$index))))
+        warning("Remove empty Chromatograms: ", paste(removed, collapse = ", "))
+
+    v$index <- as.factor(as.integer(v$index))
 
     if (length(chromVariables)) {
         chromVariables <- unique(as.character(chromVariables))
