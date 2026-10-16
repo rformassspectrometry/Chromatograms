@@ -1697,3 +1697,32 @@ test_that(".peak_boundary_one handles degenerate input", {
     res_one <- .peak_boundary_one(1:5, c(NA, NA, 5, NA, NA))
     expect_length(res_one, 2L)
 })
+
+
+test_that("as.data.frame.Chromatograms works", {
+    res <- as.data.frame(c_full)
+    expect_s3_class(res, "data.frame")
+    expect_named(res, c("index", "rtime", "intensity"))
+    expect_equal(as.integer(res$index),
+                c(1L, 1L, 1L, 1L, 2L, 2L, 3L, 3L, 3L, 3L))
+    expect_equal(res$rtime, unlist(rtime(c_full)))
+    expect_equal(res$intensity, unlist(intensity(c_full)))
+
+    ## chromVariables
+    res_2 <- as.data.frame.Chromatograms(c_full, chromVariables = c("mz"))
+    expect_equal(res, res_2[, c("index", "rtime", "intensity")])
+    expect_equal(unique(res_2$mz), unlist(mz(c_full)))
+
+    ## chromVariables: error columns
+    expect_error(as.data.frame(c_full, chromVariables = "not_a_variable"),
+                 "None of the requested")
+
+    ## row.names
+    res_3 <- as.data.frame(c_full, row.names = letters[1:10])
+    expect_equal(rownames(res_3), letters[1:10])
+    expect_error(as.data.frame(c_full, row.names = "a"), "row.names must be")
+
+    ## empty chromatogram
+    expect_warning(as.data.frame.Chromatograms(be_empty),
+                    "Removed empty Chromatograms: 1")
+})
