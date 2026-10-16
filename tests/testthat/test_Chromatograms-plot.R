@@ -106,3 +106,107 @@ test_that(".plot_single_chromatogram works", {
         function() .plot_single_chromatogram(c_full[1], ylim = c(-Inf, Inf))
     )
 })
+
+
+## Test ggplot figure
+test_that("ggplotChromatograms works", {
+    vdiffr::expect_doppelganger(
+        "ggplotChromatograms-single",
+        ggplotChromatograms(c_full[1])
+    )
+
+    vdiffr::expect_doppelganger(
+        "ggplotChromatograms-multiple",
+        ggplotChromatograms(c_full)
+    )
+
+    vdiffr::expect_doppelganger(
+        "ggplotChromatograms-color",
+        ggplotChromatograms(c_full[1:2], col = c("green", "blue"))
+    )
+
+    vdiffr::expect_doppelganger(
+        "ggplotChromatograms-one-color",
+        ggplotChromatograms(c_full[1:2], col = c("green"))
+    )
+
+    vdiffr::expect_doppelganger(
+        "ggplotChromatograms-toomany-color",
+        ggplotChromatograms(c_full[1:3], col = c("green", "blue"))
+    )
+
+    vdiffr::expect_doppelganger(
+        "ggplotChromatograms-toomany-main",
+        ggplotChromatograms(c_full[1:3], main = c("test1", "test2"))
+    )
+
+    vdiffr::expect_doppelganger(
+        "ggplotChromatograms-one-title",
+        ggplotChromatograms(c_full[1:2], main = "Test Title")
+    )
+
+    vdiffr::expect_doppelganger(
+        "ggplotChromatograms-asp05",
+        ggplotChromatograms(c_full, asp = 1 / 2)
+    )
+
+    vdiffr::expect_doppelganger(
+        "ggplotChromatograms-asp2",
+        ggplotChromatograms(c_full, asp = 2)
+    )
+})
+
+test_that("ggplotChromatogramsOverlay works", {
+    vdiffr::expect_doppelganger(
+        "ggplotChromatogramsOverlay-basic",
+        ggplotChromatogramsOverlay(c_full, col = c("red", "blue"))
+    )
+
+    vdiffr::expect_doppelganger(
+        "ggplotChromatogramsOverlay-xlim",
+        ggplotChromatogramsOverlay(c_full, xlim = c(10, 50))
+    )
+
+    vdiffr::expect_doppelganger(
+        "ggplotChromatogramsOverlay-no-axes",
+        ggplotChromatogramsOverlay(c_full, axes = FALSE)
+    )
+
+    vdiffr::expect_doppelganger(
+        "ggplotChromatogramsOverlay-main-title",
+        ggplotChromatogramsOverlay(c_full, main = "Overlay Test")
+    )
+
+    vdiffr::expect_doppelganger(
+        "ggplotChromatogramsOverlay-one-sample",
+        ggplotChromatogramsOverlay(c_full[1], col = c("red"))
+    )
+})
+
+test_that(".ggplot_single_chromatogram works", {
+    vdiffr::expect_doppelganger(
+        "ggplot_single_chromatogram-basic",
+        .ggplot_single_chromatogram(c_full[1])
+    )
+
+    vdiffr::expect_doppelganger(
+        "ggplot_single_chromatogram-xlim",
+        .ggplot_single_chromatogram(c_full[1],
+                                    xlim = c(10, 50), ylim = c(0, 3000))
+    )
+
+    vdiffr::expect_doppelganger(
+        "ggplot_single_chromatogram-color",
+        .ggplot_single_chromatogram(c_full[1], col = "purple")
+    )
+
+    vdiffr::expect_doppelganger(
+        "ggplot_single_chromatogram-infinite-xlim",
+        .ggplot_single_chromatogram(c_full[1], xlim = c(-Inf, Inf))
+    )
+
+    vdiffr::expect_doppelganger(
+        "ggplot_single_chromatogram-infinite-ylim",
+        .ggplot_single_chromatogram(c_full[1], ylim = c(-Inf, Inf))
+    )
+})

@@ -37,7 +37,8 @@
 #' @param axes `logical(1)` whether (x and y) axes should be drawn.
 #'
 #' @param asp `numeric(1)` the aspect ratio of the plot, i.e. the ratio of
-#'        the y-axis to the x-axis. Defaults to 1.
+#'        the y-axis to the x-axis. Defaults to 1 for R base plot and 1/2 for
+#'        ggplot.
 #'
 #' @param pch `numeric(1)` specifying the symbol to be used for the peaks.
 #'        Defaults to 20, a filled circle. See [points()] for details.
@@ -58,6 +59,11 @@
 #'       [plot.default()]).
 #'
 #' @param lwd `numeric(1)` specifying the line width (see [plot.default()]).
+#'
+#' @param bs `numeric(1)` font size for ggplot.
+#'
+#' @param interactive `logical(1)` return the interactive ggplot based on
+#'     ggiraph.
 #'
 #' @param ... Additional arguments to be passed to [plot.default()].
 #'
@@ -108,7 +114,6 @@
 #' plotChromatogramsOverlay(chr[1:2], col = c("green", "blue"))
 #'
 NULL
-
 
 #' @rdname plotChromatograms
 #' @importFrom graphics par
@@ -173,3 +178,64 @@ setMethod("plotChromatogramsOverlay", "Chromatograms",
                       pch = pch, cex = cex, lwd = lwd, ...)
               }
           })
+
+#' @rdname plotChromatograms
+#'
+#' @exportMethod ggplotChromatograms
+setMethod("ggplotChromatograms", "Chromatograms",
+          function(object, xlab = "rtime (s)", ylab = "intensity",
+                   xlim = numeric(), ylim = numeric(),
+                   main = character(), col = "#00000080",
+                   pch = 20, cex = 5, lwd = 1.5, bs = 16, asp = 1/2,
+                   interactive = FALSE, ...) {
+              nsp <- length(object)
+              if (length(col) != nsp)
+                  col <- rep(col[1], nsp)
+              if (!length(main))
+                  main <- paste0("m/z: ", round(mz(object), 1))
+              if (length(main) != nsp)
+                  main <- rep(main[1], nsp)
+
+              gg <- .ggplot_single_chromatogram(
+                        object, xlab = xlab, ylab = ylab,
+                        xlim = xlim, ylim = ylim, main = main, col = col,
+                        pch = pch, cex = cex, lwd = lwd, bs = bs, asp = asp,
+                        interactive = interactive, ...)
+              if (interactive) {
+                  ggiraph::girafe(gg)
+              } else {
+                  gg
+              }
+          })
+
+#' @rdname plotChromatograms
+#'
+#' @exportMethod ggplotChromatogramsOverlay
+setMethod("ggplotChromatogramsOverlay", "Chromatograms",
+          function(object, xlab = "rtime (s)", ylab = "intensity",
+                   xlim = numeric(), ylim = numeric(),
+                   main = paste(length(object), "chromatograms"),
+                   col = "#00000080",
+                   pch = 20, cex = 5, lwd = 1.5, bs = 16, asp = 1/2,
+                   interactive = FALSE,
+                   axes = TRUE, frame.plot = axes, ...) {
+              nsp <- length(object)
+              if (length(col) != nsp)
+                  col <- rep(col[1], nsp)
+              if (!length(xlim))
+                  xlim <- range(unlist(rtime(object)), na.rm = TRUE)
+              if (!length(ylim))
+                  ylim <- c(0, max(unlist(intensity(object)), na.rm = TRUE))
+
+              gg <- .ggplot_single_chromatogram(
+                        object, add = TRUE, xlab = xlab, ylab = ylab,
+                        xlim = xlim, ylim = ylim, main = main, col = col,
+                        pch = pch, cex = cex, lwd = lwd, bs = bs, asp = asp,
+                        axes = axes, frame.plot = frame.plot,
+                        interactive = interactive, ...)
+              if (interactive) {
+                  ggiraph::girafe(gg)
+              } else {
+                  gg
+              }
+            })
