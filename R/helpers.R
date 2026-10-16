@@ -321,7 +321,7 @@
         pch = 20, cex = 5, lwd = 1.5, bs = 16, asp = 1/2,
         orientation = 1, axes = TRUE, frame.plot = axes,
         interactive = FALSE, ...) {
-    if (interactive & !requireNamespace("ggiraph", quietly = TRUE))
+    if (interactive && !requireNamespace("ggiraph", quietly = TRUE))
         stop("Required package 'ggiraph' for the interactivity is missing. ",
                 "Please install it and try again.", call. = FALSE)
 
@@ -375,7 +375,7 @@
         else
             titles <- paste0("m/z: ", round(mz(x), 1))
 
-        names(titles) <- unique(v$index)
+        names(titles) <- seq_along(x)
 
         gg <- gg +
             theme(strip.background = element_blank())
@@ -387,11 +387,11 @@
         else
             gg <- gg +
                 facet_wrap(index~., scales = "free",
-                        labeller = as_labeller(titles)) +
-                expand_limits(y = 0)
+                        labeller = as_labeller(titles))
     } else {
         gg <- gg + ggtitle(main)
     }
+    gg <- gg + expand_limits(y = 0)
 
     if (length(xlim))
         gg <- gg + xlim(xlim)
@@ -445,7 +445,8 @@ as.data.frame.Chromatograms <- function(x, row.names = NULL, optional = FALSE,
     names(v_l) <- seq_along(v_l)
     v <- as.data.frame(rbindlist(v_l, idcol = "index"))
     if(length(removed <- setdiff(names(v_l), unique(v$index))))
-        warning("Remove empty Chromatograms: ", paste(removed, collapse = ", "))
+        warning("Removed empty Chromatograms: ",
+                paste(removed, collapse = ", "))
 
     v$index <- as.factor(as.integer(v$index))
 
