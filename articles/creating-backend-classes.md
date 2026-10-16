@@ -1,7 +1,7 @@
 # Creating new \`ChromBackend\` classes for Chromatograms
 
-**Package**: Chromatograms 1.3.3\
-**Compiled**: Tue Sep 8 05:43:50 2026
+**Package**: Chromatograms 1.3.5\
+**Compiled**: Fri Oct 16 10:58:29 2026
 
 ## Introduction
 
@@ -112,7 +112,26 @@ each element correspond to one chromatogram, as the number of values
 (*peaks*) can vary between chromatograms. We also provide a basic
 constructor function that returns an empty instance of the new class.
 
-[`library`](https://rdrr.io/r/base/library.html)`(`[`Chromatograms`](https://github.com/RforMassSpectrometry/Chromatograms)`)`` `` ``#' Definition of the backend class extending ChromBackend`` `[`setClass`](https://rdrr.io/r/methods/setClass.html)`(``"ChromBackendTest"``,`` `` contains ``=`` ``"ChromBackend"``,`` `` slots ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(`` `` chromData ``=`` ``"data.frame"``,`` `` peaksData ``=`` ``"list"`` `` ``)``,`` `` prototype ``=`` `[`prototype`](https://rdrr.io/r/methods/representation.html)`(`` `` chromData ``=`` `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(``)``,`` `` peaksData ``=`` `[`list`](https://rdrr.io/r/base/list.html)`(``)`` `` ``)`` ``)`` `` ``#' Simple constructor function`` ``ChromBackendTest`` ``<-`` ``function``(``)`` ``{`` `` `[`new`](https://rdrr.io/r/methods/new.html)`(``"ChromBackendTest"``)`` ``}`
+\
+[`library`](https://rdrr.io/r/base/library.html)`(`[`Chromatograms`](https://github.com/RforMassSpectrometry/Chromatograms)`)`\
+\
+`#' Definition of the backend class extending ChromBackend`\
+[`setClass`](https://rdrr.io/r/methods/setClass.html)`(``"ChromBackendTest"``,`\
+`    contains ``=`` ``"ChromBackend"``,`\
+`    slots ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(`\
+`        chromData ``=`` ``"data.frame"``,`\
+`        peaksData ``=`` ``"list"`\
+`    ``)``,`\
+`    prototype ``=`` `[`prototype`](https://rdrr.io/r/methods/representation.html)`(`\
+`        chromData ``=`` `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(``)``,`\
+`        peaksData ``=`` `[`list`](https://rdrr.io/r/base/list.html)`(``)`\
+`    ``)`\
+`)`\
+\
+`#' Simple constructor function`\
+`ChromBackendTest`` ``<-`` ``function``(``)`` ``{`\
+`    `[`new`](https://rdrr.io/r/methods/new.html)`(``"ChromBackendTest"``)`\
+`}`
 
 The 2 slots `@chromData` and `@peaksData` will be used to store the
 general properties of the chromatograms and the actual chromatographic
@@ -129,7 +148,17 @@ data to be correct (valid). The function below simply checks that the
 number of rows of the `@chromData` slot matches the length of the
 `@peaksData` slots.
 
-`#' Basic validation function`` `[`setValidity`](https://rdrr.io/r/methods/validObject.html)`(``"ChromBackendTest"``, ``function``(``object``)`` ``{`` `` ``if`` ``(`[`length`](https://rdrr.io/r/base/length.html)`(``object``@``peaksData``)`` ``!=`` `[`nrow`](https://rdrr.io/r/base/nrow.html)`(``object``@``chromData``)``)`` ``{`` `` `[`return`](https://rdrr.io/r/base/function.html)`(`` `` ``"length of 'peaksData' has to match the number of rows of "``,`` `` ``"'chromData'"`` `` ``)`` `` ``}`` `` ``NULL`` ``}``)`
+\
+`#' Basic validation function`\
+[`setValidity`](https://rdrr.io/r/methods/validObject.html)`(``"ChromBackendTest"``, ``function``(``object``)`` ``{`\
+`    ``if`` ``(`[`length`](https://rdrr.io/r/base/length.html)`(``object``@``peaksData``)`` ``!=`` `[`nrow`](https://rdrr.io/r/base/nrow.html)`(``object``@``chromData``)``)`` ``{`\
+`        `[`return`](https://rdrr.io/r/base/function.html)`(`\
+`            ``"length of 'peaksData' has to match the number of rows of "``,`\
+`            ``"'chromData'"`\
+`        ``)`\
+`    ``}`\
+`    ``NULL`\
+`}``)`
 
     ## Class "ChromBackendTest" [in ".GlobalEnv"]
     ## 
@@ -145,7 +174,10 @@ number of rows of the `@chromData` slot matches the length of the
 We can now create an instance of our new class with the
 `ChromBackendTest()` function.
 
-`#' Create an empty instance of ChromBackendTest`` ``be`` ``<-`` ``ChromBackendTest``(``)`` ``be`
+\
+`#' Create an empty instance of ChromBackendTest`\
+`be`` ``<-`` ``ChromBackendTest``(``)`\
+`be`
 
     ## An object of class "ChromBackendTest"
     ## Slot "chromData":
@@ -162,7 +194,13 @@ a more convenient way how general information of our object is
 displayed. Below we add an implementation of the
 [`show()`](https://rdrr.io/r/methods/show.html) method.
 
-`#' implementation of show for ChromBackendTest`` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"show"``, ``"ChromBackendTest"``, ``function``(``object``)`` ``{`` `` ``cd`` ``<-`` ``object``@``chromData`` `` `[`cat`](https://rdrr.io/r/base/cat.html)`(`[`class`](https://rdrr.io/r/base/class.html)`(``object``)``, ``"with"``, `[`nrow`](https://rdrr.io/r/base/nrow.html)`(``cd``)``, ``"chromatograms\n"``)`` ``}``)`` ``be`
+\
+`#' implementation of show for ChromBackendTest`\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"show"``, ``"ChromBackendTest"``, ``function``(``object``)`` ``{`\
+`    ``cd`` ``<-`` ``object``@``chromData`\
+`    `[`cat`](https://rdrr.io/r/base/cat.html)`(`[`class`](https://rdrr.io/r/base/class.html)`(``object``)``, ``"with"``, `[`nrow`](https://rdrr.io/r/base/nrow.html)`(``cd``)``, ``"chromatograms\n"``)`\
+`}``)`\
+`be`
 
     ## ChromBackendTest with 0 chromatograms
 
@@ -187,13 +225,18 @@ our example backend we define a simple
 method that simply returns the column `"dataStorage"` from the
 `@chromData` (as a `character`).
 
-`#' dataStorage method to provide information *where* data is stored`` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"dataStorage"``, ``"ChromBackendTest"``, ``function``(``object``)`` ``{`` `` `[`as.character`](https://rdrr.io/r/base/character.html)`(``object``@``chromData``$``dataStorage``)`` ``}``)`
+\
+`#' dataStorage method to provide information *where* data is stored`\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"dataStorage"``, ``"ChromBackendTest"``, ``function``(``object``)`` ``{`\
+`    `[`as.character`](https://rdrr.io/r/base/character.html)`(``object``@``chromData``$``dataStorage``)`\
+`}``)`
 
 Calling
 [`dataStorage()`](https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html)
 on our example backend will thus return an empty `character` (since the
 object created above does not contain any data).
 
+\
 [`dataStorage`](https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html)`(``be``)`
 
     ## character(0)
@@ -205,7 +248,12 @@ an `integer` of length 1 with the total number of chromatograms that are
 represented by the backend. For our example backend we simply return the
 number of rows of the `data.frame` stored in the `@chromData` slot.
 
-`#' length to provide information on the number of chromatograms`` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"length"``, ``"ChromBackendTest"``, ``function``(``x``)`` ``{`` `` `[`nrow`](https://rdrr.io/r/base/nrow.html)`(``x``@``chromData``)`` ``}``)`` `[`length`](https://rdrr.io/r/base/length.html)`(``be``)`
+\
+`#' length to provide information on the number of chromatograms`\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"length"``, ``"ChromBackendTest"``, ``function``(``x``)`` ``{`\
+`    `[`nrow`](https://rdrr.io/r/base/nrow.html)`(``x``@``chromData``)`\
+`}``)`\
+[`length`](https://rdrr.io/r/base/length.html)`(``be``)`
 
     ## [1] 0
 
@@ -246,7 +294,30 @@ Below we define a
 method that accepts a `data.frame` containing chromatogram variables and
 a `list` with retention time and intensity values for each chromatogram.
 
-`#' backendInitialize method to fill the backend with data.`` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(`` `` ``"backendInitialize"``, ``"ChromBackendTest"``,`` `` ``function``(``object``, ``chromData``, ``peaksData``)`` ``{`` `` ``if`` ``(``!`[`is.data.frame`](https://rdrr.io/r/base/as.data.frame.html)`(``chromData``)``)`` ``{`` `` `[`stop`](https://rdrr.io/r/base/stop.html)`(`` `` ``"'chromData' needs to be a 'data.frame' with the general"``,`` `` ``"chromatogram variables"`` `` ``)`` `` ``}`` `` ``## Defining dataStorage and dataOrigin, if not available`` `` ``if`` ``(`[`is.null`](https://rdrr.io/r/base/NULL.html)`(``chromData``$``dataOrigin``)``)`` ``{`` `` ``chromData``$``dataOrigin`` ``<-`` ``NA_character_`` `` ``}`` `` ``## Validate the provided data`` `` `[`validChromData`](https://rformassspectrometry.github.io/Chromatograms/reference/hidden_aliases.md)`(``chromData``)`` `` `[`validPeaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/hidden_aliases.md)`(``peaksData``)`` `` ``## Fill the object with data`` `` ``object``@``chromData`` ``<-`` ``chromData`` `` ``object``@``peaksData`` ``<-`` ``peaksData`` `` ``object`` `` ``}`` ``)`
+\
+`#' backendInitialize method to fill the backend with data.`\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(`\
+`    ``"backendInitialize"``, ``"ChromBackendTest"``,`\
+`    ``function``(``object``, ``chromData``, ``peaksData``)`` ``{`\
+`        ``if`` ``(``!`[`is.data.frame`](https://rdrr.io/r/base/as.data.frame.html)`(``chromData``)``)`` ``{`\
+`            `[`stop`](https://rdrr.io/r/base/stop.html)`(`\
+`                ``"'chromData' needs to be a 'data.frame' with the general"``,`\
+`                ``"chromatogram variables"`\
+`            ``)`\
+`        ``}`\
+`        ``## Defining dataStorage and dataOrigin, if not available`\
+`        ``if`` ``(`[`is.null`](https://rdrr.io/r/base/NULL.html)`(``chromData``$``dataOrigin``)``)`` ``{`\
+`            ``chromData``$``dataOrigin`` ``<-`` ``NA_character_`\
+`        ``}`\
+`        ``## Validate the provided data`\
+`        `[`validChromData`](https://rformassspectrometry.github.io/Chromatograms/reference/hidden_aliases.md)`(``chromData``)`\
+`        `[`validPeaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/hidden_aliases.md)`(``peaksData``)`\
+`        ``## Fill the object with data`\
+`        ``object``@``chromData`` ``<-`` ``chromData`\
+`        ``object``@``peaksData`` ``<-`` ``peaksData`\
+`        ``object`\
+`    ``}`\
+`)`
 
 In addition to adding the data to object, the function also define the
 `dataOrigin` chromatographic variables. This variable is expected to
@@ -257,7 +328,30 @@ data. We thus first define our MS data and pass this to the
 [`backendInitialize()`](https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html)
 method.
 
-`# A data.frame with chromatogram variables.`` ``cdata`` ``<-`` `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(`` `` msLevel ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``1L``, ``1L``)``,`` `` mz ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``112.2``, ``123.3``)`` ``)`` `` ``# Retention time and intensity values for each chromatogram.`` ``pdata`` ``<-`` `[`list`](https://rdrr.io/r/base/list.html)`(`` `` `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(`` `` rtime ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``12.4``, ``12.8``, ``13.2``, ``14.6``)``,`` `` intensity ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``123.3``, ``153.6``, ``2354.3``, ``243.4``)`` `` ``)``,`` `` `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(`` `` rtime ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``45.1``, ``46.2``)``,`` `` intensity ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``100``, ``80.1``)`` `` ``)`` ``)`` `` ``#' Create and initialize the backend`` ``be`` ``<-`` `[`backendInitialize`](https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html)`(``ChromBackendTest``(``)``,`` `` chromData ``=`` ``cdata``, peaksData ``=`` ``pdata`` ``)`` ``be`
+\
+`# A data.frame with chromatogram variables.`\
+`cdata`` ``<-`` `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(`\
+`    msLevel ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``1L``, ``1L``)``,`\
+`    mz ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``112.2``, ``123.3``)`\
+`)`\
+\
+`# Retention time and intensity values for each chromatogram.`\
+`pdata`` ``<-`` `[`list`](https://rdrr.io/r/base/list.html)`(`\
+`    `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(`\
+`        rtime ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``12.4``, ``12.8``, ``13.2``, ``14.6``)``,`\
+`        intensity ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``123.3``, ``153.6``, ``2354.3``, ``243.4``)`\
+`    ``)``,`\
+`    `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(`\
+`        rtime ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``45.1``, ``46.2``)``,`\
+`        intensity ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``100``, ``80.1``)`\
+`    ``)`\
+`)`\
+\
+`#' Create and initialize the backend`\
+`be`` ``<-`` `[`backendInitialize`](https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html)`(``ChromBackendTest``(``)``,`\
+`    chromData ``=`` ``cdata``, peaksData ``=`` ``pdata`\
+`)`\
+`be`
 
     ## ChromBackendTest with 2 chromatograms
 
@@ -291,7 +385,9 @@ variables* (in the correct data type). These can be listed by the
 [`coreChromVariables()`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
 function:
 
-`#' List core chromatogram variables along with data types.`` `[`coreChromVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)`(``)`
+\
+`#' List core chromatogram variables along with data types.`\
+[`coreChromVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)`(``)`
 
     ##      chromIndex collisionEnergy      dataOrigin         msLevel              mz 
     ##       "integer"       "numeric"     "character"       "integer"       "numeric" 
@@ -314,7 +410,13 @@ class defines additional chromatogram variables, the
 method should be implemented to return the names of these additional
 variables as well.
 
-`#' Accessor for available chromatogram variables`` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"chromVariables"``, ``"ChromBackendTest"``, ``function``(``object``)`` ``{`` `` `[`union`](https://rdrr.io/r/base/sets.html)`(`[`names`](https://rdrr.io/r/base/names.html)`(``object``@``chromData``)``, `[`names`](https://rdrr.io/r/base/names.html)`(`[`coreChromVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)`(``)``)``)`` ``}``)`` `` `[`chromVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
+\
+`#' Accessor for available chromatogram variables`\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"chromVariables"``, ``"ChromBackendTest"``, ``function``(``object``)`` ``{`\
+`    `[`union`](https://rdrr.io/r/base/sets.html)`(`[`names`](https://rdrr.io/r/base/names.html)`(``object``@``chromData``)``, `[`names`](https://rdrr.io/r/base/names.html)`(`[`coreChromVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)`(``)``)``)`\
+`}``)`\
+\
+[`chromVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
 
     ##  [1] "msLevel"         "mz"              "dataOrigin"      "chromIndex"     
     ##  [5] "collisionEnergy" "mzMin"           "mzMax"           "precursorMz"    
@@ -337,13 +439,17 @@ function from the *Chromatograms* package allows to *complete* (fill) a
 provided `data.frame` with eventually missing core chromatogram
 variables:
 
-`#' Get the data.frame with the available chrom variables`` ``be``@``chromData`
+\
+`#' Get the data.frame with the available chrom variables`\
+`be``@``chromData`
 
     ##   msLevel    mz dataOrigin
     ## 1       1 112.2       <NA>
     ## 2       1 123.3       <NA>
 
-`#' Complete this data.frame with missing core variables`` `[`fillCoreChromVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/hidden_aliases.md)`(``be``@``chromData``)`
+\
+`#' Complete this data.frame with missing core variables`\
+[`fillCoreChromVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/hidden_aliases.md)`(``be``@``chromData``)`
 
     ##   msLevel    mz dataOrigin chromIndex collisionEnergy mzMin mzMax precursorMz
     ## 1       1 112.2       <NA>         NA              NA    NA    NA          NA
@@ -356,14 +462,32 @@ We can thus use this function to add eventually missing core
 chromatogram variables in the `chromData` implementation for our
 backend:
 
-`#' function to extract the full chromData`` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(`` `` ``"chromData"``, ``"ChromBackendTest"``,`` `` ``function``(``object``, ``columns`` ``=`` `[`chromVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``)``,`` `` ``drop`` ``=`` ``FALSE``)`` ``{`` `` ``if`` ``(``!`[`any`](https://rdrr.io/r/base/any.html)`(`[`chromVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``)`` `[`%in%`](https://rdrr.io/r/base/match.html)` ``columns``)``)`` ``{`` `` `[`stop`](https://rdrr.io/r/base/stop.html)`(`` `` ``"Some of the requested Chromatogram variables are not "``,`` `` ``"available"`` `` ``)`` `` ``}`` `` ``res`` ``<-`` `[`fillCoreChromVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/hidden_aliases.md)`(``object``@``chromData``)`` `` ``res`` ``<-`` ``res``[``, ``columns``, drop ``=`` ``drop``]`` `` ``res`` `` ``}`` ``)`
+\
+`#' function to extract the full chromData`\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(`\
+`    ``"chromData"``, ``"ChromBackendTest"``,`\
+`    ``function``(``object``, ``columns`` ``=`` `[`chromVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``)``,`\
+`    ``drop`` ``=`` ``FALSE``)`` ``{`\
+`        ``if`` ``(``!`[`any`](https://rdrr.io/r/base/any.html)`(`[`chromVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``)`` `[`%in%`](https://rdrr.io/r/base/match.html)` ``columns``)``)`` ``{`\
+`            `[`stop`](https://rdrr.io/r/base/stop.html)`(`\
+`                ``"Some of the requested Chromatogram variables are not "``,`\
+`                ``"available"`\
+`            ``)`\
+`        ``}`\
+`        ``res`` ``<-`` `[`fillCoreChromVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/hidden_aliases.md)`(``object``@``chromData``)`\
+`        ``res`` ``<-`` ``res``[``, ``columns``, drop ``=`` ``drop``]`\
+`        ``res`\
+`    ``}`\
+`)`
 
 We can now use
 [`chromData()`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
 to either extract the full chromatogram data from the backend, or only
 the data for selected variables.
 
-`#' Extract the full data`` `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
+\
+`#' Extract the full data`\
+[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
 
     ##   msLevel    mz dataOrigin chromIndex collisionEnergy mzMin mzMax precursorMz
     ## 1       1 112.2       <NA>         NA              NA    NA    NA          NA
@@ -372,13 +496,17 @@ the data for selected variables.
     ## 1             NA             NA        NA           NA           NA
     ## 2             NA             NA        NA           NA           NA
 
-`#' Selected variables`` `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``, `[`c`](https://rdrr.io/r/base/c.html)`(``"mz"``, ``"msLevel"``)``)`
+\
+`#' Selected variables`\
+[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``, `[`c`](https://rdrr.io/r/base/c.html)`(``"mz"``, ``"msLevel"``)``)`
 
     ##      mz msLevel
     ## 1 112.2       1
     ## 2 123.3       1
 
-`#' Only missing core chromatograms variables`` `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``, `[`c`](https://rdrr.io/r/base/c.html)`(``"collisionEnergy"``, ``"mzMin"``)``)`
+\
+`#' Only missing core chromatograms variables`\
+[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``, `[`c`](https://rdrr.io/r/base/c.html)`(``"collisionEnergy"``, ``"mzMin"``)``)`
 
     ##   collisionEnergy mzMin
     ## 1              NA    NA
@@ -399,10 +527,14 @@ additional peaks variables, the
 method should be implemented to return the names of these additional
 variables as well.
 
-[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"peaksVariables"``, ``"ChromBackendTest"``, ``function``(``object``)`` ``{`` `` `[`union`](https://rdrr.io/r/base/sets.html)`(`[`names`](https://rdrr.io/r/base/names.html)`(`[`corePeaksVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)`(``)``)``, `[`names`](https://rdrr.io/r/base/names.html)`(``object``@``peaksData``[[``1``]``]``)``)`` ``}``)`
+\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"peaksVariables"``, ``"ChromBackendTest"``, ``function``(``object``)`` ``{`\
+`    `[`union`](https://rdrr.io/r/base/sets.html)`(`[`names`](https://rdrr.io/r/base/names.html)`(`[`corePeaksVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)`(``)``)``, `[`names`](https://rdrr.io/r/base/names.html)`(``object``@``peaksData``[[``1``]``]``)``)`\
+`}``)`
 
 We can now see what peaks variables are present in our object:
 
+\
 [`peaksVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``be``)`
 
     ## [1] "rtime"     "intensity"
@@ -426,6 +558,7 @@ support defining and providing their own variables and each
 [`corePeaksVariables()`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)
 function:
 
+\
 [`corePeaksVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)`(``)`
 
     ##     rtime intensity 
@@ -435,11 +568,24 @@ Below we implement the
 [`peaksData()`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)
 method for our backend.
 
-`#' method to extract the full chromatographic data as list of arrays`` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(`` `` ``"peaksData"``, ``"ChromBackendTest"``,`` `` ``function``(``object``, ``columns`` ``=`` `[`peaksVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``object``)``, ``drop`` ``=`` ``FALSE``)`` ``{`` `` ``if`` ``(``!`[`all`](https://rdrr.io/r/base/all.html)`(``columns`` `[`%in%`](https://rdrr.io/r/base/match.html)` `[`peaksVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``object``)``)``)`` ``{`` `` `[`stop`](https://rdrr.io/r/base/stop.html)`(``"Some of the requested peaks variables are not available"``)`` `` ``}`` `` ``res`` ``<-`` `[`lapply`](https://rdrr.io/r/base/lapply.html)`(``object``@``peaksData``, ``function``(``x``)`` ``x``[``, ``columns``, drop ``=`` ``drop``]``)`` `` ``res`` `` ``}`` ``)`
+\
+`#' method to extract the full chromatographic data as list of arrays`\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(`\
+`    ``"peaksData"``, ``"ChromBackendTest"``,`\
+`    ``function``(``object``, ``columns`` ``=`` `[`peaksVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``object``)``, ``drop`` ``=`` ``FALSE``)`` ``{`\
+`        ``if`` ``(``!`[`all`](https://rdrr.io/r/base/all.html)`(``columns`` `[`%in%`](https://rdrr.io/r/base/match.html)` `[`peaksVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``object``)``)``)`` ``{`\
+`            `[`stop`](https://rdrr.io/r/base/stop.html)`(``"Some of the requested peaks variables are not available"``)`\
+`        ``}`\
+`        ``res`` ``<-`` `[`lapply`](https://rdrr.io/r/base/lapply.html)`(``object``@``peaksData``, ``function``(``x``)`` ``x``[``, ``columns``, drop ``=`` ``drop``]``)`\
+`        ``res`\
+`    ``}`\
+`)`
 
 And with this method we can now extract the peaks data from our backend.
 
-`#' Extract the *peaks* data (i.e. intensity and retention times)`` `[`peaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``be``)`
+\
+`#' Extract the *peaks* data (i.e. intensity and retention times)`\
+[`peaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``be``)`
 
     ## [[1]]
     ##   rtime intensity
@@ -478,11 +624,20 @@ the parameters `j` from the definition of the `[` generic, since we
 treat our data to be one-dimensional (with each chromatogram being one
 element).
 
-`#' Main subset method.`` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"["``, ``"ChromBackendTest"``, ``function``(``x``, ``i``, ``j``, ``...``, ``drop`` ``=`` ``FALSE``)`` ``{`` `` ``i`` ``<-`` ``MsCoreUtils``::`[`i2index`](https://rdrr.io/pkg/MsCoreUtils/man/i2index.html)`(``i``, length ``=`` `[`length`](https://rdrr.io/r/base/length.html)`(``x``)``)`` `` ``x``@``chromData`` ``<-`` ``x``@``chromData``[``i``, ``]`` `` ``x``@``peaksData`` ``<-`` ``x``@``peaksData``[``i``]`` `` ``x`` ``}``)`
+\
+`#' Main subset method.`\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"["``, ``"ChromBackendTest"``, ``function``(``x``, ``i``, ``j``, ``...``, ``drop`` ``=`` ``FALSE``)`` ``{`\
+`    ``i`` ``<-`` ``MsCoreUtils``::`[`i2index`](https://rdrr.io/pkg/MsCoreUtils/man/i2index.html)`(``i``, length ``=`` `[`length`](https://rdrr.io/r/base/length.html)`(``x``)``)`\
+`    ``x``@``chromData`` ``<-`` ``x``@``chromData``[``i``, ``]`\
+`    ``x``@``peaksData`` ``<-`` ``x``@``peaksData``[``i``]`\
+`    ``x`\
+`}``)`
 
 We can now subset our backend to the last two chromatograms.
 
-`a`` ``<-`` ``be``[``1``]`` `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``a``)`
+\
+`a`` ``<-`` ``be``[``1``]`\
+[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``a``)`
 
     ##   msLevel    mz dataOrigin chromIndex collisionEnergy mzMin mzMax precursorMz
     ## 1       1 112.2       <NA>         NA              NA    NA    NA          NA
@@ -491,7 +646,9 @@ We can now subset our backend to the last two chromatograms.
 
 Or extracting the second chromatogram multiple times.
 
-`a`` ``<-`` ``be``[`[`c`](https://rdrr.io/r/base/c.html)`(``1``, ``1``, ``1``)``]`` `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``a``)`
+\
+`a`` ``<-`` ``be``[`[`c`](https://rdrr.io/r/base/c.html)`(``1``, ``1``, ``1``)``]`\
+[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``a``)`
 
     ##     msLevel    mz dataOrigin chromIndex collisionEnergy mzMin mzMax precursorMz
     ## 1         1 112.2       <NA>         NA              NA    NA    NA          NA
@@ -515,22 +672,36 @@ method, but more efficient implementations might be possible as well.
 Also, the `$` method should check if the requested variable is available
 and should throw an error otherwise.
 
-`#' Access a single chromatogram variable`` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"$"``, ``"ChromBackendTest"``, ``function``(``x``, ``name``)`` ``{`` `` ``if`` ``(``name`` `[`%in%`](https://rdrr.io/r/base/match.html)` `[`union`](https://rdrr.io/r/base/sets.html)`(`[`chromVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``x``)``, `[`names`](https://rdrr.io/r/base/names.html)`(`[`coreChromVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)`(``)``)``)``)`` ``{`` `` ``res`` ``<-`` `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``x``, columns ``=`` ``name``, drop ``=`` ``TRUE``)`` `` ``}`` ``else`` ``if`` ``(``name`` `[`%in%`](https://rdrr.io/r/base/match.html)` `[`peaksVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``x``)``)`` ``{`` `` ``res`` ``<-`` `[`peaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``x``, columns ``=`` ``name``, drop ``=`` ``TRUE``)`` `` ``}`` ``else`` ``{`` `` `[`stop`](https://rdrr.io/r/base/stop.html)`(``"The requested variable '"``, ``name``, ``"' is not available"``)`` `` ``}`` `` ``res`` ``}``)`
+\
+`#' Access a single chromatogram variable`\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"$"``, ``"ChromBackendTest"``, ``function``(``x``, ``name``)`` ``{`\
+`    ``if`` ``(``name`` `[`%in%`](https://rdrr.io/r/base/match.html)` `[`union`](https://rdrr.io/r/base/sets.html)`(`[`chromVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``x``)``, `[`names`](https://rdrr.io/r/base/names.html)`(`[`coreChromVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/ChromBackend.md)`(``)``)``)``)`` ``{`\
+`        ``res`` ``<-`` `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``x``, columns ``=`` ``name``, drop ``=`` ``TRUE``)`\
+`    ``}`` ``else`` ``if`` ``(``name`` `[`%in%`](https://rdrr.io/r/base/match.html)` `[`peaksVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``x``)``)`` ``{`\
+`        ``res`` ``<-`` `[`peaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``x``, columns ``=`` ``name``, drop ``=`` ``TRUE``)`\
+`    ``}`` ``else`` ``{`\
+`        `[`stop`](https://rdrr.io/r/base/stop.html)`(``"The requested variable '"``, ``name``, ``"' is not available"``)`\
+`    ``}`\
+`    ``res`\
+`}``)`
 
 With this we can now extract the MS levels
 
+\
 `be``$``msLevel`
 
     ## [1] 1 1
 
 or a core chromatogram variable without values in our example backend.
 
+\
 `be``$``precursorMz`
 
     ## [1] NA NA
 
 or also the intensity values
 
+\
 `be``$``intensity`
 
     ## [[1]]
@@ -552,12 +723,26 @@ function instead of a simple `rbind` (this function joins data frames
 making an union of all available columns filling eventually missing
 columns with `NA`).
 
-`#' Method allowing to join (concatenate) backends`` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"backendMerge"``, ``"ChromBackendTest"``, ``function``(``object``, ``...``)`` ``{`` `` ``res`` ``<-`` ``object`` `` ``object`` ``<-`` `[`unname`](https://rdrr.io/pkg/S4Vectors/man/Vector-class.html)`(`[`c`](https://rdrr.io/r/base/c.html)`(`[`list`](https://rdrr.io/r/base/list.html)`(``object``)``, `[`list`](https://rdrr.io/r/base/list.html)`(``...``)``)``)`` `` ``res``@``peaksData`` ``<-`` `[`do.call`](https://rdrr.io/r/base/do.call.html)`(``c``, `[`lapply`](https://rdrr.io/r/base/lapply.html)`(``object``, ``function``(``z``)`` ``z``@``peaksData``)``)`` `` ``res``@``chromData`` ``<-`` `[`do.call`](https://rdrr.io/r/base/do.call.html)`(`` `` ``MsCoreUtils``::`[`rbindFill`](https://rdrr.io/pkg/MsCoreUtils/man/rbindFill.html)`,`` `` `[`lapply`](https://rdrr.io/r/base/lapply.html)`(``object``, ``function``(``z``)`` ``z``@``chromData``)`` `` ``)`` `` `[`validObject`](https://rdrr.io/r/methods/validObject.html)`(``res``)`` `` ``res`` ``}``)`
+\
+`#' Method allowing to join (concatenate) backends`\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"backendMerge"``, ``"ChromBackendTest"``, ``function``(``object``, ``...``)`` ``{`\
+`    ``res`` ``<-`` ``object`\
+`    ``object`` ``<-`` `[`unname`](https://rdrr.io/pkg/S4Vectors/man/Vector-class.html)`(`[`c`](https://rdrr.io/r/base/c.html)`(`[`list`](https://rdrr.io/r/base/list.html)`(``object``)``, `[`list`](https://rdrr.io/r/base/list.html)`(``...``)``)``)`\
+`    ``res``@``peaksData`` ``<-`` `[`do.call`](https://rdrr.io/r/base/do.call.html)`(``c``, `[`lapply`](https://rdrr.io/r/base/lapply.html)`(``object``, ``function``(``z``)`` ``z``@``peaksData``)``)`\
+`    ``res``@``chromData`` ``<-`` `[`do.call`](https://rdrr.io/r/base/do.call.html)`(`\
+`        ``MsCoreUtils``::`[`rbindFill`](https://rdrr.io/pkg/MsCoreUtils/man/rbindFill.html)`,`\
+`        `[`lapply`](https://rdrr.io/r/base/lapply.html)`(``object``, ``function``(``z``)`` ``z``@``chromData``)`\
+`    ``)`\
+`    `[`validObject`](https://rdrr.io/r/methods/validObject.html)`(``res``)`\
+`    ``res`\
+`}``)`
 
 Testing the function by merging the example backend instance with
 itself.
 
-`a`` ``<-`` `[`backendMerge`](https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html)`(``be``, ``be``[``2``]``, ``be``)`` ``a`
+\
+`a`` ``<-`` `[`backendMerge`](https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html)`(``be``, ``be``[``2``]``, ``be``)`\
+`a`
 
     ## ChromBackendTest with 5 chromatograms
 
@@ -577,11 +762,16 @@ Since we support replacing values we also implement the
 method for our example implementation to return `FALSE` (instead of the
 default `TRUE`).
 
-`#' Default for backends:`` `[`isReadOnly`](https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html)`(``be``)`
+\
+`#' Default for backends:`\
+[`isReadOnly`](https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html)`(``be``)`
 
     ## [1] FALSE
 
-`#' Implementation of isReadOnly for ChromBackendTest`` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"isReadOnly"``, ``"ChromBackendTest"``, ``function``(``object``)`` ``FALSE``)`` `[`isReadOnly`](https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html)`(``be``)`
+\
+`#' Implementation of isReadOnly for ChromBackendTest`\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"isReadOnly"``, ``"ChromBackendTest"``, ``function``(``object``)`` ``FALSE``)`\
+[`isReadOnly`](https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html)`(``be``)`
 
     ## [1] FALSE
 
@@ -598,16 +788,36 @@ one returned by
 While values can be replaced, the number of chromatograms before and
 after a call to `chromData<-` has to be the same.
 
-`#' Replacement method for the full chromatogram data`` `[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"chromData"``, ``"ChromBackendTest"``, ``function``(``object``, ``value``)`` ``{`` `` ``if`` ``(`[`is`](https://rdrr.io/r/methods/is.html)`(``value``, ``"DataFrame"``)``)`` ``{`` `` ``value`` ``<-`` `[`as`](https://rdrr.io/r/methods/as.html)`(``value``, ``"data.frame"``)`` `` ``}`` `` ``if`` ``(``!`[`inherits`](https://rdrr.io/r/base/class.html)`(``value``, ``"data.frame"``)``)`` ``{`` `` `[`stop`](https://rdrr.io/r/base/stop.html)`(``"'value' is expected to be a 'data.frame'"``)`` `` ``}`` `` ``if`` ``(`[`length`](https://rdrr.io/r/base/length.html)`(``object``)`` ``&&`` `[`length`](https://rdrr.io/r/base/length.html)`(``object``)`` ``!=`` `[`nrow`](https://rdrr.io/r/base/nrow.html)`(``value``)``)`` ``{`` `` `[`stop`](https://rdrr.io/r/base/stop.html)`(``"'value' has to be a 'data.frame' with "``, `[`length`](https://rdrr.io/r/base/length.html)`(``object``)``, ``" rows"``)`` `` ``}`` `` `[`validChromData`](https://rformassspectrometry.github.io/Chromatograms/reference/hidden_aliases.md)`(``value``)`` `` ``object``@``chromData`` ``<-`` ``value`` `` ``object`` ``}``)`
+\
+`#' Replacement method for the full chromatogram data`\
+[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"chromData"``, ``"ChromBackendTest"``, ``function``(``object``, ``value``)`` ``{`\
+`    ``if`` ``(`[`is`](https://rdrr.io/r/methods/is.html)`(``value``, ``"DataFrame"``)``)`` ``{`\
+`        ``value`` ``<-`` `[`as`](https://rdrr.io/r/methods/as.html)`(``value``, ``"data.frame"``)`\
+`    ``}`\
+`    ``if`` ``(``!`[`inherits`](https://rdrr.io/r/base/class.html)`(``value``, ``"data.frame"``)``)`` ``{`\
+`        `[`stop`](https://rdrr.io/r/base/stop.html)`(``"'value' is expected to be a 'data.frame'"``)`\
+`    ``}`\
+`    ``if`` ``(`[`length`](https://rdrr.io/r/base/length.html)`(``object``)`` ``&&`` `[`length`](https://rdrr.io/r/base/length.html)`(``object``)`` ``!=`` `[`nrow`](https://rdrr.io/r/base/nrow.html)`(``value``)``)`` ``{`\
+`        `[`stop`](https://rdrr.io/r/base/stop.html)`(``"'value' has to be a 'data.frame' with "``, `[`length`](https://rdrr.io/r/base/length.html)`(``object``)``, ``" rows"``)`\
+`    ``}`\
+`    `[`validChromData`](https://rformassspectrometry.github.io/Chromatograms/reference/hidden_aliases.md)`(``value``)`\
+`    ``object``@``chromData`` ``<-`` ``value`\
+`    ``object`\
+`}``)`
 
 To test this new method we extract the full chromatogram data from our
 example data set, add an additional column (chromatogram variable) and
 use `chromData<-` to replace the data of the backend.
 
-`d`` ``<-`` `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``d``$``new_col`` ``<-`` `[`c`](https://rdrr.io/r/base/c.html)`(``"a"``, ``"b"``)`` `` `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``<-`` ``d`
+\
+`d`` ``<-`` `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`\
+`d``$``new_col`` ``<-`` `[`c`](https://rdrr.io/r/base/c.html)`(``"a"``, ``"b"``)`\
+\
+[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``<-`` ``d`
 
 Check that we have now also the new column available.
 
+\
 `be``$``new_col`
 
     ## [1] "a" "b"
@@ -627,29 +837,64 @@ we use the
 function to ensure that, after replacement, all core chromatogram
 variables have the correct data type.
 
-`#' Replace or add a single chromatogram variable.`` `[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"$"``, ``"ChromBackendTest"``, ``function``(``x``, ``name``, ``value``)`` ``{`` `` ``if`` ``(`[`length`](https://rdrr.io/r/base/length.html)`(``x``)`` ``&&`` `[`length`](https://rdrr.io/r/base/length.html)`(``value``)`` ``!=`` `[`length`](https://rdrr.io/r/base/length.html)`(``x``)``)`` ``{`` `` `[`stop`](https://rdrr.io/r/base/stop.html)`(`` `` ``"length of 'value' needs to match the number of chromatograms "``,`` `` ``"in object."`` `` ``)`` `` ``}`` `` ``if`` ``(``name`` `[`%in%`](https://rdrr.io/r/base/match.html)` `[`peaksVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``x``)``)`` ``{`` `` ``if`` ``(``!`[`is.list`](https://rdrr.io/r/base/list.html)`(``value``)``)`` ``{`` `` `[`stop`](https://rdrr.io/r/base/stop.html)`(``"The value for peaksData should be a list"``)`` `` ``}`` `` ``for`` ``(``i`` ``in`` `[`seq_along`](https://rdrr.io/r/base/seq.html)`(``value``)``)`` ``{`` `` ``x``@``peaksData``[[``i``]``]``[[``name``]``]`` ``<-`` ``value``[[``i``]``]`` `` `[`validPeaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/hidden_aliases.md)`(``x``@``peaksData``)`` `` ``}`` `` ``}`` ``else`` ``{`` `` ``x``@``chromData``[``, ``name``]`` ``<-`` ``value`` `` `[`validChromData`](https://rformassspectrometry.github.io/Chromatograms/reference/hidden_aliases.md)`(``x``@``chromData``)`` `` ``}`` `` ``x`` ``}``)`
+\
+`#' Replace or add a single chromatogram variable.`\
+[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"$"``, ``"ChromBackendTest"``, ``function``(``x``, ``name``, ``value``)`` ``{`\
+`    ``if`` ``(`[`length`](https://rdrr.io/r/base/length.html)`(``x``)`` ``&&`` `[`length`](https://rdrr.io/r/base/length.html)`(``value``)`` ``!=`` `[`length`](https://rdrr.io/r/base/length.html)`(``x``)``)`` ``{`\
+`        `[`stop`](https://rdrr.io/r/base/stop.html)`(`\
+`            ``"length of 'value' needs to match the number of chromatograms "``,`\
+`            ``"in object."`\
+`        ``)`\
+`    ``}`\
+`    ``if`` ``(``name`` `[`%in%`](https://rdrr.io/r/base/match.html)` `[`peaksVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``x``)``)`` ``{`\
+`        ``if`` ``(``!`[`is.list`](https://rdrr.io/r/base/list.html)`(``value``)``)`` ``{`\
+`            `[`stop`](https://rdrr.io/r/base/stop.html)`(``"The value for peaksData should be a list"``)`\
+`        ``}`\
+`        ``for`` ``(``i`` ``in`` `[`seq_along`](https://rdrr.io/r/base/seq.html)`(``value``)``)`` ``{`\
+`            ``x``@``peaksData``[[``i``]``]``[[``name``]``]`` ``<-`` ``value``[[``i``]``]`\
+`            `[`validPeaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/hidden_aliases.md)`(``x``@``peaksData``)`\
+`        ``}`\
+`    ``}`` ``else`` ``{`\
+`        ``x``@``chromData``[``, ``name``]`` ``<-`` ``value`\
+`        `[`validChromData`](https://rformassspectrometry.github.io/Chromatograms/reference/hidden_aliases.md)`(``x``@``chromData``)`\
+`    ``}`\
+`    ``x`\
+`}``)`
 
 We can thus replace an existing chromatogram variable, such as
 `msLevel`:
 
-`#' Values before replacement`` ``be``$``msLevel`
+\
+`#' Values before replacement`\
+`be``$``msLevel`
 
     ## [1] 1 1
 
-`#' Replace MS levels`` ``be``$``msLevel`` ``<-`` `[`c`](https://rdrr.io/r/base/c.html)`(``3L``, ``2L``)`` `` ``#' Values after replacement`` ``be``$``msLevel`
+\
+`#' Replace MS levels`\
+`be``$``msLevel`` ``<-`` `[`c`](https://rdrr.io/r/base/c.html)`(``3L``, ``2L``)`\
+\
+`#' Values after replacement`\
+`be``$``msLevel`
 
     ## [1] 3 2
 
 We can also add a new chromatogram variables:
 
-`#' Add a new chromatogram variable`` ``be``$``name`` ``<-`` `[`c`](https://rdrr.io/r/base/c.html)`(``"A"``, ``"B"``)`` ``be``$``name`
+\
+`#' Add a new chromatogram variable`\
+`be``$``name`` ``<-`` `[`c`](https://rdrr.io/r/base/c.html)`(``"A"``, ``"B"``)`\
+`be``$``name`
 
     ## [1] "A" "B"
 
 Or also replace intensity values. Below we replace the intensity values
 by adding a value of +3 to each.
 
-`#' Replace intensity values`` ``be``$``msLevel3`` ``<-`` ``be``$``msLevel`` ``+`` ``3`` ``be``$``msLevel3`
+\
+`#' Replace intensity values`\
+`be``$``msLevel3`` ``<-`` ``be``$``msLevel`` ``+`` ``3`\
+`be``$``msLevel3`
 
     ## [1] 6 5
 
@@ -663,11 +908,42 @@ is provided at once, this method can (and should) support changing also
 the number of peaks per chromatogram (while the methods like `rtime<-`
 or `$rtime` would not allow).
 
-`#' replacement method for peaks data`` `[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"peaksData"``, ``"ChromBackendTest"``, ``function``(``object``, ``value``)`` ``{`` `` ``if`` ``(``!`[`is.list`](https://rdrr.io/r/base/list.html)`(``value``)``)`` ``{`` `` `[`stop`](https://rdrr.io/r/base/stop.html)`(``"'value' is expected to be a list"``)`` `` ``}`` `` ``if`` ``(`[`length`](https://rdrr.io/r/base/length.html)`(``object``)`` ``&&`` `[`length`](https://rdrr.io/r/base/length.html)`(``object``)`` ``!=`` `[`length`](https://rdrr.io/r/base/length.html)`(``value``)``)`` ``{`` `` `[`stop`](https://rdrr.io/r/base/stop.html)`(``"'value' has to be a list with "``, `[`length`](https://rdrr.io/r/base/length.html)`(``object``)``, ``" elements"``)`` `` ``}`` `` `[`validPeaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/hidden_aliases.md)`(``value``)`` `` ``object``@``peaksData`` ``<-`` ``value`` `` ``object`` ``}``)`
+\
+`#' replacement method for peaks data`\
+[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"peaksData"``, ``"ChromBackendTest"``, ``function``(``object``, ``value``)`` ``{`\
+`    ``if`` ``(``!`[`is.list`](https://rdrr.io/r/base/list.html)`(``value``)``)`` ``{`\
+`        `[`stop`](https://rdrr.io/r/base/stop.html)`(``"'value' is expected to be a list"``)`\
+`    ``}`\
+`    ``if`` ``(`[`length`](https://rdrr.io/r/base/length.html)`(``object``)`` ``&&`` `[`length`](https://rdrr.io/r/base/length.html)`(``object``)`` ``!=`` `[`length`](https://rdrr.io/r/base/length.html)`(``value``)``)`` ``{`\
+`        `[`stop`](https://rdrr.io/r/base/stop.html)`(``"'value' has to be a list with "``, `[`length`](https://rdrr.io/r/base/length.html)`(``object``)``, ``" elements"``)`\
+`    ``}`\
+`    `[`validPeaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/hidden_aliases.md)`(``value``)`\
+`    ``object``@``peaksData`` ``<-`` ``value`\
+`    ``object`\
+`}``)`
 
 With this method we can now replace the peaks data of a backend:
 
-`#' Create a list with peaks matrices; our backend has 3 chromatograms`` ``` #' thus our `list` has to be of length 3 ``` ``tmp`` ``<-`` `[`list`](https://rdrr.io/r/base/list.html)`(`` `` `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(`` `` rtime ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``12.3``, ``14.4``, ``15.4``, ``16.4``)``,`` `` intensity ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``200``, ``312``, ``354.1``, ``232``)`` `` ``)``,`` `` `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(`` `` rtime ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``14.4``)``,`` `` intensity ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``13.4``)`` `` ``)`` ``)`` `` ``be_2`` ``<-`` ``be`` ``#' Assign this peaks data to one of our test backends`` `[`peaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``be_2``)`` ``<-`` ``tmp`` `` ``#' Evaluate that we properly added the peaks data`` `[`peaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``be_2``)`
+\
+`#' Create a list with peaks matrices; our backend has 3 chromatograms`\
+`` #' thus our `list` has to be of length 3 ``\
+`tmp`` ``<-`` `[`list`](https://rdrr.io/r/base/list.html)`(`\
+`    `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(`\
+`        rtime ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``12.3``, ``14.4``, ``15.4``, ``16.4``)``,`\
+`        intensity ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``200``, ``312``, ``354.1``, ``232``)`\
+`    ``)``,`\
+`    `[`data.frame`](https://rdrr.io/r/base/data.frame.html)`(`\
+`        rtime ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``14.4``)``,`\
+`        intensity ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``13.4``)`\
+`    ``)`\
+`)`\
+\
+`be_2`` ``<-`` ``be`\
+`#' Assign this peaks data to one of our test backends`\
+[`peaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``be_2``)`` ``<-`` ``tmp`\
+\
+`#' Evaluate that we properly added the peaks data`\
+[`peaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``be_2``)`
 
     ## [[1]]
     ##   rtime intensity
@@ -704,8 +980,14 @@ for parallel processing. The default implementation returns
 [`factor()`](https://rdrr.io/r/base/factor.html) (i.e. a `factor` of
 length 0) hence not suggesting any specific splitting setup.
 
-`#' Is there a specific way how the object could be best split for`` ``#' parallel processing?`` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"backendParallelFactor"``, ``"ChromBackend"``, ``function``(``object``, ``...``)`` ``{`` `` `[`factor`](https://rdrr.io/r/base/factor.html)`(``)`` ``}``)`
+\
+`#' Is there a specific way how the object could be best split for`\
+`#' parallel processing?`\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"backendParallelFactor"``, ``"ChromBackend"``, ``function``(``object``, ``...``)`` ``{`\
+`    `[`factor`](https://rdrr.io/r/base/factor.html)`(``)`\
+`}``)`
 
+\
 [`backendParallelFactor`](https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html)`(``be``)`
 
     ## factor()
@@ -720,10 +1002,18 @@ variable. As a result, an `integer` of length equal to the number of
 chromatograms in `object` needs to be returned. The default
 implementation is:
 
-`#' get the values for the chromIndex chromatogram variable`` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(`` `` ``"chromIndex"``, ``"ChromBackend"``,`` `` ``function``(``object``, ``columns`` ``=`` `[`chromVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``)``)`` ``{`` `` `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``, columns ``=`` ``"chromIndex"``, drop ``=`` ``TRUE``)`` `` ``}`` ``)`
+\
+`#' get the values for the chromIndex chromatogram variable`\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(`\
+`    ``"chromIndex"``, ``"ChromBackend"``,`\
+`    ``function``(``object``, ``columns`` ``=`` `[`chromVariables`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``)``)`` ``{`\
+`        `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``, columns ``=`` ``"chromIndex"``, drop ``=`` ``TRUE``)`\
+`    ``}`\
+`)`
 
 The result of calling this method on our test backend:
 
+\
 [`chromIndex`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
 
     ## [1] NA NA
@@ -737,10 +1027,15 @@ chromatogram variable. As a result, a `numeric` of length equal to the
 number of chromatograms has to be returned. The default implementation
 is:
 
-`#' get the values for the collisionEnergy chromatogram variable`` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"collisionEnergy"``, ``"ChromBackend"``, ``function``(``object``)`` ``{`` `` `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``, columns ``=`` ``"collisionEnergy"``, drop ``=`` ``TRUE``)`` ``}``)`
+\
+`#' get the values for the collisionEnergy chromatogram variable`\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"collisionEnergy"``, ``"ChromBackend"``, ``function``(``object``)`` ``{`\
+`    `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``, columns ``=`` ``"collisionEnergy"``, drop ``=`` ``TRUE``)`\
+`}``)`
 
 The result of calling this method on our test backend:
 
+\
 [`collisionEnergy`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
 
     ## [1] NA NA
@@ -748,13 +1043,23 @@ The result of calling this method on our test backend:
 The default replacement method for the `collisionEnergy` chromatogram
 variable is:
 
-`#' Default replacement method for collisionEnergy`` `[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(`` `` ``"collisionEnergy"``, ``"ChromBackend"``, ``function``(``object``, ``value``)`` ``{`` `` ``object``$``collisionEnergy`` ``<-`` ``value`` `` ``object`` `` ``}`` ``)`
+\
+`#' Default replacement method for collisionEnergy`\
+[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(`\
+`    ``"collisionEnergy"``, ``"ChromBackend"``, ``function``(``object``, ``value``)`` ``{`\
+`        ``object``$``collisionEnergy`` ``<-`` ``value`\
+`        ``object`\
+`    ``}`\
+`)`
 
 This method thus makes use of the `$<-` replacement method we
 implemented above. To test this function we replace the collision energy
 below.
 
-`#' Replace the collision energy`` `[`collisionEnergy`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``<-`` `[`c`](https://rdrr.io/r/base/c.html)`(``20``, ``30``)`` `[`collisionEnergy`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
+\
+`#' Replace the collision energy`\
+[`collisionEnergy`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``<-`` `[`c`](https://rdrr.io/r/base/c.html)`(``20``, ``30``)`\
+[`collisionEnergy`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
 
     ## [1] 20 30
 
@@ -769,23 +1074,37 @@ of chromatograms). The default implementation for
 [`dataOrigin()`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
 is:
 
-`#' Default implementation to access dataOrigin`` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"dataOrigin"``, ``"ChromBackend"``, ``function``(``object``)`` ``{`` `` `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``, columns ``=`` ``"dataOrigin"``, drop ``=`` ``TRUE``)`` ``}``)`
+\
+`#' Default implementation to access dataOrigin`\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"dataOrigin"``, ``"ChromBackend"``, ``function``(``object``)`` ``{`\
+`    `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``, columns ``=`` ``"dataOrigin"``, drop ``=`` ``TRUE``)`\
+`}``)`
 
 Below we use this method to access the values of the `dataOrigin`
 chromatogram variable.
 
-`#' Access the dataOrigin values`` `[`dataOrigin`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
+\
+`#' Access the dataOrigin values`\
+[`dataOrigin`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
 
     ## [1] NA NA
 
 The default implementation for `dataOrigin<-` uses, like all defaults
 for replacement methods, the `$<-` method:
 
-`` #' Default implementation of the `dataOrigin<-` replacement method ``` `[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"dataOrigin"``, ``"ChromBackend"``, ``function``(``object``, ``value``)`` ``{`` `` ``object``$``dataOrigin`` ``<-`` ``value`` `` ``object`` ``}``)`
+\
+`` #' Default implementation of the `dataOrigin<-` replacement method ``\
+[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"dataOrigin"``, ``"ChromBackend"``, ``function``(``object``, ``value``)`` ``{`\
+`    ``object``$``dataOrigin`` ``<-`` ``value`\
+`    ``object`\
+`}``)`
 
 For our backend we can change the values of the `dataOrigin` variable:
 
-`#' Replace the backend's dataOrigin values`` `[`dataOrigin`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``<-`` `[`rep`](https://rdrr.io/r/base/rep.html)`(``"from somewhere"``, ``2``)`` `[`dataOrigin`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
+\
+`#' Replace the backend's dataOrigin values`\
+[`dataOrigin`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``<-`` `[`rep`](https://rdrr.io/r/base/rep.html)`(``"from somewhere"``, ``2``)`\
+[`dataOrigin`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
 
     ## [1] "from somewhere" "from somewhere"
 
@@ -802,14 +1121,46 @@ the intensity values of each chromatogram, uses the
 [`peaksData()`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)
 method:
 
-`#' Default method to extract intensity values`` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"intensity"``, ``"ChromBackend"``, ``function``(``object``)`` ``{`` `` ``if`` ``(`[`length`](https://rdrr.io/r/base/length.html)`(``object``)``)`` ``{`` `` `[`peaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``object``, column ``=`` ``"intensity"``, drop ``=`` ``TRUE``)`` `` ``}`` ``else`` ``{`` `` `[`list`](https://rdrr.io/r/base/list.html)`(``)`` `` ``}`` ``}``)`
+\
+`#' Default method to extract intensity values`\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"intensity"``, ``"ChromBackend"``, ``function``(``object``)`` ``{`\
+`    ``if`` ``(`[`length`](https://rdrr.io/r/base/length.html)`(``object``)``)`` ``{`\
+`        `[`peaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``object``, column ``=`` ``"intensity"``, drop ``=`` ``TRUE``)`\
+`    ``}`` ``else`` ``{`\
+`        `[`list`](https://rdrr.io/r/base/list.html)`(``)`\
+`    ``}`\
+`}``)`
 
 The default replacement method for intensity values uses the `$<-`
 method:
 
-`#' Default implementation of the replacement method for intensity values`` `[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"intensity"``, ``"ChromBackend"``, ``function``(``object``, ``value``)`` ``{`` `` ``pd`` ``<-`` `[`peaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``object``)`` `` ``if`` ``(``!`[`is.list`](https://rdrr.io/r/base/list.html)`(``value``)`` ``||`` `[`length`](https://rdrr.io/r/base/length.html)`(``pd``)`` ``!=`` `[`length`](https://rdrr.io/r/base/length.html)`(``value``)``)`` ``{`` `` `[`stop`](https://rdrr.io/r/base/stop.html)`(``"'value' should be a list of the same length as 'object'"``)`` `` ``}`` `` ``for`` ``(``i`` ``in`` `[`seq_along`](https://rdrr.io/r/base/seq.html)`(``pd``)``)`` ``{`` `` ``if`` ``(`[`length`](https://rdrr.io/r/base/length.html)`(``value``[[``i``]``]``)`` ``!=`` `[`nrow`](https://rdrr.io/r/base/nrow.html)`(``pd``[[``i``]``]``)``)`` ``{`` `` `[`stop`](https://rdrr.io/r/base/stop.html)`(`[`paste0`](https://rdrr.io/r/base/paste.html)`(`` `` ``"Length of 'value[["``, ``i``, ``"]]' does not match "``,`` `` ``"the number of rows in the intensity of chromatogram: "``,`` `` ``i``, ``"'"`` `` ``)``)`` `` ``}`` `` ``}`` `` `[`peaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``object``)`` ``<-`` `[`lapply`](https://rdrr.io/r/base/lapply.html)`(`[`seq_along`](https://rdrr.io/r/base/seq.html)`(``pd``)``, ``function``(``i``)`` ``{`` `` ``pd``[[``i``]``]``$``intensity`` ``<-`` ``value``[[``i``]``]`` `` `[`return`](https://rdrr.io/r/base/function.html)`(``pd``[[``i``]``]``)`` `` ``}``)`` `` ``object`` ``}``)`
+\
+`#' Default implementation of the replacement method for intensity values`\
+[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"intensity"``, ``"ChromBackend"``, ``function``(``object``, ``value``)`` ``{`\
+`    ``pd`` ``<-`` `[`peaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``object``)`\
+`    ``if`` ``(``!`[`is.list`](https://rdrr.io/r/base/list.html)`(``value``)`` ``||`` `[`length`](https://rdrr.io/r/base/length.html)`(``pd``)`` ``!=`` `[`length`](https://rdrr.io/r/base/length.html)`(``value``)``)`` ``{`\
+`        `[`stop`](https://rdrr.io/r/base/stop.html)`(``"'value' should be a list of the same length as 'object'"``)`\
+`    ``}`\
+`    ``for`` ``(``i`` ``in`` `[`seq_along`](https://rdrr.io/r/base/seq.html)`(``pd``)``)`` ``{`\
+`        ``if`` ``(`[`length`](https://rdrr.io/r/base/length.html)`(``value``[[``i``]``]``)`` ``!=`` `[`nrow`](https://rdrr.io/r/base/nrow.html)`(``pd``[[``i``]``]``)``)`` ``{`\
+`            `[`stop`](https://rdrr.io/r/base/stop.html)`(`[`paste0`](https://rdrr.io/r/base/paste.html)`(`\
+`                ``"Length of 'value[["``, ``i``, ``"]]' does not match "``,`\
+`                ``"the number of rows in the intensity of chromatogram: "``,`\
+`                ``i``, ``"'"`\
+`            ``)``)`\
+`        ``}`\
+`    ``}`\
+`    `[`peaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``object``)`` ``<-`` `[`lapply`](https://rdrr.io/r/base/lapply.html)`(`[`seq_along`](https://rdrr.io/r/base/seq.html)`(``pd``)``, ``function``(``i``)`` ``{`\
+`        ``pd``[[``i``]``]``$``intensity`` ``<-`` ``value``[[``i``]``]`\
+`        `[`return`](https://rdrr.io/r/base/function.html)`(``pd``[[``i``]``]``)`\
+`    ``}``)`\
+`    ``object`\
+`}``)`
 
-`#' Replace intensity values`` `[`intensity`](https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html)`(``be``)``[[``1``]``]`` ``<-`` `[`intensity`](https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html)`(``be``)``[[``1``]``]`` ``+`` ``10`` `[`intensity`](https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html)`(``be``)`
+\
+`#' Replace intensity values`\
+[`intensity`](https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html)`(``be``)``[[``1``]``]`` ``<-`` `[`intensity`](https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html)`(``be``)``[[``1``]``]`` ``+`` ``10`\
+[`intensity`](https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html)`(``be``)`
 
     ## [[1]]
     ## [1]  133.3  163.6 2364.3  253.4
@@ -829,8 +1180,13 @@ otherwise. The default implementation uses the
 further below) that returns for each chromatogram the number of
 available data points (peaks).
 
-`` #' Default implementation for `isEmpty()` ``` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"isEmpty"``, ``"ChromBackend"``, ``function``(``x``)`` ``{`` `` `[`lengths`](https://rdrr.io/r/base/lengths.html)`(``x``)`` ``==`` ``0L`` ``}``)`
+\
+`` #' Default implementation for `isEmpty()` ``\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"isEmpty"``, ``"ChromBackend"``, ``function``(``x``)`` ``{`\
+`    `[`lengths`](https://rdrr.io/r/base/lengths.html)`(``x``)`` ``==`` ``0L`\
+`}``)`
 
+\
 [`isEmpty`](https://rdrr.io/pkg/S4Vectors/man/List-class.html)`(``be``)`
 
     ## [1] FALSE FALSE
@@ -844,11 +1200,16 @@ support updating or replacing data). In such cases, the default
 [`isReadOnly()`](https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html)
 method can be used, which returns always `TRUE`:
 
-`` #' Default implementation of `isReadOnly()` ``` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"isReadOnly"``, ``"ChromBackend"``, ``function``(``object``)`` ``{`` `` ``TRUE`` ``}``)`
+\
+`` #' Default implementation of `isReadOnly()` ``\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"isReadOnly"``, ``"ChromBackend"``, ``function``(``object``)`` ``{`\
+`    ``TRUE`\
+`}``)`
 
 Backends that support changing data values should implement their own
 version (like we did above) to return `FALSE` instead:
 
+\
 [`isReadOnly`](https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html)`(``be``)`
 
     ## [1] FALSE
@@ -860,8 +1221,13 @@ return a single `integer` with the total number of chromatograms
 available through the backend. The default implementation for this
 function is:
 
-`` #' Default implementation for `length()` ``` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"length"``, ``"ChromBackend"``, ``function``(``x``)`` ``{`` `` `[`nrow`](https://rdrr.io/r/base/nrow.html)`(`[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``x``, columns ``=`` ``"dataStorage"``)``)`` ``}``)`
+\
+`` #' Default implementation for `length()` ``\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"length"``, ``"ChromBackend"``, ``function``(``x``)`` ``{`\
+`    `[`nrow`](https://rdrr.io/r/base/nrow.html)`(`[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``x``, columns ``=`` ``"dataStorage"``)``)`\
+`}``)`
 
+\
 [`length`](https://rdrr.io/r/base/length.html)`(``be``)`
 
     ## [1] 2
@@ -876,10 +1242,15 @@ counts. The default implementation uses the
 [`intensity()`](https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html)
 function.
 
-`` #' Default implementation for `lengths()` ``` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"lengths"``, ``"ChromBackend"``, ``function``(``x``)`` ``{`` `` `[`lengths`](https://rdrr.io/r/base/lengths.html)`(`[`intensity`](https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html)`(``x``)``)`` ``}``)`
+\
+`` #' Default implementation for `lengths()` ``\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"lengths"``, ``"ChromBackend"``, ``function``(``x``)`` ``{`\
+`    `[`lengths`](https://rdrr.io/r/base/lengths.html)`(`[`intensity`](https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html)`(``x``)``)`\
+`}``)`
 
 The number of peaks for our test backend:
 
+\
 [`lengths`](https://rdrr.io/r/base/lengths.html)`(``be``)`
 
     ## [1] 4 2
@@ -897,12 +1268,22 @@ chromatograms of the backend and `msLevel<-` should take/accept such a
 vector as input. The default implementations for both methods are shown
 below.
 
-`#' Default methods to get or set MS levels`` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"msLevel"``, ``"ChromBackend"``, ``function``(``object``)`` ``{`` `` `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``, columns ``=`` ``"msLevel"``, drop ``=`` ``TRUE``)`` ``}``)`` `[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"msLevel"``, ``"ChromBackend"``, ``function``(``object``, ``value``)`` ``{`` `` ``object``$``msLevel`` ``<-`` ``value`` `` ``object`` ``}``)`
+\
+`#' Default methods to get or set MS levels`\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"msLevel"``, ``"ChromBackend"``, ``function``(``object``)`` ``{`\
+`    `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``, columns ``=`` ``"msLevel"``, drop ``=`` ``TRUE``)`\
+`}``)`\
+[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"msLevel"``, ``"ChromBackend"``, ``function``(``object``, ``value``)`` ``{`\
+`    ``object``$``msLevel`` ``<-`` ``value`\
+`    ``object`\
+`}``)`
 
 To test these we below replace the MS levels for our test data set and
 extract these values again.
 
-[`msLevel`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``<-`` `[`c`](https://rdrr.io/r/base/c.html)`(``1L``, ``2L``)`` `[`msLevel`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
+\
+[`msLevel`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``<-`` `[`c`](https://rdrr.io/r/base/c.html)`(``1L``, ``2L``)`\
+[`msLevel`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
 
     ## [1] 1 2
 
@@ -916,11 +1297,21 @@ thus, the methods are expected to return or accept a `numeric` vector of
 length equal to the number of chromatograms. The default implementations
 are shown below.
 
-`#' Default implementations to get or set m/z value(s)`` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"mz"``, ``"ChromBackend"``, ``function``(``object``)`` ``{`` `` `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``, columns ``=`` ``"mz"``, drop ``=`` ``TRUE``)`` ``}``)`` `[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"mz"``, ``"ChromBackend"``, ``function``(``object``, ``value``)`` ``{`` `` ``object``$``mz`` ``<-`` ``value`` `` ``object`` ``}``)`
+\
+`#' Default implementations to get or set m/z value(s)`\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"mz"``, ``"ChromBackend"``, ``function``(``object``)`` ``{`\
+`    `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``, columns ``=`` ``"mz"``, drop ``=`` ``TRUE``)`\
+`}``)`\
+[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"mz"``, ``"ChromBackend"``, ``function``(``object``, ``value``)`` ``{`\
+`    ``object``$``mz`` ``<-`` ``value`\
+`    ``object`\
+`}``)`
 
 We below set and extract these *target* m/z values.
 
-[`mz`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``<-`` `[`c`](https://rdrr.io/r/base/c.html)`(``314.3``, ``312.5``)`` `[`mz`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
+\
+[`mz`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``<-`` `[`c`](https://rdrr.io/r/base/c.html)`(``314.3``, ``312.5``)`\
+[`mz`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
 
     ## [1] 314.3 312.5
 
@@ -934,12 +1325,22 @@ thus, the methods are expected to return or accept a `numeric` vector of
 length equal to the number of chromatograms. The default implementations
 are shown below.
 
-`#' Default implementations to get or set upper m/z limits`` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"mzMax"``, ``"ChromBackend"``, ``function``(``object``)`` ``{`` `` `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``, columns ``=`` ``"mzMax"``, drop ``=`` ``TRUE``)`` ``}``)`` `[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"mzMax"``, ``"ChromBackend"``, ``function``(``object``, ``value``)`` ``{`` `` ``object``$``mzMax`` ``<-`` ``value`` `` ``object`` ``}``)`
+\
+`#' Default implementations to get or set upper m/z limits`\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"mzMax"``, ``"ChromBackend"``, ``function``(``object``)`` ``{`\
+`    `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``, columns ``=`` ``"mzMax"``, drop ``=`` ``TRUE``)`\
+`}``)`\
+[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"mzMax"``, ``"ChromBackend"``, ``function``(``object``, ``value``)`` ``{`\
+`    ``object``$``mzMax`` ``<-`` ``value`\
+`    ``object`\
+`}``)`
 
 Testing these functions by replacing the upper m/z boundary with new
 values.
 
-[`mzMax`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``<-`` `[`mz`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``+`` ``0.01`` `[`mzMax`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
+\
+[`mzMax`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``<-`` `[`mz`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``+`` ``0.01`\
+[`mzMax`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
 
     ## [1] 314.31 312.51
 
@@ -953,12 +1354,23 @@ thus, the methods are expected to return or accept a `numeric` vector of
 length equal to the number of chromatograms. The default implementations
 are shown below.
 
-`#' Default methods to get or set the lower m/z boundary`` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"mzMin"``, ``"ChromBackend"``, ``function``(``object``)`` ``{`` `` `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``, columns ``=`` ``"mzMin"``, drop ``=`` ``TRUE``)`` ``}``)`` `` `[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"mzMin"``, ``"ChromBackend"``, ``function``(``object``, ``value``)`` ``{`` `` ``object``$``mzMin`` ``<-`` ``value`` `` ``object`` ``}``)`
+\
+`#' Default methods to get or set the lower m/z boundary`\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"mzMin"``, ``"ChromBackend"``, ``function``(``object``)`` ``{`\
+`    `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``, columns ``=`` ``"mzMin"``, drop ``=`` ``TRUE``)`\
+`}``)`\
+\
+[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"mzMin"``, ``"ChromBackend"``, ``function``(``object``, ``value``)`` ``{`\
+`    ``object``$``mzMin`` ``<-`` ``value`\
+`    ``object`\
+`}``)`
 
 Testing these functions by replacing the lower m/z boundary with new
 values.
 
-[`mzMin`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``<-`` `[`mz`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``-`` ``0.01`` `[`mzMin`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
+\
+[`mzMin`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``<-`` `[`mz`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``-`` ``0.01`\
+[`mzMin`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
 
     ## [1] 314.29 312.49
 
@@ -972,12 +1384,22 @@ as `numeric` (one value per chromatogram) - and if a value is not
 available `NA_real_` should be returned. The default implementations
 are:
 
-`#' Default implementations to get or set the precursorMz chrom variable`` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"precursorMz"``, ``"ChromBackend"``, ``function``(``object``)`` ``{`` `` `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``, columns ``=`` ``"precursorMz"``, drop ``=`` ``TRUE``)`` ``}``)`` `[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"precursorMz"``, ``"ChromBackend"``, ``function``(``object``, ``value``)`` ``{`` `` ``object``$``precursorMz`` ``<-`` ``value`` `` ``object`` ``}``)`
+\
+`#' Default implementations to get or set the precursorMz chrom variable`\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"precursorMz"``, ``"ChromBackend"``, ``function``(``object``)`` ``{`\
+`    `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``, columns ``=`` ``"precursorMz"``, drop ``=`` ``TRUE``)`\
+`}``)`\
+[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"precursorMz"``, ``"ChromBackend"``, ``function``(``object``, ``value``)`` ``{`\
+`    ``object``$``precursorMz`` ``<-`` ``value`\
+`    ``object`\
+`}``)`
 
 Below we set and get the `precursorMz` chromatogram variable for our
 backend.
 
-[`precursorMz`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``<-`` `[`c`](https://rdrr.io/r/base/c.html)`(``NA_real_``, ``123.3``)`` `[`precursorMz`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
+\
+[`precursorMz`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``<-`` `[`c`](https://rdrr.io/r/base/c.html)`(``NA_real_``, ``123.3``)`\
+[`precursorMz`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
 
     ## [1]    NA 123.3
 
@@ -986,12 +1408,22 @@ backend.
 These methods are supposed to allow to get and set the `precursorMzMax`
 chromatogram variable. The default implementations are:
 
-`` #' Default implementations for `precursorMzMax` ``` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"precursorMzMax"``, ``"ChromBackend"``, ``function``(``object``)`` ``{`` `` `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``, columns ``=`` ``"precursorMzMax"``, drop ``=`` ``FALSE``)`` ``}``)`` `[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"precursorMzMax"``, ``"ChromBackend"``, ``function``(``object``, ``value``)`` ``{`` `` ``object``$``precursorMzMax`` ``<-`` ``value`` `` ``object`` ``}``)`
+\
+`` #' Default implementations for `precursorMzMax` ``\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"precursorMzMax"``, ``"ChromBackend"``, ``function``(``object``)`` ``{`\
+`    `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``, columns ``=`` ``"precursorMzMax"``, drop ``=`` ``FALSE``)`\
+`}``)`\
+[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"precursorMzMax"``, ``"ChromBackend"``, ``function``(``object``, ``value``)`` ``{`\
+`    ``object``$``precursorMzMax`` ``<-`` ``value`\
+`    ``object`\
+`}``)`
 
 Below we test these functions by setting and extracting the values for
 this chromatogram variable.
 
-[`precursorMzMax`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``<-`` `[`precursorMz`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``+`` ``0.1`` `[`precursorMzMax`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
+\
+[`precursorMzMax`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``<-`` `[`precursorMz`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``+`` ``0.1`\
+[`precursorMzMax`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
 
     ## [1]    NA 123.4
 
@@ -1000,12 +1432,22 @@ this chromatogram variable.
 These methods are supposed to allow to get and set the `precursorMzMin`
 chromatogram variable. The default implementations are:
 
-`` #' Default implementations for `precursorMzMin` ``` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"precursorMzMin"``, ``"ChromBackend"``, ``function``(``object``)`` ``{`` `` `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``, columns ``=`` ``"precursorMzMin"``, drop ``=`` ``FALSE``)`` ``}``)`` `[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"precursorMzMin"``, ``"ChromBackend"``, ``function``(``object``, ``value``)`` ``{`` `` ``object``$``precursorMzMin`` ``<-`` ``value`` `` ``object`` ``}``)`
+\
+`` #' Default implementations for `precursorMzMin` ``\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"precursorMzMin"``, ``"ChromBackend"``, ``function``(``object``)`` ``{`\
+`    `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``, columns ``=`` ``"precursorMzMin"``, drop ``=`` ``FALSE``)`\
+`}``)`\
+[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"precursorMzMin"``, ``"ChromBackend"``, ``function``(``object``, ``value``)`` ``{`\
+`    ``object``$``precursorMzMin`` ``<-`` ``value`\
+`    ``object`\
+`}``)`
 
 Below we test these functions by setting and extracting the values for
 this chromatogram variable.
 
-[`precursorMzMin`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``<-`` `[`precursorMz`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``-`` ``0.1`` `[`precursorMzMin`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
+\
+[`precursorMzMin`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``<-`` `[`precursorMz`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``-`` ``0.1`\
+[`precursorMzMin`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
 
     ## [1]    NA 123.2
 
@@ -1014,12 +1456,22 @@ this chromatogram variable.
 These methods are supposed to allow to get and set the `productMz`
 chromatogram variable. The default implementations are:
 
-`` #' Default implementations for `productMz` ``` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"productMz"``, ``"ChromBackend"``, ``function``(``object``)`` ``{`` `` `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``, columns ``=`` ``"productMz"``, drop ``=`` ``TRUE``)`` ``}``)`` `[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"productMz"``, ``"ChromBackend"``, ``function``(``object``, ``value``)`` ``{`` `` ``object``$``productMz`` ``<-`` ``value`` `` ``object`` ``}``)`
+\
+`` #' Default implementations for `productMz` ``\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"productMz"``, ``"ChromBackend"``, ``function``(``object``)`` ``{`\
+`    `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``, columns ``=`` ``"productMz"``, drop ``=`` ``TRUE``)`\
+`}``)`\
+[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"productMz"``, ``"ChromBackend"``, ``function``(``object``, ``value``)`` ``{`\
+`    ``object``$``productMz`` ``<-`` ``value`\
+`    ``object`\
+`}``)`
 
 Below we test these functions by setting and extracting the values for
 this chromatogram variable.
 
-[`productMz`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``<-`` `[`c`](https://rdrr.io/r/base/c.html)`(``123.2``, ``NA_real_``)`` `[`productMz`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
+\
+[`productMz`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``<-`` `[`c`](https://rdrr.io/r/base/c.html)`(``123.2``, ``NA_real_``)`\
+[`productMz`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
 
     ## [1] 123.2    NA
 
@@ -1028,12 +1480,22 @@ this chromatogram variable.
 These methods are supposed to allow to get and set the `productMzMax`
 chromatogram variable. The default implementations are:
 
-`` #' Default implementations for `productMzMax` ``` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"productMzMax"``, ``"ChromBackend"``, ``function``(``object``)`` ``{`` `` `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``, columns ``=`` ``"productMzMax"``, drop ``=`` ``FALSE``)`` ``}``)`` `[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"productMzMax"``, ``"ChromBackend"``, ``function``(``object``, ``value``)`` ``{`` `` ``object``$``productMzMax`` ``<-`` ``value`` `` ``object`` ``}``)`
+\
+`` #' Default implementations for `productMzMax` ``\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"productMzMax"``, ``"ChromBackend"``, ``function``(``object``)`` ``{`\
+`    `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``, columns ``=`` ``"productMzMax"``, drop ``=`` ``FALSE``)`\
+`}``)`\
+[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"productMzMax"``, ``"ChromBackend"``, ``function``(``object``, ``value``)`` ``{`\
+`    ``object``$``productMzMax`` ``<-`` ``value`\
+`    ``object`\
+`}``)`
 
 Below we test these functions by setting and extracting the values for
 this chromatogram variable.
 
-[`productMzMax`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``<-`` `[`productMz`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``+`` ``0.02`` `[`productMzMax`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
+\
+[`productMzMax`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``<-`` `[`productMz`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``+`` ``0.02`\
+[`productMzMax`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
 
     ## [1] 123.22     NA
 
@@ -1042,12 +1504,22 @@ this chromatogram variable.
 These methods are supposed to allow to get and set the `productMzMin`
 chromatogram variable. The default implementations are:
 
-`` #' Default implementations for `productMzMin` ``` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"productMzMin"``, ``"ChromBackend"``, ``function``(``object``)`` ``{`` `` `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``, columns ``=`` ``"productMzMin"``, drop ``=`` ``FALSE``)`` ``}``)`` `[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"productMzMin"``, ``"ChromBackend"``, ``function``(``object``, ``value``)`` ``{`` `` ``object``$``productMzMin`` ``<-`` ``value`` `` ``object`` ``}``)`
+\
+`` #' Default implementations for `productMzMin` ``\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"productMzMin"``, ``"ChromBackend"``, ``function``(``object``)`` ``{`\
+`    `[`chromData`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``object``, columns ``=`` ``"productMzMin"``, drop ``=`` ``FALSE``)`\
+`}``)`\
+[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"productMzMin"``, ``"ChromBackend"``, ``function``(``object``, ``value``)`` ``{`\
+`    ``object``$``productMzMin`` ``<-`` ``value`\
+`    ``object`\
+`}``)`
 
 Below we test these functions by setting and extracting the values for
 this chromatogram variable.
 
-[`productMzMin`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``<-`` `[`productMz`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``-`` ``0.2`` `[`productMzMin`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
+\
+[`productMzMin`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``<-`` `[`productMz`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`` ``-`` ``0.2`\
+[`productMzMin`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)`(``be``)`
 
     ## [1] 123  NA
 
@@ -1061,12 +1533,42 @@ intensity values described above they should return or accept a
 time values of one chromatogram. The default implementations of these
 methods are shown below.
 
-`` #' Default methods for `rtime()` and `rtime<-` ``` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"rtime"``, ``"ChromBackend"``, ``function``(``object``)`` ``{`` `` ``if`` ``(`[`length`](https://rdrr.io/r/base/length.html)`(``object``)``)`` ``{`` `` `[`peaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``object``, column ``=`` ``"rtime"``, drop ``=`` ``TRUE``)`` `` ``}`` ``else`` ``{`` `` `[`list`](https://rdrr.io/r/base/list.html)`(``)`` `` ``}`` ``}``)`` `` `[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"rtime"``, ``"ChromBackend"``, ``function``(``object``, ``value``)`` ``{`` `` ``pd`` ``<-`` `[`peaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``object``)`` `` ``if`` ``(``!`[`is.list`](https://rdrr.io/r/base/list.html)`(``value``)`` ``||`` `[`length`](https://rdrr.io/r/base/length.html)`(``pd``)`` ``!=`` `[`length`](https://rdrr.io/r/base/length.html)`(``value``)``)`` ``{`` `` `[`stop`](https://rdrr.io/r/base/stop.html)`(``"'value' should be a list of the same length as 'object'"``)`` `` ``}`` `` ``for`` ``(``i`` ``in`` `[`seq_along`](https://rdrr.io/r/base/seq.html)`(``pd``)``)`` ``{`` `` ``if`` ``(`[`length`](https://rdrr.io/r/base/length.html)`(``value``[[``i``]``]``)`` ``!=`` `[`nrow`](https://rdrr.io/r/base/nrow.html)`(``pd``[[``i``]``]``)``)`` ``{`` `` `[`stop`](https://rdrr.io/r/base/stop.html)`(`[`paste0`](https://rdrr.io/r/base/paste.html)`(`` `` ``"Length of 'value[["``, ``i``, ``"]]' does not match "``,`` `` ``"the number of rows in 'the rtime of chromatogram: "``, ``i``, ``"'"`` `` ``)``)`` `` ``}`` `` ``}`` `` `[`peaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``object``)`` ``<-`` `[`lapply`](https://rdrr.io/r/base/lapply.html)`(`[`seq_along`](https://rdrr.io/r/base/seq.html)`(``pd``)``, ``function``(``i``)`` ``{`` `` ``pd``[[``i``]``]``$``rtime`` ``<-`` ``value``[[``i``]``]`` `` `[`return`](https://rdrr.io/r/base/function.html)`(``pd``[[``i``]``]``)`` `` ``}``)`` `` ``object`` ``}``)`
+\
+`` #' Default methods for `rtime()` and `rtime<-` ``\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"rtime"``, ``"ChromBackend"``, ``function``(``object``)`` ``{`\
+`    ``if`` ``(`[`length`](https://rdrr.io/r/base/length.html)`(``object``)``)`` ``{`\
+`        `[`peaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``object``, column ``=`` ``"rtime"``, drop ``=`` ``TRUE``)`\
+`    ``}`` ``else`` ``{`\
+`        `[`list`](https://rdrr.io/r/base/list.html)`(``)`\
+`    ``}`\
+`}``)`\
+\
+[`setReplaceMethod`](https://rdrr.io/r/methods/GenericFunctions.html)`(``"rtime"``, ``"ChromBackend"``, ``function``(``object``, ``value``)`` ``{`\
+`    ``pd`` ``<-`` `[`peaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``object``)`\
+`    ``if`` ``(``!`[`is.list`](https://rdrr.io/r/base/list.html)`(``value``)`` ``||`` `[`length`](https://rdrr.io/r/base/length.html)`(``pd``)`` ``!=`` `[`length`](https://rdrr.io/r/base/length.html)`(``value``)``)`` ``{`\
+`        `[`stop`](https://rdrr.io/r/base/stop.html)`(``"'value' should be a list of the same length as 'object'"``)`\
+`    ``}`\
+`    ``for`` ``(``i`` ``in`` `[`seq_along`](https://rdrr.io/r/base/seq.html)`(``pd``)``)`` ``{`\
+`        ``if`` ``(`[`length`](https://rdrr.io/r/base/length.html)`(``value``[[``i``]``]``)`` ``!=`` `[`nrow`](https://rdrr.io/r/base/nrow.html)`(``pd``[[``i``]``]``)``)`` ``{`\
+`            `[`stop`](https://rdrr.io/r/base/stop.html)`(`[`paste0`](https://rdrr.io/r/base/paste.html)`(`\
+`                ``"Length of 'value[["``, ``i``, ``"]]' does not match "``,`\
+`                ``"the number of rows in 'the rtime of chromatogram: "``, ``i``, ``"'"`\
+`            ``)``)`\
+`        ``}`\
+`    ``}`\
+`    `[`peaksData`](https://rformassspectrometry.github.io/Chromatograms/reference/peaksData.md)`(``object``)`` ``<-`` `[`lapply`](https://rdrr.io/r/base/lapply.html)`(`[`seq_along`](https://rdrr.io/r/base/seq.html)`(``pd``)``, ``function``(``i``)`` ``{`\
+`        ``pd``[[``i``]``]``$``rtime`` ``<-`` ``value``[[``i``]``]`\
+`        `[`return`](https://rdrr.io/r/base/function.html)`(``pd``[[``i``]``]``)`\
+`    ``}``)`\
+`    ``object`\
+`}``)`
 
 We below test this implementation replacing the retention times of our
 example backend by shifting all values by 2 seconds.
 
-[`rtime`](https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html)`(``be``)``[[``1``]``]`` ``<-`` `[`rtime`](https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html)`(``be``)``[[``1``]``]`` ``+`` ``2`` `[`rtime`](https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html)`(``be``)`
+\
+[`rtime`](https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html)`(``be``)``[[``1``]``]`` ``<-`` `[`rtime`](https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html)`(``be``)``[[``1``]``]`` ``+`` ``2`\
+[`rtime`](https://rdrr.io/pkg/ProtGenerics/man/protgenerics.html)`(``be``)`
 
     ## [[1]]
     ## [1] 14.4 14.8 15.2 16.6
@@ -1083,11 +1585,16 @@ backend. The default implementation uses the default implementation of
 most cases. This function uses the `[` method to subset/split the
 object.
 
-`#' Default method to split a backend`` `[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"split"``, ``"ChromBackend"``, ``function``(``x``, ``f``, ``drop`` ``=`` ``FALSE``, ``...``)`` ``{`` `` `[`split.default`](https://rdrr.io/r/base/split.html)`(``x``, ``f``, drop ``=`` ``drop``, ``...``)`` ``}``)`
+\
+`#' Default method to split a backend`\
+[`setMethod`](https://rdrr.io/r/methods/setMethod.html)`(``"split"``, ``"ChromBackend"``, ``function``(``x``, ``f``, ``drop`` ``=`` ``FALSE``, ``...``)`` ``{`\
+`    `[`split.default`](https://rdrr.io/r/base/split.html)`(``x``, ``f``, drop ``=`` ``drop``, ``...``)`\
+`}``)`
 
 We below test this by splitting the backend into two subsets.
 
-[`split`](https://rdrr.io/r/base/split.html)`(``be``, f ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``1``, ``2``, ``1``)``)`
+\
+[`split`](https://rdrr.io/r/base/split.html)`(``be``, f ``=`` `[`c`](https://rdrr.io/r/base/c.html)`(``1``, ``2``, ``1``)``)`
 
     ## Warning in split.default(x, f, drop = drop, ...): data length is not a multiple
     ## of split variable
@@ -1100,6 +1607,7 @@ We below test this by splitting the backend into two subsets.
 
 ## Session information
 
+\
 [`sessionInfo`](https://rdrr.io/r/utils/sessionInfo.html)`(``)`
 
     ## R version 4.6.1 (2026-06-24)
@@ -1125,22 +1633,27 @@ We below test this by splitting the backend into two subsets.
     ## [1] stats     graphics  grDevices utils     datasets  methods   base     
     ## 
     ## other attached packages:
-    ## [1] Chromatograms_1.3.3 ProtGenerics_1.45.0 BiocParallel_1.47.0
+    ## [1] Chromatograms_1.3.5 ProtGenerics_1.45.0 BiocParallel_1.47.0
     ## [4] BiocStyle_2.41.0   
     ## 
     ## loaded via a namespace (and not attached):
-    ##  [1] jsonlite_2.0.0         compiler_4.6.1         BiocManager_1.30.27   
-    ##  [4] parallel_4.6.1         cluster_2.1.8.3        jquerylib_0.1.4       
-    ##  [7] systemfonts_1.3.2      IRanges_2.47.5         textshaping_1.0.5     
-    ## [10] yaml_2.3.12            fastmap_1.2.0          R6_2.6.1              
-    ## [13] generics_0.1.4         knitr_1.52             BiocGenerics_0.59.12  
-    ## [16] htmlwidgets_1.6.4      MASS_7.3-66            bookdown_0.48         
-    ## [19] desc_1.4.3             Spectra_1.23.4         bslib_0.12.0          
-    ## [22] rlang_1.3.0            cachem_1.1.0           xfun_0.60             
-    ## [25] fs_2.1.0               MsCoreUtils_1.25.4     sass_0.4.10           
-    ## [28] otel_0.2.0             cli_3.6.6              pkgdown_2.2.1.9000    
-    ## [31] digest_0.6.39          MetaboCoreUtils_1.21.1 lifecycle_1.0.5       
-    ## [34] clue_0.3-68            S4Vectors_0.51.9       data.table_1.18.6.1   
-    ## [37] evaluate_1.0.5         codetools_0.2-20       ragg_1.5.2            
-    ## [40] stats4_4.6.1           rmarkdown_2.32         tools_4.6.1           
-    ## [43] htmltools_0.5.9
+    ##  [1] sass_0.4.10            MsCoreUtils_1.25.4     generics_0.1.4        
+    ##  [4] digest_0.6.39          magrittr_2.0.5         evaluate_1.0.5        
+    ##  [7] grid_4.6.1             RColorBrewer_1.1-3     bookdown_0.48         
+    ## [10] fastmap_1.2.0          jsonlite_2.0.0         BiocManager_1.30.27   
+    ## [13] scales_1.4.0           codetools_0.2-20       textshaping_1.0.5     
+    ## [16] jquerylib_0.1.4        cli_3.6.6              rlang_1.3.0           
+    ## [19] cachem_1.1.0           yaml_2.3.12            otel_0.2.0            
+    ## [22] Spectra_1.23.5         tools_4.6.1            parallel_4.6.1        
+    ## [25] dplyr_1.2.1            ggplot2_4.0.3          BiocGenerics_0.59.12  
+    ## [28] vctrs_0.7.3            R6_2.6.1               stats4_4.6.1          
+    ## [31] lifecycle_1.0.5        S4Vectors_0.51.10      fs_2.1.0              
+    ## [34] htmlwidgets_1.6.4      IRanges_2.47.5         clue_0.3-68           
+    ## [37] MASS_7.3-66            ragg_1.5.2             cluster_2.1.8.3       
+    ## [40] pkgconfig_2.0.3        desc_1.4.3             pillar_1.11.1         
+    ## [43] pkgdown_2.2.1.9000     bslib_0.12.0           gtable_0.3.6          
+    ## [46] data.table_1.18.6.1    glue_1.8.1             systemfonts_1.3.2     
+    ## [49] tidyselect_1.2.1       tibble_3.3.1           xfun_0.61             
+    ## [52] knitr_1.52             farver_2.1.2           htmltools_0.5.9       
+    ## [55] rmarkdown_2.32         compiler_4.6.1         S7_0.2.2              
+    ## [58] MetaboCoreUtils_1.21.1

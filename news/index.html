@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">Chromatograms</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -39,19 +39,28 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="1.3" id="version-13">Version 1.3<a class="anchor" aria-label="anchor" href="#version-13"></a></h2>
 <div class="section level3">
-<h3 id="changes-in-1-3">Changes in 1.3.3<a class="anchor" aria-label="anchor" href="#changes-in-1-3"></a></h3>
+<h3 id="change-in-1-3">Change in 1.3.5<a class="anchor" aria-label="anchor" href="#change-in-1-3"></a></h3>
+<ul><li>Add funtions to generate <code>ggplot</code> figures: <code><a href="../reference/hidden_aliases.html">ggplotChromatograms()</a></code> and <code><a href="../reference/hidden_aliases.html">ggplotChromatogramsOverlay()</a></code>.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="changes-in-1-3">Changes in 1.3.4<a class="anchor" aria-label="anchor" href="#changes-in-1-3"></a></h3>
+<ul><li><p>Add package logo.</p></li>
+<li><p>Add citation to the <em>Analytical Chemistry</em> publication.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="changes-in-1-3-1">Changes in 1.3.3<a class="anchor" aria-label="anchor" href="#changes-in-1-3-1"></a></h3>
 <ul><li><p>Major <code>ChromBackendSpectra</code> performance improvements: <code><a href="../reference/Chromatograms.html">chromExtract()</a></code>, <code>Chromatograms(spectra)</code>, <code><a href="../reference/peaksData.html">peaksData()</a></code> and <code>[</code> no longer re-validate the wrapped <code>Spectra</code> on every call (which re-stated every backing file), so they no longer scale with the number of files.</p></li>
 <li><p>Improve performance of <code><a href="../reference/peaksData.html">peaksData()</a></code> for <code>ChromBackendSpectra</code> with overlapping chromatogram windows (e.g. from <code><a href="../reference/Chromatograms.html">chromExtract()</a></code>): each spectrum is aggregated once and shared across the windows it falls in, instead of once per window. Results are unchanged; the speed-up grows with the number of overlapping windows.</p></li>
 <li><p>Improve performance of <code><a href="../reference/peaksData.html">peakBoundary()</a></code>: valleys flanking the apex are located by scanning outwards from it rather than scanning the whole chromatogram. Results are unchanged.</p></li>
 <li><p>Order <code>dataOrigin</code> by first appearance when computing the spectra sort index, consistent with <code><a href="https://rdrr.io/pkg/ProtGenerics/man/backendInitialize.html" class="external-link">backendParallelFactor()</a></code>.</p></li>
 </ul></div>
 <div class="section level3">
-<h3 id="changes-in-1-3-1">Changes in 1.3.2<a class="anchor" aria-label="anchor" href="#changes-in-1-3-1"></a></h3>
+<h3 id="changes-in-1-3-2">Changes in 1.3.2<a class="anchor" aria-label="anchor" href="#changes-in-1-3-2"></a></h3>
 <ul><li>Change <code><a href="../reference/plotChromatograms.html">plotChromatograms()</a></code> and <code><a href="../reference/hidden_aliases.html">plotChromatogramsOverlay()</a></code> to methods.</li>
 <li>Import <code><a href="../reference/peaksData.html">compareChromatograms()</a></code> from <em>ProtGenerics</em>.</li>
 </ul></div>
 <div class="section level3">
-<h3 id="changes-in-1-3-2">Changes in 1.3.1<a class="anchor" aria-label="anchor" href="#changes-in-1-3-2"></a></h3>
+<h3 id="changes-in-1-3-3">Changes in 1.3.1<a class="anchor" aria-label="anchor" href="#changes-in-1-3-3"></a></h3>
 <ul><li><p>Addition of logo and align to BioC 3.23 release.</p></li>
 <li><p>Fix <code>ChromBackendSpectra</code> <code>spectraSortIndex</code> test to shuffle spectra first, avoiding a spurious failure when input data is already sorted.</p></li>
 </ul></div>

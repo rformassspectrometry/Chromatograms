@@ -25,6 +25,10 @@ reset(object, ...)
 
 plotChromatogramsOverlay(object, ...)
 
+ggplotChromatogramsOverlay(object, ...)
+
+ggplotChromatograms(object, ...)
+
 fillCoreChromVariables(x = data.frame())
 
 validChromData(x = data.frame(), error = TRUE)

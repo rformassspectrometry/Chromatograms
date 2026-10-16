@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">Chromatograms</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.3.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -76,7 +76,7 @@ document.addEventListener("DOMContentLoaded", function() {
     if (links[i].hostname != window.location.hostname)
       links[i].target = '_blank';
 });
-</script><p><strong>Package</strong>: Chromatograms 1.3.3 <br><strong>Compiled</strong>: Tue Sep 8 05:44:02 2026</p>
+</script><p><strong>Package</strong>: Chromatograms 1.3.5 <br><strong>Compiled</strong>: Fri Oct 16 10:58:38 2026</p>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
@@ -594,7 +594,7 @@ use this to make all data manipulations on peak data of the
 <span><span class="co">## ... 11 more  chromatogram variables/columns</span></span>
 <span><span class="co">## ... 2 peaksData variables</span></span>
 <span><span class="co">## Processing:</span></span>
-<span><span class="co">##  Applied processing queue with 1 steps [Tue Sep  8 05:44:11 2026]</span></span></code></pre>
+<span><span class="co">##  Applied processing queue with 1 steps [Fri Oct 16 10:58:45 2026]</span></span></code></pre>
 <p>Before <code><a href="https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html" class="external-link">applyProcessing()</a></code> the lazy evaluation queue
 contained 2 processing steps, which were then applied to the peak data
 and <em>written</em> to the data storage. Note that calling
@@ -630,13 +630,13 @@ backend would use chunk-wise processing.</p>
 <div class="sourceCode" id="cb51"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html" class="external-link">processingChunkFactor</a></span><span class="op">(</span><span class="va">chr_mzr</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<pre><code><span><span class="co">## [1] /github/home/.cache/R/ExperimentHub/c6259a5bbc4_10396</span></span>
-<span><span class="co">## [2] /github/home/.cache/R/ExperimentHub/c6259a5bbc4_10396</span></span>
-<span><span class="co">## [3] /github/home/.cache/R/ExperimentHub/c6259a5bbc4_10396</span></span>
-<span><span class="co">## [4] /github/home/.cache/R/ExperimentHub/c6259a5bbc4_10396</span></span>
-<span><span class="co">## [5] /github/home/.cache/R/ExperimentHub/c6259a5bbc4_10396</span></span>
-<span><span class="co">## [6] /github/home/.cache/R/ExperimentHub/c6259a5bbc4_10396</span></span>
-<span><span class="co">## Levels: /github/home/.cache/R/ExperimentHub/c6259a5bbc4_10396</span></span></code></pre>
+<pre><code><span><span class="co">## [1] /github/home/.cache/R/ExperimentHub/d1a4a16142b_10396</span></span>
+<span><span class="co">## [2] /github/home/.cache/R/ExperimentHub/d1a4a16142b_10396</span></span>
+<span><span class="co">## [3] /github/home/.cache/R/ExperimentHub/d1a4a16142b_10396</span></span>
+<span><span class="co">## [4] /github/home/.cache/R/ExperimentHub/d1a4a16142b_10396</span></span>
+<span><span class="co">## [5] /github/home/.cache/R/ExperimentHub/d1a4a16142b_10396</span></span>
+<span><span class="co">## [6] /github/home/.cache/R/ExperimentHub/d1a4a16142b_10396</span></span>
+<span><span class="co">## Levels: /github/home/.cache/R/ExperimentHub/d1a4a16142b_10396</span></span></code></pre>
 <p>Here the factor would on yl be of length 1, meaning that all
 chromatograms will be processed in one go. however the length would be
 higher if more than one file is used. As this data is quite big (138
@@ -690,7 +690,7 @@ change the <code>ChrombackendMzR</code> to an in-memory backend such as
 <span><span class="co">## ... 6 more  chromatogram variables/columns</span></span>
 <span><span class="co">## ... 2 peaksData variables</span></span>
 <span><span class="co">## Processing:</span></span>
-<span><span class="co">##  Switch backend from ChromBackendMzR to ChromBackendMemory [Tue Sep  8 05:44:12 2026]</span></span></code></pre>
+<span><span class="co">##  Switch backend from ChromBackendMzR to ChromBackendMemory [Fri Oct 16 10:58:45 2026]</span></span></code></pre>
 <div class="sourceCode" id="cb59"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">chr_mzr</span><span class="op">@</span><span class="va">backend</span><span class="op">@</span><span class="va">peaksData</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">|&gt;</span> <span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># data is now in memory</span></span></code></pre></div>
 <pre><code><span><span class="co">##          rtime intensity</span></span>
@@ -1139,8 +1139,8 @@ when peak data is actually accessed:</p>
 <span><span class="co">## ... 2 peaksData variables</span></span>
 <span><span class="co">## Lazy evaluation queue: 1 processing step(s)</span></span>
 <span><span class="co">## Processing:</span></span>
-<span><span class="co">##  Switch backend from ChromBackendMzR to ChromBackendMemory [Tue Sep  8 05:44:12 2026]</span></span>
-<span><span class="co">##  Impute: replace missing peaks data using the 'gaussian' method [Tue Sep  8 05:44:14 2026]</span></span></code></pre>
+<span><span class="co">##  Switch backend from ChromBackendMzR to ChromBackendMemory [Fri Oct 16 10:58:45 2026]</span></span>
+<span><span class="co">##  Impute: replace missing peaks data using the 'gaussian' method [Fri Oct 16 10:58:47 2026]</span></span></code></pre>
 <p>The imputation is <strong>not</strong> performed immediately.
 Instead, it’s stored in the processing queue. When you call
 <code><a href="../reference/peaksData.html">peaksData()</a></code> on the object, the raw data is read from the
@@ -1400,38 +1400,38 @@ array with similarities between each chromatogram in <code>x</code>
 <span><span class="co">## </span></span>
 <span><span class="co">## other attached packages:</span></span>
 <span><span class="co">##  [1] pheatmap_1.0.13      RColorBrewer_1.1-3   IRanges_2.47.5      </span></span>
-<span><span class="co">##  [4] Spectra_1.23.4       S4Vectors_0.51.9     BiocGenerics_0.59.12</span></span>
-<span><span class="co">##  [7] generics_0.1.4       MsDataHub_1.13.1     Chromatograms_1.3.3 </span></span>
+<span><span class="co">##  [4] Spectra_1.23.5       S4Vectors_0.51.10    BiocGenerics_0.59.12</span></span>
+<span><span class="co">##  [7] generics_0.1.4       MsDataHub_1.13.3     Chromatograms_1.3.5 </span></span>
 <span><span class="co">## [10] ProtGenerics_1.45.0  BiocParallel_1.47.0  BiocStyle_2.41.0    </span></span>
 <span><span class="co">## </span></span>
 <span><span class="co">## loaded via a namespace (and not attached):</span></span>
-<span><span class="co">##  [1] tidyselect_1.2.1       farver_2.1.2           dplyr_1.2.1           </span></span>
+<span><span class="co">##  [1] tidyselect_1.2.1       dplyr_1.2.1            farver_2.1.2          </span></span>
 <span><span class="co">##  [4] blob_1.3.0             filelock_1.0.3         Biostrings_2.81.9     </span></span>
-<span><span class="co">##  [7] fastmap_1.2.0          BiocFileCache_3.3.0    digest_0.6.39         </span></span>
-<span><span class="co">## [10] lifecycle_1.0.5        cluster_2.1.8.3        KEGGREST_1.53.6       </span></span>
-<span><span class="co">## [13] RSQLite_3.53.3         magrittr_2.0.5         compiler_4.6.1        </span></span>
-<span><span class="co">## [16] rlang_1.3.0            sass_0.4.10            tools_4.6.1           </span></span>
-<span><span class="co">## [19] yaml_2.3.12            data.table_1.18.6.1    knitr_1.52            </span></span>
-<span><span class="co">## [22] htmlwidgets_1.6.4      bit_4.6.0              curl_8.0.0            </span></span>
-<span><span class="co">## [25] withr_3.0.3            purrr_1.2.2            desc_1.4.3            </span></span>
-<span><span class="co">## [28] grid_4.6.1             ExperimentHub_3.3.2    scales_1.4.0          </span></span>
-<span><span class="co">## [31] MASS_7.3-66            cli_3.6.6              mzR_2.47.1            </span></span>
-<span><span class="co">## [34] rmarkdown_2.32         crayon_1.5.3           ragg_1.5.2            </span></span>
-<span><span class="co">## [37] otel_0.2.0             httr_1.4.9             BiocBaseUtils_1.15.1  </span></span>
-<span><span class="co">## [40] ncdf4_1.24             DBI_1.3.0              cachem_1.1.0          </span></span>
-<span><span class="co">## [43] parallel_4.6.1         AnnotationDbi_1.75.2   BiocManager_1.30.27   </span></span>
-<span><span class="co">## [46] XVector_0.53.0         vctrs_0.7.3            jsonlite_2.0.0        </span></span>
-<span><span class="co">## [49] bookdown_0.48          bit64_4.8.6            clue_0.3-68           </span></span>
-<span><span class="co">## [52] systemfonts_1.3.2      jquerylib_0.1.4        glue_1.8.1            </span></span>
-<span><span class="co">## [55] pkgdown_2.2.1.9000     codetools_0.2-20       gtable_0.3.6          </span></span>
-<span><span class="co">## [58] BiocVersion_3.24.0     tibble_3.3.1           pillar_1.11.1         </span></span>
-<span><span class="co">## [61] rappdirs_0.3.4         htmltools_0.5.9        Seqinfo_1.3.2         </span></span>
-<span><span class="co">## [64] R6_2.6.1               dbplyr_2.6.0           httr2_1.3.0           </span></span>
-<span><span class="co">## [67] textshaping_1.0.5      evaluate_1.0.5         Biobase_2.73.2        </span></span>
-<span><span class="co">## [70] AnnotationHub_4.3.2    png_0.1-9              memoise_2.0.1         </span></span>
-<span><span class="co">## [73] bslib_0.12.0           MetaboCoreUtils_1.21.1 Rcpp_1.1.2            </span></span>
-<span><span class="co">## [76] xfun_0.60              MsCoreUtils_1.25.4     fs_2.1.0              </span></span>
-<span><span class="co">## [79] pkgconfig_2.0.3</span></span></code></pre>
+<span><span class="co">##  [7] S7_0.2.2               fastmap_1.2.0          BiocFileCache_3.3.0   </span></span>
+<span><span class="co">## [10] digest_0.6.39          lifecycle_1.0.5        cluster_2.1.8.3       </span></span>
+<span><span class="co">## [13] KEGGREST_1.53.6        RSQLite_3.53.3         magrittr_2.0.5        </span></span>
+<span><span class="co">## [16] compiler_4.6.1         rlang_1.3.0            sass_0.4.10           </span></span>
+<span><span class="co">## [19] tools_4.6.1            yaml_2.3.12            data.table_1.18.6.1   </span></span>
+<span><span class="co">## [22] knitr_1.52             htmlwidgets_1.6.4      bit_4.6.0             </span></span>
+<span><span class="co">## [25] curl_8.1.0             withr_3.0.3            purrr_1.2.2           </span></span>
+<span><span class="co">## [28] desc_1.4.3             grid_4.6.1             ExperimentHub_3.3.2   </span></span>
+<span><span class="co">## [31] ggplot2_4.0.3          scales_1.4.0           MASS_7.3-66           </span></span>
+<span><span class="co">## [34] cli_3.6.6              mzR_2.47.1             rmarkdown_2.32        </span></span>
+<span><span class="co">## [37] crayon_1.5.3           ragg_1.5.2             otel_0.2.0            </span></span>
+<span><span class="co">## [40] httr_1.4.9             BiocBaseUtils_1.15.1   ncdf4_1.24            </span></span>
+<span><span class="co">## [43] DBI_1.3.0              cachem_1.1.0           parallel_4.6.1        </span></span>
+<span><span class="co">## [46] AnnotationDbi_1.75.2   BiocManager_1.30.27    XVector_0.53.0        </span></span>
+<span><span class="co">## [49] vctrs_0.7.3            jsonlite_2.0.0         bookdown_0.48         </span></span>
+<span><span class="co">## [52] bit64_4.8.6            clue_0.3-68            systemfonts_1.3.2     </span></span>
+<span><span class="co">## [55] jquerylib_0.1.4        glue_1.8.1             pkgdown_2.2.1.9000    </span></span>
+<span><span class="co">## [58] codetools_0.2-20       gtable_0.3.6           BiocVersion_3.24.0    </span></span>
+<span><span class="co">## [61] tibble_3.3.1           pillar_1.11.1          rappdirs_0.3.4        </span></span>
+<span><span class="co">## [64] htmltools_0.5.9        Seqinfo_1.3.2          R6_2.6.1              </span></span>
+<span><span class="co">## [67] dbplyr_2.6.0           httr2_1.3.0            textshaping_1.0.5     </span></span>
+<span><span class="co">## [70] evaluate_1.0.5         Biobase_2.73.2         AnnotationHub_4.3.2   </span></span>
+<span><span class="co">## [73] png_0.1-9              memoise_2.0.1          bslib_0.12.0          </span></span>
+<span><span class="co">## [76] MetaboCoreUtils_1.21.1 Rcpp_1.1.2             xfun_0.61             </span></span>
+<span><span class="co">## [79] MsCoreUtils_1.25.4     fs_2.1.0               pkgconfig_2.0.3</span></span></code></pre>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

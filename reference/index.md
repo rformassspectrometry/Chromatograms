@@ -93,6 +93,9 @@
   [`filterEmptyChromatograms(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/Chromatograms.md)
   : The Chromatograms class to manage and access chromatographic data
 
+- [`as.data.frame(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/as.data.frame.Chromatograms.md)
+  : Convert a chromatogram object to a data.frame.
+
 - [`chromData(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
   [`` `chromData<-`( ``*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
   [`chromVariables(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
@@ -149,6 +152,8 @@
 
 - [`plotChromatograms(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/plotChromatograms.md)
   [`plotChromatogramsOverlay(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/plotChromatograms.md)
+  [`ggplotChromatograms(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/plotChromatograms.md)
+  [`ggplotChromatogramsOverlay(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/plotChromatograms.md)
   : Plot chromatograms
 
 - [`applyProcessing(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/processingQueue.md)

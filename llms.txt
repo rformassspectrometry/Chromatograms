@@ -21,6 +21,14 @@ package.
 This package is part of **Bioconductor**:
 <https://bioconductor.org/packages/Chromatograms>.
 
+## 📰 Cite us
+
+Philippine Louail, Laurent Gatto, Sebastian Gibb, Johannes Rainer;
+Chromatograms: A Modular Infrastructure for Scalable Chromatographic
+Data Handling in R. *Anal. Chem.* 29 September 2026; 98
+(38):28337–28344. doi:
+[10.1021/acs.analchem.6c03926](https://doi.org/10.1021/acs.analchem.6c03926)
+
 ## ⚙️ General concept
 
 A `Chromatograms` object is designed to contain multiple chromatographic
@@ -187,6 +195,9 @@ EU Logo
   [`filterEmptyChromatograms(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/Chromatograms.md)
   : The Chromatograms class to manage and access chromatographic data
 
+- [`as.data.frame(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/as.data.frame.Chromatograms.md)
+  : Convert a chromatogram object to a data.frame.
+
 - [`chromData(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
   [`` `chromData<-`( ``*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
   [`chromVariables(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/chromData.md)
@@ -243,6 +254,8 @@ EU Logo
 
 - [`plotChromatograms(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/plotChromatograms.md)
   [`plotChromatogramsOverlay(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/plotChromatograms.md)
+  [`ggplotChromatograms(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/plotChromatograms.md)
+  [`ggplotChromatogramsOverlay(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/plotChromatograms.md)
   : Plot chromatograms
 
 - [`applyProcessing(`*`<Chromatograms>`*`)`](https://rformassspectrometry.github.io/Chromatograms/reference/processingQueue.md)

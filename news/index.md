@@ -2,6 +2,19 @@
 
 ## Version 1.3
 
+### Change in 1.3.5
+
+- Add funtions to generate `ggplot` figures:
+  [`ggplotChromatograms()`](https://rformassspectrometry.github.io/Chromatograms/reference/hidden_aliases.md)
+  and
+  [`ggplotChromatogramsOverlay()`](https://rformassspectrometry.github.io/Chromatograms/reference/hidden_aliases.md).
+
+### Changes in 1.3.4
+
+- Add package logo.
+
+- Add citation to the *Analytical Chemistry* publication.
+
 ### Changes in 1.3.3
 
 - Major `ChromBackendSpectra` performance improvements:

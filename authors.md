@@ -14,13 +14,21 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/RforMassSpectrometry/Chromatograms/blob/main/DESCRIPTION)
+[`inst/CITATION`](https://github.com/RforMassSpectrometry/Chromatograms/blob/main/inst/CITATION)
 
-Rainer J, Gatto L, Louail P (2026). *Chromatograms: Infrastructure for
-Chromatographic Mass Spectrometry Data*. R package version 1.3.3,
-<https://github.com/RforMassSpectrometry/Chromatograms>.
+Louail P, Gatto L, Gibb S and Rainer J. Chromatograms: A Modular
+Infrastructure for Scalable Chromatographic Data Handling in R. Anal.
+Chem. (2026) 98(38):28337-28344. doi: 10.1021/acs.analchem.6c03926
 
-@Manual{, title = {Chromatograms: Infrastructure for Chromatographic
-Mass Spectrometry Data}, author = {Johannes Rainer and Laurent Gatto and
-Philippine Louail}, year = {2026}, note = {R package version 1.3.3}, url
-= {https://github.com/RforMassSpectrometry/Chromatograms}, }
+@Article{,\
+  title = {Chromatograms: A Modular Infrastructure for Scalable Chromatographic Data Handling in R},\
+  author = {Philippine Louail and Laurent Gatto and Sebastian Gibb and Johannes Rainer},\
+  journal = {Analytical Chemistry},\
+  year = {2026},\
+  month = {September},\
+  doi = {10.1021/acs.analchem.6c03926},\
+  url = {https://doi.org/10.1021/acs.analchem.6c03926},\
+  volume = {98},\
+  issue = {38},\
+  pages = {28337-28344},\
+}
