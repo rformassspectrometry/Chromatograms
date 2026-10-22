@@ -1,7 +1,7 @@
 # Using and understanding a Chromatograms object
 
 **Package**: Chromatograms 1.3.5\
-**Compiled**: Fri Oct 16 10:58:38 2026
+**Compiled**: Thu Oct 22 07:42:40 2026
 
 ## Introduction
 
@@ -546,7 +546,7 @@ of the `sps_rep` object persistent.
     ## ... 11 more  chromatogram variables/columns
     ## ... 2 peaksData variables
     ## Processing:
-    ##  Applied processing queue with 1 steps [Fri Oct 16 10:58:45 2026]
+    ##  Applied processing queue with 1 steps [Thu Oct 22 07:42:47 2026]
 
 Before
 [`applyProcessing()`](https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html)
@@ -590,13 +590,13 @@ chunk-wise processing.
 [`processingChunkFactor`](https://rdrr.io/pkg/ProtGenerics/man/processingQueue.html)`(``chr_mzr``)`` ``|>`\
 `  `[`head`](https://rdrr.io/r/utils/head.html)`(``)`
 
-    ## [1] /github/home/.cache/R/ExperimentHub/d1a4a16142b_10396
-    ## [2] /github/home/.cache/R/ExperimentHub/d1a4a16142b_10396
-    ## [3] /github/home/.cache/R/ExperimentHub/d1a4a16142b_10396
-    ## [4] /github/home/.cache/R/ExperimentHub/d1a4a16142b_10396
-    ## [5] /github/home/.cache/R/ExperimentHub/d1a4a16142b_10396
-    ## [6] /github/home/.cache/R/ExperimentHub/d1a4a16142b_10396
-    ## Levels: /github/home/.cache/R/ExperimentHub/d1a4a16142b_10396
+    ## [1] /github/home/.cache/R/ExperimentHub/4c6797b05bb_10396
+    ## [2] /github/home/.cache/R/ExperimentHub/4c6797b05bb_10396
+    ## [3] /github/home/.cache/R/ExperimentHub/4c6797b05bb_10396
+    ## [4] /github/home/.cache/R/ExperimentHub/4c6797b05bb_10396
+    ## [5] /github/home/.cache/R/ExperimentHub/4c6797b05bb_10396
+    ## [6] /github/home/.cache/R/ExperimentHub/4c6797b05bb_10396
+    ## Levels: /github/home/.cache/R/ExperimentHub/4c6797b05bb_10396
 
 Here the factor would on yl be of length 1, meaning that all
 chromatograms will be processed in one go. however the length would be
@@ -657,7 +657,7 @@ to an in-memory backend such as `ChromBackendMemory`.
     ## ... 6 more  chromatogram variables/columns
     ## ... 2 peaksData variables
     ## Processing:
-    ##  Switch backend from ChromBackendMzR to ChromBackendMemory [Fri Oct 16 10:58:45 2026]
+    ##  Switch backend from ChromBackendMzR to ChromBackendMemory [Thu Oct 22 07:42:48 2026]
 
 \
 `chr_mzr``@``backend``@``peaksData``[[``1``]``]`` ``|>`` `[`head`](https://rdrr.io/r/utils/head.html)`(``)`` ``# data is now in memory`
@@ -1135,8 +1135,8 @@ data is actually accessed:
     ## ... 2 peaksData variables
     ## Lazy evaluation queue: 1 processing step(s)
     ## Processing:
-    ##  Switch backend from ChromBackendMzR to ChromBackendMemory [Fri Oct 16 10:58:45 2026]
-    ##  Impute: replace missing peaks data using the 'gaussian' method [Fri Oct 16 10:58:47 2026]
+    ##  Switch backend from ChromBackendMzR to ChromBackendMemory [Thu Oct 22 07:42:48 2026]
+    ##  Impute: replace missing peaks data using the 'gaussian' method [Thu Oct 22 07:42:50 2026]
 
 The imputation is **not** performed immediately. Instead, it’s stored in
 the processing queue. When you call
@@ -1399,7 +1399,7 @@ to each subset:
 
     ## R version 4.6.1 (2026-06-24)
     ## Platform: x86_64-pc-linux-gnu
-    ## Running under: Ubuntu 24.04.4 LTS
+    ## Running under: Ubuntu 24.04.5 LTS
     ## 
     ## Matrix products: default
     ## BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
@@ -1452,5 +1452,5 @@ to each subset:
     ## [67] dbplyr_2.6.0           httr2_1.3.0            textshaping_1.0.5     
     ## [70] evaluate_1.0.5         Biobase_2.73.2         AnnotationHub_4.3.2   
     ## [73] png_0.1-9              memoise_2.0.1          bslib_0.12.0          
-    ## [76] MetaboCoreUtils_1.21.1 Rcpp_1.1.2             xfun_0.61             
+    ## [76] MetaboCoreUtils_1.21.2 Rcpp_1.1.2             xfun_0.62             
     ## [79] MsCoreUtils_1.25.4     fs_2.1.0               pkgconfig_2.0.3

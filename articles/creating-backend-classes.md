@@ -1,7 +1,7 @@
 # Creating new \`ChromBackend\` classes for Chromatograms
 
 **Package**: Chromatograms 1.3.5\
-**Compiled**: Fri Oct 16 10:58:29 2026
+**Compiled**: Thu Oct 22 07:42:32 2026
 
 ## Introduction
 
@@ -1612,7 +1612,7 @@ We below test this by splitting the backend into two subsets.
 
     ## R version 4.6.1 (2026-06-24)
     ## Platform: x86_64-pc-linux-gnu
-    ## Running under: Ubuntu 24.04.4 LTS
+    ## Running under: Ubuntu 24.04.5 LTS
     ## 
     ## Matrix products: default
     ## BLAS:   /usr/lib/x86_64-linux-gnu/openblas-pthread/libblas.so.3 
@@ -1653,7 +1653,7 @@ We below test this by splitting the backend into two subsets.
     ## [40] pkgconfig_2.0.3        desc_1.4.3             pillar_1.11.1         
     ## [43] pkgdown_2.2.1.9000     bslib_0.12.0           gtable_0.3.6          
     ## [46] data.table_1.18.6.1    glue_1.8.1             systemfonts_1.3.2     
-    ## [49] tidyselect_1.2.1       tibble_3.3.1           xfun_0.61             
+    ## [49] tidyselect_1.2.1       tibble_3.3.1           xfun_0.62             
     ## [52] knitr_1.52             farver_2.1.2           htmltools_0.5.9       
     ## [55] rmarkdown_2.32         compiler_4.6.1         S7_0.2.2              
-    ## [58] MetaboCoreUtils_1.21.1
+    ## [58] MetaboCoreUtils_1.21.2

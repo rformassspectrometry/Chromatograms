@@ -16,9 +16,10 @@
 Source:
 [`inst/CITATION`](https://github.com/RforMassSpectrometry/Chromatograms/blob/main/inst/CITATION)
 
-Louail P, Gatto L, Gibb S and Rainer J. Chromatograms: A Modular
-Infrastructure for Scalable Chromatographic Data Handling in R. Anal.
-Chem. (2026) 98(38):28337-28344. doi: 10.1021/acs.analchem.6c03926
+Louail P, Gatto L, Gibb S, Rainer J (2026). “Chromatograms: A Modular
+Infrastructure for Scalable Chromatographic Data Handling in R.”
+*Analytical Chemistry*, **98**(38), 28337–28344.
+[doi:10.1021/acs.analchem.6c03926](https://doi.org/10.1021/acs.analchem.6c03926).
 
 @Article{,\
   title = {Chromatograms: A Modular Infrastructure for Scalable Chromatographic Data Handling in R},\
@@ -26,9 +27,8 @@ Chem. (2026) 98(38):28337-28344. doi: 10.1021/acs.analchem.6c03926
   journal = {Analytical Chemistry},\
   year = {2026},\
   month = {September},\
-  doi = {10.1021/acs.analchem.6c03926},\
-  url = {https://doi.org/10.1021/acs.analchem.6c03926},\
   volume = {98},\
-  issue = {38},\
-  pages = {28337-28344},\
+  number = {38},\
+  pages = {28337--28344},\
+  doi = {10.1021/acs.analchem.6c03926},\
 }
