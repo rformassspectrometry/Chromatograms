@@ -65,6 +65,9 @@
 #' @param interactive `logical(1)` return the interactive ggplot based on
 #'     ggiraph.
 #'
+#' @param hide_index `logical(1)` whether to hide the index of the
+#'     chromatograms in the 3D plot.
+#'
 #' @param ... Additional arguments to be passed to [plot.default()].
 #'
 #' @return These functions create a plot.
@@ -238,4 +241,28 @@ setMethod("ggplotChromatogramsOverlay", "Chromatograms",
               } else {
                   gg
               }
+            })
+
+#' @rdname plotChromatograms
+#'
+#' @exportMethod ggplotChromatograms3D
+setMethod("ggplotChromatograms3D", "Chromatograms",
+          function(object, xlab = "rtime (s)", ylab = "intensity",
+                   xlim = numeric(), ylim = numeric(),
+                   main = paste(length(object), "chromatograms"),
+                   col = "#00000080",
+                   lwd = 1.5, bs = 16, asp = rep(1/30, 2),
+                   hide_index = FALSE, ...) {
+              nsp <- length(object)
+              if (length(col) != nsp)
+                  col <- rep(col[1], nsp)
+              if (!length(xlim))
+                  xlim <- range(unlist(rtime(object)), na.rm = TRUE)
+              if (!length(ylim))
+                  ylim <- c(0, max(unlist(intensity(object)), na.rm = TRUE))
+
+              .plot3D_chromatogram(
+                    object, xlab = xlab, ylab = ylab,
+                    xlim = xlim, ylim = ylim, main = main, col = col,
+                    lwd = lwd, bs = bs, asp = asp, hide_index = hide_index, ...)
             })

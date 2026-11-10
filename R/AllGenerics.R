@@ -74,3 +74,6 @@ setGeneric("ggplotChromatogramsOverlay", function(object, ...)
 #' @rdname hidden_aliases
 setGeneric("ggplotChromatograms", function(object, ...)
     standardGeneric("ggplotChromatograms"))
+#' @rdname hidden_aliases
+setGeneric("ggplotChromatograms3D", function(object, ...)
+    standardGeneric("ggplotChromatograms3D"))

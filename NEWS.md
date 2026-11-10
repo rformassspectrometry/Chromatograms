@@ -1,5 +1,11 @@
 # Version 1.3
 
+## Change in 1.3.6
+
+- Fix index in `as.data.frame.Chromatograms()` matching with `chromIndex`.
+- Add 3D ggplot based on Guillaume Patoine code in
+  `ggplotChromatograms3D()`
+
 ## Change in 1.3.5
 
 - Add funtions to generate `ggplot` figures: `ggplotChromatograms()` and

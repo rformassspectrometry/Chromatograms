@@ -409,6 +409,223 @@
     gg
 }
 
+#' @importFrom stats ave
+#'
+#' @importFrom ggplot2 ggplot aes geom_segment geom_ribbon geom_line geom_text
+#' @importFrom ggplot2 theme_classic scale_y_continuous scale_x_continuous
+#' @importFrom ggplot2 labs coord_cartesian scale_fill_manual
+#' @importFrom ggplot2 scale_color_manual theme element_blank
+#'
+#' @author Gabriele Tomè, Guillaume Patoine
+#'
+#' @noRd
+.plot3D_chromatogram <- function(x, xlab = "rtime (s)", ylab = "intensity",
+        xlim = numeric(), ylim = numeric(),
+        main = paste("m/z", round(mz(x), 1)),
+        col = "#00000080", lwd = 1.5, bs = 16, asp = rep(1/30, 2),
+        hide_index = FALSE, orientation = 1){
+    v <- as.data.frame.Chromatograms(x)
+    v$intensity_orient <- orientation * v[, "intensity"]
+
+    ## Filter the rtime
+    if (length(xlim) == 2)
+        v <- v[v$rtime >= xlim[1] & v$rtime <= xlim[2], ]
+    ## Filter the intensity
+    if (length(ylim) == 2)
+        v <- v[v$intensity_orient >= ylim[1] & v$intensity_orient <= ylim[2], ]
+
+    if (length(asp) == 1)
+        asp <- rep(asp, 2)
+
+    ## Get limits for the 3D perspective
+    limits <- .data_limits_3D(v, asp = asp)
+    ## Shift the chromatograms to get the 3D perspective
+    v <- .shift_chromatograms_3D(v, asp = asp, limits = limits)
+    v$index <- factor(v$index, levels = rev(levels(v$index)))
+    ## Get the grid for the 3D perspective
+    grids <- .grid_3D(v, asp = asp, l = limits)
+
+    ## Data frame with labels position
+    labels_pos <- v[v$rtime == ave(v$rtime, v$index, FUN = max), ]
+
+    gg <- ggplot(v, aes(x = rtime, ymin = ymin, ymax = intensity_orient,
+                    color = index, fill = index)) +
+        geom_segment(data = grids$bg_grid,
+                    aes(x = x1, y = y1, xend = x2, yend = y2),
+                    color = "grey80", linewidth = 0.3, linetype = 2,
+                    inherit.aes = FALSE, na.rm = TRUE) +
+        geom_segment(data = grids$base_grid,
+                    aes(x = x1, y = y1, xend = x2, yend = y2),
+                    color = "grey20", linewidth = 0.5, linetype = 1,
+                    inherit.aes = FALSE, na.rm = TRUE) +
+        geom_ribbon(alpha = 0.35, color = NA, na.rm = TRUE) +
+        geom_line(aes(y = intensity_orient), linewidth = lwd, na.rm = TRUE)
+
+    if (!hide_index)
+        gg <- gg + geom_text(data = labels_pos,
+                aes(y = intensity_orient, label = index), color = "black",
+                hjust = 0, nudge_x = 0.02, size = bs*0.4, lineheight = 0.65,
+                na.rm = TRUE)
+
+    gg <- gg +
+        theme_classic(base_size = bs) +
+        scale_y_continuous(breaks = limits$yticks) +
+        scale_x_continuous(breaks = limits$xticks,
+                            limits = c(NA, limits$xmax)) +
+        labs(x = xlab, y = ylab, title = main) +
+        coord_cartesian(expand = FALSE, clip = "off") +
+        scale_color_manual(values = col) +
+        scale_fill_manual(values = col) +
+        theme(axis.line = element_blank(), axis.ticks = element_blank(),
+            legend.title = element_blank()) +
+        theme(legend.position = "none")
+
+    gg
+
+    # gg <- ggplot(v, ggcube::aes(x = rtime, y = index, z = intensity_orient,
+    #                             group = index, color = index, fill = index)) +
+    #     ggcube::geom_ridgeline_3d(direction = "y", na.rm = TRUE, alpha = 0.4,
+    #                                 base = 0) +
+    #     # ggcube::geom_point_3d(size = cex, shape = pch, na.rm = TRUE) +
+    #     ggcube::coord_3d(pitch = 0, roll = -80, yaw = 15,
+    #             persp = FALSE, expand = TRUE,
+    #             ratio = c(2.5, 1, 1),
+    #             panels = "background",
+    #             light = "none") +
+    #     labs(x = xlab, z = ylab) +
+    #     theme_bw(base_size = bs) +
+    #     ggcube::scale_z_continuous(expand = expansion(mult = c(0, NA)),
+    #                                 limits = c(0, max(v$intensity_orient))) +
+    #     scale_x_continuous(limits = xlim)
+
+    # gg
+}
+
+#' Calculate the limits of the data in the 3D perspective
+#'
+#' @param dat `data.frame` of Chromatograms object
+#' @param asp `numeric` ratio of the y-axis to the x-axis
+#'
+#' @returns `list` with the limits of the data in the 3D perspective
+#'
+#' @author Gabriele Tomè, Guillaume Patoine
+#'
+#' @noRd
+.data_limits_3D <- function(dat, asp = rep(1/3, 2)) {
+    offlab <- levels(dat$index)
+    ## Data limits
+    xlims <- range(dat$rtime)
+    xran <- xlims[2] - xlims[1]
+    xticks <- pretty(xlims, 4)
+    xticks <- xticks[xticks < xlims[2]]
+    interx <- xlims[1] + (length(offlab) + 1) * asp[1] * xran
+
+    ylims <- range(dat$intensity_orient)
+    yran <- ylims[2] - ylims[1]
+    yticks <- pretty(ylims, 4)
+    yticks <- yticks[yticks < ylims[2]]
+    intery <- (length(offlab) + 1) * asp[2] * yran
+
+    ## figure limits (top rigth)
+    xtot <- interx + xran
+    ytot <- intery + yran
+
+    ## expand for labels
+    xmax <- xtot + max(nchar(as.character(offlab))) * xran / 100
+
+    list(
+        xlims = xlims, xran = xran, xticks = xticks, interx = interx,
+        ylims = ylims, yran = yran, yticks = yticks, intery = intery,
+        xtot = xtot, ytot = ytot, xmax = xmax
+    )
+}
+
+#' Build the grid for the 3D plot
+#'
+#' @param dat `data.frame` of Chromatograms object
+#' @param asp `numeric` ratio of the y-axis to the x-axis
+#' @param limits `list` with the limits of the data in the 3D perspective
+#'
+#' @returns `list` with 2 `data.frame`:
+#' - `base_grid`: with the base axis segments,
+#' - `bg_grid`: with the 3D gridlines segments
+#'
+#' @author Gabriele Tomè, Guillaume Patoine
+#'
+#' @noRd
+.grid_3D <- function(dat, asp = rep(1/3, 2),
+                    l = .data_limits_3D(dat, asp)) {
+    offlab <- levels(dat$index)
+    ## Segments representing the axis:
+    ## diagonal (z), horizontal (x), vertical (y)
+    base_grid <- data.frame(
+        x1 = c(l$xlims[1], l$interx, l$interx),
+        x2 = c(l$interx, l$xtot, l$interx),
+        y1 = c(l$ylims[1], l$intery, l$intery),
+        y2 = c(l$intery, l$intery, l$ytot))
+
+    ## interx offset
+    ixo <- l$interx - l$xlims[1]
+    ## 3D gridlines
+    bg_grid <- rbind(
+        ## Lines on diagonal plane
+        data.frame(
+            x1 = l$xticks[-1], x2 = ixo + l$xticks[-1],
+            y1 = base_grid[1,]$y1, y2 = base_grid[1,]$y2
+        ),
+        data.frame(
+            x1 = base_grid[1,]$x1, x2 = base_grid[1,]$x2,
+            y1 = l$yticks[-1], y2 = l$intery + l$yticks[-1]
+        ),
+        ## Lines on horizontal plane
+        data.frame(
+            x1 = l$interx, x2 = l$xtot,
+            y1 = l$intery + l$yticks[-1], y2 = l$intery + l$yticks[-1]
+        ),
+        ## Lines on vertical plane
+        data.frame(
+            x1 = l$xlims[1] + asp[1] * l$xran * seq_len(length(offlab)),
+            x2 = l$xlims[1] + asp[1] * l$xran * seq_len(length(offlab)),
+            y1 = asp[2] * l$yran * seq_len(length(offlab)),
+            y2 = asp[2] * l$yran * seq_len(length(offlab)) + l$yran
+        ),
+        data.frame(
+            x1 = ixo + l$xticks[-1], x2 = ixo + l$xticks[-1],
+            y1 = l$intery, y2 = l$ytot
+        )
+    )
+
+    list(base_grid = base_grid, bg_grid = bg_grid)
+}
+
+#' Shift chromatograms to get the 3D perspective
+#'
+#' @param dat `data.frame` of Chromatograms object
+#' @param asp `numeric` ratio of the y-axis to the x-axis
+#' @param limits `list` with the limits of the data in the 3D perspective
+#'
+#' @returns `data.frame` with shifted chromatograms
+#'
+#' @author Gabriele Tomè, Guillaume Patoine
+#'
+#' @noRd
+.shift_chromatograms_3D <- function(dat, asp = rep(1/3, 2),
+                                    limits = .data_limits_3D(dat, asp)) {
+    ## Shift the rtime and the intensity for each group to match the angle of
+    ## the 3D perspective
+    offlab <- levels(dat$index)
+    idx_offset <- match(dat$index, offlab)
+    ## Filter possible NA values
+    sel <- !is.na(idx_offset)
+
+    dat$rtime[sel] <- dat$rtime[sel] + asp[1] * limits$xran * idx_offset[sel]
+    dat$intensity_orient[sel] <-
+            dat$intensity_orient[sel] + asp[2] * limits$yran * idx_offset[sel]
+    dat$ymin[sel] <- asp[2] * limits$yran * idx_offset[sel]
+
+    dat
+}
+
 #' @title Convert a chromatogram object to a data.frame.
 #'
 #' @description
@@ -442,7 +659,11 @@
 as.data.frame.Chromatograms <- function(x, row.names = NULL, optional = FALSE,
                                         chromVariables = character(), ...) {
     v_l <- peaksData(x)
-    names(v_l) <- seq_along(v_l)
+    if(!length(x) | any(is.na(chromIndex(x))))
+        names(v_l) <- seq_along(v_l)
+    else
+        names(v_l) <- chromIndex(x)
+
     v <- as.data.frame(rbindlist(v_l, idcol = "index"))
     if(length(removed <- setdiff(names(v_l), unique(v$index))))
         warning("Removed empty Chromatograms: ",

@@ -8,6 +8,7 @@
 \alias{plotChromatogramsOverlay}
 \alias{ggplotChromatogramsOverlay}
 \alias{ggplotChromatograms}
+\alias{ggplotChromatograms3D}
 \alias{fillCoreChromVariables}
 \alias{validChromData}
 \alias{validPeaksData}
@@ -64,6 +65,8 @@ plotChromatogramsOverlay(object, ...)
 ggplotChromatogramsOverlay(object, ...)
 
 ggplotChromatograms(object, ...)
+
+ggplotChromatograms3D(object, ...)
 
 fillCoreChromVariables(x = data.frame())
 

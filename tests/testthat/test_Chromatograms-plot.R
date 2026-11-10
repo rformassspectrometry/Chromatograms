@@ -210,3 +210,64 @@ test_that(".ggplot_single_chromatogram works", {
         .ggplot_single_chromatogram(c_full[1], ylim = c(-Inf, Inf))
     )
 })
+
+
+## Test 3D ggplot figures
+test_that("ggplotChromatograms3D works", {
+    vdiffr::expect_doppelganger(
+        "ggplotChromatograms3D-basic",
+        ggplotChromatograms3D(c_full, col = c("red", "blue"))
+    )
+
+    vdiffr::expect_doppelganger(
+        "ggplotChromatograms3D-xlim",
+        ggplotChromatograms3D(c_full, xlim = c(10, 20))
+    )
+
+    vdiffr::expect_doppelganger(
+        "ggplotChromatograms3D-main-title",
+        ggplotChromatograms3D(c_full, main = "3D Test")
+    )
+
+    vdiffr::expect_doppelganger(
+        "ggplotChromatograms3D-one-sample",
+        ggplotChromatograms3D(c_full[1], col = c("red"))
+    )
+
+    vdiffr::expect_doppelganger(
+        "ggplotChromatograms3D-asp",
+        ggplotChromatograms3D(c_full, asp = 0.05)
+    )
+
+    vdiffr::expect_doppelganger(
+        "ggplotChromatograms3D-hide-index",
+        ggplotChromatograms3D(c_full, hide_index = TRUE)
+    )
+})
+
+test_that(".plot3D_chromatogram works", {
+    vdiffr::expect_doppelganger(
+        "plot3D_chromatogram-basic",
+        .plot3D_chromatogram(c_full[1])
+    )
+
+    vdiffr::expect_doppelganger(
+        "plot3D_chromatogram-xlim",
+        .plot3D_chromatogram(c_full[1], xlim = c(10, 50), ylim = c(0, 3000))
+    )
+
+    vdiffr::expect_doppelganger(
+        "plot3D_chromatogram-color",
+        .plot3D_chromatogram(c_full[1], col = "purple")
+    )
+
+    vdiffr::expect_doppelganger(
+        "plot3D_chromatogram-infinite-xlim",
+        .plot3D_chromatogram(c_full[1], xlim = c(-Inf, Inf))
+    )
+
+    vdiffr::expect_doppelganger(
+        "plot3D_chromatogram-infinite-ylim",
+        .plot3D_chromatogram(c_full[1], ylim = c(-Inf, Inf))
+    )
+})
