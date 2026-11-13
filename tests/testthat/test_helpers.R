@@ -1725,4 +1725,146 @@ test_that("as.data.frame.Chromatograms works", {
     ## empty chromatogram
     expect_warning(as.data.frame.Chromatograms(be_empty),
                     "Removed empty Chromatograms: 1")
+
+    ## Get ChromIndex as index (if available)
+    res_4 <- as.data.frame(c_mzr[2:4])
+    expect_equal(levels(res_4$index), c("2", "3", "4"))
+})
+
+
+test_that(".data_limits_3D works", {
+    v <- as.data.frame.Chromatograms(c_full)
+    v$intensity_orient <- 1 * v[, "intensity"]
+
+    l <- .data_limits_3D(v)
+    expect_equal(l$xlims, c(12.4, 46.2))
+    expect_equal(l$xran, 33.8)
+    expect_equal(l$xticks, c(10, 20, 30, 40))
+    expect_equal(l$interx, 57.46667, tolerance = 1e-6)
+    expect_equal(l$ylims, c(80.1, 2354.3))
+    expect_equal(l$yran, 2274.2)
+    expect_equal(l$yticks, c(0, 500, 1000, 1500, 2000))
+    expect_equal(l$intery, 3032.267, tolerance = 1e-6)
+    expect_equal(l$xtot, 91.26667, tolerance = 1e-6)
+    expect_equal(l$ytot, 5306.467, tolerance = 1e-6)
+    expect_equal(l$xmax, 91.60467, tolerance = 1e-6)
+
+    l_2 <- .data_limits_3D(v, asp = rep(0.01, 2))
+    expect_equal(l_2$interx, 13.752, tolerance = 1e-6)
+    expect_equal(l_2$intery, 90.968, tolerance = 1e-6)
+    expect_equal(l_2$xtot, 47.552, tolerance = 1e-6)
+    expect_equal(l_2$ytot, 2365.168, tolerance = 1e-6)
+    expect_equal(l_2$xmax, 47.89, tolerance = 1e-6)
+})
+
+test_that(".grid_3D works", {
+    v <- as.data.frame.Chromatograms(c_full)
+    v$intensity_orient <- 1 * v[, "intensity"]
+
+    grids <- .grid_3D(v)
+    expect_true(is.data.frame(grids$base_grid))
+    expect_true(is.data.frame(grids$bg_grid))
+    expect_equal(grids$base_grid,
+                    data.frame(
+                        x1 = c(12.4, 57.46667, 57.46667),
+                        x2 = c(57.46667, 91.26667, 57.46667),
+                        y1 = c(80.1, 3032.267, 3032.267),
+                        y2 = c(3032.267, 3032.267, 5306.467)
+                    ),
+                    tolerance = 1e-6)
+    expect_equal(grids$bg_grid,
+                    data.frame(
+                        x1 = c(20, 30, 40,
+                            12.4, 12.4, 12.4, 12.4,
+                            57.46667, 57.46667, 57.46667, 57.46667,
+                            23.66667, 34.93333, 46.2,
+                            65.06667, 75.06667, 85.06667),
+                        x2 = c(65.06667, 75.06667, 85.06667,
+                            57.46667, 57.46667, 57.46667, 57.46667,
+                            91.26667, 91.26667, 91.26667, 91.26667,
+                            23.66667, 34.93333, 46.2,
+                            65.06667, 75.06667, 85.06667),
+                        y1 = c(80.1, 80.1, 80.1,
+                            500, 1000, 1500, 2000,
+                            3532.2667, 4032.2667, 4532.2667, 5032.2667,
+                            758.0667, 1516.1333, 2274.2,
+                            3032.2667, 3032.2667, 3032.2667),
+                        y2 = c(3032.267, 3032.267, 3032.267,
+                            3532.267, 4032.267, 4532.267, 5032.267,
+                            3532.267, 4032.267, 4532.267, 5032.267,
+                            3032.267, 3790.333, 4548.4,
+                            5306.467, 5306.467, 5306.467)
+                    ), tolerance = 1e-6)
+
+    grids_2 <- .grid_3D(v, asp = rep(0.01, 2))
+    expect_true(is.data.frame(grids_2$base_grid))
+    expect_true(is.data.frame(grids_2$bg_grid))
+    expect_equal(grids_2$base_grid,
+                    data.frame(
+                        x1 = c(12.400, 13.752, 13.752),
+                        x2 = c(13.752, 47.552, 13.752),
+                        y1 = c(80.100, 90.968, 90.968),
+                        y2 = c(90.968, 90.968, 2365.168)
+                    ),
+                    tolerance = 1e-6)
+    expect_equal(grids_2$bg_grid,
+                    data.frame(
+                        x1 = c(20, 30, 40,
+                            12.4, 12.4, 12.4, 12.4,
+                            13.752, 13.752, 13.752, 13.752,
+                            12.738, 13.076, 13.414,
+                            21.352, 31.352, 41.352),
+                        x2 = c(21.352, 31.352, 41.352,
+                            13.752, 13.752, 13.752, 13.752,
+                            47.552, 47.552, 47.552, 47.552,
+                            12.738, 13.076, 13.414,
+                            21.352, 31.352, 41.352),
+                        y1 = c(80.1, 80.1, 80.1,
+                            500, 1000, 1500, 2000,
+                            590.968, 1090.968, 1590.968, 2090.968,
+                            22.742, 45.484, 68.226,
+                            90.968, 90.968, 90.968),
+                        y2 = c(90.968, 90.968, 90.968,
+                            590.968, 1090.968, 1590.968, 2090.968,
+                            590.968, 1090.968, 1590.968, 2090.968,
+                            2296.942, 2319.684, 2342.426,
+                            2365.168, 2365.168, 2365.168)
+                    ), tolerance = 1e-6)
+
+})
+
+test_that(".shift_chromatograms_3D works", {
+    v <- as.data.frame.Chromatograms(c_full)
+    v$intensity_orient <- 1 * v[, "intensity"]
+
+    v_shifted <- .shift_chromatograms_3D(v)
+    expect_equal(names(v_shifted), c("index", "rtime", "intensity",
+                                     "intensity_orient", "ymin"))
+    expect_equal(v$index, v_shifted$index)
+    expect_all_false(v$rtime == v_shifted$rtime)
+    expect_equal(v_shifted$rtime,
+                    c(23.66667, 24.06667, 24.46667, 25.86667, 67.63333,
+                      68.73333, 46.2, 46.6, 47, 48.4),
+                tolerance = 1e-6)
+    expect_all_false(v$intensity_orient == v_shifted$intensity_orient)
+    expect_equal(v_shifted$intensity_orient,
+                c(881.3667, 911.6667, 3112.3667, 1001.4667, 1616.1333,
+                  1596.2333, 2397.5, 2427.8, 4628.5, 2517.6),
+                tolerance = 1e-6)
+
+    v_shifted_2 <- .shift_chromatograms_3D(v, asp = rep(0.01, 2))
+    expect_equal(names(v_shifted_2), c("index", "rtime", "intensity",
+                                     "intensity_orient", "ymin"))
+    expect_equal(v$index, v_shifted_2$index)
+    expect_all_false(v$rtime == v_shifted_2$rtime)
+    expect_equal(v_shifted_2$rtime,
+                    c(12.738, 13.138, 13.538, 14.938, 45.776, 46.876,
+                      13.414, 13.814, 14.214, 15.614),
+                tolerance = 1e-6)
+    expect_all_false(v$intensity_orient == v_shifted_2$intensity_orient)
+    expect_equal(v_shifted_2$intensity_orient,
+                c(146.042, 176.342, 2377.042, 266.142, 145.484,
+                  125.584, 191.526, 221.826, 2422.526, 311.626),
+                tolerance = 1e-6)
+
 })

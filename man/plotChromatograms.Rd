@@ -6,6 +6,7 @@
 \alias{plotChromatogramsOverlay,Chromatograms-method}
 \alias{ggplotChromatograms,Chromatograms-method}
 \alias{ggplotChromatogramsOverlay,Chromatograms-method}
+\alias{ggplotChromatograms3D,Chromatograms-method}
 \title{Plot chromatograms}
 \usage{
 \S4method{plotChromatograms}{Chromatograms}(
@@ -76,6 +77,22 @@
   frame.plot = axes,
   ...
 )
+
+\S4method{ggplotChromatograms3D}{Chromatograms}(
+  object,
+  z = c("index", "mz"),
+  xlab = "rtime (s)",
+  ylab = "intensity",
+  xlim = numeric(),
+  ylim = numeric(),
+  main = paste(length(object), "chromatograms"),
+  col = "#00000080",
+  lwd = 1.5,
+  bs = 16,
+  asp = rep(1/30, 2),
+  hide_index = FALSE,
+  ...
+)
 }
 \arguments{
 \item{object}{A \link{Chromatograms} object.}
@@ -126,6 +143,14 @@ plotting area.}
 
 \item{interactive}{\code{logical(1)} return the interactive ggplot based on
 ggiraph.}
+
+\item{z}{for \code{ggplotChromatograms3D()} \code{character(1)} defining the variable
+to be used for the z-axis in the 3D plot. Can be either \code{"index"} (the
+index of the chromatograms) or \code{"mz"} (the m/z values of the
+chromatograms). Defaults to \code{"index"}.}
+
+\item{hide_index}{for \code{ggplotChromatograms3D()} \code{logical(1)} whether to hide
+the index of the chromatograms in the 3D plot.}
 }
 \value{
 These functions create a plot.

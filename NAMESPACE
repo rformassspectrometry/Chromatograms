@@ -60,6 +60,7 @@ exportMethods(filterChromData)
 exportMethods(filterEmptyChromatograms)
 exportMethods(filterPeaksData)
 exportMethods(ggplotChromatograms)
+exportMethods(ggplotChromatograms3D)
 exportMethods(ggplotChromatogramsOverlay)
 exportMethods(imputePeaksData)
 exportMethods(intensity)
@@ -122,18 +123,25 @@ importFrom(data.table,rbindlist)
 importFrom(ggplot2,
   aes,
   as_labeller,
+  coord_cartesian,
   element_blank,
   expand_limits,
   facet_wrap,
   geom_line,
   geom_point,
+  geom_ribbon,
+  geom_segment,
+  geom_text,
   ggplot,
   ggtitle,
   labs,
   scale_color_manual,
+  scale_fill_manual,
+  scale_x_continuous,
   scale_y_continuous,
   theme,
   theme_bw,
+  theme_classic,
   xlim,
   ylim
 )
@@ -164,6 +172,7 @@ importFrom(methods,
 )
 importFrom(stats,
   approx,
+  ave,
   cor,
   dnorm,
   filter,
