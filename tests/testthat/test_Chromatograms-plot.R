@@ -243,6 +243,18 @@ test_that("ggplotChromatograms3D works", {
         "ggplotChromatograms3D-hide-index",
         ggplotChromatograms3D(c_full, hide_index = TRUE)
     )
+
+    vdiffr::expect_doppelganger(
+        "ggplotChromatograms3D-mz",
+        ggplotChromatograms3D(c_full, z = "mz")
+    )
+
+    expect_warning(
+        vdiffr::expect_doppelganger(
+            "ggplotChromatograms3D-mz-warning",
+            ggplotChromatograms3D(c_sp, z = "mz")
+        ),
+        "Chromatograms object contains invalid m/z values")
 })
 
 test_that(".plot3D_chromatogram works", {

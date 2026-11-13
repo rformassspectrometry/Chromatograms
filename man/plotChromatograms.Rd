@@ -80,6 +80,7 @@
 
 \S4method{ggplotChromatograms3D}{Chromatograms}(
   object,
+  z = c("index", "mz"),
   xlab = "rtime (s)",
   ylab = "intensity",
   xlim = numeric(),
@@ -143,8 +144,13 @@ plotting area.}
 \item{interactive}{\code{logical(1)} return the interactive ggplot based on
 ggiraph.}
 
-\item{hide_index}{\code{logical(1)} whether to hide the index of the
-chromatograms in the 3D plot.}
+\item{z}{for \code{ggplotChromatograms3D()} \code{character(1)} defining the variable
+to be used for the z-axis in the 3D plot. Can be either \code{"index"} (the
+index of the chromatograms) or \code{"mz"} (the m/z values of the
+chromatograms). Defaults to \code{"index"}.}
+
+\item{hide_index}{for \code{ggplotChromatograms3D()} \code{logical(1)} whether to hide
+the index of the chromatograms in the 3D plot.}
 }
 \value{
 These functions create a plot.

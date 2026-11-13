@@ -419,12 +419,18 @@
 #' @author Gabriele Tomè, Guillaume Patoine
 #'
 #' @noRd
-.plot3D_chromatogram <- function(x, xlab = "rtime (s)", ylab = "intensity",
+.plot3D_chromatogram <- function(x, z = "index",
+        xlab = "rtime (s)", ylab = "intensity",
         xlim = numeric(), ylim = numeric(),
         main = paste("m/z", round(mz(x), 1)),
         col = "#00000080", lwd = 1.5, bs = 16, asp = rep(1/30, 2),
         hide_index = FALSE, orientation = 1){
-    v <- as.data.frame.Chromatograms(x)
+    if (z == "mz") {
+        v <- as.data.frame.Chromatograms(x, chromVariables = "mz")
+        v$index <- factor(v[, "mz"], levels = unique(v[, "mz"]))
+    } else {
+        v <- as.data.frame.Chromatograms(x)
+    }
     v$intensity_orient <- orientation * v[, "intensity"]
 
     ## Filter the rtime
@@ -615,6 +621,16 @@
     ## the 3D perspective
     offlab <- levels(dat$index)
     idx_offset <- match(dat$index, offlab)
+    if ("mz" %in% names(dat)){
+        x <- as.numeric(offlab[idx_offset])
+        rng <- range(x, na.rm = TRUE)
+        to <- c(1, length(offlab))
+        idx_offset <- if (diff(rng) == 0) {
+                rep(1, length(x))
+            } else {
+                (x - rng[1]) / diff(rng) * diff(to) + to[1]
+            }
+    }
     ## Filter possible NA values
     sel <- !is.na(idx_offset)
 

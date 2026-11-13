@@ -63,10 +63,15 @@
 #' @param bs `numeric(1)` font size for ggplot.
 #'
 #' @param interactive `logical(1)` return the interactive ggplot based on
-#'     ggiraph.
+#'        ggiraph.
 #'
-#' @param hide_index `logical(1)` whether to hide the index of the
-#'     chromatograms in the 3D plot.
+#' @param z for `ggplotChromatograms3D()` `character(1)` defining the variable
+#'        to be used for the z-axis in the 3D plot. Can be either `"index"` (the
+#'        index of the chromatograms) or `"mz"` (the m/z values of the
+#'        chromatograms). Defaults to `"index"`.
+#'
+#' @param hide_index for `ggplotChromatograms3D()` `logical(1)` whether to hide
+#'        the index of the chromatograms in the 3D plot.
 #'
 #' @param ... Additional arguments to be passed to [plot.default()].
 #'
@@ -247,7 +252,8 @@ setMethod("ggplotChromatogramsOverlay", "Chromatograms",
 #'
 #' @exportMethod ggplotChromatograms3D
 setMethod("ggplotChromatograms3D", "Chromatograms",
-          function(object, xlab = "rtime (s)", ylab = "intensity",
+          function(object, z = c("index", "mz"),
+                   xlab = "rtime (s)", ylab = "intensity",
                    xlim = numeric(), ylim = numeric(),
                    main = paste(length(object), "chromatograms"),
                    col = "#00000080",
@@ -261,8 +267,16 @@ setMethod("ggplotChromatograms3D", "Chromatograms",
               if (!length(ylim))
                   ylim <- c(0, max(unlist(intensity(object)), na.rm = TRUE))
 
+              z <- match.arg(z)
+              if (z == "mz" &&
+                    any(is.na(mz(object))) | any(mz(object) == Inf)) {
+                  warning("Chromatograms object contains invalid m/z values. ",
+                          "Using 'index' for z-axis instead of 'mz'.")
+                  z <- "index"
+              }
+
               .plot3D_chromatogram(
-                    object, xlab = xlab, ylab = ylab,
+                    object, z = z, xlab = xlab, ylab = ylab,
                     xlim = xlim, ylim = ylim, main = main, col = col,
                     lwd = lwd, bs = bs, asp = asp, hide_index = hide_index, ...)
-            })
+          })
