@@ -487,24 +487,6 @@
         theme(legend.position = "none")
 
     gg
-
-    # gg <- ggplot(v, ggcube::aes(x = rtime, y = index, z = intensity_orient,
-    #                             group = index, color = index, fill = index)) +
-    #     ggcube::geom_ridgeline_3d(direction = "y", na.rm = TRUE, alpha = 0.4,
-    #                                 base = 0) +
-    #     # ggcube::geom_point_3d(size = cex, shape = pch, na.rm = TRUE) +
-    #     ggcube::coord_3d(pitch = 0, roll = -80, yaw = 15,
-    #             persp = FALSE, expand = TRUE,
-    #             ratio = c(2.5, 1, 1),
-    #             panels = "background",
-    #             light = "none") +
-    #     labs(x = xlab, z = ylab) +
-    #     theme_bw(base_size = bs) +
-    #     ggcube::scale_z_continuous(expand = expansion(mult = c(0, NA)),
-    #                                 limits = c(0, max(v$intensity_orient))) +
-    #     scale_x_continuous(limits = xlim)
-
-    # gg
 }
 
 #' Calculate the limits of the data in the 3D perspective
