@@ -409,6 +409,11 @@
     gg
 }
 
+#' Helper function to made a 3D ggplot chromatogram.
+#' @note:
+#' Used in:
+#' - `ggplotChromatograms3D()`
+#'
 #' @importFrom stats ave
 #'
 #' @importFrom ggplot2 ggplot aes geom_segment geom_ribbon geom_line geom_text
